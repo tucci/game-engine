@@ -572,6 +572,7 @@ bool destroy_app(App* app) {
 	destroy_renderer(&app->graphics);
 	SDL_DestroyWindow(app->window.sdl_window);
 	SDL_Quit();
+	return true;
 }
 
 void update_time(App* app) {

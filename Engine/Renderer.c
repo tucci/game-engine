@@ -18,8 +18,8 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	load_obj("teapot.obj", &renderer->model);
 	//load_obj("african_head.obj", &renderer->model);
+	load_obj("teapot.obj", &renderer->model);
 	//load_obj("dodecahedron.obj", &renderer->model);
 	renderer->face_count = stb_sb_count(renderer->model.faces);
 
@@ -31,18 +31,20 @@ bool init_z_buffer(Renderer* renderer) {
 	// TODO: malloc check
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	size_t size = sizeof(float) * window_size;
-	renderer->zbuffer = malloc(size);
+	renderer->zbuffer = (float*) malloc(size);
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
 	}
+
+	return true;
 }
 
 void clear_z_buffer(Renderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
-	size_t size = sizeof(float) * window_size;
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
 	}
+	
 }
 
 void init_camera(Renderer* renderer) {
@@ -53,7 +55,7 @@ void init_camera(Renderer* renderer) {
 	renderer->camera.far = 100.0f;
 
 	renderer->camera.fov = 120.0f;
-	renderer->camera.aspect_ratio = renderer->window_size.x / renderer->window_size.y;
+	renderer->camera.aspect_ratio = (float)renderer->window_size.x / (float)renderer->window_size.y;
 	
 }
 
@@ -73,7 +75,7 @@ void render(Renderer* r) {
 	/*if (rendererd) return;
 	rendererd = true;*/
 
-	const SDL_Renderer* renderer = r->renderer;
+	SDL_Renderer* renderer = r->renderer;
 	Camera camera = r->camera;
 
 

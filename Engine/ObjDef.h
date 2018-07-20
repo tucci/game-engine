@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+//#include <string.h>
+
 
 #include "Containers.h"
 
@@ -38,40 +40,40 @@ void inline load_obj(const char* filename, ObjModel* model) {
 
 	char line[256];
 
+	const char * const delim_space = " ";
+	const char * const delim_fslash = "/";
 	while (fgets(line, sizeof(line), file)) {
 
 		
 
-		char* token = strtok(line, " ");
+		char* token = strtok(line, delim_space);
 
-
-
-		// TODO: see how strtok works under the hood. see if it does mem allocs
-		// TODO: see if using " ", and "/" causes small str allocs
+		// TODO: rewrite this in a safe way, strtok_s?
 		if (strcmp("v", token) == 0) {
 			Vec4f v;
-			token = strtok(NULL, " ");
-			v.x = atof(token);
-			token = strtok(NULL, " ");
-			v.y = atof(token);
-			token = strtok(NULL, " ");
-			v.z = atof(token);
+			token = strtok(NULL, delim_space);
+			v.x = strtof(token, NULL);
+			token = strtok(NULL, delim_space);
+			v.y = strtof(token, NULL);
+			token = strtok(NULL, delim_space);
+			v.z = strtof(token, NULL);
 			v.w = 1;
 			stb_sb_push(model->verts, v);
 		}
 		else if (strcmp("f", token) == 0) {
 			// TODO: handle faces without /
 			Vec3i f;
-			token = strtok(NULL, " ");
-			//token = strtok(NULL, "/");
-			f.x = atoi(token);
-			token = strtok(NULL, " ");
-			//token = strtok(NULL, "/");
-			f.y = atoi(token);
-			token = strtok(NULL, " ");
-			//token = strtok(NULL, "/");
-			f.z = atoi(token);
+			token = strtok(NULL, delim_space);
+			//token = strtok(NULL, delim_fslash);
+			f.x = strtol(token, NULL, 10);
+			token = strtok(NULL, delim_space);
+			//token = strtok(NULL, delim_fslash);
+			f.y = strtol(token, NULL, 10);
+			token = strtok(NULL, delim_space);
+			//token = strtok(NULL, delim_fslash);
+			f.z = strtol(token, NULL, 10);
 			stb_sb_push(model->faces, f);
+			
 
 		}
 		

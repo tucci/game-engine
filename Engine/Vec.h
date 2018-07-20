@@ -172,7 +172,7 @@ Vec3f inline vec_multiply(float scalar, Vec3f v) {
 
 float inline vec_length(Vec3f vec) {
 	// Replace sqrt with simd ones
-	float length = sqrt((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+	float length = sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
 	return length;
 }
 

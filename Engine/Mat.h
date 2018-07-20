@@ -68,7 +68,7 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 	float depth = far - near;
 	float inverse_depth = 1 / depth;
 
-	float f = 1 / tan(fov * 0.5f * M_PI / 180);
+	float f = 1 / tanf(fov * 0.5f * PI / 180.0f);
 
 	mat.mat2d[0][0] = f / aspect_ratio;
 	mat.mat2d[1][1] = f;
@@ -237,8 +237,8 @@ Mat4x4f inline rotate(float angle, Vec3f axis) {
 
 
 	Mat4x4f rot = mat4x4f_identity();
-	float cos_angle = cos(angle);
-	float sin_angle = sin(angle);
+	float cos_angle = cosf(angle);
+	float sin_angle = sinf(angle);
 
 	float one_minus_cos = 1 - cos_angle;
 

@@ -4,15 +4,15 @@
 // TODO: deprecate need for math lib, go full simd
 #include <math.h>
 
-#define PI  3.14159265358979323846264338327950288
+#define PI 3.141592653589f
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define ABS(x) (((x)<0) ? -(x) : (x))
 
-#define deg_to_rad(deg) ((deg) * PI / 180.0)
+#define deg_to_rad(deg) ((deg) * PI / 180.0f)
 
 // Converts radians to degrees.
-#define rad_to_deg(rad) ((rad) * 180.0 / PI)
+#define rad_to_deg(rad) ((rad) * 180.0f / PI)
 
 
 
