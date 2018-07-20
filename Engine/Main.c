@@ -1,17 +1,17 @@
 #pragma once
 
+#include <SDL.h>
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-//#include <math.h>
 
 
-#include "Math.h"
-#include "Containers.h"
-#include "ObjDef.h"
+#include "Renderer.h"
 
 
-#include <SDL.h>
+
+
 
 #define DEBUG 1
 
@@ -196,13 +196,11 @@ typedef struct DebugData {
 	bool print_events;
 } DebugData;
 
-typedef struct GraphicsRenderer {
-	SDL_Renderer* renderer;
-	SDL_Surface* surface;
-} GraphicsRenderer;
+
 
 typedef struct App {
-	GraphicsRenderer graphics;
+	//GraphicsRenderer graphics;
+	Renderer graphics;
     Display display;
     Window window;
     Mouse mouse;
@@ -213,7 +211,7 @@ typedef struct App {
 	char const* platform;
     bool quit;
 	DebugData debug;
-	ObjModel model;
+	
 
 } App;
 
@@ -245,6 +243,32 @@ void process_event_queue(App* app) {
 		switch (event.kind) {
 
 			case EventKind_Key_Down: {
+				switch (event.event.key_event.key) {
+					case SDL_SCANCODE_W: {
+						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Up);
+						break;
+					}
+					case SDL_SCANCODE_S: {
+						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Down);
+						break;
+					}
+
+					case SDL_SCANCODE_A: {
+						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Left);
+						break;
+					}
+					case SDL_SCANCODE_D: {
+						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Right);
+						break;
+					}
+					case SDL_SCANCODE_ESCAPE: {
+						app->quit = true;
+						break;
+					}
+					default:
+						break;
+				}
+
 				event_printf("Key Down: %d\n", event.event.key_event.key);
 				break;
 			}
@@ -419,15 +443,6 @@ bool init_display(App* app) {
     return true;
 }
 
-bool init_renderer(App* app) {
-	// NOTE:(steven) for now we are doing software rendering, eventually, we'll get back to hardware rendering
-	app->graphics.surface = SDL_GetWindowSurface(app->window.sdl_window);
-	app->graphics.renderer = SDL_CreateSoftwareRenderer(app->graphics.surface);
-	/* Clear the rendering surface with the specified color */
-	SDL_SetRenderDrawColor(app->graphics.renderer, 0, 0, 0, 0xFF);
-	SDL_RenderClear(app->graphics.renderer);
-	//app->graphics.renderer = SDL_CreateRenderer(app->window.sdl_window, -1, SDL_RENDERER_SOFTWARE);
-}
 
 
 bool init_window(App* app) {
@@ -484,7 +499,7 @@ bool init_window(App* app) {
     app->window.sdl_window = sdl_window;
     app->window.sdl_window_flags = sdl_flags;
 
-	init_renderer(app);
+	init_renderer(app->window.sdl_window, &app->graphics, app->window.size);
     
     return true;
 }
@@ -546,9 +561,17 @@ bool init_app(App* app) {
 	if (!init_event_queue(app)) {return false;}
 	if (!init_time(app)) {return false;}
 
-	load_obj("african_head.obj", &app->model);
+	
 
 	return true;
+}
+
+bool destroy_app(App* app) {
+	
+
+	destroy_renderer(&app->graphics);
+	SDL_DestroyWindow(app->window.sdl_window);
+	SDL_Quit();
 }
 
 void update_time(App* app) {
@@ -678,64 +701,13 @@ void process_inputs(App* app) {
 
 
 
-
-void render(App* app) {
-	const SDL_Renderer* renderer = app->graphics.renderer;
-
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
-
-	
-	SDL_SetRenderDrawColor(app->graphics.renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-
-	/*SDL_RenderDrawLine(renderer, 320, 200, 300, 240);
-	int r = 50;
-	int x = 300;
-	int y = 300;
-
-	for (float i = 0; i < 2 * 3.14; i+=0.01f) {
-		SDL_RenderDrawPoint(renderer, x + r * sin(i), y + r * cos(i));
-	}*/
-
-	
-	
-	int face_count = stb_sb_count(app->model.faces);
-
-	
-	int width = app->window.size.x;
-	int height = app->window.size.y;
-
-	for (int i = 0; i < face_count; i++) {
-
-		Vec3i face = app->model.faces[i];
-
-
-		for (int j = 0; j < 3; j++) {
-
-			Vec3f v0 = app->model.verts[face.data[j] - 1];
-			Vec3f v1 = app->model.verts[face.data[(j + 1) % 3] - 1];
-
-			int x0 = (v0.x + 1.)*width / 2.;
-			int y0 = (v0.y + 1.)*height / 2.;
-			int x1 = (v1.x + 1.)*width / 2.;
-			int y1 = (v1.y + 1.)*height / 2.;
-			SDL_RenderDrawLine(renderer, x0, y0, x1, y1);
-		}
-	}
-		
-	
-	
-	
-}
-
 void game_loop(App* app) {
 	while (!app->quit) {
 		// TODO: do we need this?
 		SDL_PumpEvents();
 		process_inputs(app);
 		process_event_queue(app);
-		render(app);
-		SDL_UpdateWindowSurface(app->window.sdl_window);
+		render(&app->graphics);
 		update_time(app);
 
 	}
@@ -753,16 +725,8 @@ int main(int argc, char* argv[]) {
 
 	if (init_app(&app)) {
 		game_loop(&app);
-		
-		free_obj(&app.model);
-
-		SDL_DestroyWindow(app.window.sdl_window);
-		SDL_Quit();
+		destroy_app(&app);
 	}
-
-	
-
-	
 
     return 0;
 }
