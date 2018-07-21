@@ -63,14 +63,14 @@ void inline load_obj(const char* filename, ObjModel* model) {
 		else if (strcmp("f", token) == 0) {
 			// TODO: handle faces without /
 			Vec3i f;
-			//token = strtok(NULL, delim_space);
-			token = strtok(NULL, delim_fslash);
+			token = strtok(NULL, delim_space);
+			//token = strtok(NULL, delim_fslash);
 			f.x = strtol(token, NULL, 10);
 			token = strtok(NULL, delim_space);
-			token = strtok(NULL, delim_fslash);
+			//token = strtok(NULL, delim_fslash);
 			f.y = strtol(token, NULL, 10);
 			token = strtok(NULL, delim_space);
-			token = strtok(NULL, delim_fslash);
+			//token = strtok(NULL, delim_fslash);
 			f.z = strtol(token, NULL, 10);
 			stb_sb_push(model->faces, f);
 			

@@ -28,6 +28,7 @@ typedef struct Renderer {
 	SDL_Window* sdl_window;
 	Vec2i window_size;
 	float* zbuffer;
+	int zbuffer_size;
 	Camera camera;
 
 	ObjModel model;

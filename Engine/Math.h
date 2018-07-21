@@ -31,16 +31,8 @@ typedef struct BoundingBox2i {
 // Taken from https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage
 // Paper from https://www.cs.drexel.edu/~david/Classes/Papers/comp175-06-pineda.pdf
 float inline edge_function(Vec3f a, Vec3f b, Vec3f c) {
-	return (b.y - a.y)*(c.x - a.x) - (b.x - a.x)*(c.y - a.y);	
+	return -(b.y - a.y)*(c.x - a.x) + (b.x - a.x)*(c.y - a.y);	
 }
-
-
-//bool inline point_in_tri(Vec2f pt, Vec2f v0, Vec2f v1, Vec2f v2) {
-//	float w0 = edge_function(v1, v2, pt);
-//	float w1 = edge_function(v2, v0, pt);
-//	float w2 = edge_function(v0, v1, pt);
-//	return w0 >= 0 && w1 >= 0 && w2 >= 0;
-//}
 
 
 BoundingBox2i inline get_bounding_box_from_tri(Vec2f v0, Vec2f v1, Vec2f v2) {
@@ -62,4 +54,25 @@ float inline clamp(float x, float min, float max) {
 		x = max;
 	}
 	return x;
+}
+
+Vec3f inline barycentric(Vec3f p, Vec3f a, Vec3f b, Vec3f c) {
+
+	Vec3f v0 = vec_sub(b , a);
+	Vec3f v1 = vec_sub(c , a);
+	Vec3f v2 = vec_sub(p , a);
+
+	float d00 = vec_dot(v0, v0);
+	float d01 = vec_dot(v0, v1);
+	float d11 = vec_dot(v1, v1);
+	float d20 = vec_dot(v2, v0);
+	float d21 = vec_dot(v2, v1);
+	float denom = d00 * d11 - d01 * d01;
+	float one_over_denom = 1 / denom;
+	Vec3f result;
+
+	result.v = (d11 * d20 - d01 * d21) * one_over_denom;
+	result.w = (d00 * d21 - d01 * d20) * one_over_denom;
+	result.u = 1.0f - result.v - result.w;
+	return result;
 }

@@ -18,8 +18,8 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	load_obj("african_head.obj", &renderer->model);
-	//load_obj("teapot.obj", &renderer->model);
+	//load_obj("african_head.obj", &renderer->model);
+	load_obj("teapot.obj", &renderer->model);
 	//load_obj("dodecahedron.obj", &renderer->model);
 	renderer->face_count = stb_sb_count(renderer->model.faces);
 
@@ -30,6 +30,7 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 bool init_z_buffer(Renderer* renderer) {
 	// TODO: malloc check
 	int window_size = renderer->window_size.x * renderer->window_size.y;
+	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
 	renderer->zbuffer = (float*) malloc(size);
 	for (size_t i = 0; i < window_size; i++) {
@@ -114,9 +115,8 @@ void render(Renderer* r) {
 
 	for (int i = 0; i < r->face_count; i++) {
 		
-
-
 		Vec3i face = r->model.faces[i];
+
 		Vec4f tri[3] = {
 			r->model.verts[face.data[0]-1],
 			r->model.verts[face.data[1]-1],
@@ -124,16 +124,12 @@ void render(Renderer* r) {
 		};
 
 		SDL_SetRenderDrawColor(renderer, face.data[0] % 255, face.data[1] % 255, face.data[2] % 255, SDL_ALPHA_OPAQUE);
-		//SDL_SetRenderDrawColor(renderer, rand() % 255, rand() % 255, rand() % 255, SDL_ALPHA_OPAQUE);
-
-		
-		
+			
 		for (int j = 0; j < 3; j++) {
-			// to raster space
 			tri[j] =  mat4x4_vec_mul(&mat, tri[j]);
-			//SDL_RenderDrawPoint(renderer, tri[j].x, tri[j].y);
 			
 		}
+		// Draw lines
 		/*for (int j = 0; j < 3; j++) {
 			SDL_RenderDrawLine(renderer, tri[j].x, tri[j].y, tri[(j + 1) % 3].x, tri[(j + 1) % 3].y);
 
@@ -147,11 +143,25 @@ void render(Renderer* r) {
 		Vec3f v2Raster = tri[2].xyz_;
 
 
-		BoundingBox2i bounds = get_bounding_box_from_tri(tri[0].xyz_.xy_, tri[1].xyz_.xy_, tri[2].xyz_.xy_);
+		BoundingBox2i bounds = get_bounding_box_from_tri(
+			tri[0].xyz_.xy_, 
+			tri[1].xyz_.xy_,
+			tri[2].xyz_.xy_);
 
+		if ((bounds.min.x > 0 
+			&& bounds.max.x < width
+			&& bounds.min.y > 0
+			&& bounds.max.y < height)) {
+			
+		} else {
+			continue;
+		}
+
+		
 
 		
 		float area = edge_function(v0Raster, v1Raster, v2Raster);
+		float one_over_area = 1.0f / area;
 
 		for (int x = bounds.min.x; x < bounds.max.x; x++) {
 			for (int y = bounds.min.y; y < bounds.max.y; y++) {
@@ -161,24 +171,59 @@ void render(Renderer* r) {
 				float w2 = edge_function(v0Raster, v1Raster, pt);
 				
 				if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-					w0 /= area;
-					w1 /= area;
-					w2 /= area;
-					float oneOverZ = v0Raster.z * w0 + v1Raster.z * w1 + v2Raster.z * w2;
-					float z = 1 / oneOverZ;
+					
+					w0 *= one_over_area;
+					w1 *= one_over_area;
+					w2 *= one_over_area;
+
+					float one_over_z = v0Raster.z * w0 + v1Raster.z * w1 + v2Raster.z * w2;
+					float z = 1 / one_over_z;
+
+					int index = width * y + x;
 
 					// z buffer check
-					//if (z < r->zbuffer[width * y + x]) {
-						//r->zbuffer[width * y + x] = z;
-						/*float c = clamp(z, 0, 255);
-						SDL_SetRenderDrawColor(renderer, c, c, c, SDL_ALPHA_OPAQUE);*/
+					if (index < r->zbuffer_size && z < r->zbuffer[index]) {
+						r->zbuffer[index] = z;
+						//float c = clamp(z, 0, 255);
+						//SDL_SetRenderDrawColor(renderer, c, c, c, SDL_ALPHA_OPAQUE);
 						SDL_RenderDrawPoint(renderer, x, y);
-					//}
+					}
 				}
 			}
 
 		}
-		
+
+	//	for (int x = bounds.min.x; x < bounds.max.x; x++) {
+	//		for (int y = bounds.min.y; y < bounds.max.y; y++) {
+	//			Vec3f pt = (Vec3f) { x + 0.5f, y + 0.5f, 0.0f };
+	//			Vec3f bcs = barycentric(tri[0].xyz_, tri[1].xyz_, tri[2].xyz_, pt);
+	//			Vec3f bcc = (Vec3f) { bcs.x / pts[0][3], bcs.y / pts[1][3], bcs.z / pts[2][3] };
+	//			float d = bcc.x + bcc.y + bcc.z;
+	//			bcc = vec_multiply(d, bcc);
+	//			tri[2]
+	//			if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
+
+	//				w0 *= one_over_area;
+	//				w1 *= one_over_area;
+	//				w2 *= one_over_area;
+
+	//				float one_over_z = v0Raster.z * w0 + v1Raster.z * w1 + v2Raster.z * w2;
+	//				float z = 1 / one_over_z;
+
+	//				int index = width * y + x;
+
+	//				// z buffer check
+	//				if (index < r->zbuffer_size && z < r->zbuffer[index]) {
+	//					r->zbuffer[index] = z;
+	//					//float c = clamp(z, 0, 255);
+	//					//SDL_SetRenderDrawColor(renderer, c, c, c, SDL_ALPHA_OPAQUE);
+	//					SDL_RenderDrawPoint(renderer, x, y);
+	//				}
+	//			}
+	//		}
+
+	//	}
+	//	
 	}
 
 
@@ -246,9 +291,7 @@ void debug_render(Renderer* r) {
 
 
 	int size = 8;
-	int half_size = size / 2;
-	// TODO: figure out if size should be a power of 2 for faster generation
-	int div_size = 1;
+	
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 

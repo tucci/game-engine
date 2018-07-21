@@ -692,9 +692,6 @@ void process_inputs(App* app) {
 				event.event.window_event.data.data2 = sdl_event.window.data2;
 
 				switch (sdl_event.window.event) {
-
-
-					// TODO(steven) maybe we want to split setting app stuff in here, we should handle it from the event queue
 					case SDL_WINDOWEVENT_MOVED: {event.kind = EventKind_Window_Moved;	break; }
 					case SDL_WINDOWEVENT_RESIZED: {event.kind = EventKind_Window_Resized;	break; }
 					case SDL_WINDOWEVENT_MINIMIZED: {event.kind = EventKind_Window_Minimized;	break; }
