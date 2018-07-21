@@ -248,11 +248,11 @@ Mat4x4f inline rotate(float angle, Vec3f axis) {
 
 	rot.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
 	rot.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
-	rot.mat2d[0][2] = xz * one_minus_cos - axis.y * sin_angle;
+	rot.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
 
 	rot.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
 	rot.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
-	rot.mat2d[1][2] = yz * one_minus_cos + axis.x * sin_angle;
+	rot.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
 
 	rot.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
 	rot.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;

@@ -18,8 +18,8 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	//load_obj("african_head.obj", &renderer->model);
-	load_obj("teapot.obj", &renderer->model);
+	load_obj("african_head.obj", &renderer->model);
+	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("dodecahedron.obj", &renderer->model);
 	renderer->face_count = stb_sb_count(renderer->model.faces);
 
@@ -50,12 +50,14 @@ void clear_z_buffer(Renderer* renderer) {
 void init_camera(Renderer* renderer) {
 	renderer->camera.pos = (Vec4f) { 0, 0, 0, 1 };
 	renderer->camera.dir = (Vec3f) { 0, 0, -1 };
+	renderer->camera.rotation = Vec3f_Zero;
 
 	renderer->camera.near = 0.1f;
 	renderer->camera.far = 100.0f;
 
 	renderer->camera.fov = 120.0f;
 	renderer->camera.aspect_ratio = (float)renderer->window_size.x / (float)renderer->window_size.y;
+
 	
 }
 
@@ -68,12 +70,10 @@ bool destroy_renderer(Renderer* renderer) {
 
 
 
-bool rendererd = false;
 
 void render(Renderer* r) {
 
-	/*if (rendererd) return;
-	rendererd = true;*/
+	
 
 	SDL_Renderer* renderer = r->renderer;
 	Camera camera = r->camera;
@@ -95,30 +95,20 @@ void render(Renderer* r) {
 
 
 
-	Mat4x4f model_mat = scale((Vec3f) {5, 5, 5});
-	/*Mat4x4f rot = rotate(camera.pos.z, Vec3f_Up);
-	model_mat = mat4x4_mul(&model_mat, &rot);*/
+
+
+	Mat4x4f model_mat = rotate(camera.rotation.y, Vec3f_Up);
+	//Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f rot2 = rotate(camera.rotation.z, Vec3f_Forward);
+	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
-	//Mat4x4f view_mat = look_at(Vec3f_Zero, Vec3f_Forward, Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);
+	mvp_mat = mat4x4_mul(&mvp_mat, &projection_mat);
 
-	
-	//Mat4x4f model_mat = mat4x4f_identity();
-	//Mat4x4f view_mat = mat4x4f_identity();
-	//Mat4x4f projection_mat = mat4x4f_identity();
-
-	Mat4x4f mvp_mat = mat4x4_mul(&view_mat, &model_mat);
-	mvp_mat = mat4x4_mul(&projection_mat, &mvp_mat);
 	Mat4x4f viewport_mat = viewport(0, 0, width, height, camera.far - camera.near);
-	Mat4x4f mat = mat4x4_mul(&viewport_mat, &mvp_mat);
-
-	
-
-	
-	/*Mat4x4f viewport_mat = viewport(0, 0, width, height, camera.far - camera.near);
-	Mat4x4f mat = mat4x4_mul(&viewport_mat, &projection_mat);
-	mat = mat4x4_mul(&mvp_mat, &mat);*/
+	Mat4x4f mat = mat4x4_mul(&mvp_mat, &viewport_mat);
 	
 	clear_z_buffer(r);
 
@@ -133,8 +123,8 @@ void render(Renderer* r) {
 			r->model.verts[face.data[2]-1]
 		};
 
-		//SDL_SetRenderDrawColor(renderer, face.data[0] % 255, face.data[1] % 255, face.data[2] % 255, SDL_ALPHA_OPAQUE);
-		SDL_SetRenderDrawColor(renderer, rand() % 255, rand() % 255, rand() % 255, SDL_ALPHA_OPAQUE);
+		SDL_SetRenderDrawColor(renderer, face.data[0] % 255, face.data[1] % 255, face.data[2] % 255, SDL_ALPHA_OPAQUE);
+		//SDL_SetRenderDrawColor(renderer, rand() % 255, rand() % 255, rand() % 255, SDL_ALPHA_OPAQUE);
 
 		
 		
@@ -193,5 +183,95 @@ void render(Renderer* r) {
 
 
 	SDL_UpdateWindowSurface(r->sdl_window);
+
+	//debug_render(r);
 }
 
+
+void debug_render(Renderer* r) {
+	SDL_Renderer* renderer = r->renderer;
+	Camera camera = r->camera;
+
+
+	/*SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);*/
+
+
+
+	//SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+
+	int width = r->window_size.x;
+	int height = r->window_size.y;
+
+	Vec3f eye = camera.pos.xyz_;
+	Vec3f dir = camera.dir;
+
+
+
+	Mat4x4f model_mat = rotate(camera.rotation.y, Vec3f_Up);
+	Mat4x4f rot2 = rotate(camera.rotation.z, Vec3f_Forward);
+	model_mat = mat4x4_mul(&model_mat, &rot2);
+	
+	//Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
+	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);
+	mvp_mat = mat4x4_mul(&mvp_mat, &projection_mat);
+
+	Mat4x4f viewport_mat = viewport(0, 0, width, height, camera.far - camera.near);
+	Mat4x4f mat = mat4x4_mul(&mvp_mat, &viewport_mat);
+	
+
+	Vec4f x_axis = { 10.0f, 0, 0, 1 };
+	Vec4f y_axis = { 0, 10.0f, 0, 1 };
+	Vec4f z_axis = { 0, 0, 10.0f, 1 };
+
+
+	Vec4f origin = { 0, 0, 0, 1 };
+	origin = mat4x4_vec_mul(&mat, origin);
+
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+	Vec4f axis_pt = mat4x4_vec_mul(&mat, x_axis);
+	SDL_RenderDrawLine(renderer, origin.x, origin.y, axis_pt.x, axis_pt.y);
+
+	SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+	axis_pt = mat4x4_vec_mul(&mat, y_axis);
+	SDL_RenderDrawLine(renderer, origin.x, origin.y, axis_pt.x, axis_pt.y);
+
+	SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
+	axis_pt = mat4x4_vec_mul(&mat, z_axis);
+	SDL_RenderDrawLine(renderer, origin.x, origin.y, axis_pt.x, axis_pt.y);
+
+
+
+	int size = 8;
+	int half_size = size / 2;
+	// TODO: figure out if size should be a power of 2 for faster generation
+	int div_size = 1;
+
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+
+	for (int i = -size; i <= size; i++) {
+		Vec4f pt = { -size,  0,i,1 };
+		Vec4f pt2 = { size,  0,i,1 };
+
+		pt = mat4x4_vec_mul(&mat, pt);
+		pt2 = mat4x4_vec_mul(&mat, pt2);
+		SDL_RenderDrawLine(renderer, pt.x, pt.y, pt2.x, pt2.y);
+
+
+		pt = (Vec4f) { i ,0, -size, 1 };
+		pt2 = (Vec4f) { i,0, size , 1 };
+
+		pt = mat4x4_vec_mul(&mat, pt);
+		pt2 = mat4x4_vec_mul(&mat, pt2);
+		SDL_RenderDrawLine(renderer, pt.x, pt.y, pt2.x, pt2.y);
+
+	}
+
+
+
+
+	SDL_UpdateWindowSurface(r->sdl_window);
+}

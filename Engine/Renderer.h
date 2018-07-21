@@ -12,6 +12,7 @@
 typedef struct Camera {
 	Vec4f pos;
 	Vec3f dir;
+	Vec3f rotation;
 
 	float near;
 	float far;
@@ -43,4 +44,5 @@ void init_camera(Renderer* renderer);
 
 bool destroy_renderer(Renderer* renderer);
 void render(Renderer* r);
+void debug_render(Renderer* r);
 

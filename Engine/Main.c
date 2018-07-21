@@ -253,6 +253,33 @@ void process_event_queue(App* app) {
 						break;
 					}
 
+					case SDL_SCANCODE_UP: {
+						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Forward);
+						break;
+					}
+					case SDL_SCANCODE_DOWN: {
+						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Backward);
+						break;
+					}
+
+					case SDL_SCANCODE_E: {
+						app->graphics.camera.rotation.y += 1;
+						break;
+					}
+					case SDL_SCANCODE_Q: {
+						app->graphics.camera.rotation.y -= 1;
+						break;
+					}
+
+					case SDL_SCANCODE_RIGHT: {
+						app->graphics.camera.rotation.z += 1;
+						break;
+					}
+					case SDL_SCANCODE_LEFT: {
+						app->graphics.camera.rotation.z -= 1;
+						break;
+					}
+
 					case SDL_SCANCODE_A: {
 						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Left);
 						break;
@@ -709,6 +736,7 @@ void game_loop(App* app) {
 		process_inputs(app);
 		process_event_queue(app);
 		render(&app->graphics);
+		
 		update_time(app);
 
 	}
