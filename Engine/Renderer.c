@@ -18,10 +18,10 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	//load_obj("african_head.obj", &renderer->model);
-	load_obj("teapot.obj", &renderer->model);
+	load_obj("african_head.obj", &renderer->model);
+	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("dodecahedron.obj", &renderer->model);
-	renderer->face_count = stb_sb_count(renderer->model.faces);
+	
 
 	return true;
 }
@@ -113,9 +113,10 @@ void render(Renderer* r) {
 	
 	clear_z_buffer(r);
 
-	for (int i = 0; i < r->face_count; i++) {
+	
+	for (int i = 0; i < r->model.face_count; i++) {
 		
-		Vec3i face = r->model.faces[i];
+		Vec3i face = r->model.v_id[i];
 
 		Vec4f tri[3] = {
 			r->model.verts[face.data[0]-1],
@@ -161,6 +162,7 @@ void render(Renderer* r) {
 
 		
 		float area = edge_function(v0Raster, v1Raster, v2Raster);
+		//if (area == 0) continue;
 		float one_over_area = 1.0f / area;
 
 		for (int x = bounds.min.x; x < bounds.max.x; x++) {
@@ -185,7 +187,14 @@ void render(Renderer* r) {
 					if (index < r->zbuffer_size && z < r->zbuffer[index]) {
 						r->zbuffer[index] = z;
 						//float c = clamp(z, 0, 255);
-						//SDL_SetRenderDrawColor(renderer, c, c, c, SDL_ALPHA_OPAQUE);
+						
+
+						float rc = w0 * 1 + w1 * 0 + w2 * 0;
+						float gc = w0 * 0 + w1 * 1+ w2 * 0;
+						float bc = w0 * 0 + w1 * 0+ w2 * 1;
+
+						SDL_SetRenderDrawColor(renderer, rc * 255, gc * 255, bc * 255, SDL_ALPHA_OPAQUE);
+
 						SDL_RenderDrawPoint(renderer, x, y);
 					}
 				}

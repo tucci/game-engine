@@ -32,7 +32,6 @@ typedef struct Renderer {
 	Camera camera;
 
 	ObjModel model;
-	int face_count;
 
 } Renderer;
 

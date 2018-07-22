@@ -123,21 +123,6 @@ typedef union Vec4f {
 #define Vec4f_One (Vec4f) {1,1,1,1}
 
 
-Vec3i inline Vec3f_to_Vec3i(Vec3f vec) {
-	Vec3i v3i;
-	v3i.x = (int)vec.x;
-	v3i.y = (int)vec.y;
-	v3i.z = (int)vec.z;
-	return v3i;
-}
-
-Vec4f inline vec3_to_4f(Vec3f v) {
-	Vec4f result;
-	result.xyz_ = v;
-	result.___w = 0;
-	return result;
-}
-
 
 // TODO: speed up with simd
 
