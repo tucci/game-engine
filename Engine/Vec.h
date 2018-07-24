@@ -103,7 +103,7 @@ typedef union Vec4f {
 
 	struct {
 		Vec3f xyz_;
-		float ___w;
+		float ___w; // TODO: double underscore is reserved for specs. need to change this
 	};
 
 	float data[4];
@@ -121,6 +121,7 @@ typedef union Vec4f {
 
 #define Vec4f_Zero (Vec4f) {0,0,0,0}
 #define Vec4f_One (Vec4f) {1,1,1,1}
+
 
 
 

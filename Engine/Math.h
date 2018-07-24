@@ -31,7 +31,7 @@ typedef struct BoundingBox2i {
 // Taken from https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage
 // Paper from https://www.cs.drexel.edu/~david/Classes/Papers/comp175-06-pineda.pdf
 float inline edge_function(Vec3f a, Vec3f b, Vec3f c) {
-	return -(b.y - a.y)*(c.x - a.x) + (b.x - a.x)*(c.y - a.y);	
+	return (b.y - a.y)*(c.x - a.x) - (b.x - a.x)*(c.y - a.y);	
 }
 
 /// TODO: look into https://fgiesen.wordpress.com/2013/01/14/min-max-under-negation-and-an-aabb-trick/

@@ -4,7 +4,7 @@
 #include "Math.h"
 
 // TODO: speed up with simd
-
+// TODO: look up strick aliasing rules
 typedef union Mat4x4f {
 	float mat1d[16];
 
@@ -69,6 +69,142 @@ Mat4x4f inline mat4x4f_zero() {
 
 }
 
+// Taken and modified from the Mesa Glu lib,
+bool inline mat4x4f_invert(Mat4x4f* m, Mat4x4f* invOut) {
+	
+	
+	double inv[16], det;
+	int i;
+
+	inv[0] = m->mat1d[5] * m->mat1d[10] * m->mat1d[15] -
+		m->mat1d[5] * m->mat1d[11] * m->mat1d[14] -
+		m->mat1d[9] * m->mat1d[6] * m->mat1d[15] +
+		m->mat1d[9] * m->mat1d[7] * m->mat1d[14] +
+		m->mat1d[13] * m->mat1d[6] * m->mat1d[11] -
+		m->mat1d[13] * m->mat1d[7] * m->mat1d[10];
+
+	inv[4] = -m->mat1d[4] * m->mat1d[10] * m->mat1d[15] +
+		m->mat1d[4] * m->mat1d[11] * m->mat1d[14] +
+		m->mat1d[8] * m->mat1d[6] * m->mat1d[15] -
+		m->mat1d[8] * m->mat1d[7] * m->mat1d[14] -
+		m->mat1d[12] * m->mat1d[6] * m->mat1d[11] +
+		m->mat1d[12] * m->mat1d[7] * m->mat1d[10];
+
+	inv[8] = m->mat1d[4] * m->mat1d[9] * m->mat1d[15] -
+		m->mat1d[4] * m->mat1d[11] * m->mat1d[13] -
+		m->mat1d[8] * m->mat1d[5] * m->mat1d[15] +
+		m->mat1d[8] * m->mat1d[7] * m->mat1d[13] +
+		m->mat1d[12] * m->mat1d[5] * m->mat1d[11] -
+		m->mat1d[12] * m->mat1d[7] * m->mat1d[9];
+
+	inv[12] = -m->mat1d[4] * m->mat1d[9] * m->mat1d[14] +
+		m->mat1d[4] * m->mat1d[10] * m->mat1d[13] +
+		m->mat1d[8] * m->mat1d[5] * m->mat1d[14] -
+		m->mat1d[8] * m->mat1d[6] * m->mat1d[13] -
+		m->mat1d[12] * m->mat1d[5] * m->mat1d[10] +
+		m->mat1d[12] * m->mat1d[6] * m->mat1d[9];
+
+	inv[1] = -m->mat1d[1] * m->mat1d[10] * m->mat1d[15] +
+		m->mat1d[1] * m->mat1d[11] * m->mat1d[14] +
+		m->mat1d[9] * m->mat1d[2] * m->mat1d[15] -
+		m->mat1d[9] * m->mat1d[3] * m->mat1d[14] -
+		m->mat1d[13] * m->mat1d[2] * m->mat1d[11] +
+		m->mat1d[13] * m->mat1d[3] * m->mat1d[10];
+
+	inv[5] = m->mat1d[0] * m->mat1d[10] * m->mat1d[15] -
+		m->mat1d[0] * m->mat1d[11] * m->mat1d[14] -
+		m->mat1d[8] * m->mat1d[2] * m->mat1d[15] +
+		m->mat1d[8] * m->mat1d[3] * m->mat1d[14] +
+		m->mat1d[12] * m->mat1d[2] * m->mat1d[11] -
+		m->mat1d[12] * m->mat1d[3] * m->mat1d[10];
+
+	inv[9] = -m->mat1d[0] * m->mat1d[9] * m->mat1d[15] +
+		m->mat1d[0] * m->mat1d[11] * m->mat1d[13] +
+		m->mat1d[8] * m->mat1d[1] * m->mat1d[15] -
+		m->mat1d[8] * m->mat1d[3] * m->mat1d[13] -
+		m->mat1d[12] * m->mat1d[1] * m->mat1d[11] +
+		m->mat1d[12] * m->mat1d[3] * m->mat1d[9];
+
+	inv[13] = m->mat1d[0] * m->mat1d[9] * m->mat1d[14] -
+		m->mat1d[0] * m->mat1d[10] * m->mat1d[13] -
+		m->mat1d[8] * m->mat1d[1] * m->mat1d[14] +
+		m->mat1d[8] * m->mat1d[2] * m->mat1d[13] +
+		m->mat1d[12] * m->mat1d[1] * m->mat1d[10] -
+		m->mat1d[12] * m->mat1d[2] * m->mat1d[9];
+
+	inv[2] = m->mat1d[1] * m->mat1d[6] * m->mat1d[15] -
+		m->mat1d[1] * m->mat1d[7] * m->mat1d[14] -
+		m->mat1d[5] * m->mat1d[2] * m->mat1d[15] +
+		m->mat1d[5] * m->mat1d[3] * m->mat1d[14] +
+		m->mat1d[13] * m->mat1d[2] * m->mat1d[7] -
+		m->mat1d[13] * m->mat1d[3] * m->mat1d[6];
+
+	inv[6] = -m->mat1d[0] * m->mat1d[6] * m->mat1d[15] +
+		m->mat1d[0] * m->mat1d[7] * m->mat1d[14] +
+		m->mat1d[4] * m->mat1d[2] * m->mat1d[15] -
+		m->mat1d[4] * m->mat1d[3] * m->mat1d[14] -
+		m->mat1d[12] * m->mat1d[2] * m->mat1d[7] +
+		m->mat1d[12] * m->mat1d[3] * m->mat1d[6];
+
+	inv[10] = m->mat1d[0] * m->mat1d[5] * m->mat1d[15] -
+		m->mat1d[0] * m->mat1d[7] * m->mat1d[13] -
+		m->mat1d[4] * m->mat1d[1] * m->mat1d[15] +
+		m->mat1d[4] * m->mat1d[3] * m->mat1d[13] +
+		m->mat1d[12] * m->mat1d[1] * m->mat1d[7] -
+		m->mat1d[12] * m->mat1d[3] * m->mat1d[5];
+
+	inv[14] = -m->mat1d[0] * m->mat1d[5] * m->mat1d[14] +
+		m->mat1d[0] * m->mat1d[6] * m->mat1d[13] +
+		m->mat1d[4] * m->mat1d[1] * m->mat1d[14] -
+		m->mat1d[4] * m->mat1d[2] * m->mat1d[13] -
+		m->mat1d[12] * m->mat1d[1] * m->mat1d[6] +
+		m->mat1d[12] * m->mat1d[2] * m->mat1d[5];
+
+	inv[3] = -m->mat1d[1] * m->mat1d[6] * m->mat1d[11] +
+		m->mat1d[1] * m->mat1d[7] * m->mat1d[10] +
+		m->mat1d[5] * m->mat1d[2] * m->mat1d[11] -
+		m->mat1d[5] * m->mat1d[3] * m->mat1d[10] -
+		m->mat1d[9] * m->mat1d[2] * m->mat1d[7] +
+		m->mat1d[9] * m->mat1d[3] * m->mat1d[6];
+
+	inv[7] = m->mat1d[0] * m->mat1d[6] * m->mat1d[11] -
+		m->mat1d[0] * m->mat1d[7] * m->mat1d[10] -
+		m->mat1d[4] * m->mat1d[2] * m->mat1d[11] +
+		m->mat1d[4] * m->mat1d[3] * m->mat1d[10] +
+		m->mat1d[8] * m->mat1d[2] * m->mat1d[7] -
+		m->mat1d[8] * m->mat1d[3] * m->mat1d[6];
+
+	inv[11] = -m->mat1d[0] * m->mat1d[5] * m->mat1d[11] +
+		m->mat1d[0] * m->mat1d[7] * m->mat1d[9] +
+		m->mat1d[4] * m->mat1d[1] * m->mat1d[11] -
+		m->mat1d[4] * m->mat1d[3] * m->mat1d[9] -
+		m->mat1d[8] * m->mat1d[1] * m->mat1d[7] +
+		m->mat1d[8] * m->mat1d[3] * m->mat1d[5];
+
+	inv[15] = m->mat1d[0] * m->mat1d[5] * m->mat1d[10] -
+		m->mat1d[0] * m->mat1d[6] * m->mat1d[9] -
+		m->mat1d[4] * m->mat1d[1] * m->mat1d[10] +
+		m->mat1d[4] * m->mat1d[2] * m->mat1d[9] +
+		m->mat1d[8] * m->mat1d[1] * m->mat1d[6] -
+		m->mat1d[8] * m->mat1d[2] * m->mat1d[5];
+
+	det = m->mat1d[0] * inv[0] + m->mat1d[1] * inv[4] + m->mat1d[2] * inv[8] + m->mat1d[3] * inv[12];
+
+	if (det == 0) {
+		return false;
+	}
+		
+
+	det = 1.0 / det;
+
+	for (i = 0; i < 16; i++) {
+		invOut->mat1d[i] = inv[i] * det;
+	}
+		
+
+	return true;
+}
+
 
 Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio) {
 
@@ -78,7 +214,7 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 	//float inverse_depth = 1 / depth;
 
 
-	float depth = far - near;
+	float depth = near - far;
 	float inverse_depth = 1 / depth;
 
 	float f = 1 / tanf(fov * 0.5f * PI / 180.0f);
@@ -89,17 +225,6 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 	mat.mat2d[3][2] = 2 * (far * near) * inverse_depth;
 	mat.mat2d[2][3] = -1;
 	mat.mat2d[3][3] = 0;
-
-	/*float depth = far - near;
-	float inverse_depth = 1 / depth;
-
-	mat.mat2d[0][0] = f;
-	mat.mat2d[1][1] = f;
-	mat.mat2d[2][2] = -far * inverse_depth;
-	mat.mat2d[3][2] = (-far * near) * inverse_depth;
-	mat.mat2d[2][3] = -1;
-	mat.mat2d[3][3] = 0;*/
-
 
 	//mat = transpose(&mat);
 
@@ -152,51 +277,34 @@ Vec4f inline mat4x4_vec_mul(Mat4x4f* m, Vec4f v) {
 
 
 Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
-	Vec3f z = vec_normalize(vec_sub(eye, to));
-	Vec3f x = vec_normalize(vec_cross(up, z));
+	Vec3f z = vec_negate(vec_normalize(vec_sub(eye, to)));
+	Vec3f x = vec_normalize(vec_cross(z, up));
 	Vec3f y = vec_normalize(vec_cross(z, x));
 	Mat4x4f mat = mat4x4f_identity();
-	Mat4x4f mat2 = mat4x4f_identity();
-	
-
 	for (int i = 0; i<3; i++) {
-		mat.mat2d[0][i] = x.data[i];
-		mat.mat2d[1][i] = y.data[i];
-		mat.mat2d[2][i] = z.data[i];
-		mat2.mat2d[i][3] = -to.data[i];
+		mat.mat2d[i][0] = x.data[i];
+		mat.mat2d[i][1] = y.data[i];
+		mat.mat2d[i][2] = z.data[i];
+		mat.mat2d[i][3] = to.data[i];
 	}
 
-	//mat = transpose(&mat);
-	return mat4x4_mul(&mat, &mat2);
-
-	/*mat.mat2d[0][0] = right.x;
-	mat.mat2d[0][1] = right.y;
-	mat.mat2d[0][2] = right.z;
-	mat.mat2d[1][0] = up.x;
-	mat.mat2d[1][1] = up.y;
-	mat.mat2d[1][2] = up.z;
-	mat.mat2d[2][0] = forward.x;
-	mat.mat2d[2][1] = forward.y;
-	mat.mat2d[2][2] = forward.z;
-
-	mat.mat2d[3][0] = eye.x;
-	mat.mat2d[3][1] = eye.y;
-	mat.mat2d[3][2] = eye.z;*/
-
+	mat4x4f_invert(&mat, &mat);
+	return mat;
 	
-
 	
 }
 
-Mat4x4f inline viewport(int x, int y, int w, int h, float depth) {
+Mat4x4f inline viewport(int x, int y, int w, int h, float normalized_near, float normalized_far) {
 	Mat4x4f m = mat4x4f_identity();
-	m.mat2d[0][3] = x + w / 2.f;
-	m.mat2d[1][3] = y + h / 2.f;
-	m.mat2d[2][3] = depth / 2.f;
+	m.mat2d[0][3] = x + (w / 2.f);
+	m.mat2d[1][3] = y + (h / 2.f);
+	m.mat2d[2][3] = normalized_near + normalized_far / 2.f;
 
 	m.mat2d[0][0] = w / 2.f;
 	m.mat2d[1][1] = h / 2.f;
-	m.mat2d[2][2] = 1;
+	m.mat2d[2][2] = normalized_far - normalized_near/ 2.0f;
+	m.mat2d[3][3] = 1;
+
 
 	//m = transpose(&m);
 	return m;
@@ -224,30 +332,8 @@ Mat4x4f inline translate(Vec3f vec) {
 
 Mat4x4f inline rotate(float angle, Vec3f axis) {
 
+	// TODO: we should have a standard saying the angle should be passed in radians 
 	angle = deg_to_rad(angle);
-	/*Mat4x4f x = mat4x4f_identity();
-	Mat4x4f y = mat4x4f_identity();
-	Mat4x4f z = mat4x4f_identity();
-	x.mat2d[1][1] = cos(angle);
-	x.mat2d[2][2] = x.mat2d[1][1];
-	x.mat2d[1][2] = sin(angle);
-	x.mat2d[2][1] = -x.mat2d[1][2];
-
-
-	y.mat2d[0][0] = cos(angle);
-	y.mat2d[2][2] = y.mat2d[0][0];
-	y.mat2d[2][0] = sin(angle);
-	y.mat2d[0][2] = -y.mat2d[2][0];
-
-
-	z.mat2d[0][0] = cos(angle);
-	z.mat2d[1][1] = z.mat2d[0][0];
-	z.mat2d[0][1] = sin(angle);
-	z.mat2d[1][0] = -z.mat2d[0][1];
-	
-	Mat4x4f yx = mat4x4_mul(&y, &x);
-	return mat4x4_mul(&z, &yx);*/
-
 
 	Mat4x4f rot = mat4x4f_identity();
 	float cos_angle = cosf(angle);
@@ -271,7 +357,7 @@ Mat4x4f inline rotate(float angle, Vec3f axis) {
 	rot.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
 	rot.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
 
-	rot = transpose(&rot);
+	//rot = transpose(&rot);
 	return rot;
 }
 

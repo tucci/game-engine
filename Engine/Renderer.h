@@ -9,6 +9,15 @@
 #include "ObjDef.h"
 
 
+typedef struct Shader {
+	ObjModel* model;// TODO: change this to vbo style
+	Mat4x4f* transform;
+	Vec4f pos[3];
+	Vec2f uv[3];
+	Vec3f normals[3];
+} Shader;
+
+
 typedef struct Camera {
 	Vec4f pos;
 	Vec3f dir;
@@ -30,10 +39,21 @@ typedef struct Renderer {
 	float* zbuffer;
 	int zbuffer_size;
 	Camera camera;
+	Shader shader;
 
 	ObjModel model;
 
 } Renderer;
+
+
+
+
+Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id);
+
+bool fragment_shader(Shader* shader, Vec4f* output_color);
+
+
+
 
 
 bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i size);
@@ -42,7 +62,10 @@ void clear_z_buffer(Renderer* renderer);
 
 void init_camera(Renderer* renderer);
 
+void init_shader(Renderer* renderer);
+
 bool destroy_renderer(Renderer* renderer);
 void render(Renderer* r);
 void debug_render(Renderer* r);
+
 
