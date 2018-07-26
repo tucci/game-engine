@@ -206,42 +206,12 @@ bool inline mat4x4f_invert(Mat4x4f* m, Mat4x4f* invOut) {
 }
 
 
-Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio) {
 
-	Mat4x4f mat = mat4x4f_identity();
-
-	//float depth = near - far;
-	//float inverse_depth = 1 / depth;
-
-
-	float depth = near - far;
-	float inverse_depth = 1 / depth;
-
-	float f = 1 / tanf(fov * 0.5f * PI / 180.0f);
-
-	mat.mat2d[0][0] = f / aspect_ratio;
-	mat.mat2d[1][1] = f;
-	mat.mat2d[2][2] = -(far + near) * inverse_depth;
-	mat.mat2d[3][2] = 2 * (far * near) * inverse_depth;
-	mat.mat2d[2][3] = -1;
-	mat.mat2d[3][3] = 0;
-
-	//mat = transpose(&mat);
-
-	return mat;
-}
 
 
 Mat4x4f inline mat4x4_mul(Mat4x4f* m1, Mat4x4f* m2) {
 	int i, j, k;
 	Mat4x4f result;
-	/*for (i = 0; i < 4; i++) {
-		for (j = 0; j < 4; j++) {
-			result.mat2d[i][j] = 0;
-			for (k = 0; k < 4; k++)
-				result.mat2d[i][j] += m1->mat2d[i][k] * m2->mat2d[k][j];
-		}
-	}*/
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
@@ -263,32 +233,66 @@ Vec4f inline mat4x4_vec_mul(Mat4x4f* m, Vec4f v) {
 	result.y = (m->m10 * v.x) + (m->m11 * v.y) + (m->m12 * v.z) + (m->m13 * v.w);
 	result.z = (m->m20 * v.x) + (m->m21 * v.y) + (m->m22 * v.z) + (m->m23 * v.w);
 	result.w = (m->m30 * v.x) + (m->m31 * v.y) + (m->m32 * v.z) + (m->m33 * v.w);
-	float w = result.w;
-	if (w != 1) {
-		result.x /= w;
-		result.y /= w;
-		result.z /= w;
+	
+
+	
+	if (result.w != 1 && result.w != 0) {
+		result.x /= result.w;
+		result.y /= result.w;
+		result.z /= result.w;
+		result.w /= result.w;
 	}
-	result.w = 1;
 
-
+	
 	return result;
 }
 
 
-Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
-	Vec3f z = vec_negate(vec_normalize(vec_sub(eye, to)));
-	Vec3f x = vec_normalize(vec_cross(z, up));
-	Vec3f y = vec_normalize(vec_cross(z, x));
-	Mat4x4f mat = mat4x4f_identity();
-	for (int i = 0; i<3; i++) {
-		mat.mat2d[i][0] = x.data[i];
-		mat.mat2d[i][1] = y.data[i];
-		mat.mat2d[i][2] = z.data[i];
-		mat.mat2d[i][3] = to.data[i];
-	}
+Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio) {
 
-	mat4x4f_invert(&mat, &mat);
+	Mat4x4f mat = mat4x4f_identity();
+
+	//float depth = near - far;
+	//float inverse_depth = 1 / depth;
+
+
+	float depth = near - far;
+	float inverse_depth = 1 / depth;
+
+	float f = 1 / tanf(fov * 0.5f * PI / 180.0f);
+
+	mat.mat2d[0][0] = f / aspect_ratio;
+	mat.mat2d[1][1] = f;
+	mat.mat2d[2][2] = (far + near) * inverse_depth;
+	mat.mat2d[3][2] = (2 * (far * near)) * inverse_depth;
+	mat.mat2d[2][3] = -1;
+	mat.mat2d[3][3] = 0;
+
+	//mat = transpose(&mat);
+
+	return mat;
+}
+
+
+Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
+	Vec3f forward = vec_negate(vec_normalize(vec_sub(eye, to)));
+	up = vec_normalize(up);
+	Vec3f right = vec_normalize(vec_cross(up, forward));
+	
+
+	Mat4x4f mat = mat4x4f_identity();
+	Mat4x4f mat2 = mat4x4f_identity();
+	
+	
+
+	for (int i = 0; i<3; i++) {
+		mat.mat2d[0][i] = right.data[i];
+		mat.mat2d[1][i] = up.data[i];
+		mat.mat2d[2][i] = forward.data[i];
+		mat2.mat2d[i][3] = -eye.data[i];
+	}
+	mat = mat4x4_mul(&mat2, &mat);
+	//mat4x4f_invert(&mat, &mat);
 	return mat;
 	
 	
@@ -298,11 +302,11 @@ Mat4x4f inline viewport(int x, int y, int w, int h, float normalized_near, float
 	Mat4x4f m = mat4x4f_identity();
 	m.mat2d[0][3] = x + (w / 2.f);
 	m.mat2d[1][3] = y + (h / 2.f);
-	m.mat2d[2][3] = normalized_near + normalized_far / 2.f;
+	m.mat2d[2][3] = normalized_near + (normalized_far / 2.f);
 
 	m.mat2d[0][0] = w / 2.f;
 	m.mat2d[1][1] = h / 2.f;
-	m.mat2d[2][2] = normalized_far - normalized_near/ 2.0f;
+	m.mat2d[2][2] = (normalized_far - normalized_near)/ 2.0f;
 	m.mat2d[3][3] = 1;
 
 

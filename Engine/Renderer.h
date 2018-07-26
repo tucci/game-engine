@@ -50,7 +50,7 @@ typedef struct Renderer {
 
 Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id);
 
-bool fragment_shader(Shader* shader, Vec4f* output_color);
+bool fragment_shader(Shader* shader, Vec2f frag_coord, Vec4f* output_color);
 
 
 

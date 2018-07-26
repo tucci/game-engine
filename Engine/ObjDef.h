@@ -179,42 +179,7 @@ void inline load_obj(const char* filename, ObjModel* model) {
 			default:
 				break;
 		}
-		
-
-
-		
-
-		//char* token = strtok(line, delim_space);
-
-		//// TODO: rewrite this in a safe way, strtok_s?
-		//if (strcmp("v", token) == 0) {
-		//	Vec4f v;
-		//	token = strtok(NULL, delim_space);
-		//	v.x = strtof(token, NULL);
-		//	token = strtok(NULL, delim_space);
-		//	v.y = strtof(token, NULL);
-		//	token = strtok(NULL, delim_space);
-		//	v.z = strtof(token, NULL);
-		//	v.w = 1;
-		//	stb_sb_push(model->verts, v);
-		//}
-		//else if (strcmp("f", token) == 0) {
-		//	// TODO: handle faces without /
-		//	Vec3i f;
-		//	token = strtok(NULL, delim_space);
-		//	//token = strtok(NULL, delim_fslash);
-		//	f.x = strtol(token, NULL, 10);
-		//	token = strtok(NULL, delim_space);
-		//	//token = strtok(NULL, delim_fslash);
-		//	f.y = strtol(token, NULL, 10);
-		//	token = strtok(NULL, delim_space);
-		//	//token = strtok(NULL, delim_fslash);
-		//	f.z = strtol(token, NULL, 10);
-		//	stb_sb_push(model->v_id, f);
-		//	
-
-		//}
-		
+				
 	}
 
 	printf("Vertex count %d\n", stb_sb_count(model->verts));

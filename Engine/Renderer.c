@@ -3,18 +3,20 @@
 #include "Renderer.h"
 
 
+#define flip_y(height, y)  height - 1 - y
+
 Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 
 	
 
 	
 	Vec3i v_id = shader->model->v_id[face_id];
-	Vec3i tex_id = shader->model->vt_id[face_id];
-	Vec3i normal_id = shader->model->vn_id[face_id];
-
-
 	shader->pos[vertex_id] = shader->model->verts[v_id.data[vertex_id] - 1];
+
+	Vec3i tex_id = shader->model->vt_id[face_id];
 	shader->uv[vertex_id] = shader->model->texcoords[tex_id.data[vertex_id] - 1];
+
+	Vec3i normal_id = shader->model->vn_id[face_id];
 	shader->normals[vertex_id] = shader->model->normals[normal_id.data[vertex_id] - 1];
 		
 		
@@ -22,11 +24,13 @@ Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 	return mat4x4_vec_mul(shader->transform, shader->pos[vertex_id]);
 }
 
-bool fragment_shader(Shader* shader, Vec4f frag_coord, Vec4f* output_color) {
+bool fragment_shader(Shader* shader, Vec2f frag_coord, Vec4f* output_color) {
 	
-	output_color->r = frag_coord.x;
-	output_color->g = frag_coord.y;
-	output_color->b = frag_coord.z;
+	
+	output_color->r = shader->normals[0].x;
+	output_color->g = shader->normals[0].y;
+	output_color->b = shader->normals[0].z;
+	output_color->a = 0;
 	return false; // discard
 }
 
@@ -47,6 +51,8 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 
 	load_obj("african_head.obj", &renderer->model);
 	//load_obj("teapot.obj", &renderer->model);
+	//load_obj("cow.obj", &renderer->model);
+	//load_obj("teddy.obj", &renderer->model);
 	//load_obj("dodecahedron.obj", &renderer->model);
 	
 	init_shader(renderer);
@@ -76,7 +82,7 @@ void clear_z_buffer(Renderer* renderer) {
 }
 
 void init_camera(Renderer* renderer) {
-	renderer->camera.pos = (Vec4f) { 0, 0, -5, 1 };
+	renderer->camera.pos = (Vec4f) { 0, 0, 0, 1 };
 	renderer->camera.dir = (Vec3f) { 0, 0, -1 };
 	renderer->camera.rotation = Vec3f_Zero;
 
@@ -147,7 +153,6 @@ void render(Renderer* r) {
 	
 	
 	for (int i = 0; i < r->model.face_count; i++) {
-
 		Vec4f pos[3];
 		r->shader.transform = &mvp_mat;
 		for (int j = 0; j < 3; j++) {
@@ -164,41 +169,38 @@ void render(Renderer* r) {
 		Vec3f v1Raster = pos[1].xyz_;
 		Vec3f v2Raster = pos[2].xyz_;
 
+		v0Raster.z = 1 / v0Raster.z;
+		v1Raster.z = 1 / v1Raster.z;
+		v2Raster.z = 1 / v2Raster.z;
+
 
 		BoundingBox2i bounds = get_bounding_box_from_tri(
 			pos[0].xyz_.xy_, 
 			pos[1].xyz_.xy_,
-			pos[2].xyz_.xy_);
-
-		if ((bounds.min.x > 0 
-			&& bounds.max.x < width
-			&& bounds.min.y > 0
-			&& bounds.max.y < height)) {
-			
-		} else {
-			continue;
-		}
+			pos[2].xyz_.xy_, width - 1, height - 1);
 
 		
 
-		
 		float area = edge_function(v0Raster, v1Raster, v2Raster);
 		float one_over_area = 1.0f / area;
 
-		for (int x = bounds.min.x; x < bounds.max.x; x++) {
-			for (int y = bounds.min.y; y < bounds.max.y; y++) {
-				Vec3f pt = (Vec3f) { x + 0.5f, y + 0.5f, 0.0f };
-				float w0 = edge_function(v1Raster, v2Raster, pt);
-				float w1 = edge_function(v2Raster, v0Raster, pt);
-				float w2 = edge_function(v0Raster, v1Raster, pt);
-				
-				if (w0 >= 0 && w1 >= 0 && w2 >= 0) {
-					
-					w0 *= one_over_area;
-					w1 *= one_over_area;
-					w2 *= one_over_area;
+		for (int x = bounds.min.x; x <= bounds.max.x; x++) {
+			for (int y = bounds.min.y; y <= bounds.max.y; y++) {
+				Vec3f pt = (Vec3f) { x, y, 0.0};
+				Vec3f bc = {
+					edge_function(v1Raster, v2Raster, pt),
+					edge_function(v2Raster, v0Raster, pt),
+					edge_function(v0Raster, v1Raster, pt)
+				};
 
-					float one_over_z = v0Raster.z * w0 + v1Raster.z * w1 + v2Raster.z * w2;
+				if (bc.x >= 0 && bc.y >= 0 && bc.z >= 0) {
+					
+					
+					bc.x *= one_over_area;
+					bc.y *= one_over_area;
+					bc.z *= one_over_area;
+
+					float one_over_z = v0Raster.z * bc.x + v1Raster.z * bc.y + v2Raster.z * bc.z;
 					float z = 1 / one_over_z;
 
 					int index = width * y + x;
@@ -206,15 +208,20 @@ void render(Renderer* r) {
 					// z buffer check
 					if (z < r->zbuffer[index]) {
 
-						Vec4f frag_coord = { w0, w1, w2, 0 };
+						Vec2f frag_coord = { pt.x, pt.y };
 						Vec4f frag_color;
 						bool discard_fragment = fragment_shader(&r->shader, frag_coord,  &frag_color);
 						if (!discard_fragment) {
 							r->zbuffer[index] = z;
 
+							
+							
 							SDL_SetRenderDrawColor(renderer, frag_color.r * 255, frag_color.g * 255 , frag_color.b * 255, SDL_ALPHA_OPAQUE);
-
-							SDL_RenderDrawPoint(renderer, x, y);
+							//float depth = remap(z, -1, 1, 0, 255);
+							//printf("depth %f\n", depth);
+							//SDL_SetRenderDrawColor(renderer, depth, depth, depth, SDL_ALPHA_OPAQUE);
+							// Flip y coordiinate
+							SDL_RenderDrawPoint(renderer, x, flip_y(height, y));
 						}
 
 					}
@@ -237,8 +244,8 @@ void debug_render(Renderer* r) {
 	Camera camera = r->camera;
 
 	
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderClear(renderer);
+	/*SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderClear(renderer);*/
 
 
 
@@ -253,18 +260,20 @@ void debug_render(Renderer* r) {
 
 
 
+
 	Mat4x4f model_mat = rotate(camera.rotation.y, Vec3f_Up);
 	Mat4x4f rot2 = rotate(camera.rotation.z, Vec3f_Forward);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
-	
-	
-	//Mat4x4f model_mat = mat4x4f_identity();
+
 	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &projection_mat);
 
+
+
 	Mat4x4f viewport_mat = viewport(0, 0, width, height, 0, 1);
+
 	Mat4x4f mat = mat4x4_mul(&mvp_mat, &viewport_mat);
 	
 
@@ -276,21 +285,26 @@ void debug_render(Renderer* r) {
 	Vec4f origin = { 0, 0, 0, 1 };
 	origin = mat4x4_vec_mul(&mat, origin);
 
+	// Draw x axis
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 	Vec4f axis_pt = mat4x4_vec_mul(&mat, x_axis);
-	SDL_RenderDrawLine(renderer, origin.x, origin.y, axis_pt.x, axis_pt.y);
+	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y) , axis_pt.x, flip_y(height, axis_pt.y));
 
+
+	// Draw y axis
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
 	axis_pt = mat4x4_vec_mul(&mat, y_axis);
-	SDL_RenderDrawLine(renderer, origin.x, origin.y, axis_pt.x, axis_pt.y);
+	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y), axis_pt.x, flip_y(height, axis_pt.y));
 
+
+	// Draw z axis
 	SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
 	axis_pt = mat4x4_vec_mul(&mat, z_axis);
-	SDL_RenderDrawLine(renderer, origin.x, origin.y, axis_pt.x, axis_pt.y);
+	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y), axis_pt.x, flip_y(height, axis_pt.y));
 
 
 
-	int size = 8;
+	int size = 16;
 	
 
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
@@ -301,7 +315,7 @@ void debug_render(Renderer* r) {
 
 		pt = mat4x4_vec_mul(&mat, pt);
 		pt2 = mat4x4_vec_mul(&mat, pt2);
-		SDL_RenderDrawLine(renderer, pt.x, pt.y, pt2.x, pt2.y);
+		//SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 
 		pt = (Vec4f) { i ,0, -size, 1 };
@@ -309,7 +323,10 @@ void debug_render(Renderer* r) {
 
 		pt = mat4x4_vec_mul(&mat, pt);
 		pt2 = mat4x4_vec_mul(&mat, pt2);
-		SDL_RenderDrawLine(renderer, pt.x, pt.y, pt2.x, pt2.y);
+		/*if (pt.x > width - 1 || pt.x < 0 || pt.y > height - 1 || pt.y < 0) continue;
+		if (pt2.x > width - 1 || pt2.x < 0 || pt2.y > height - 1 || pt.y < 0) continue;*/
+
+		//SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 	}
 

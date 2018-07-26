@@ -128,30 +128,39 @@ typedef union Vec4f {
 // TODO: speed up with simd
 
 Vec3f inline vec_add(Vec3f v1, Vec3f v2) {
-	v1.x = v1.x + v2.x;
-	v1.y = v1.y + v2.y;
-	v1.z = v1.z + v2.z;
-	return v1;
+	Vec3f result = {
+		v1.x + v2.x,
+		v1.y + v2.y,
+		v1.z + v2.z,
+	};
+	return result;
 }
 
 Vec3f inline vec_negate(Vec3f vec) {
-	vec.x = -vec.x;
-	vec.y = -vec.y;
-	vec.z = -vec.z;
-	return vec;
+	Vec3f result = {
+		-vec.x,
+		-vec.y,
+		-vec.z,
+	};
+	return result;
 }
 
 Vec3f inline vec_sub(Vec3f v1, Vec3f v2) {
-	v2 = vec_negate(v2);
-	v2 = vec_add(v1, v2);
-	return v2;
+	Vec3f result = {
+		v1.x - v2.x,
+		v1.y - v2.y,
+		v1.z - v2.z,
+	};
+	return result;
 }
 
 Vec3f inline vec_multiply(float scalar, Vec3f v) {
-	v.x = scalar * v.x;
-	v.y = scalar * v.y;
-	v.z = scalar * v.z;
-	return v;
+	Vec3f result = {
+		scalar * v.x,
+		scalar * v.y,
+		scalar * v.z,
+	};
+	return result;
 }
 
 
@@ -164,11 +173,13 @@ float inline vec_length(Vec3f vec) {
 
 Vec3f inline vec_normalize(Vec3f vec) {
 	float len = vec_length(vec);
-	float inv = 1 / len;
-	vec.x = vec.x * inv;
-	vec.y = vec.y * inv;
-	vec.z = vec.z * inv;
-	return vec;
+	float inv_len = 1 / len;
+	Vec3f result = {
+		vec.x * inv_len,
+		vec.y * inv_len,
+		vec.z * inv_len,
+	};
+	return result;
 }
 
 float inline vec_dot(Vec3f v1, Vec3f v2) {
