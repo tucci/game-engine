@@ -2,7 +2,6 @@
 
 #include "Vec.h"
 // TODO: deprecate need for math lib, go full simd
-#include <math.h>
 
 #define PI 3.141592653589f
 #define MIN(a,b) (((a)<(b))?(a):(b))

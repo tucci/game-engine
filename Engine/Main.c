@@ -733,7 +733,7 @@ void game_loop(App* app) {
 		process_inputs(app);
 		process_event_queue(app);
 		render(&app->graphics);
-		debug_render(&app->graphics);
+		//debug_render(&app->graphics);
 		update_time(app);
 
 	}

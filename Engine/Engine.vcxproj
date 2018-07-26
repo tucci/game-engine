@@ -100,7 +100,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\include</AdditionalIncludeDirectories>
     </ClCompile>
@@ -133,7 +133,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -150,10 +150,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.c" />
+    <ClCompile Include="ObjDef.c" />
     <ClCompile Include="Renderer.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Containers.h" />
     <ClInclude Include="Mat.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="ObjDef.h" />

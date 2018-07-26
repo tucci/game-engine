@@ -46,18 +46,6 @@ Mat4x4f inline mat4x4f_identity() {
 	return mat;
 }
 
-void inline mat4x4f_identity2(Mat4x4f* mat) {
-	
-
-	for (int i = 0; i < 16; i++) {
-		mat->mat1d[i] = 0;
-	}
-	mat->mat2d[0][0] = 1.0f;
-	mat->mat2d[1][1] = 1.0f;
-	mat->mat2d[2][2] = 1.0f;
-	mat->mat2d[3][3] = 1.0f;
-	
-}
 
 Mat4x4f inline mat4x4f_zero() {
 	Mat4x4f mat;
@@ -282,7 +270,6 @@ Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
 
 	Mat4x4f mat = mat4x4f_identity();
 	Mat4x4f mat2 = mat4x4f_identity();
-	
 	
 
 	for (int i = 0; i<3; i++) {
