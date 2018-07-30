@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ObjDef.h"
+#include "ObjFile.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +9,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ASSERT(x)
 
-#include "stb_image.h"
-#include "stretchy_buffer.h"
+#include "Common/stb_image.h"
+#include "Common/stretchy_buffer.h"
 
 #define LINE_SIZE 256
 

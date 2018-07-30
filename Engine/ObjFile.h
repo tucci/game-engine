@@ -2,7 +2,8 @@
 
 
 
-#include "Vec.h"
+#include "Math/Vec.h"
+
 // TODO: remove need for sdl here
 #include "SDL.h"
 

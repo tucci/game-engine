@@ -4,9 +4,9 @@
 
 
 #include <SDL.h>
-#include "Mat.h"
-#include "Vec.h"
-#include "ObjDef.h"
+#include "../Math/Mat.h" // TODO: figure out better way to do this. dont want ../.. stuff
+#include "../Math/Vec.h"
+#include "../ObjFile.h"
 
 
 typedef struct Shader {
@@ -31,7 +31,7 @@ typedef struct Camera {
 
 
 
-typedef struct Renderer {
+typedef struct SoftwareRenderer {
 	SDL_Renderer* renderer;
 	SDL_Surface* surface;
 	SDL_Window* sdl_window;
@@ -43,7 +43,7 @@ typedef struct Renderer {
 
 	ObjModel model;
 
-} Renderer;
+} SoftwareRenderer;
 
 
 
@@ -56,16 +56,16 @@ bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output
 
 
 
-bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i size);
-bool init_z_buffer(Renderer* renderer);
-void clear_z_buffer(Renderer* renderer);
+bool init_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i size);
+bool init_z_buffer(SoftwareRenderer* renderer);
+void clear_z_buffer(SoftwareRenderer* renderer);
 
-void init_camera(Renderer* renderer);
+void init_camera(SoftwareRenderer* renderer);
 
-void init_shader(Renderer* renderer);
+void init_shader(SoftwareRenderer* renderer);
 
-bool destroy_renderer(Renderer* renderer);
-void render(Renderer* r);
-void debug_render(Renderer* r);
+bool destroy_renderer(SoftwareRenderer* renderer);
+void render(SoftwareRenderer* r);
+void debug_render(SoftwareRenderer* r);
 
 

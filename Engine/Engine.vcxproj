@@ -150,15 +150,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.c" />
-    <ClCompile Include="ObjDef.c" />
-    <ClCompile Include="Renderer.c" />
+    <ClCompile Include="ObjFile.c" />
+    <ClCompile Include="Renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Mat.h" />
-    <ClInclude Include="Math.h" />
-    <ClInclude Include="ObjDef.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Vec.h" />
+    <ClInclude Include="Math\Mat.h" />
+    <ClInclude Include="Math\Math.h" />
+    <ClInclude Include="ObjFile.h" />
+    <ClInclude Include="Renderer\SoftwareRenderer.h" />
+    <ClInclude Include="Math\Vec.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

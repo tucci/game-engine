@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer.h"
+#include "SoftwareRenderer.h"
 
 
 #define flip_y(height, y)  height - 1 - y
@@ -58,7 +58,7 @@ bool fragment_shader(Shader* shader, Vec3f bary,  Vec4f frag_coord, Vec4f* outpu
 	return false; // discard
 }
 
-bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
+bool init_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_size) {
 	// NOTE:(steven) for now we are doing software rendering, eventually, we'll get back to hardware rendering
 	renderer->surface = SDL_GetWindowSurface(window);
 	renderer->renderer = SDL_CreateSoftwareRenderer(renderer->surface);
@@ -76,8 +76,8 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 	/*load_obj("african_head.obj", &renderer->model);
 	load_image("african_head_diffuse.tga", &renderer->model.diffuse);*/
 
-	load_obj("diablo3_pose.obj", &renderer->model);
-	load_image("diablo3_pose_diffuse.tga", &renderer->model.diffuse);
+	load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
+	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->model.diffuse);
 
 	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("cow.obj", &renderer->model);
@@ -89,7 +89,7 @@ bool init_renderer(SDL_Window* window, Renderer* renderer, Vec2i window_size) {
 }
 
 
-bool init_z_buffer(Renderer* renderer) {
+bool init_z_buffer(SoftwareRenderer* renderer) {
 	// TODO: malloc check
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
@@ -102,7 +102,7 @@ bool init_z_buffer(Renderer* renderer) {
 	return true;
 }
 
-void clear_z_buffer(Renderer* renderer) {
+void clear_z_buffer(SoftwareRenderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
@@ -110,7 +110,7 @@ void clear_z_buffer(Renderer* renderer) {
 	
 }
 
-void init_camera(Renderer* renderer) {
+void init_camera(SoftwareRenderer* renderer) {
 	renderer->camera.pos = (Vec4f) { 0, 0, 10, 1 };
 	renderer->camera.dir = (Vec3f) { 0, 0, 1 };
 	renderer->camera.rotation = Vec3f_Zero;
@@ -126,12 +126,12 @@ void init_camera(Renderer* renderer) {
 
 
 
-void init_shader(Renderer* renderer) {
+void init_shader(SoftwareRenderer* renderer) {
 	renderer->shader.model = &renderer->model;
 
 }
 
-bool destroy_renderer(Renderer* renderer) {
+bool destroy_renderer(SoftwareRenderer* renderer) {
 	free_obj(&renderer->model);
 	free(renderer->zbuffer);
 	SDL_DestroyRenderer(renderer->renderer);
@@ -142,7 +142,7 @@ bool destroy_renderer(Renderer* renderer) {
 
 
 
-void render(Renderer* r) {
+void render(SoftwareRenderer* r) {
 	
 	
 	
@@ -268,7 +268,7 @@ void render(Renderer* r) {
 }
 
 
-void debug_render(Renderer* r) {
+void debug_render(SoftwareRenderer* r) {
 	SDL_Renderer* renderer = r->renderer;
 	Camera camera = r->camera;
 

@@ -18,28 +18,28 @@
     <ClCompile Include="Main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.c">
+    <ClCompile Include="ObjFile.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjDef.c">
+    <ClCompile Include="Renderer\SoftwareRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Math.h">
+    <ClInclude Include="ObjFile.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ObjDef.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Vec.h">
+    <ClInclude Include="Math\Mat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Mat.h">
+    <ClInclude Include="Math\Math.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Math\Vec.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\SoftwareRenderer.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

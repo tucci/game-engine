@@ -7,7 +7,7 @@
 #include <stdbool.h>
 
 
-#include "Renderer.h"
+#include "Renderer/SoftwareRenderer.h"
 
 
 
@@ -199,8 +199,7 @@ typedef struct DebugData {
 
 
 typedef struct App {
-	//GraphicsRenderer graphics;
-	Renderer graphics;
+	SoftwareRenderer graphics;
     Display display;
     Window window;
     Mouse mouse;
@@ -486,6 +485,9 @@ bool init_window(App* app) {
 	if (app->window.flags & WindowFlag_Fullscreen) {
 		sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
+
+	
+
     
     SDL_Window* sdl_window;
     
