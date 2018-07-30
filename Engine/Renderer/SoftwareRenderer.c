@@ -5,7 +5,7 @@
 
 #define flip_y(height, y)  height - 1 - y
 
-Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
+static Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 
 	
 
@@ -24,7 +24,7 @@ Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 	return mat4x4_vec_mul(shader->transform, shader->pos[vertex_id]);
 }
 
-bool fragment_shader(Shader* shader, Vec3f bary,  Vec4f frag_coord, Vec4f* output_color) {
+static bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color) {
 	
 	SDL_Surface* surface = shader->model->diffuse.surface;
 	
@@ -35,8 +35,8 @@ bool fragment_shader(Shader* shader, Vec3f bary,  Vec4f frag_coord, Vec4f* outpu
 	};
 	
 	//shader->model->diffuse->pixels
-	int x = (int)remap(uv.u, 0, 1, 0, surface->w);
-	int y = (int)remap(uv.v, 0, 1, 0, surface->h);
+	int x = (int)remap(uv.u, 0.0f, 1.0f, 0.0f, (float)surface->w);
+	int y = (int)remap(uv.v, 0.0f, 1.0f, 0.0f, (float)surface->h);
 
 	//Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
 	
@@ -47,7 +47,7 @@ bool fragment_shader(Shader* shader, Vec3f bary,  Vec4f frag_coord, Vec4f* outpu
 	uint8_t b;
 	uint8_t a;
 
-	SDL_GetRGB(pixel, surface->format, &r, &g, &b, &a);
+	SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
 
 
 	output_color->r = r;
@@ -55,10 +55,12 @@ bool fragment_shader(Shader* shader, Vec3f bary,  Vec4f frag_coord, Vec4f* outpu
 	output_color->b = b;
 	output_color->a = 1;
 
+	
+
 	return false; // discard
 }
 
-bool init_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_size) {
+bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_size) {
 	// NOTE:(steven) for now we are doing software rendering, eventually, we'll get back to hardware rendering
 	renderer->surface = SDL_GetWindowSurface(window);
 	renderer->renderer = SDL_CreateSoftwareRenderer(renderer->surface);
@@ -73,8 +75,8 @@ bool init_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	/*load_obj("african_head.obj", &renderer->model);
-	load_image("african_head_diffuse.tga", &renderer->model.diffuse);*/
+	//load_obj("Assets/obj/african_head.obj", &renderer->model);
+	//load_image("Assets/obj/african_head_diffuse.tga", &renderer->model.diffuse);
 
 	load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
 	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->model.diffuse);
@@ -89,7 +91,7 @@ bool init_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_
 }
 
 
-bool init_z_buffer(SoftwareRenderer* renderer) {
+static bool init_z_buffer(SoftwareRenderer* renderer) {
 	// TODO: malloc check
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
@@ -102,7 +104,7 @@ bool init_z_buffer(SoftwareRenderer* renderer) {
 	return true;
 }
 
-void clear_z_buffer(SoftwareRenderer* renderer) {
+static void clear_z_buffer(SoftwareRenderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
@@ -110,7 +112,7 @@ void clear_z_buffer(SoftwareRenderer* renderer) {
 	
 }
 
-void init_camera(SoftwareRenderer* renderer) {
+static void init_camera(SoftwareRenderer* renderer) {
 	renderer->camera.pos = (Vec4f) { 0, 0, 10, 1 };
 	renderer->camera.dir = (Vec3f) { 0, 0, 1 };
 	renderer->camera.rotation = Vec3f_Zero;
@@ -126,12 +128,12 @@ void init_camera(SoftwareRenderer* renderer) {
 
 
 
-void init_shader(SoftwareRenderer* renderer) {
+static void init_shader(SoftwareRenderer* renderer) {
 	renderer->shader.model = &renderer->model;
 
 }
 
-bool destroy_renderer(SoftwareRenderer* renderer) {
+bool destroy_software_renderer(SoftwareRenderer* renderer) {
 	free_obj(&renderer->model);
 	free(renderer->zbuffer);
 	SDL_DestroyRenderer(renderer->renderer);
@@ -176,10 +178,6 @@ void render(SoftwareRenderer* r) {
 
 	Mat4x4f viewport_mat = viewport(0, 0, width, height, 0, 1);
 	
-	Mat4x4f mat = mat4x4_mul(&mvp_mat, &viewport_mat);
-	
-	
-	
 	
 	for (int i = 0; i < r->model.face_count; i++) {
 		Vec4f pos[3];
@@ -206,7 +204,7 @@ void render(SoftwareRenderer* r) {
 		BoundingBox2i bounds = get_bounding_box_from_tri(
 			pos[0].xyz_.xy_, 
 			pos[1].xyz_.xy_,
-			pos[2].xyz_.xy_, width - 1, height - 1);
+			pos[2].xyz_.xy_, (float)width - 1.0f, (float)height - 1.0f);
 
 		
 
@@ -216,7 +214,7 @@ void render(SoftwareRenderer* r) {
 
 		for (int x = bounds.min.x; x <= bounds.max.x; x++) {
 			for (int y = bounds.min.y; y <= bounds.max.y; y++) {
-				Vec3f pt = (Vec3f) { x, y, 0.0};
+				Vec3f pt = (Vec3f) { (float)x, (float)y, 0.0};
 				Vec3f bc = {
 					edge_function(v1Raster, v2Raster, pt),
 					edge_function(v2Raster, v0Raster, pt),
@@ -243,9 +241,7 @@ void render(SoftwareRenderer* r) {
 						bool discard_fragment = fragment_shader(&r->shader, bc, frag_coord, &frag_color);
 						if (!discard_fragment) {
 							r->zbuffer[index] = z;
-
-							
-							SDL_SetRenderDrawColor(renderer, frag_color.r, frag_color.g, frag_color.b , SDL_ALPHA_OPAQUE);
+							SDL_SetRenderDrawColor(renderer, (Uint8) frag_color.r, (Uint8)frag_color.g, (Uint8)frag_color.b , SDL_ALPHA_OPAQUE);
 							//float depth = remap(z, -1, 1, 0, 255);
 							//printf("depth %f\n", depth);
 							//SDL_SetRenderDrawColor(renderer, depth, depth, depth, SDL_ALPHA_OPAQUE);
@@ -311,24 +307,28 @@ void debug_render(SoftwareRenderer* r) {
 	Vec4f z_axis = { 0, 0, axis_scale, 1 };
 
 
-	Vec4f origin = { 0, 0, 0, 1 };
-	origin = mat4x4_vec_mul(&mat, origin);
+	Vec4f originf = { 0, 0, 0, 1 };
+	originf = mat4x4_vec_mul(&mat, originf);
+	Vec4i origin = vec4f_to_vec4i(originf);
+
+	
+	Vec4i axis_pt;
 
 	// Draw x axis
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-	Vec4f axis_pt = mat4x4_vec_mul(&mat, x_axis);
+	axis_pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, x_axis));
 	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y) , axis_pt.x, flip_y(height, axis_pt.y));
 
 
 	// Draw y axis
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-	axis_pt = mat4x4_vec_mul(&mat, y_axis);
+	axis_pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, y_axis));
 	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y), axis_pt.x, flip_y(height, axis_pt.y));
 
 
 	// Draw z axis
 	SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-	axis_pt = mat4x4_vec_mul(&mat, z_axis);
+	axis_pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, z_axis));
 	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y), axis_pt.x, flip_y(height, axis_pt.y));
 
 
@@ -339,25 +339,29 @@ void debug_render(SoftwareRenderer* r) {
 	SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
 
 	for (int i = -size; i <= size; i++) {
-		Vec4f pt = { -size,  0,i,1 };
-		Vec4f pt2 = { size,  0,i,1 };
+		float size_f = 1.0f * size;
+		float i_f = 1.0f * i;
 
-		pt = mat4x4_vec_mul(&mat, pt);
-		pt2 = mat4x4_vec_mul(&mat, pt2);
+		Vec4f ptf = { -size_f, 0, i_f, 1 };
+		Vec4f pt2f = { size_f, 0, i_f, 1 };
+
+		Vec4i pt;
+		Vec4i pt2;
+
+		pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, ptf));
+		pt2 = vec4f_to_vec4i(mat4x4_vec_mul(&mat, pt2f));
+
 		SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 
-		pt = (Vec4f) { i ,0, -size, 1 };
-		pt2 = (Vec4f) { i,0, size , 1 };
+		ptf = (Vec4f) { i_f, 0, -size_f, 1 };
+		pt2f = (Vec4f) { i_f, 0, size_f, 1 };
 
-		pt = mat4x4_vec_mul(&mat, pt);
-		pt2 = mat4x4_vec_mul(&mat, pt2);
+		pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, ptf));
+		pt2 = vec4f_to_vec4i(mat4x4_vec_mul(&mat, pt2f));
 		SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 	}
-
-
-
 
 	SDL_UpdateWindowSurface(r->sdl_window);
 	clear_z_buffer(r);

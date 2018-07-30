@@ -152,12 +152,14 @@
     <ClCompile Include="Main.c" />
     <ClCompile Include="ObjFile.c" />
     <ClCompile Include="Renderer\OpenGLRenderer.c" />
+    <ClCompile Include="SDLApp.c" />
     <ClCompile Include="Renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Mat.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="ObjFile.h" />
+    <ClInclude Include="SDLApp.h" />
     <ClInclude Include="Renderer\OpenGLRenderer.h" />
     <ClInclude Include="Renderer\SoftwareRenderer.h" />
     <ClInclude Include="Math\Vec.h" />

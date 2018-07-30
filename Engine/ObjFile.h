@@ -33,8 +33,6 @@ typedef struct ObjModel {
 } ObjModel;
 
 
-float parse_float(char** stream);
-float parse_int(char** stream);
 
 void load_obj(const char* filename, ObjModel* model);
 

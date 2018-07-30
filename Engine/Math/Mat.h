@@ -186,7 +186,7 @@ bool inline mat4x4f_invert(Mat4x4f* m, Mat4x4f* invOut) {
 	det = 1.0 / det;
 
 	for (i = 0; i < 16; i++) {
-		invOut->mat1d[i] = inv[i] * det;
+		invOut->mat1d[i] = (float) (inv[i] * det);
 	}
 		
 

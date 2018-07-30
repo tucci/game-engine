@@ -112,6 +112,33 @@ typedef union Vec4f {
 
 } Vec4f;
 
+
+typedef union Vec4i {
+
+	struct {
+
+		int x;
+		int y;
+		int z;
+		int w;
+	};
+
+	struct {
+		int r;
+		int g;
+		int b;
+		int a;
+	};
+
+	struct {
+		Vec3i xyz_;
+		int ___w; // TODO: double underscore is reserved for specs. need to change this
+	};
+
+	int data[4];
+
+} Vec4i;
+
 #define Vec3f_Zero (Vec3f) {0,0,0}
 #define Vec3f_One (Vec3f) {1,1,1}
 #define Vec3f_Up (Vec3f) {0,1,0}
@@ -126,6 +153,15 @@ typedef union Vec4f {
 
 
 
+Vec4i inline vec4f_to_vec4i(Vec4f v) {
+	Vec4i result = {
+		(int)v.x,
+		(int)v.y,
+		(int)v.z,
+		(int)v.w,
+	};
+	return result;
+}
 
 // TODO: speed up with simd
 

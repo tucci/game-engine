@@ -14,7 +14,7 @@
 
 #define LINE_SIZE 256
 
-float parse_float(char** stream) {
+static float parse_float(char** stream) {
 	const char* start = *stream;
 	if (**stream == '-') {
 		(*stream)++;
@@ -34,7 +34,7 @@ float parse_float(char** stream) {
 	return f;
 }
 
-float parse_int(char** stream) {
+static int parse_int(char** stream) {
 	const char* start = *stream;
 	if (**stream == '-') {
 		(*stream)++;
@@ -81,10 +81,6 @@ void load_obj(const char* filename, ObjModel* model) {
 
 
 	char line[LINE_SIZE];
-
-	const char * const delim_space = " ";
-	const char * const delim_fslash = "/";
-
 
 	while (fgets(line, sizeof(line), file)) {
 		char* stream = line;

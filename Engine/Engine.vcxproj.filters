@@ -27,6 +27,9 @@
     <ClCompile Include="Renderer\OpenGLRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SDLApp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderer\OpenGLRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SDLApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

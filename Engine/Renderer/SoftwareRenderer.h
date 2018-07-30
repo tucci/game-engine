@@ -48,24 +48,17 @@ typedef struct SoftwareRenderer {
 
 
 
-Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id);
+static Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id);
+static bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color);
 
-bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color);
-
-
-
-
-
-bool init_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i size);
-bool init_z_buffer(SoftwareRenderer* renderer);
-void clear_z_buffer(SoftwareRenderer* renderer);
-
-void init_camera(SoftwareRenderer* renderer);
-
-void init_shader(SoftwareRenderer* renderer);
-
-bool destroy_renderer(SoftwareRenderer* renderer);
+bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i size);
+static bool init_z_buffer(SoftwareRenderer* renderer);
+static void clear_z_buffer(SoftwareRenderer* renderer);
+static void init_camera(SoftwareRenderer* renderer);
+static void init_shader(SoftwareRenderer* renderer);
+bool destroy_software_renderer(SoftwareRenderer* renderer);
 void render(SoftwareRenderer* r);
+
 void debug_render(SoftwareRenderer* r);
 
 
