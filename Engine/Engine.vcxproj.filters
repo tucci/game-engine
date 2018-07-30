@@ -24,6 +24,9 @@
     <ClCompile Include="Renderer\SoftwareRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderer\OpenGLRenderer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -40,6 +43,9 @@
     </ClInclude>
     <ClInclude Include="Renderer\SoftwareRenderer.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer\OpenGLRenderer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -102,7 +102,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -110,7 +110,7 @@
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\lib\x64;$(LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,7 +137,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -145,18 +145,20 @@
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\lib\x64;$(LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.c" />
     <ClCompile Include="ObjFile.c" />
+    <ClCompile Include="Renderer\OpenGLRenderer.c" />
     <ClCompile Include="Renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Mat.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="ObjFile.h" />
+    <ClInclude Include="Renderer\OpenGLRenderer.h" />
     <ClInclude Include="Renderer\SoftwareRenderer.h" />
     <ClInclude Include="Math\Vec.h" />
   </ItemGroup>
