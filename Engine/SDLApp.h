@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "Renderer/SoftwareRenderer.h"
+#include "Renderer/OpenGLRenderer.h"
 
 #define DEBUG 1
 
@@ -23,7 +24,7 @@
 
 
 // TODO create a proper window title/size default
-#define WINDOW_TITLE "Test window"
+#define WINDOW_TITLE "Engine"
 #define WINDOW_SIZE_X 800
 #define WINDOW_SIZE_Y 800
 #define WINDOW_RESIZEABlE true
@@ -43,6 +44,7 @@ typedef enum WindowFlag {
 	// NOTE:(steven) These flags try to have the same values as the flags from SDL_WindowFlags
 	WindowFlag_None = 0,
 	WindowFlag_Fullscreen = 1 << 0,
+	WindowFlag_OpenGL = 1 << 1,
 	WindowFlag_Hidden = 1 << 3,
 	WindowFlag_Resizable = 1 << 5,
 	WindowFlag_Minimized = 1 << 6,
@@ -177,9 +179,28 @@ typedef struct DebugData {
 } DebugData;
 
 
+typedef enum BackenedRendererType {
+	BackenedRenderer_Software,
+	BackenedRenderer_OpenGL
+} BackenedRendererType;
+
+
+
+typedef struct Renderer {
+	BackenedRendererType type;
+	union {
+		SoftwareRenderer software_renderer;
+		OpenGLRenderer opengl;
+	};
+	
+} Renderer;
+
 
 typedef struct App {
-	SoftwareRenderer graphics;
+	
+
+	Renderer renderer;
+
 	Display display;
 	Window window;
 	Mouse mouse;
@@ -201,12 +222,16 @@ static bool push_to_event_queue(App* app, Event event);
 static void process_event_queue(App* app);
 static bool init_display(App* app);
 static bool init_window(App* app);
+static bool init_renderer(App* app);
 static bool init_keys(App* app);
 static bool init_event_queue(App* app);
 static bool init_time(App* app);
 static bool init_debug(App* app);
 static void update_time(App* app);
 static void process_inputs(App* app);
+
+
+
 
 bool init_app(App* app);
 bool destroy_app(App* app);

@@ -4,7 +4,7 @@
 #include "Math.h"
 
 // TODO: speed up with simd
-// TODO: look up strick aliasing rules
+// TODO: look up strict aliasing rules
 typedef union Mat4x4f {
 	float mat1d[16];
 
@@ -321,14 +321,14 @@ Mat4x4f inline translate(Vec3f vec) {
 	return mat;
 }
 
-Mat4x4f inline rotate(float angle, Vec3f axis) {
+Mat4x4f inline rotate(float rads, Vec3f axis) {
 
-	// TODO: we should have a standard saying the angle should be passed in radians 
-	angle = deg_to_rad(angle);
+	
+	
 
 	Mat4x4f rot = mat4x4f_identity();
-	float cos_angle = cosf(angle);
-	float sin_angle = sinf(angle);
+	float cos_angle = cosf(rads);
+	float sin_angle = sinf(rads);
 
 	float one_minus_cos = 1 - cos_angle;
 

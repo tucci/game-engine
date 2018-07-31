@@ -43,47 +43,47 @@ static void process_event_queue(App* app) {
 			case EventKind_Key_Down: {
 				switch (event.event.key_event.key) {
 					case SDL_SCANCODE_W: {
-						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Up);
+						app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Up);
 						break;
 					}
 					case SDL_SCANCODE_S: {
-						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Down);
+						app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Down);
 						break;
 					}
 
 					case SDL_SCANCODE_UP: {
-						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Forward);
+						app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Forward);
 						break;
 					}
 					case SDL_SCANCODE_DOWN: {
-						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Backward);
+						app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Backward);
 						break;
 					}
 
 					case SDL_SCANCODE_E: {
-						app->graphics.camera.rotation.y += 1;
+						app->renderer.software_renderer.camera.rotation.y += 1;
 						break;
 					}
 					case SDL_SCANCODE_Q: {
-						app->graphics.camera.rotation.y -= 1;
+						app->renderer.software_renderer.camera.rotation.y -= 1;
 						break;
 					}
 
 					case SDL_SCANCODE_RIGHT: {
-						app->graphics.camera.rotation.z += 1;
+						app->renderer.software_renderer.camera.rotation.z += 1;
 						break;
 					}
 					case SDL_SCANCODE_LEFT: {
-						app->graphics.camera.rotation.z -= 1;
+						app->renderer.software_renderer.camera.rotation.z -= 1;
 						break;
 					}
 
 					case SDL_SCANCODE_A: {
-						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Left);
+						app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Left);
 						break;
 					}
 					case SDL_SCANCODE_D: {
-						app->graphics.camera.pos.xyz_ = vec_add(app->graphics.camera.pos.xyz_, Vec3f_Right);
+						app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Right);
 						break;
 					}
 					case SDL_SCANCODE_ESCAPE: {
@@ -276,12 +276,21 @@ static bool init_window(App* app) {
 	app->window.flags |= WindowFlag_Resizable;
 	//app->window.flags |= WindowFlag_Fullscreen;
 
+
+
+	if (app->renderer.type == BackenedRenderer_OpenGL) {
+		app->window.flags |= WindowFlag_OpenGL;
+		sdl_flags |= SDL_WINDOW_OPENGL;
+	}
+	
 	if (app->window.flags & WindowFlag_Resizable) {
 		sdl_flags |= SDL_WINDOW_RESIZABLE;
 	}
 	if (app->window.flags & WindowFlag_Fullscreen) {
 		sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
+
+
 
 
 
@@ -325,9 +334,26 @@ static bool init_window(App* app) {
 	app->window.sdl_window = sdl_window;
 	app->window.sdl_window_flags = sdl_flags;
 
-	init_software_renderer(app->window.sdl_window, &app->graphics, app->window.size);
+	
 
 	return true;
+}
+
+static bool init_renderer(App* app) {
+	switch (app->renderer.type) {
+		case BackenedRenderer_Software: {
+			init_software_renderer(app->window.sdl_window, &app->renderer.software_renderer, app->window.size);
+			break;
+		}
+
+		case BackenedRenderer_OpenGL: {
+			init_opengl_renderer(app->window.sdl_window, &app->renderer.opengl, app->window.size);
+			break;
+		}
+		default:
+			break;
+	}
+	
 }
 
 
@@ -504,6 +530,7 @@ bool init_app(App* app) {
 	app->platform = SDL_GetPlatform();
 	if (!init_display(app)) { return false; }
 	if (!init_window(app)) { return false; }
+	if (!init_renderer(app)) { return false; }
 	if (!init_keys(app)) { return false; }
 	if (!init_event_queue(app)) { return false; }
 	if (!init_time(app)) { return false; }
@@ -515,8 +542,18 @@ bool init_app(App* app) {
 
 bool destroy_app(App* app) {
 	 
+	switch (app->renderer.type) {
+		case BackenedRenderer_Software :
+			destroy_software_renderer(&app->renderer.software_renderer);
+			break;
 
-	destroy_software_renderer(&app->graphics);
+		case BackenedRenderer_OpenGL:
+			destroy_opengl_renderer(&app->renderer.opengl);
+			break;
+		default:
+			break;
+	}
+	
 	SDL_DestroyWindow(app->window.sdl_window);
 	SDL_Quit();
 	return true;
@@ -528,8 +565,22 @@ void game_loop(App* app) {
 		SDL_PumpEvents();
 		process_inputs(app);
 		process_event_queue(app);
-		render(&app->graphics);
-		debug_render(&app->graphics);
+
+		switch (app->renderer.type) {
+			case BackenedRenderer_Software: {
+				software_render(&app->renderer.software_renderer);
+				software_debug_render(&app->renderer.software_renderer);
+				break;
+			}
+
+			case BackenedRenderer_OpenGL: {
+				opengl_render(&app->renderer.opengl);
+				break;
+			}
+			default:
+				break;
+		}
+
 		update_time(app);
 
 	}

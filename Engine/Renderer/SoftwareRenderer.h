@@ -57,8 +57,8 @@ static void clear_z_buffer(SoftwareRenderer* renderer);
 static void init_camera(SoftwareRenderer* renderer);
 static void init_shader(SoftwareRenderer* renderer);
 bool destroy_software_renderer(SoftwareRenderer* renderer);
-void render(SoftwareRenderer* r);
+void software_render(SoftwareRenderer* r);
 
-void debug_render(SoftwareRenderer* r);
+void software_debug_render(SoftwareRenderer* r);
 
 

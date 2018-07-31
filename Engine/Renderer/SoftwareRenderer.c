@@ -144,7 +144,7 @@ bool destroy_software_renderer(SoftwareRenderer* renderer) {
 
 
 
-void render(SoftwareRenderer* r) {
+void software_render(SoftwareRenderer* r) {
 	
 	
 	
@@ -165,8 +165,8 @@ void render(SoftwareRenderer* r) {
 
 
 	
-	Mat4x4f model_mat = rotate(camera.rotation.y, Vec3f_Up);
-	Mat4x4f rot2 = rotate(camera.rotation.z, Vec3f_Forward);
+	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
+	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
@@ -264,7 +264,7 @@ void render(SoftwareRenderer* r) {
 }
 
 
-void debug_render(SoftwareRenderer* r) {
+void software_debug_render(SoftwareRenderer* r) {
 	SDL_Renderer* renderer = r->renderer;
 	Camera camera = r->camera;
 
@@ -284,10 +284,10 @@ void debug_render(SoftwareRenderer* r) {
 	Vec3f dir = camera.dir;
 
 
+	
 
-
-	Mat4x4f model_mat = rotate(camera.rotation.y, Vec3f_Up);
-	Mat4x4f rot2 = rotate(camera.rotation.z, Vec3f_Forward);
+	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
+	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
