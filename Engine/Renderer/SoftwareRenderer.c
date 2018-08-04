@@ -11,13 +11,13 @@ static Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 
 	
 	Vec3i v_id = shader->model->v_id[face_id];
-	shader->pos[vertex_id] = shader->model->verts[v_id.data[vertex_id] - 1];
+	shader->pos[vertex_id] = shader->model->verts[v_id.data[vertex_id]];
 
 	Vec3i tex_id = shader->model->vt_id[face_id];
-	shader->uv[vertex_id] = shader->model->texcoords[tex_id.data[vertex_id] - 1];
+	shader->uv[vertex_id] = shader->model->texcoords[tex_id.data[vertex_id]];
 
 	Vec3i normal_id = shader->model->vn_id[face_id];
-	shader->normals[vertex_id] = shader->model->normals[normal_id.data[vertex_id] - 1];
+	shader->normals[vertex_id] = shader->model->normals[normal_id.data[vertex_id]];
 		
 		
 	
@@ -92,7 +92,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 
 
 static bool init_z_buffer(SoftwareRenderer* renderer) {
-	// TODO: malloc check
+	// TODO: remove seperate malloc call, we need to start using custom allocators
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
@@ -134,7 +134,7 @@ static void init_shader(SoftwareRenderer* renderer) {
 }
 
 bool destroy_software_renderer(SoftwareRenderer* renderer) {
-	free_obj(&renderer->model);
+	free_obj(&renderer->model, true);
 	free(renderer->zbuffer);
 	SDL_DestroyRenderer(renderer->renderer);
 	return true;

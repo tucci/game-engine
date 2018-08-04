@@ -62,6 +62,7 @@ void load_obj(const char* filename, ObjModel* model) {
 	model->v_id = 0;
 	model->vt_id = 0;
 	model->vn_id = 0;
+	
 
 
 
@@ -134,16 +135,16 @@ void load_obj(const char* filename, ObjModel* model) {
 				stream++;
 				for (int i = 0; i < 3; i++) {
 					while (*stream == ' ') { stream++; }// skip spaces
-					v_id.data[i] = parse_int(&stream);
+					v_id.data[i] = parse_int(&stream) - 1;
 					if (*stream == '/') {
 						has_vts = true;
 						stream++;
-						vt_id.data[i] = parse_int(&stream);
+						vt_id.data[i] = parse_int(&stream) - 1;
 					}
 					if (*stream == '/') {
 						has_vns = true;
 						stream++;
-						vn_id.data[i] = parse_int(&stream);
+						vn_id.data[i] = parse_int(&stream) - 1;
 					}
 				}
 
@@ -176,13 +177,20 @@ void load_obj(const char* filename, ObjModel* model) {
 	}
 
 	model->vert_count = stb_sb_count(model->verts);
+	model->texcoord_count = stb_sb_count(model->texcoords);
+	model->normal_count = stb_sb_count(model->normals);
 	model->face_count = stb_sb_count(model->v_id);
+	model->tex_indice_count = stb_sb_count(model->vt_id);
+
+	model->diffuse.surface = 0;
+	model->diffuse.data = 0;
 
 
 
 }
 
-
+// TODO: split up freeing the mesh and texture
+// TODO: on the static mesh, and obj def, try to no put the texture/mesh in the same struct. lets keep them seperate
 void free_obj(ObjModel* model) {
 	stb_sb_free(model->verts);
 	stb_sb_free(model->texcoords);
@@ -200,6 +208,15 @@ void free_obj(ObjModel* model) {
 
 	}
 
+}
+
+// TODO: move this to it's own place and outside of the objfile
+void inline free_texture(SurfaceData* surfaceData) {
+	if (surfaceData->surface) {
+		SDL_FreeSurface(surfaceData->surface);
+		stbi_image_free(surfaceData->data);
+	}
+	
 }
 
 

@@ -53,5 +53,11 @@
     <ClInclude Include="SDLApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StaticMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Renderer\todo.txt" />
   </ItemGroup>
 </Project>

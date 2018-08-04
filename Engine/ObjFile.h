@@ -23,7 +23,12 @@ typedef struct ObjModel {
 	Vec3i* vn_id;
 
 	int vert_count;
+	int texcoord_count;
+	int normal_count;
+
 	int face_count;
+	int tex_indice_count;
+	
 
 	// Needs a reference to the sdl image
 	SurfaceData diffuse;
@@ -37,6 +42,5 @@ typedef struct ObjModel {
 void load_obj(const char* filename, ObjModel* model);
 
 void free_obj(ObjModel* model);
-
 
 void load_image(char* filename, SurfaceData* sd);
