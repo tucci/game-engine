@@ -7,5 +7,5 @@
 - Collisions
 - Simd/ Optimize / Profile/ Vtune
 - Set up renderdoc
-- Triangle list<first index, num index, material_index>
+- Triangle list<first index, num index, material_index> for multiple materials per mesh
 - Write some swizzling data to interleave, positions, uvs, other data

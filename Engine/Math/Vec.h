@@ -28,10 +28,17 @@ typedef union Vec2f {
 typedef union Vec3f {
 
 	struct {
-
-		float x;
-		float y;
+		union {
+			struct {
+				float x;
+				float y;
+			};
+			struct {
+				Vec2f xy;
+			};
+		};
 		float z;
+
 	};
 
 	struct {
@@ -41,15 +48,21 @@ typedef union Vec3f {
 	};
 
 	struct {
-		float u;
-		float v;
+		union {
+			struct {
+				float u;
+				float v;
+			};
+			struct {
+				Vec2f uv;
+			};
+
+		};
 		float w;
+
 	};
 
-	struct {
-		Vec2f xy_;
-		float __z;
-	};
+
 
 	float data[3];
 
@@ -59,10 +72,17 @@ typedef union Vec3f {
 typedef union Vec3i {
 
 	struct {
-
-		int x;
-		int y;
+		union {
+			struct {
+				int x;
+				int y;
+			};
+			struct {
+				Vec2i xy;
+			};
+		};
 		int z;
+		
 	};
 
 	struct {
@@ -77,36 +97,43 @@ typedef union Vec3i {
 		int w;
 	};
 
-	struct {
-		Vec2i xy_;
-		int __z;
-	};
+	
 
 	int data[3];
 
 } Vec3i;
 
 typedef union Vec4f {
-
 	struct {
+		union {
+			struct {
+				float x;
+				float y;
+				float z;
+			};
 
-		float x;
-		float y;
-		float z;
+			struct {
+				Vec3f xyz;
+			};
+		};
 		float w;
 	};
 
 	struct {
-		float r;
-		float g;
-		float b;
+		union {
+			struct {
+				float r;
+				float g;
+				float b;
+			};
+
+			struct {
+				Vec3f rgb;
+			};
+		};
 		float a;
 	};
-
-	struct {
-		Vec3f xyz_;
-		float ___w; // TODO: double underscore is reserved for specs. need to change this
-	};
+	
 
 	float data[4];
 
@@ -116,28 +143,39 @@ typedef union Vec4f {
 typedef union Vec4i {
 
 	struct {
+		union {
+			struct {
+				int x;
+				int y;
+				int z;
+			};
 
-		int x;
-		int y;
-		int z;
+			struct {
+				Vec3i xyz;
+			};
+		};
 		int w;
 	};
 
 	struct {
-		int r;
-		int g;
-		int b;
-		int a;
-	};
+		union {
+			struct {
+				int r;
+				int g;
+				int b;
+			};
 
-	struct {
-		Vec3i xyz_;
-		int ___w; // TODO: double underscore is reserved for specs. need to change this
+			struct {
+				Vec3i rgb;
+			};
+		};
+		int a;
 	};
 
 	int data[4];
 
 } Vec4i;
+
 
 #define Vec3f_Zero (Vec3f) {0,0,0}
 #define Vec3f_One (Vec3f) {1,1,1}

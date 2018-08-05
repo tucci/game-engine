@@ -35,9 +35,9 @@ void inline convert_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
 		Vec3i face = obj->v_id[i];
 		
 
-		static_mesh->pos[3 * i + 0] = obj->verts[face.x].xyz_;
-		static_mesh->pos[3 * i + 1] = obj->verts[face.y].xyz_;
-		static_mesh->pos[3 * i + 2] = obj->verts[face.z].xyz_;
+		static_mesh->pos[3 * i + 0] = obj->verts[face.x].xyz;
+		static_mesh->pos[3 * i + 1] = obj->verts[face.y].xyz;
+		static_mesh->pos[3 * i + 2] = obj->verts[face.z].xyz;
 
 		static_mesh->texcoords[3 * i + 0] = obj->texcoords[uv.x];
 		static_mesh->texcoords[3 * i + 1] = obj->texcoords[uv.y];

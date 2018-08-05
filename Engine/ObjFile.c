@@ -90,6 +90,7 @@ void load_obj(const char* filename, ObjModel* model) {
 		Vec3i vt_id;
 		Vec3i vn_id;
 
+		
 		bool has_vts = false;
 		bool has_vns = false;
 		switch (*stream) {
@@ -114,7 +115,7 @@ void load_obj(const char* filename, ObjModel* model) {
 						v.y = parse_float(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
 						v.z = parse_float(&stream);
-						stb_sb_push(model->texcoords, v.xyz_.xy_);
+						stb_sb_push(model->texcoords, v.xyz.xy);
 						break;
 					case 'n': // Normals
 						stream++;
@@ -124,7 +125,7 @@ void load_obj(const char* filename, ObjModel* model) {
 						v.y = parse_float(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
 						v.z = parse_float(&stream);
-						stb_sb_push(model->normals, v.xyz_);
+						stb_sb_push(model->normals, v.xyz);
 						break;
 					default:
 						break;

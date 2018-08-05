@@ -322,10 +322,6 @@ Mat4x4f inline translate(Vec3f vec) {
 }
 
 Mat4x4f inline rotate(float rads, Vec3f axis) {
-
-	
-	
-
 	Mat4x4f rot = mat4x4f_identity();
 	float cos_angle = cosf(rads);
 	float sin_angle = sinf(rads);

@@ -96,7 +96,7 @@ static bool init_z_buffer(SoftwareRenderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
-	renderer->zbuffer = (float*) malloc(size);
+	renderer->zbuffer = (float*)malloc(size);
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
 	}
@@ -134,7 +134,7 @@ static void init_shader(SoftwareRenderer* renderer) {
 }
 
 bool destroy_software_renderer(SoftwareRenderer* renderer) {
-	free_obj(&renderer->model, true);
+	free_obj(&renderer->model);
 	free(renderer->zbuffer);
 	SDL_DestroyRenderer(renderer->renderer);
 	return true;
@@ -160,7 +160,7 @@ void software_render(SoftwareRenderer* r) {
 	int width = r->window_size.x;
 	int height = r->window_size.y;
 
-	Vec3f eye = camera.pos.xyz_;
+	Vec3f eye = camera.pos.xyz;
 	Vec3f dir = camera.dir;
 
 
@@ -192,9 +192,9 @@ void software_render(SoftwareRenderer* r) {
 
 	
 	
-		Vec3f v0Raster = pos[0].xyz_;
-		Vec3f v1Raster = pos[1].xyz_;
-		Vec3f v2Raster = pos[2].xyz_;
+		Vec3f v0Raster = pos[0].xyz;
+		Vec3f v1Raster = pos[1].xyz;
+		Vec3f v2Raster = pos[2].xyz;
 
 		v0Raster.z = 1 / v0Raster.z;
 		v1Raster.z = 1 / v1Raster.z;
@@ -202,9 +202,9 @@ void software_render(SoftwareRenderer* r) {
 
 
 		BoundingBox2i bounds = get_bounding_box_from_tri(
-			pos[0].xyz_.xy_, 
-			pos[1].xyz_.xy_,
-			pos[2].xyz_.xy_, (float)width - 1.0f, (float)height - 1.0f);
+			pos[0].xyz.xy, 
+			pos[1].xyz.xy,
+			pos[2].xyz.xy, (float)width - 1.0f, (float)height - 1.0f);
 
 		
 
@@ -280,7 +280,7 @@ void software_debug_render(SoftwareRenderer* r) {
 	int width = r->window_size.x;
 	int height = r->window_size.y;
 
-	Vec3f eye = camera.pos.xyz_;
+	Vec3f eye = camera.pos.xyz;
 	Vec3f dir = camera.dir;
 
 
