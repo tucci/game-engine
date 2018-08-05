@@ -7,10 +7,12 @@
 #include "../Math/Mat.h" // TODO: figure out better way to do this. dont want ../.. stuff
 #include "../Math/Vec.h"
 #include "../ObjFile.h"
+#include "../TextureData.h"
 
 
 typedef struct Shader {
-	ObjModel* model;// TODO: change this to vbo style
+	ObjModel* model;// TODO: change this to vbo style. or use a static mesh
+	SurfaceData* texture;
 	Mat4x4f* transform;
 	Vec4f pos[3];
 	Vec2f uv[3];
@@ -41,7 +43,9 @@ typedef struct SoftwareRenderer {
 	Camera camera;
 	Shader shader;
 
+	// TODO: find a better way to store these things
 	ObjModel model;
+	SurfaceData texture;
 
 } SoftwareRenderer;
 

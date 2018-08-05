@@ -91,13 +91,13 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	/*load_obj("Assets/obj/diablo3_pose.obj", &opengl->model);
 	load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->model.diffuse);*/
 
-	load_obj("Assets/obj/african_head.obj", &opengl->model);
-	load_image("Assets/obj/african_head_diffuse.tga", &opengl->model.diffuse);
-	
+	ObjModel model;
 
-	
+	load_obj("Assets/obj/african_head.obj", &model);
+	load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);
+	convert_to_static_mesh(&model, &opengl->mesh);
 
-	convert_to_static_mesh(&opengl->model, &opengl->mesh);
+	free_obj(&model);
 
 	
 
@@ -119,7 +119,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, opengl->model.diffuse.surface->w, opengl->model.diffuse.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, opengl->model.diffuse.data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, opengl->texture.surface->w, opengl->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, opengl->texture.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	// Texture parameters
 	
@@ -159,9 +159,9 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	SDL_GL_DeleteContext(opengl->gl_context);
 	glDeleteProgram(opengl->shader_program);
-	free_obj(&opengl->model);
 	
-
+	
+	free_texture(&opengl->texture);
 	free_static_mesh(&opengl->mesh);
 	return true;
 }

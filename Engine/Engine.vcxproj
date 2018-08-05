@@ -152,6 +152,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="TextureData.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="ObjFile.c" />
     <ClCompile Include="Renderer\OpenGLRenderer.c" />
@@ -159,6 +160,7 @@
     <ClCompile Include="Renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="TextureData.h" />
     <ClInclude Include="StaticMesh.h" />
     <ClInclude Include="Math\Mat.h" />
     <ClInclude Include="Math\Math.h" />

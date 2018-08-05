@@ -26,7 +26,7 @@ static Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 
 static bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color) {
 	
-	SDL_Surface* surface = shader->model->diffuse.surface;
+	SDL_Surface* surface = shader->texture->surface;
 	
 	Vec2f uv = {
 		bary.x * shader->uv[0].u + bary.y * shader->uv[1].u + bary.z * shader->uv[2].u,
@@ -34,12 +34,10 @@ static bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f*
 	
 	};
 	
-	//shader->model->diffuse->pixels
+	
 	int x = (int)remap(uv.u, 0.0f, 1.0f, 0.0f, (float)surface->w);
 	int y = (int)remap(uv.v, 0.0f, 1.0f, 0.0f, (float)surface->h);
 
-	//Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
-	
 	uint32_t pixel = *((uint32_t *)surface->pixels + y * surface->w + x);
 
 	uint8_t r;
@@ -79,7 +77,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	//load_image("Assets/obj/african_head_diffuse.tga", &renderer->model.diffuse);
 
 	load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
-	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->model.diffuse);
+	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->texture);
 
 	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("cow.obj", &renderer->model);
@@ -96,7 +94,7 @@ static bool init_z_buffer(SoftwareRenderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
-	renderer->zbuffer = (float*)malloc(size);
+	renderer->zbuffer = (float*) malloc(size);
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
 	}
@@ -130,11 +128,13 @@ static void init_camera(SoftwareRenderer* renderer) {
 
 static void init_shader(SoftwareRenderer* renderer) {
 	renderer->shader.model = &renderer->model;
+	renderer->shader.texture = &renderer->texture;
 
 }
 
 bool destroy_software_renderer(SoftwareRenderer* renderer) {
 	free_obj(&renderer->model);
+	free_texture(&renderer->texture);
 	free(renderer->zbuffer);
 	SDL_DestroyRenderer(renderer->renderer);
 	return true;

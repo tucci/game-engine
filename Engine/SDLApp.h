@@ -23,7 +23,6 @@
 #include <assert.h>
 
 
-// TODO create a proper window title/size default
 #define WINDOW_TITLE "Engine"
 #define WINDOW_SIZE_X 800
 #define WINDOW_SIZE_Y 800
@@ -197,10 +196,7 @@ typedef struct Renderer {
 
 
 typedef struct App {
-	
-
 	Renderer renderer;
-
 	Display display;
 	Window window;
 	Mouse mouse;

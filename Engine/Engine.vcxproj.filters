@@ -30,6 +30,9 @@
     <ClCompile Include="SDLApp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TextureData.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -54,6 +57,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StaticMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

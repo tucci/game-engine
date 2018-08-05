@@ -1,17 +1,6 @@
 #pragma once
 
-
-
 #include "Math/Vec.h"
-
-// TODO: remove need for sdl here
-#include "SDL.h"
-
-typedef struct SurfaceData{
-	SDL_Surface* surface;
-	unsigned char* data;
-} SurfaceData;
-
 
 typedef struct ObjModel {
 	Vec4f* verts;
@@ -29,18 +18,9 @@ typedef struct ObjModel {
 	int face_count;
 	int tex_indice_count;
 	
-
-	// Needs a reference to the sdl image
-	SurfaceData diffuse;
-
-	
-
 } ObjModel;
 
 
 
 void load_obj(const char* filename, ObjModel* model);
-
 void free_obj(ObjModel* model);
-
-void load_image(char* filename, SurfaceData* sd);

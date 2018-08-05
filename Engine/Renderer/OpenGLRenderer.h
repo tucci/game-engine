@@ -6,25 +6,27 @@
 #include "../Math/Vec.h"
 #include "../ObjFile.h"
 
+#include "../StaticMesh.h"
+#include "../TextureData.h"
+
 #define GLEW_STATIC
 #include "glew.h"
 #include  "SDL_opengl.h"
 
-#include "../StaticMesh.h"
+
 
 typedef struct OpenGLRenderer {
 	SDL_GLContext gl_context;
 	SDL_Window* sdl_window;
 	Vec2i window_size;
-	ObjModel model; // TODO: remove this
+	
+	// TODO: move this to it's own place struture. use some sort of allocator
 	StaticMesh mesh;
-
+	SurfaceData texture;
 					 
 	GLuint VAO;
-	//// id to the Buffer that stores our vertices
-	GLuint VBO;
-	////// id to the Buffer that stores our indices
-	GLuint EBO;
+	GLuint VBO; // id to the Buffer that stores our vertices
+	GLuint EBO; // id to the Buffer that stores our indices
 
 
 	GLuint shader_program;

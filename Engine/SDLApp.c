@@ -353,6 +353,8 @@ static bool init_renderer(App* app) {
 		default:
 			break;
 	}
+
+	return true;
 	
 }
 
@@ -418,6 +420,7 @@ static void update_time(App* app) {
 
 static void process_inputs(App* app) {
 
+	// TODO: need to handle events when multiple keys are presses at the same time. right now when two keys are pressed at the same time, only one is sent to the event queue
 	SDL_Event sdl_event;
 	while (SDL_PollEvent(&sdl_event)) {
 		switch (sdl_event.type) {
@@ -561,8 +564,6 @@ bool destroy_app(App* app) {
 
 void game_loop(App* app) {
 	while (!app->quit) {
-		// TODO: do we need this?
-		SDL_PumpEvents();
 		process_inputs(app);
 		process_event_queue(app);
 
