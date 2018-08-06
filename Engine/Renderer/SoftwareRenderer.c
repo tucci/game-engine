@@ -66,7 +66,8 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	renderer->window_size = window_size;
 	
 	init_z_buffer(renderer);
-	init_camera(renderer);
+	init_camera_default(&renderer->camera);
+	set_camera_pos(&renderer->camera, (Vec3f){ 0, 0, 10 });
 
 	/* Clear the rendering surface with the specified color */
 	SDL_SetRenderDrawColor(renderer->renderer, 0, 0, 0, 0xFF);
@@ -107,20 +108,6 @@ static void clear_z_buffer(SoftwareRenderer* renderer) {
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
 	}
-	
-}
-
-static void init_camera(SoftwareRenderer* renderer) {
-	renderer->camera.pos = (Vec4f) { 0, 0, 10, 1 };
-	renderer->camera.dir = (Vec3f) { 0, 0, 1 };
-	renderer->camera.rotation = Vec3f_Zero;
-
-	renderer->camera.near = 0.1f;
-	renderer->camera.far = 100.0f;
-
-	renderer->camera.fov = 120.0f;
-	renderer->camera.aspect_ratio = (float)renderer->window_size.x / (float)renderer->window_size.y;
-
 	
 }
 
@@ -170,6 +157,8 @@ void software_render(SoftwareRenderer* r) {
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
+	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
+	view_mat = transpose(&view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &projection_mat);

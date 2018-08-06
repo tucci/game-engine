@@ -1,12 +1,17 @@
 #pragma once
 
+
+
+
 #include <stdbool.h>
 #include <SDL.h>
 
 #include "../Math/Vec.h"
+#include "../Math/Mat.h"
 #include "../ObjFile.h"
 
-#include "../StaticMesh.h"
+#include "../Core/StaticMesh.h"
+#include "../Core/Camera.h"
 #include "../TextureData.h"
 
 #define GLEW_STATIC
@@ -35,6 +40,8 @@ typedef struct OpenGLRenderer {
 
 	GLuint textureID;
 
+	Camera mainCamera;
+
 
 
 } OpenGLRenderer;
@@ -43,6 +50,5 @@ static void load_shaders(OpenGLRenderer* opengl);
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
-
 
 void opengl_render(OpenGLRenderer* opengl);

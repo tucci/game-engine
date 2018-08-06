@@ -4,15 +4,13 @@
 #include "OpenGLRenderer.h"
 
 
-
-
-
 const char * vertex_shader = "#version 330 core\n\
 		layout (location = 0) in vec3 position;\n\
 		layout (location = 1) in vec2 uv;\
+		uniform mat4 transform;\
 		out vec2 frag_uv;\
 		void main(){\
-			gl_Position = vec4(position,1);\
+			gl_Position =   transform * vec4(position, 1); \
 			frag_uv = uv;\
 		}";
 
@@ -84,33 +82,37 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	opengl->sdl_window = window;
 	opengl->window_size = window_size;
 	init_gl_extensions(opengl);
-
 	load_shaders(opengl);
 
+	
+	
 
-	/*load_obj("Assets/obj/diablo3_pose.obj", &opengl->model);
-	load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->model.diffuse);*/
+	init_camera_default(&opengl->mainCamera);
+	set_camera_pos(&opengl->mainCamera, (Vec3f) { 0, 0, 0});
+
+
+	
 
 	ObjModel model;
 
-	load_obj("Assets/obj/african_head.obj", &model);
-	load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);
+	/*load_obj("Assets/obj/african_head.obj", &model);
+	load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);*/
+
+	
+
+	load_obj("Assets/obj/diablo3_pose.obj", &model);
+	load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
+
 	convert_to_static_mesh(&model, &opengl->mesh);
 
 	free_obj(&model);
 
-	
 
 
-	
-	
-	
-
-	
-	
+	glViewport(0, 0, window_size.x, window_size.y);
 	
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	
 	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 
@@ -168,7 +170,25 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 
 void opengl_render(OpenGLRenderer* opengl) {
 	
+
 	
+	Camera camera = opengl->mainCamera;
+	//Mat4x4f model_mat = mat4x4f_identity();
+	
+	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
+	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
+	model_mat = mat4x4_mul(&model_mat, &rot2);
+
+
+	Mat4x4f view_mat = look_at(camera.pos.xyz, vec_add(camera.pos.xyz, camera.dir), Vec3f_Up);
+	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
+	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
+
+	//mvp_mat = rotate(PI, Vec3f_Forward);
+
+	
+
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -176,6 +196,10 @@ void opengl_render(OpenGLRenderer* opengl) {
 
 	glBindVertexArray(opengl->VAO);
 	glUseProgram(opengl->shader_program);
+
+
+	
+	glUniformMatrix4fv(glGetUniformLocation(opengl->shader_program, "transform"), 1, GL_FALSE,  &mvp_mat.mat1d);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
@@ -227,3 +251,6 @@ void opengl_render(OpenGLRenderer* opengl) {
 	
 	SDL_GL_SwapWindow(opengl->sdl_window);
 }
+
+
+

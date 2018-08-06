@@ -160,8 +160,10 @@
     <ClCompile Include="Renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Camera.h" />
+    <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="TextureData.h" />
-    <ClInclude Include="StaticMesh.h" />
+    <ClInclude Include="Core\StaticMesh.h" />
     <ClInclude Include="Math\Mat.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="ObjFile.h" />

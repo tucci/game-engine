@@ -263,23 +263,25 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 
 
 Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
-	Vec3f forward = vec_negate(vec_normalize(vec_sub(eye, to)));
-	up = vec_normalize(up);
+	Vec3f forward = vec_normalize(vec_sub(eye, to));
 	Vec3f right = vec_normalize(vec_cross(up, forward));
-	
+	up = vec_normalize(vec_cross(forward, right));
 
 	Mat4x4f mat = mat4x4f_identity();
 	Mat4x4f mat2 = mat4x4f_identity();
 	
 
 	for (int i = 0; i<3; i++) {
-		mat.mat2d[0][i] = right.data[i];
-		mat.mat2d[1][i] = up.data[i];
-		mat.mat2d[2][i] = forward.data[i];
-		mat2.mat2d[i][3] = -eye.data[i];
+		mat.mat2d[i][0] = right.data[i];
+		mat.mat2d[i][1] = up.data[i];
+		mat.mat2d[i][2] = forward.data[i];
+		mat2.mat2d[3][i] = -eye.data[i];
 	}
 	mat = mat4x4_mul(&mat2, &mat);
-	//mat4x4f_invert(&mat, &mat);
+
+	//mat = transpose(&mat);
+	//mat4x4f_invert(&mat, &mat);*/
+	
 	return mat;
 	
 	

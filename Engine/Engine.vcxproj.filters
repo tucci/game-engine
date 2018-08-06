@@ -56,10 +56,16 @@
     <ClInclude Include="SDLApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StaticMesh.h">
+    <ClInclude Include="TextureData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TextureData.h">
+    <ClInclude Include="Math\Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\StaticMesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

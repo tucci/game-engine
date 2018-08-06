@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Math/Vec.h"
-#include "ObjFile.h"
+#include "../Math/Vec.h"
+#include "../ObjFile.h"
 
 
 typedef struct StaticMesh {
+	
 	int vertex_count;
 	int index_count;
 	Vec3f* pos;
@@ -13,7 +14,7 @@ typedef struct StaticMesh {
 	Vec3i* indices;
 } StaticMesh;
 
-
+// TODO: move this to a seperate c file
 void inline convert_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
 	
 	int index_count = obj->face_count;

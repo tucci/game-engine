@@ -9,6 +9,8 @@
 #include "../ObjFile.h"
 #include "../TextureData.h"
 
+#include "../Core/Camera.h"
+
 
 typedef struct Shader {
 	ObjModel* model;// TODO: change this to vbo style. or use a static mesh
@@ -20,16 +22,6 @@ typedef struct Shader {
 } Shader;
 
 
-typedef struct Camera {
-	Vec4f pos;
-	Vec3f dir;
-	Vec3f rotation;
-
-	float near;
-	float far;
-	float fov;
-	float aspect_ratio;
-} Camera;
 
 
 
@@ -58,7 +50,6 @@ static bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f*
 bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i size);
 static bool init_z_buffer(SoftwareRenderer* renderer);
 static void clear_z_buffer(SoftwareRenderer* renderer);
-static void init_camera(SoftwareRenderer* renderer);
 static void init_shader(SoftwareRenderer* renderer);
 bool destroy_software_renderer(SoftwareRenderer* renderer);
 void software_render(SoftwareRenderer* r);
