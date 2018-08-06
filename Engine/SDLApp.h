@@ -5,8 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "Renderer/SoftwareRenderer.h"
-#include "Renderer/OpenGLRenderer.h"
+#include "Renderer/software_renderer/SoftwareRenderer.h"
+#include "Renderer/gl/OpenGLRenderer.h"
 
 #define DEBUG 1
 

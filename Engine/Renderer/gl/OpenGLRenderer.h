@@ -6,19 +6,20 @@
 #include <stdbool.h>
 #include <SDL.h>
 
-#include "../Math/Vec.h"
-#include "../Math/Mat.h"
-#include "../ObjFile.h"
+#include "../../Math/Vec.h"
+#include "../../Math/Mat.h"
+#include "../../ObjFile.h"
 
-#include "../Core/StaticMesh.h"
-#include "../Core/Camera.h"
-#include "../TextureData.h"
+#include "../../Core/StaticMesh.h"
+#include "../../Core/Camera.h"
+#include "../../TextureData.h"
 
 #define GLEW_STATIC
 #include "glew.h"
 #include  "SDL_opengl.h"
 
 
+#define DEBUG_GRID_SIZE 100
 
 typedef struct OpenGLRenderer {
 	SDL_GLContext gl_context;
@@ -34,11 +35,27 @@ typedef struct OpenGLRenderer {
 	GLuint EBO; // id to the Buffer that stores our indices
 
 
+	GLuint textureID;
+
+
 	GLuint shader_program;
 	GLuint vs;
 	GLuint fs;
 
-	GLuint textureID;
+	StaticMesh grid_mesh;
+	int axes_pos_offset;
+	bool show_debug_grid;
+	bool show_debug_axes;
+
+	GLuint grid_debug_VAO;
+	GLuint grid_debug_VBO;
+	
+
+	GLuint grid_debug_shader_program;
+	GLuint grid_debug_vs;
+	GLuint grid_debug_fs;
+
+	
 
 	Camera mainCamera;
 
@@ -52,3 +69,5 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 
 void opengl_render(OpenGLRenderer* opengl);
+void opengl_debug_render(OpenGLRenderer* opengl);
+void opengl_swap_buffer(OpenGLRenderer* opengl);

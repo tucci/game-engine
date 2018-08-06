@@ -100,6 +100,16 @@ static void process_event_queue(App* app) {
 						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Right);
 						break;
 					}
+
+					case SDL_SCANCODE_G: {
+						app->renderer.opengl.show_debug_grid = !app->renderer.opengl.show_debug_grid;
+						break;
+					}
+
+					case SDL_SCANCODE_H: {
+						app->renderer.opengl.show_debug_axes = !app->renderer.opengl.show_debug_axes;
+						break;
+					}
 					case SDL_SCANCODE_ESCAPE: {
 						app->quit = true;
 						break;
@@ -585,11 +595,14 @@ void game_loop(App* app) {
 			case BackenedRenderer_Software: {
 				software_render(&app->renderer.software_renderer);
 				software_debug_render(&app->renderer.software_renderer);
+				software_swap_buffer(&app->renderer.software_renderer);
 				break;
 			}
 
 			case BackenedRenderer_OpenGL: {
 				opengl_render(&app->renderer.opengl);
+				opengl_debug_render(&app->renderer.opengl);
+				opengl_swap_buffer(&app->renderer.opengl);
 				break;
 			}
 			default:

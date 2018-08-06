@@ -42,7 +42,7 @@ void inline init_camera_default(Camera* camera) {
 	camera->near = 0.1f;
 	camera->far = 100.0f;
 		  
-	camera->fov = 90.0f;
+	camera->fov = 60.0f;
 	camera->aspect_ratio = 1.0f;
 }
 

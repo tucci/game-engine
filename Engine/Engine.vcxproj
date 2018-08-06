@@ -155,21 +155,23 @@
     <ClCompile Include="TextureData.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="ObjFile.c" />
-    <ClCompile Include="Renderer\OpenGLRenderer.c" />
+    <ClCompile Include="Renderer\gl\OpenGLRenderer.c" />
     <ClCompile Include="SDLApp.c" />
-    <ClCompile Include="Renderer\SoftwareRenderer.c" />
+    <ClCompile Include="Renderer\software_renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Math\Transform.h" />
+    <ClInclude Include="Renderer\gl\GLShader.h" />
+    <ClInclude Include="Renderer\software_renderer\SoftwareRendererShader.h" />
     <ClInclude Include="TextureData.h" />
     <ClInclude Include="Core\StaticMesh.h" />
     <ClInclude Include="Math\Mat.h" />
     <ClInclude Include="Math\Math.h" />
     <ClInclude Include="ObjFile.h" />
     <ClInclude Include="SDLApp.h" />
-    <ClInclude Include="Renderer\OpenGLRenderer.h" />
-    <ClInclude Include="Renderer\SoftwareRenderer.h" />
+    <ClInclude Include="Renderer\gl\OpenGLRenderer.h" />
+    <ClInclude Include="Renderer\software_renderer\SoftwareRenderer.h" />
     <ClInclude Include="Math\Vec.h" />
   </ItemGroup>
   <ItemGroup>

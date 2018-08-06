@@ -5,9 +5,7 @@
 
 #define flip_y(height, y)  height - 1 - y
 
-static Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
-
-	
+static Vec4f vertex_shader(SoftwareRendererShader* shader, int face_id, int vertex_id) {
 
 	
 	Vec3i v_id = shader->model->v_id[face_id];
@@ -24,7 +22,7 @@ static Vec4f vertex_shader(Shader* shader, int face_id, int vertex_id) {
 	return mat4x4_vec_mul(shader->transform, shader->pos[vertex_id]);
 }
 
-static bool fragment_shader(Shader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color) {
+static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color) {
 	
 	SDL_Surface* surface = shader->texture->surface;
 	
@@ -247,8 +245,7 @@ void software_render(SoftwareRenderer* r) {
 	}
 
 
-	SDL_UpdateWindowSurface(r->sdl_window);
-	clear_z_buffer(r);
+	
 	
 }
 
@@ -352,6 +349,10 @@ void software_debug_render(SoftwareRenderer* r) {
 
 	}
 
+	
+}
+
+void software_swap_buffer(SoftwareRenderer* r) {
 	SDL_UpdateWindowSurface(r->sdl_window);
 	clear_z_buffer(r);
 }

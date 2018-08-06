@@ -11,6 +11,7 @@ typedef struct StaticMesh {
 	Vec3f* pos;
 	Vec3f* normal;
 	Vec2f* texcoords;
+	Vec3f* color;
 	Vec3i* indices;
 } StaticMesh;
 
