@@ -47,57 +47,57 @@ static void process_event_queue(App* app) {
 				switch (event.event.key_event.key) {
 					case SDL_SCANCODE_W: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Forward);
-						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Forward);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Forward);
 						break;
 					}
 					case SDL_SCANCODE_S: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Backward);
-						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Backward);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Backward);
 						break;
 					}
 
 					case SDL_SCANCODE_UP: {
 						
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Up);
-						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Up);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Up);
 						break;
 					}
 					case SDL_SCANCODE_DOWN: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Down);
-						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Down);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Down);
 						break;
 					}
 
 					case SDL_SCANCODE_E: {
 						//app->renderer.software_renderer.camera.rotation.y += 1;
-						app->renderer.opengl.mainCamera.rotation.y += 1;
+						app->renderer.opengl.main_camera.rotation.y += 1;
 						break;
 					}
 					case SDL_SCANCODE_Q: {
 						//app->renderer.software_renderer.camera.rotation.y -= 1;
-						app->renderer.opengl.mainCamera.rotation.y -= 1;
+						app->renderer.opengl.main_camera.rotation.y -= 1;
 						break;
 					}
 
 					case SDL_SCANCODE_RIGHT: {
 						//app->renderer.software_renderer.camera.rotation.z += 1;
-						app->renderer.opengl.mainCamera.rotation.z += 1;
+						app->renderer.opengl.main_camera.rotation.z += 1;
 						break;
 					}
 					case SDL_SCANCODE_LEFT: {
 						//app->renderer.software_renderer.camera.rotation.z -= 1;
-						app->renderer.opengl.mainCamera.rotation.z -= 1;
+						app->renderer.opengl.main_camera.rotation.z -= 1;
 						break;
 					}
 
 					case SDL_SCANCODE_A: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Left);
-						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Left);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Left);
 						break;
 					}
 					case SDL_SCANCODE_D: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Right);
-						app->renderer.opengl.mainCamera.pos.xyz = vec_add(app->renderer.opengl.mainCamera.pos.xyz, Vec3f_Right);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Right);
 						break;
 					}
 

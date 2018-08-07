@@ -14,6 +14,8 @@
 #include "../../Core/Camera.h"
 #include "../../TextureData.h"
 
+#include "GLShader.h"
+
 #define GLEW_STATIC
 #include "glew.h"
 #include  "SDL_opengl.h"
@@ -25,23 +27,26 @@ typedef struct OpenGLRenderer {
 	SDL_GLContext gl_context;
 	SDL_Window* sdl_window;
 	Vec2i window_size;
-	
+
+	Camera main_camera;
 	// TODO: move this to it's own place struture. use some sort of allocator
 	StaticMesh mesh;
 	SurfaceData texture;
-					 
+	GLuint textureID;
+	
+	GLShader main_shader;
 	GLuint VAO;
 	GLuint VBO; // id to the Buffer that stores our vertices
 	GLuint EBO; // id to the Buffer that stores our indices
 
+	
 
-	GLuint textureID;
+	
 
+	
 
-	GLuint shader_program;
-	GLuint vs;
-	GLuint fs;
-
+	// Debug
+	GLShader debug_shader;
 	StaticMesh grid_mesh;
 	int axes_pos_offset;
 	bool show_debug_grid;
@@ -51,13 +56,9 @@ typedef struct OpenGLRenderer {
 	GLuint grid_debug_VBO;
 	
 
-	GLuint grid_debug_shader_program;
-	GLuint grid_debug_vs;
-	GLuint grid_debug_fs;
-
 	
 
-	Camera mainCamera;
+	
 
 
 
@@ -67,6 +68,11 @@ static void load_shaders(OpenGLRenderer* opengl);
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
+
+
+
+void init_debug(OpenGLRenderer* opengl);
+void destroy_debug(OpenGLRenderer* opengl);
 
 void opengl_render(OpenGLRenderer* opengl);
 void opengl_debug_render(OpenGLRenderer* opengl);

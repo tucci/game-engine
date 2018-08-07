@@ -53,98 +53,20 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 }
 
 static void load_shaders(OpenGLRenderer* opengl) {
- 	opengl->vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(opengl->vs, 1, &vertex_shader, NULL);
-	glCompileShader(opengl->vs);
-
-
-	GLint success;
-	GLchar infoLog[512];
-
-	// Print compile errors if any
-	glGetShaderiv(opengl->vs, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(opengl->vs, 512, NULL, infoLog);
-		printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED, %s\n", infoLog);
-	};
-
-
-	opengl->fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(opengl->fs, 1, &fragment_shader, NULL);
-	glCompileShader(opengl->fs);
-	// Print compile errors if any
-	glGetShaderiv(opengl->fs, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(opengl->fs, 512, NULL, infoLog);
-		printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED, %s\n", infoLog);
-	};
-
-	// Shader Program
-	opengl->shader_program = glCreateProgram();
-	glAttachShader(opengl->shader_program, opengl->vs);
-	glAttachShader(opengl->shader_program, opengl->fs);
-	glLinkProgram(opengl->shader_program);
-	// Print linking errors if any
-
-	glGetProgramiv(opengl->shader_program, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(opengl->shader_program, 512, NULL, infoLog);
-		printf("ERROR::SHADER::PROGRAM::LINKING_FAILED, %s\n", infoLog);
-	}
-
-	// Delete the shaders as they're linked into our program now and no longer necessery
-	glDeleteShader(opengl->vs);
-	glDeleteShader(opengl->fs);
+	load_gl_shader(&opengl->main_shader, &vertex_shader, &fragment_shader);
 }
 
 
-static void init_debug_mesh(OpenGLRenderer* opengl) {
+void init_debug(OpenGLRenderer* opengl) {
 	opengl->show_debug_grid = false;
 	opengl->show_debug_axes = false;
-	// TODO: try not to repeat. split out onto seperate function
-
-	opengl->grid_debug_vs = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(opengl->grid_debug_vs, 1, &debug_vertex_shader, NULL);
-	glCompileShader(opengl->grid_debug_vs);
+	
 
 
-	GLint success;
-	GLchar infoLog[512];
-
-	// Print compile errors if any
-	glGetShaderiv(opengl->grid_debug_vs, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(opengl->grid_debug_vs, 512, NULL, infoLog);
-		printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED, %s\n", infoLog);
-	};
+	load_gl_shader(&opengl->debug_shader, &debug_vertex_shader, &debug_fragment_shader);
 
 
-	opengl->grid_debug_fs = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(opengl->grid_debug_fs, 1, &debug_fragment_shader, NULL);
-	glCompileShader(opengl->grid_debug_fs);
-	// Print compile errors if any
-	glGetShaderiv(opengl->grid_debug_fs, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(opengl->grid_debug_fs, 512, NULL, infoLog);
-		printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED, %s\n", infoLog);
-	};
-
-	// Shader Program
-	opengl->grid_debug_shader_program = glCreateProgram();
-	glAttachShader(opengl->grid_debug_shader_program, opengl->grid_debug_vs);
-	glAttachShader(opengl->grid_debug_shader_program, opengl->grid_debug_fs);
-	glLinkProgram(opengl->grid_debug_shader_program);
-	// Print linking errors if any
-
-	glGetProgramiv(opengl->grid_debug_shader_program, GL_LINK_STATUS, &success);
-	if (!success) {
-		glGetProgramInfoLog(opengl->grid_debug_shader_program, 512, NULL, infoLog);
-		printf("ERROR::SHADER::PROGRAM::LINKING_FAILED, %s\n", infoLog);
-	}
-
-	// Delete the shaders as they're linked into our program now and no longer necessery
-	glDeleteShader(opengl->grid_debug_vs);
-	glDeleteShader(opengl->grid_debug_fs);
+	
 
 
 
@@ -203,7 +125,7 @@ static void init_debug_mesh(OpenGLRenderer* opengl) {
 	int axis_offset_pos = index;
 	opengl->axes_pos_offset = index;
 
-	float axis_scale = 10.0f;
+	float axis_scale = 1.0f;
 	Vec3f x_axis = { axis_scale, 0, 0 };
 	Vec3f y_axis = { 0, axis_scale, 0 };
 	Vec3f z_axis = { 0, 0, axis_scale };
@@ -234,11 +156,12 @@ static void init_debug_mesh(OpenGLRenderer* opengl) {
 
 
 }
-static void destroy_debug(OpenGLRenderer* opengl) {
+void destroy_debug(OpenGLRenderer* opengl) {
 	free(opengl->grid_mesh.pos);
 	free(opengl->grid_mesh.color);
 
-	glDeleteProgram(opengl->grid_debug_shader_program);
+	delete_gl_program(&opengl->debug_shader);
+	
 	glDeleteVertexArrays(1, &opengl->grid_debug_VAO);
 	glDeleteBuffers(1, &opengl->grid_debug_VBO);
 
@@ -249,16 +172,20 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	opengl->gl_context = SDL_GL_CreateContext(window);
 	opengl->sdl_window = window;
 	opengl->window_size = window_size;
+
 	init_gl_extensions(opengl);
+	init_camera_default(&opengl->main_camera);
+	set_camera_pos(&opengl->main_camera, (Vec3f) { 0, 0, 0 });
+
+
 	load_shaders(opengl);
 
 	
 	
 
-	init_camera_default(&opengl->mainCamera);
-	set_camera_pos(&opengl->mainCamera, (Vec3f) { 0, 0, 0});
+	
 
-	init_debug_mesh(opengl);
+	init_debug(opengl);
 
 
 	
@@ -270,8 +197,8 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	
 
-	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	//load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
+	load_obj("Assets/obj/diablo3_pose.obj", &model);
+	load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
 
 	convert_to_static_mesh(&model, &opengl->mesh);
 
@@ -282,19 +209,13 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	glViewport(0, 0, window_size.x, window_size.y);
 	
 	glEnable(GL_CULL_FACE);
-	
-	// Enable depth test
 	glEnable(GL_DEPTH_TEST);
 
 
 	glGenTextures(1, &opengl->textureID);
-
-	
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, opengl->texture.surface->w, opengl->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, opengl->texture.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	// Texture parameters
-	
 	glTexParameterf(opengl->textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(opengl->textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -313,26 +234,14 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->VBO);
 	// bind element buffer object to buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
-
-
-	
-	
-
-
-	
-	
-	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
-	// Should we pre interleave our data, or create sperate vbos for textures.
-	// Also note, since our textcoords array is not offset from our vert array. 2 seperate malloc calls, so different addresses
-
-
 	
 	return true;
 }
 
 bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	SDL_GL_DeleteContext(opengl->gl_context);
-	glDeleteProgram(opengl->shader_program);
+	delete_gl_program(&opengl->main_shader);
+	
 
 	glDeleteVertexArrays(1, &opengl->VAO);
 	glDeleteBuffers(1, &opengl->VBO);
@@ -349,7 +258,7 @@ void opengl_render(OpenGLRenderer* opengl) {
 	
 
 	
-	Camera camera = opengl->mainCamera;
+	Camera camera = opengl->main_camera;
 	//Mat4x4f model_mat = mat4x4f_identity();
 	
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
@@ -365,14 +274,14 @@ void opengl_render(OpenGLRenderer* opengl) {
 
 
 	glBindVertexArray(opengl->VAO);
-	glUseProgram(opengl->shader_program);
+	glUseProgram(opengl->main_shader.program);
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->shader_program, "transform"), 1, GL_FALSE,  &mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE,  &mvp_mat.mat1d);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
 	
-	glUniform1i(glGetUniformLocation(opengl->shader_program, "txtSampler"), 0);
+	glUniform1i(glGetUniformLocation(opengl->main_shader.program, "txtSampler"), 0);
 
 	glBufferData(GL_ARRAY_BUFFER,
 		opengl->mesh.vertex_count * sizeof(Vec3f)
@@ -392,7 +301,9 @@ void opengl_render(OpenGLRenderer* opengl) {
 		opengl->mesh.texcoords);
 
 
-
+	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
+	// Should we pre interleave our data, or create sperate vbos for textures.
+	// Also note, since our textcoords array is not offset from our vert array. 2 seperate malloc calls, so different addresses
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
@@ -416,7 +327,7 @@ void opengl_render(OpenGLRenderer* opengl) {
 void opengl_debug_render(OpenGLRenderer * opengl) {
 
 
-	Camera camera = opengl->mainCamera;
+	Camera camera = opengl->main_camera;
 	//Mat4x4f model_mat = mat4x4f_identity();
 
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
@@ -430,15 +341,10 @@ void opengl_debug_render(OpenGLRenderer * opengl) {
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
 
 	
-
-
-
 	glBindVertexArray(opengl->grid_debug_VAO);
-	glUseProgram(opengl->grid_debug_shader_program);
+	glUseProgram(opengl->debug_shader.program);
 
-	
-
-	glUniformMatrix4fv(glGetUniformLocation(opengl->grid_debug_shader_program, "transform"), 1, GL_FALSE, &mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->debug_shader.program, "transform"), 1, GL_FALSE, &mvp_mat.mat1d);
 
 
 	
@@ -472,9 +378,6 @@ void opengl_debug_render(OpenGLRenderer * opengl) {
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)(opengl->grid_mesh.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
-	
-
-
 
 	if (opengl->show_debug_grid) {
 		glLineWidth(1);
@@ -485,8 +388,6 @@ void opengl_debug_render(OpenGLRenderer * opengl) {
 		glLineWidth(4);
 		glDrawArrays(GL_LINES, opengl->axes_pos_offset, opengl->grid_mesh.vertex_count - opengl->axes_pos_offset);
 	} 
-	
-
 	
 }
 
