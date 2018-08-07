@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SDLApp.h"
-
+//
 static void update_button_state(ButtonState* button_state, bool down) {
 	bool was_down = button_state->down;
 	button_state->down = down;
@@ -43,26 +43,26 @@ static void process_event_queue(App* app) {
 		
 		switch (event.kind) {
 
-			case EventKind_Key_Down: {
+			case EventKind_Key_Down:{
 				switch (event.event.key_event.key) {
 					case SDL_SCANCODE_W: {
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Forward);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Forward);
-						break;
-					}
-					case SDL_SCANCODE_S: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Backward);
 						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Backward);
 						break;
 					}
+					case SDL_SCANCODE_S: {
+						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Forward);
+						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Forward);
+						break;
+					}
 
-					case SDL_SCANCODE_UP: {
+					case SDL_SCANCODE_1: {
 						
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Up);
 						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Up);
 						break;
 					}
-					case SDL_SCANCODE_DOWN: {
+					case SDL_SCANCODE_2: {
 						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Down);
 						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Down);
 						break;
@@ -79,12 +79,12 @@ static void process_event_queue(App* app) {
 						break;
 					}
 
-					case SDL_SCANCODE_RIGHT: {
+					case SDL_SCANCODE_X: {
 						//app->renderer.software_renderer.camera.rotation.z += 1;
 						app->renderer.opengl.main_camera.rotation.z += 1;
 						break;
 					}
-					case SDL_SCANCODE_LEFT: {
+					case SDL_SCANCODE_Z: {
 						//app->renderer.software_renderer.camera.rotation.z -= 1;
 						app->renderer.opengl.main_camera.rotation.z -= 1;
 						break;
@@ -101,6 +101,17 @@ static void process_event_queue(App* app) {
 						break;
 					}
 
+				
+					default:
+						break;
+				}
+
+				event_printf("Key Down: %d\n", event.event.key_event.key);
+				break;
+			}
+			case EventKind_Key_Pressed: {
+				event_printf("Key pressed: %d\n", event.event.key_event.key);
+				switch (event.event.key_event.key) {
 					case SDL_SCANCODE_G: {
 						app->renderer.opengl.show_debug_grid = !app->renderer.opengl.show_debug_grid;
 						break;
@@ -114,11 +125,7 @@ static void process_event_queue(App* app) {
 						app->quit = true;
 						break;
 					}
-					default:
-						break;
 				}
-
-				event_printf("Key Down: %d\n", event.event.key_event.key);
 				break;
 			}
 			case EventKind_Key_Up: {
@@ -447,6 +454,41 @@ static void process_inputs(App* app) {
 	// TODO: need to handle events when multiple keys are presses at the same time. right now when two keys are pressed at the same time, only one is sent to the event queue
 	SDL_Event sdl_event;
 	while (SDL_PollEvent(&sdl_event)) {
+
+		const Uint8 *keys = SDL_GetKeyboardState(NULL);
+
+		for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
+			
+			Event event;
+			event.event.key_event.key = i;
+
+			
+
+			
+			ButtonState* button_state = &app->keys[i];
+			update_button_state(&app->keys[i], keys[i]);
+
+			if (button_state->pressed) {
+				event.kind = EventKind_Key_Pressed;
+				push_to_event_queue(app, event);
+			}
+
+			else if (button_state->down) {
+				event.kind = EventKind_Key_Down;
+				push_to_event_queue(app, event);
+			} 
+
+			
+
+				
+			if (button_state->released) {
+				event.kind = EventKind_Key_Up;
+				push_to_event_queue(app, event);
+			}
+			
+		}
+		
+
 		switch (sdl_event.type) {
 			case SDL_MOUSEMOTION: {
 				Event event;
@@ -486,21 +528,21 @@ static void process_inputs(App* app) {
 				break;
 			}
 
-			case SDL_KEYDOWN: case SDL_KEYUP: {
-				SDL_Scancode keycode = sdl_event.key.keysym.scancode;
+			//case SDL_KEYDOWN: case SDL_KEYUP: {
+			//	SDL_Scancode keycode = sdl_event.key.keysym.scancode;
 
-				if (keycode) {
-					// TODO(steven) see if we can handle this through the event queue
-					update_button_state(&app->keys[keycode], sdl_event.key.state == SDL_PRESSED);
+			//	if (keycode) {
+			//		// TODO(steven) see if we can handle this through the event queue
+			//		update_button_state(&app->keys[keycode], sdl_event.key.state == SDL_PRESSED);
 
-					Event event;
-					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
-					event.event.key_event.key = keycode;
-					push_to_event_queue(app, event);
+			//		Event event;
+			//		event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
+			//		event.event.key_event.key = keycode;
+			//		push_to_event_queue(app, event);
 
-				}
-				break;
-			}
+			//	}
+			//	break;
+			//}
 			case SDL_WINDOWEVENT: {
 
 				Event event;

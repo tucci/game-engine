@@ -263,8 +263,12 @@ void opengl_render(OpenGLRenderer* opengl) {
 	
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
 	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
+	Mat4x4f scale_m = scale((Vec3f) { 5, 5, 5 });
 	model_mat = mat4x4_mul(&model_mat, &rot2);
+	model_mat = mat4x4_mul(&model_mat, &scale_m);
 
+	
+	
 
 	Mat4x4f view_mat = look_at(camera.pos.xyz, vec_add(camera.pos.xyz, camera.dir), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);

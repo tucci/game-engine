@@ -97,6 +97,7 @@ typedef struct Mouse {
 typedef enum EventKind {
 	EventKind_None,
 	EventKind_Key_Down,
+	EventKind_Key_Pressed,
 	EventKind_Key_Up,
 	EventKind_Mouse_Button_Down,
 	EventKind_Mouse_Button_Up,
@@ -211,8 +212,6 @@ typedef struct App {
 
 
 
-static void update_button_state(ButtonState* button_state, bool down);
-static void reset_button_state(ButtonState* button_state);
 static void log_error(const char* name);
 static bool push_to_event_queue(App* app, Event event);
 static void process_event_queue(App* app);
