@@ -14,7 +14,8 @@ typedef struct GLShader {
 } GLShader;
 
 
-void inline load_gl_shader(GLShader* shader, const char* vertex_code, const char** fragment_code) {
+
+void inline load_gl_shader(GLShader* shader, const char** vertex_code, const char** fragment_code) {
 
 	shader->vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(shader->vertex_shader, 1, vertex_code, NULL);

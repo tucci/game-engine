@@ -57,7 +57,7 @@ static void load_shaders(OpenGLRenderer* opengl) {
 }
 
 
-void init_debug(OpenGLRenderer* opengl) {
+void init_gl_debug(OpenGLRenderer* opengl) {
 	opengl->show_debug_grid = false;
 	opengl->show_debug_axes = false;
 	
@@ -156,7 +156,7 @@ void init_debug(OpenGLRenderer* opengl) {
 
 
 }
-void destroy_debug(OpenGLRenderer* opengl) {
+void destroy_gl_debug(OpenGLRenderer* opengl) {
 	free(opengl->grid_mesh.pos);
 	free(opengl->grid_mesh.color);
 
@@ -185,7 +185,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	
 
-	init_debug(opengl);
+	init_gl_debug(opengl);
 
 
 	
@@ -250,11 +250,12 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	free_texture(&opengl->texture);
 	free_static_mesh(&opengl->mesh);
 
-	destroy_debug(opengl);
+	destroy_gl_debug(opengl);
 	return true;
 }
 
 void opengl_render(OpenGLRenderer* opengl) {
+	
 	
 
 	
@@ -263,10 +264,7 @@ void opengl_render(OpenGLRenderer* opengl) {
 	
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
 	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
-	Mat4x4f scale_m = scale((Vec3f) { 5, 5, 5 });
 	model_mat = mat4x4_mul(&model_mat, &rot2);
-	model_mat = mat4x4_mul(&model_mat, &scale_m);
-
 	
 	
 
@@ -280,7 +278,7 @@ void opengl_render(OpenGLRenderer* opengl) {
 	glBindVertexArray(opengl->VAO);
 	glUseProgram(opengl->main_shader.program);
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE,  &mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
@@ -348,7 +346,7 @@ void opengl_debug_render(OpenGLRenderer * opengl) {
 	glBindVertexArray(opengl->grid_debug_VAO);
 	glUseProgram(opengl->debug_shader.program);
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->debug_shader.program, "transform"), 1, GL_FALSE, &mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->debug_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
 
 
 	

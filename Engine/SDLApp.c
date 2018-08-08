@@ -1,19 +1,35 @@
 #pragma once
 
 #include "SDLApp.h"
-//
-static void update_button_state(ButtonState* button_state, bool down) {
+
+
+static void update_button_state(ButtonState* button_state, bool down_now) {
+	// Update for edge events
 	bool was_down = button_state->down;
-	button_state->down = down;
-	button_state->pressed = down && !was_down;
-	button_state->released = !down && was_down;
+	button_state->down = down_now;
+	button_state->just_pressed = down_now && !was_down;
+	button_state->just_released = !down_now && was_down;
 }
 
 static void reset_button_state(ButtonState* button_state) {
 	button_state->down = 0;
-	button_state->pressed = 0;
-	button_state->released = 0;
+	button_state->just_pressed = 0;
+	button_state->just_released = 0;
 }
+
+static void post_update_button_state(ButtonState* button_state) {
+	// After the button was released, we'll need to reset all the button states
+	if (button_state->just_released) {
+		reset_button_state(button_state);
+	}
+
+	// If the button is down and already pressed, then it no longer was just pressed
+	// just_pressed should stay true for one frame
+	if (button_state->just_pressed && button_state->down) {
+		button_state->just_pressed = false;
+	}
+}
+
 
 // TODO: create a error buffer, with a dump to file 
 static void log_error(const char* name) {
@@ -44,92 +60,15 @@ static void process_event_queue(App* app) {
 		switch (event.kind) {
 
 			case EventKind_Key_Down:{
-				switch (event.event.key_event.key) {
-					case SDL_SCANCODE_W: {
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Backward);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Backward);
-						break;
-					}
-					case SDL_SCANCODE_S: {
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Forward);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Forward);
-						break;
-					}
-
-					case SDL_SCANCODE_1: {
-						
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Up);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Up);
-						break;
-					}
-					case SDL_SCANCODE_2: {
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Down);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Down);
-						break;
-					}
-
-					case SDL_SCANCODE_E: {
-						//app->renderer.software_renderer.camera.rotation.y += 1;
-						app->renderer.opengl.main_camera.rotation.y += 1;
-						break;
-					}
-					case SDL_SCANCODE_Q: {
-						//app->renderer.software_renderer.camera.rotation.y -= 1;
-						app->renderer.opengl.main_camera.rotation.y -= 1;
-						break;
-					}
-
-					case SDL_SCANCODE_X: {
-						//app->renderer.software_renderer.camera.rotation.z += 1;
-						app->renderer.opengl.main_camera.rotation.z += 1;
-						break;
-					}
-					case SDL_SCANCODE_Z: {
-						//app->renderer.software_renderer.camera.rotation.z -= 1;
-						app->renderer.opengl.main_camera.rotation.z -= 1;
-						break;
-					}
-
-					case SDL_SCANCODE_A: {
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Left);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Left);
-						break;
-					}
-					case SDL_SCANCODE_D: {
-						//app->renderer.software_renderer.camera.pos.xyz_ = vec_add(app->renderer.software_renderer.camera.pos.xyz_, Vec3f_Right);
-						app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, Vec3f_Right);
-						break;
-					}
-
-				
-					default:
-						break;
-				}
-
 				event_printf("Key Down: %d\n", event.event.key_event.key);
+				update_button_state(&app->keys[event.event.key_event.key], true);
+				
 				break;
 			}
-			case EventKind_Key_Pressed: {
-				event_printf("Key pressed: %d\n", event.event.key_event.key);
-				switch (event.event.key_event.key) {
-					case SDL_SCANCODE_G: {
-						app->renderer.opengl.show_debug_grid = !app->renderer.opengl.show_debug_grid;
-						break;
-					}
 
-					case SDL_SCANCODE_H: {
-						app->renderer.opengl.show_debug_axes = !app->renderer.opengl.show_debug_axes;
-						break;
-					}
-					case SDL_SCANCODE_ESCAPE: {
-						app->quit = true;
-						break;
-					}
-				}
-				break;
-			}
 			case EventKind_Key_Up: {
 				event_printf("Key Up: %d\n", event.event.key_event.key);
+				update_button_state(&app->keys[event.event.key_event.key], false);
 				break;
 			}
 			case EventKind_Mouse_Button_Down: {
@@ -137,6 +76,24 @@ static void process_event_queue(App* app) {
 					event.event.mouse_button_event.button,
 					event.event.mouse_button_event.pos.x,
 					event.event.mouse_button_event.pos.y);
+
+				switch (event.event.mouse_button_event.button) {
+					case MouseButton_Left:
+						update_button_state(&app->mouse.mouse_button_left, true);
+						break;
+					case MouseButton_Right:
+						update_button_state(&app->mouse.mouse_button_right, true);
+						break;
+					case MouseButton_Middle:
+						update_button_state(&app->mouse.mouse_button_middle, true);
+						break;
+					default:
+						break;
+				}
+				app->mouse.pos = event.event.mouse_button_event.pos;
+				
+				
+				
 				break;
 			}
 			case EventKind_Mouse_Button_Up: {
@@ -144,6 +101,22 @@ static void process_event_queue(App* app) {
 					event.event.mouse_button_event.button,
 					event.event.mouse_button_event.pos.x,
 					event.event.mouse_button_event.pos.y);
+
+				switch (event.event.mouse_button_event.button) {
+					case MouseButton_Left:
+						update_button_state(&app->mouse.mouse_button_left, false);
+						break;
+					case MouseButton_Right:
+						update_button_state(&app->mouse.mouse_button_right, false);
+						break;
+					case MouseButton_Middle:
+						update_button_state(&app->mouse.mouse_button_middle, false);
+						break;
+					default:
+						break;
+				}
+				app->mouse.pos = event.event.mouse_button_event.pos;
+
 				break;
 			}
 			case EventKind_Mouse_Move: {
@@ -390,6 +363,8 @@ static bool init_renderer(App* app) {
 }
 
 
+
+
 static bool init_keys(App* app) {
 	// Init mouse buttons
 	reset_button_state(&app->mouse.mouse_button_left);
@@ -408,15 +383,30 @@ static bool init_event_queue(App* app) {
 	return true;
 }
 
-static bool init_time(App* app) {
-	app->time.ticks_per_sec = SDL_GetPerformanceFrequency();
-	app->time.sdl_start_ticks = SDL_GetPerformanceCounter();
-	app->time.ticks = 0;
-	app->time.delta_ticks = 0;
-	app->time.seconds = 0;
-	app->time.milliseconds = 0;
-	app->time.delta_seconds = 0;
-	app->time.delta_milliseconds = 0;
+
+
+static bool init_clock(App* app) {
+
+	app->clock.ticks_per_sec = SDL_GetPerformanceFrequency();
+	app->clock.sdl_start_ticks = SDL_GetPerformanceCounter();
+	app->clock.ticks = 0;
+	app->clock.delta_ticks = 0;
+	app->clock.seconds = 0;
+	app->clock.milliseconds = 0;
+	app->clock.delta_seconds = 0;
+	app->clock.delta_milliseconds = 0;
+	return true;
+}
+
+static bool init_game_loop(App* app) {
+	app->game_loop.target_fps = app->display.refresh_rate;
+	app->game_loop.fps = app->game_loop.target_fps;
+	app->game_loop.time_step = 1.0f / app->game_loop.target_fps;
+	app->game_loop.current_time = SDL_GetTicks() / 1000.0f;
+	app->game_loop.accumulator = 0;
+	app->game_loop.total_time = 0;
+	app->game_loop.max_delta = 0.05;
+	app->game_loop.framesCount = 0;
 	return true;
 }
 
@@ -425,16 +415,16 @@ static bool init_debug(App* app) {
 	return true;
 }
 
-static void update_time(App* app) {
-	uint64_t ticks = SDL_GetPerformanceCounter() - app->time.sdl_start_ticks;
-	app->time.delta_ticks = (int)(ticks - app->time.ticks);
-	app->time.ticks = ticks;
+static void update_clock(App* app) {
+	uint64_t ticks = SDL_GetPerformanceCounter() - app->clock.sdl_start_ticks;
+	app->clock.delta_ticks = (int)(ticks - app->clock.ticks);
+	app->clock.ticks = ticks;
 
-	app->time.milliseconds = (app->time.ticks * 1000) / app->time.ticks_per_sec;
-	app->time.seconds = (double)(app->time.ticks) / (double)(app->time.ticks_per_sec);
+	app->clock.milliseconds = (app->clock.ticks * 1000) / app->clock.ticks_per_sec;
+	app->clock.seconds = (double)(app->clock.ticks) / (double)(app->clock.ticks_per_sec);
 
-	app->time.delta_milliseconds = (int)((app->time.delta_ticks * 1000) / app->time.ticks_per_sec);
-	app->time.delta_seconds = (float)(app->time.delta_ticks) / (float)(app->time.ticks_per_sec);
+	app->clock.delta_milliseconds = (int)((app->clock.delta_ticks * 1000) / app->clock.ticks_per_sec);
+	app->clock.delta_seconds = (float)(app->clock.delta_ticks) / (float)(app->clock.ticks_per_sec);
 
 	/*printf("Seconds: %lf\tdelta_seconds: %f\tms: %d\tdelta_ms: %d\n",
 	app->time.seconds,
@@ -442,31 +432,36 @@ static void update_time(App* app) {
 	app->time.milliseconds,
 	app->time.delta_milliseconds);*/
 
-	/*app.time.nsecs = (app.time.ticks * 1000 * 1000 * 1000) / app.time.ticks_per_sec;
-	app.time.usecs = (app.time.ticks * 1000 * 1000) / app.time.ticks_per_sec;*/
-	/*app.time.delta_nsecs = int((app.time.delta_ticks * 1000 * 1000 * 1000) / app.time.ticks_per_sec);
-	app.time.delta_usecs = int((app.time.delta_ticks * 1000 * 1000) / app.time.ticks_per_sec);*/
+	
 
 }
 
 static void process_inputs(App* app) {
 
-	// TODO: need to handle events when multiple keys are presses at the same time. right now when two keys are pressed at the same time, only one is sent to the event queue
+
+	post_update_button_state(&app->mouse.mouse_button_left);
+	post_update_button_state(&app->mouse.mouse_button_middle);
+	post_update_button_state(&app->mouse.mouse_button_right);
+
+	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
+		post_update_button_state(&app->keys[c]);
+	}
+
+
 	SDL_Event sdl_event;
+	
 	while (SDL_PollEvent(&sdl_event)) {
 
-		const Uint8 *keys = SDL_GetKeyboardState(NULL);
-
+		
+		/*const Uint8 *keys = SDL_GetKeyboardState(NULL);
 		for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
 			
 			Event event;
 			event.event.key_event.key = i;
 
-			
-
-			
 			ButtonState* button_state = &app->keys[i];
-			update_button_state(&app->keys[i], keys[i]);
+
+			update_button_state(&app->keys[i], (bool)keys[i]);
 
 			if (button_state->pressed) {
 				event.kind = EventKind_Key_Pressed;
@@ -477,16 +472,13 @@ static void process_inputs(App* app) {
 				event.kind = EventKind_Key_Down;
 				push_to_event_queue(app, event);
 			} 
-
-			
-
-				
+	
 			if (button_state->released) {
 				event.kind = EventKind_Key_Up;
 				push_to_event_queue(app, event);
 			}
 			
-		}
+		}*/
 		
 
 		switch (sdl_event.type) {
@@ -506,14 +498,13 @@ static void process_inputs(App* app) {
 
 				// TODO: (steven), see if we could handle this only through the event queue, and not with update button state
 				if (sdl_event.button.button == SDL_BUTTON_LEFT) {
-					update_button_state(&app->mouse.mouse_button_left, sdl_event.button.state == SDL_PRESSED);
+					//update_button_state(&app->mouse.mouse_button_left, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Left;
 				} else if (sdl_event.button.button == SDL_BUTTON_MIDDLE) {
-					update_button_state(&app->mouse.mouse_button_middle, sdl_event.button.state == SDL_PRESSED);
-					//update_digital_button(&app.mouse.middle_button, event.button.state == SDL_PRESSED);
+					//update_button_state(&app->mouse.mouse_button_middle, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Middle;
 				} else if (sdl_event.button.button == SDL_BUTTON_RIGHT) {
-					update_button_state(&app->mouse.mouse_button_right, sdl_event.button.state == SDL_PRESSED);
+					//update_button_state(&app->mouse.mouse_button_right, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Right;
 				}
 
@@ -528,21 +519,18 @@ static void process_inputs(App* app) {
 				break;
 			}
 
-			//case SDL_KEYDOWN: case SDL_KEYUP: {
-			//	SDL_Scancode keycode = sdl_event.key.keysym.scancode;
+			case SDL_KEYDOWN: case SDL_KEYUP: {
+				SDL_Scancode keycode = sdl_event.key.keysym.scancode;
 
-			//	if (keycode) {
-			//		// TODO(steven) see if we can handle this through the event queue
-			//		update_button_state(&app->keys[keycode], sdl_event.key.state == SDL_PRESSED);
+				if (keycode) {
+					Event event;
+					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
+					event.event.key_event.key = keycode;
+					push_to_event_queue(app, event);
 
-			//		Event event;
-			//		event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
-			//		event.event.key_event.key = keycode;
-			//		push_to_event_queue(app, event);
-
-			//	}
-			//	break;
-			//}
+				}
+				break;
+			}
 			case SDL_WINDOWEVENT: {
 
 				Event event;
@@ -602,7 +590,8 @@ bool init_app(App* app) {
 	if (!init_renderer(app)) { return false; }
 	if (!init_keys(app)) { return false; }
 	if (!init_event_queue(app)) { return false; }
-	if (!init_time(app)) { return false; }
+	if (!init_clock(app)) { return false; }
+	if (!init_game_loop(app)) { return false; }
 
 
 
@@ -628,11 +617,129 @@ bool destroy_app(App* app) {
 	return true;
 }
 
+
+// TODO: seperate this out
+void update(App* app) {
+	//printf("update");
+
+	if (app->keys[SDL_SCANCODE_G].just_pressed) {		
+		app->renderer.opengl.show_debug_grid = !app->renderer.opengl.show_debug_grid;
+	}
+
+	if (app->keys[SDL_SCANCODE_H].just_pressed) {
+		
+		app->renderer.opengl.show_debug_axes = !app->renderer.opengl.show_debug_axes;
+	}
+
+	if (app->keys[SDL_SCANCODE_ESCAPE].just_pressed) {
+		app->quit = true;
+	}
+
+
+
+	if (app->keys[SDL_SCANCODE_W].down) {
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Backward));
+	}
+
+	if (app->keys[SDL_SCANCODE_S].down) {
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Forward));
+	}
+
+	if (app->keys[SDL_SCANCODE_1].down) {
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Up));
+	}
+
+	if (app->keys[SDL_SCANCODE_2].down) {
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Down));
+	}
+
+	if (app->keys[SDL_SCANCODE_A].down) {
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Left));
+	}
+
+	if (app->keys[SDL_SCANCODE_D].down) {
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Right));
+	}
+
+	if (app->keys[SDL_SCANCODE_E].down) {
+		app->renderer.opengl.main_camera.rotation.y += app->game_loop.time_step * 100;
+	}
+
+	if (app->keys[SDL_SCANCODE_Q].down) {
+		app->renderer.opengl.main_camera.rotation.y -= app->game_loop.time_step * 100;
+	}
+
+	if (app->keys[SDL_SCANCODE_X].down) {
+		app->renderer.opengl.main_camera.rotation.z += app->game_loop.time_step * 100;
+	}
+
+	if (app->keys[SDL_SCANCODE_Z].down) {
+		app->renderer.opengl.main_camera.rotation.z -= app->game_loop.time_step * 100;
+	}
+}
+
+void fixed_update(App* app) {
+
+}
+
 void game_loop(App* app) {
+	// TODO: proper game loop
 	while (!app->quit) {
+
+		
+		update_clock(app);
+
+
+		// Fixed time step, with an accumulator, and max delta time interpolation
+		double new_time = SDL_GetTicks() / 1000.0f;
+		double delta_frame_time = new_time - app->game_loop.current_time;
+
+		
+		
+
+		//if (delta_frame_time >= app->game_loop.max_delta) {
+		//	delta_frame_time = app->game_loop.max_delta;
+		//	//printf("clamped");
+		//}
+
+		app->game_loop.current_time = new_time;
+		app->game_loop.accumulator += delta_frame_time;
+		
+
+		
+
+		
+		app->game_loop.framesCount++;
+
+		//
+		//app->game_loop.fps = 1/dt;
+		//printf("FPS %d, dt %f\n", app->game_loop.fps, dt);
+		////app->game_loop.framesCount = 0;
+		
+
+		
+		
+		
+		
 		process_inputs(app);
 		process_event_queue(app);
+		
 
+		while (app->game_loop.accumulator >= app->game_loop.time_step) {
+
+			update(app);
+			// Update game world(app->time.ms_per_frame)
+			// Physics update (app->time.ms_per_frame)
+			app->game_loop.total_time += app->game_loop.time_step;
+			app->game_loop.accumulator -= app->game_loop.time_step;
+		}
+			
+
+		float alpha = app->game_loop.accumulator / app->game_loop.time_step;
+
+
+		
+		
 		switch (app->renderer.type) {
 			case BackenedRenderer_Software: {
 				software_render(&app->renderer.software_renderer);
@@ -650,8 +757,14 @@ void game_loop(App* app) {
 			default:
 				break;
 		}
+		
 
-		update_time(app);
+		
+		
+		
+
+		
 
 	}
 }
+

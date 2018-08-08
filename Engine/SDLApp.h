@@ -10,6 +10,7 @@
 
 #define DEBUG 1
 
+
 #if DEBUG
 #define DEBUG_ALLOW_PRINT_EVENT true
 #define event_printf(...) printf(__VA_ARGS__)
@@ -77,8 +78,8 @@ typedef enum MouseButton {
 
 typedef struct ButtonState {
 	bool down;
-	int pressed;
-	int released;
+	bool just_pressed;
+	bool just_released;
 } ButtonState;
 
 
@@ -97,7 +98,6 @@ typedef struct Mouse {
 typedef enum EventKind {
 	EventKind_None,
 	EventKind_Key_Down,
-	EventKind_Key_Pressed,
 	EventKind_Key_Up,
 	EventKind_Mouse_Button_Down,
 	EventKind_Mouse_Button_Up,
@@ -158,7 +158,7 @@ typedef struct Event {
 
 } Event;
 
-typedef struct Time {
+typedef struct Clock {
 
 	uint64_t ticks;
 	uint64_t delta_ticks;
@@ -168,10 +168,30 @@ typedef struct Time {
 
 	uint64_t milliseconds;
 	int delta_milliseconds;
+	
 
 	uint64_t ticks_per_sec;
 	uint64_t sdl_start_ticks;
-} Time;
+
+} Clock;
+
+
+typedef struct GameTimer {
+	double current_time;
+
+	int target_fps;
+	int fps;
+	double time_step;
+	double total_time;
+	double max_delta;
+	double accumulator;
+
+	int framesCount;
+	
+
+	
+}GameTimer;
+
 
 
 typedef struct DebugData {
@@ -196,6 +216,7 @@ typedef struct Renderer {
 } Renderer;
 
 
+
 typedef struct App {
 	Renderer renderer;
 	Display display;
@@ -204,10 +225,15 @@ typedef struct App {
 	ButtonState keys[SDL_NUM_SCANCODES];
 	Event event_queue[MAX_EVENTS];
 	int event_count;
-	Time time;
+	Clock clock;
+	GameTimer game_loop;
 	char const* platform;
 	bool quit;
 	DebugData debug;
+
+	
+
+	
 } App;
 
 
@@ -220,9 +246,10 @@ static bool init_window(App* app);
 static bool init_renderer(App* app);
 static bool init_keys(App* app);
 static bool init_event_queue(App* app);
-static bool init_time(App* app);
+static bool init_clock(App* app);
+static bool init_game_loop(App* app);
 static bool init_debug(App* app);
-static void update_time(App* app);
+static void update_clock(App* app);
 static void process_inputs(App* app);
 
 
@@ -230,4 +257,8 @@ static void process_inputs(App* app);
 
 bool init_app(App* app);
 bool destroy_app(App* app);
+// TODO: seperate this out
+void update(App* app);
+void fixed_update(App* app);
 void game_loop(App* app);
+

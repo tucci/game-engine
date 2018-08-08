@@ -56,7 +56,7 @@ typedef struct OpenGLRenderer {
 	GLuint grid_debug_VBO;
 	
 
-	
+
 
 	
 
@@ -71,8 +71,8 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 
 
 
-void init_debug(OpenGLRenderer* opengl);
-void destroy_debug(OpenGLRenderer* opengl);
+void init_gl_debug(OpenGLRenderer* opengl);
+void destroy_gl_debug(OpenGLRenderer* opengl);
 
 void opengl_render(OpenGLRenderer* opengl);
 void opengl_debug_render(OpenGLRenderer* opengl);
