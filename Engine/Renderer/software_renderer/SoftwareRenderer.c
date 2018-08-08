@@ -271,12 +271,13 @@ void software_debug_render(SoftwareRenderer* r) {
 
 
 	
-
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
 	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
+	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
+	view_mat = transpose(&view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &projection_mat);

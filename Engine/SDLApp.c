@@ -399,14 +399,22 @@ static bool init_clock(App* app) {
 }
 
 static bool init_game_loop(App* app) {
-	app->game_loop.target_fps = app->display.refresh_rate;
-	app->game_loop.fps = app->game_loop.target_fps;
+	app->game_loop.cap_framerate = false;
+	//app->game_loop.target_fps = app->display.refresh_rate;
+	app->game_loop.target_fps = 60;
+	app->game_loop.fps = 0;
+	app->game_loop.target_delta_time = 1.0f / app->game_loop.target_fps;
+	app->game_loop.delta_time = 0;
+
+	// NOTE: the time step is the physics time step.
+	// The time step isnt really tied to the gamer render fps
+	// Right now the time step is fixed to the target fps
 	app->game_loop.time_step = 1.0f / app->game_loop.target_fps;
 	app->game_loop.current_time = SDL_GetTicks() / 1000.0f;
 	app->game_loop.accumulator = 0;
-	app->game_loop.total_time = 0;
-	app->game_loop.max_delta = 0.05;
-	app->game_loop.framesCount = 0;
+	app->game_loop.physics_time = 0;
+	app->game_loop.max_delta = 0.05f;
+	app->game_loop.frame_count = 0;
 	return true;
 }
 
@@ -437,8 +445,6 @@ static void update_clock(App* app) {
 }
 
 static void process_inputs(App* app) {
-
-
 	post_update_button_state(&app->mouse.mouse_button_left);
 	post_update_button_state(&app->mouse.mouse_button_middle);
 	post_update_button_state(&app->mouse.mouse_button_right);
@@ -446,6 +452,11 @@ static void process_inputs(App* app) {
 	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
 		post_update_button_state(&app->keys[c]);
 	}
+
+	
+
+	
+	
 
 
 	SDL_Event sdl_event;
@@ -496,7 +507,6 @@ static void process_inputs(App* app) {
 				MouseButton button;
 				button = MouseButton_None;
 
-				// TODO: (steven), see if we could handle this only through the event queue, and not with update button state
 				if (sdl_event.button.button == SDL_BUTTON_LEFT) {
 					//update_button_state(&app->mouse.mouse_button_left, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Left;
@@ -618,16 +628,13 @@ bool destroy_app(App* app) {
 }
 
 
-// TODO: seperate this out
-void update(App* app) {
-	//printf("update");
-
+void update(App* app, float deltaTime) {
+	
 	if (app->keys[SDL_SCANCODE_G].just_pressed) {		
 		app->renderer.opengl.show_debug_grid = !app->renderer.opengl.show_debug_grid;
 	}
 
 	if (app->keys[SDL_SCANCODE_H].just_pressed) {
-		
 		app->renderer.opengl.show_debug_axes = !app->renderer.opengl.show_debug_axes;
 	}
 
@@ -636,50 +643,62 @@ void update(App* app) {
 	}
 
 
-
+	// TODO: refactor camera to game state when we have one.
+	//dont want to have camera in software renderer and gl renderer.
+	// Seperate input from rendering
 	if (app->keys[SDL_SCANCODE_W].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Backward));
+		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
 	}
 
 	if (app->keys[SDL_SCANCODE_S].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Forward));
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
+		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
 	}
 
 	if (app->keys[SDL_SCANCODE_1].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Up));
+		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
 	}
 
 	if (app->keys[SDL_SCANCODE_2].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Down));
+		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
 	}
 
 	if (app->keys[SDL_SCANCODE_A].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Left));
+		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
 	}
 
 	if (app->keys[SDL_SCANCODE_D].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(app->game_loop.time_step, Vec3f_Right));
+		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
+		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
 	}
 
 	if (app->keys[SDL_SCANCODE_E].down) {
-		app->renderer.opengl.main_camera.rotation.y += app->game_loop.time_step * 100;
+		//app->renderer.software_renderer.camera.rotation.y += deltaTime * 100;
+		app->renderer.opengl.main_camera.rotation.y += deltaTime * 100;
 	}
 
 	if (app->keys[SDL_SCANCODE_Q].down) {
-		app->renderer.opengl.main_camera.rotation.y -= app->game_loop.time_step * 100;
+		//app->renderer.software_renderer.camera.rotation.y -= deltaTime * 100;
+		app->renderer.opengl.main_camera.rotation.y -= deltaTime * 100;
 	}
 
 	if (app->keys[SDL_SCANCODE_X].down) {
-		app->renderer.opengl.main_camera.rotation.z += app->game_loop.time_step * 100;
+		app->renderer.opengl.main_camera.rotation.z += deltaTime * 100;
 	}
 
 	if (app->keys[SDL_SCANCODE_Z].down) {
-		app->renderer.opengl.main_camera.rotation.z -= app->game_loop.time_step * 100;
+		app->renderer.opengl.main_camera.rotation.z -= deltaTime * 100;
 	}
+
+	
 }
 
-void fixed_update(App* app) {
-
+void fixed_update(App* app, float fixed_time) {
+	// Physics stuff
 }
 
 void game_loop(App* app) {
@@ -689,57 +708,40 @@ void game_loop(App* app) {
 		
 		update_clock(app);
 
-
 		// Fixed time step, with an accumulator, and max delta time interpolation
-		double new_time = SDL_GetTicks() / 1000.0f;
-		double delta_frame_time = new_time - app->game_loop.current_time;
+		double new_time = (SDL_GetTicks() / 1000.0f);
+		double delta_time = new_time - app->game_loop.current_time;
+		app->game_loop.delta_time = delta_time;
 
 		
 		
 
-		//if (delta_frame_time >= app->game_loop.max_delta) {
-		//	delta_frame_time = app->game_loop.max_delta;
-		//	//printf("clamped");
-		//}
+		/*if (delta_time >= app->game_loop.max_delta) {
+			delta_time = app->game_loop.max_delta;
+		}*/
 
-		app->game_loop.current_time = new_time;
-		app->game_loop.accumulator += delta_frame_time;
-		
-
-		
-
-		
-		app->game_loop.framesCount++;
-
-		//
-		//app->game_loop.fps = 1/dt;
-		//printf("FPS %d, dt %f\n", app->game_loop.fps, dt);
-		////app->game_loop.framesCount = 0;
-		
-
-		
-		
-		
-		
+		app->game_loop.accumulator += delta_time;
+	
+		// Process inputs once per frame
 		process_inputs(app);
 		process_event_queue(app);
+
 		
 
 		while (app->game_loop.accumulator >= app->game_loop.time_step) {
-
-			update(app);
-			// Update game world(app->time.ms_per_frame)
-			// Physics update (app->time.ms_per_frame)
-			app->game_loop.total_time += app->game_loop.time_step;
+			// fixed update zero or more times per frame
+			fixed_update(app, app->game_loop.time_step);
+			app->game_loop.physics_time += app->game_loop.time_step;
 			app->game_loop.accumulator -= app->game_loop.time_step;
 		}
-			
 
+		// Update once per frame
+		update(app, delta_time);
+
+	
+		// TODO: this is used to interpolate game state during the rendering
 		float alpha = app->game_loop.accumulator / app->game_loop.time_step;
 
-
-		
-		
 		switch (app->renderer.type) {
 			case BackenedRenderer_Software: {
 				software_render(&app->renderer.software_renderer);
@@ -757,11 +759,39 @@ void game_loop(App* app) {
 			default:
 				break;
 		}
+
+
+		app->game_loop.frame_count++;
+		app->game_loop.fps = (int) (1 / delta_time);
+		app->game_loop.current_time = new_time;
+
+
+		printf("FPS %d, dt %f\t", app->game_loop.fps, delta_time);
+		printf("total time %f, physics time %f\n", app->game_loop.current_time, app->game_loop.physics_time);
+
+
+
+		if (app->game_loop.cap_framerate) {
+			// TODO: if we have low frame rate, we might be skipping events. A possible  way to do this, is to have the input and rendering on seperate threads
+			// https://gamedev.stackexchange.com/questions/90762/taking-advantage-of-multithreading-between-game-loop-and-opengl
+			// As of right now, this frame capping is more of a test
+			// TODO: we're gonna need debug info overlays for in game stuff
+			double frame_time = (SDL_GetTicks() / 1000.0f) - new_time;
+			// Frame capping
+			if (frame_time < app->game_loop.target_delta_time) {
+				float sleep_for = app->game_loop.target_delta_time - frame_time;
+				// NOTE: since we can't change the os scheduling, we'll wait at least sleep_for time.
+				// If there is a way to change the granularity of the sleep, then we should do it
+				SDL_Delay(1000 * sleep_for);
+			}
+		}
 		
 
 		
 		
-		
+
+
+
 
 		
 

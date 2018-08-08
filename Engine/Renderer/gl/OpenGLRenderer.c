@@ -192,8 +192,8 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	ObjModel model;
 
-	/*load_obj("Assets/obj/african_head.obj", &model);
-	load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);*/
+	//load_obj("Assets/obj/african_head.obj", &model);
+	//load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);
 
 	
 

@@ -24,11 +24,12 @@
 #define DEBUG_GRID_SIZE 100
 
 typedef struct OpenGLRenderer {
+	Camera main_camera;
 	SDL_GLContext gl_context;
 	SDL_Window* sdl_window;
 	Vec2i window_size;
 
-	Camera main_camera;
+
 	// TODO: move this to it's own place struture. use some sort of allocator
 	StaticMesh mesh;
 	SurfaceData texture;

@@ -15,13 +15,15 @@
 
 
 typedef struct SoftwareRenderer {
+	Camera camera;
+
 	SDL_Renderer* renderer;
 	SDL_Surface* surface;
 	SDL_Window* sdl_window;
 	Vec2i window_size;
 	float* zbuffer;
 	int zbuffer_size;
-	Camera camera;
+	
 	SoftwareRendererShader shader;
 
 	// TODO: find a better way to store these things

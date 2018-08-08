@@ -177,20 +177,31 @@ typedef struct Clock {
 
 
 typedef struct GameTimer {
-	double current_time;
-
+	
+	bool cap_framerate;
+	int frame_count;
 	int target_fps;
 	int fps;
-	double time_step;
-	double total_time;
-	double max_delta;
-	double accumulator;
 
-	int framesCount;
+	// Target delta time used to cap frame rate
+	float target_delta_time;
+	// Time since last frame
+	float delta_time;
+	// Physics time step. This is fixed
+	float time_step;
+	// The current time since game start up
+	float current_time;
+
+	float max_delta;
+	// Accumulator used for the fixed time step
+	float accumulator;
+	// The current time for physics calculations since game start up
+	float physics_time;
+	
 	
 
 	
-}GameTimer;
+} GameTimer;
 
 
 
@@ -257,8 +268,7 @@ static void process_inputs(App* app);
 
 bool init_app(App* app);
 bool destroy_app(App* app);
-// TODO: seperate this out
-void update(App* app);
-void fixed_update(App* app);
+void update(App* app, float delta_time);
+void fixed_update(App* app, float fixed_time);
 void game_loop(App* app);
 
