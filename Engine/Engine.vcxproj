@@ -105,6 +105,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\lib\glew210\include\GL;$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -141,6 +142,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\lib\glew210\include\GL;$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -152,6 +154,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Camera.c" />
+    <ClCompile Include="Core\StaticMesh.c" />
+    <ClCompile Include="Renderer\gl\GLShader.c" />
     <ClCompile Include="TextureData.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="ObjFile.c" />

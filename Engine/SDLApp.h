@@ -228,16 +228,19 @@ typedef struct Renderer {
 
 
 
-typedef struct App {
+typedef struct Engine {
 	Renderer renderer;
 	Display display;
 	Window window;
+
 	Mouse mouse;
 	ButtonState keys[SDL_NUM_SCANCODES];
 	Event event_queue[MAX_EVENTS];
 	int event_count;
+
 	Clock clock;
 	GameTimer game_loop;
+
 	char const* platform;
 	bool quit;
 	DebugData debug;
@@ -245,30 +248,30 @@ typedef struct App {
 	
 
 	
-} App;
+} Engine;
 
 
 
 static void log_error(const char* name);
-static bool push_to_event_queue(App* app, Event event);
-static void process_event_queue(App* app);
-static bool init_display(App* app);
-static bool init_window(App* app);
-static bool init_renderer(App* app);
-static bool init_keys(App* app);
-static bool init_event_queue(App* app);
-static bool init_clock(App* app);
-static bool init_game_loop(App* app);
-static bool init_debug(App* app);
-static void update_clock(App* app);
-static void process_inputs(App* app);
+static bool push_to_event_queue(Engine* engine, Event event);
+static void process_event_queue(Engine* engine);
+static bool init_display(Engine* engine);
+static bool init_window(Engine* engine);
+static bool init_renderer(Engine* engine);
+static bool init_keys(Engine* engine);
+static bool init_event_queue(Engine* engine);
+static bool init_clock(Engine* engine);
+static bool init_game_loop(Engine* engine);
+static bool init_debug(Engine* engine);
+static void update_clock(Engine* engine);
+static void process_inputs(Engine* engine);
 
 
 
 
-bool init_app(App* app);
-bool destroy_app(App* app);
-void update(App* app, float delta_time);
-void fixed_update(App* app, float fixed_time);
-void game_loop(App* app);
+bool init_engine(Engine* engine);
+bool destroy_engine(Engine* engine);
+void update(Engine* engine, float delta_time);
+void fixed_update(Engine* engine, float fixed_time);
+void game_loop(Engine* engine);
 

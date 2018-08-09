@@ -14,7 +14,7 @@
 
 void load_image(char* filename, SurfaceData* sd) {
 
-	// NOTE: Flip textures verticall on load, our texture mapper expects textures to be upside down
+	// NOTE: Flip textures verticall on load, our texture mengineer expects textures to be upside down
 	stbi_set_flip_vertically_on_load(1);
 	int req_format = STBI_rgb_alpha;
 	int width, height, orig_format;

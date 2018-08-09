@@ -11,6 +11,7 @@ typedef union Vec2i {
 
 } Vec2i;
 
+
 typedef union Vec2f {
 	struct {
 
@@ -24,6 +25,7 @@ typedef union Vec2f {
 	float data[2];
 
 } Vec2f;
+
 
 typedef union Vec3f {
 

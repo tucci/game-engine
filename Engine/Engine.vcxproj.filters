@@ -33,6 +33,15 @@
     <ClCompile Include="Renderer\software_renderer\SoftwareRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\StaticMesh.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Camera.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer\gl\GLShader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">

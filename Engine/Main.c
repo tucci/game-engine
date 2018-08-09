@@ -10,14 +10,14 @@ int main(int argc, char* argv[]) {
 
 
 
-	App app;
+	Engine engine;
 
-	app.renderer.type = BackenedRenderer_OpenGL;
-	//app.renderer.type = BackenedRenderer_Software;
+	engine.renderer.type = BackenedRenderer_OpenGL;
+	//engine.renderer.type = BackenedRenderer_Software;
 
-	if (init_app(&app)) {
-		game_loop(&app);
-		destroy_app(&app);
+	if (init_engine(&engine)) {
+		game_loop(&engine);
+		destroy_engine(&engine);
 	}
 
     return 0;

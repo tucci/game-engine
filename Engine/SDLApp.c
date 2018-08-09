@@ -40,20 +40,20 @@ static void log_error(const char* name) {
 
 }
 
-static bool push_to_event_queue(App* app, Event event) {
+static bool push_to_event_queue(Engine* engine, Event event) {
 
-	if (app->event_count > MAX_EVENTS - 1) {
+	if (engine->event_count > MAX_EVENTS - 1) {
 		printf("Event queue full");
 		return false;
 	}
-	app->event_queue[app->event_count] = event;
-	app->event_count++;
+	engine->event_queue[engine->event_count] = event;
+	engine->event_count++;
 	return true;
 }
 
-static void process_event_queue(App* app) {
-	for (int i = 0; i < app->event_count; i++) {
-		Event event = app->event_queue[i];
+static void process_event_queue(Engine* engine) {
+	for (int i = 0; i < engine->event_count; i++) {
+		Event event = engine->event_queue[i];
 		
 
 		
@@ -61,14 +61,14 @@ static void process_event_queue(App* app) {
 
 			case EventKind_Key_Down:{
 				event_printf("Key Down: %d\n", event.event.key_event.key);
-				update_button_state(&app->keys[event.event.key_event.key], true);
+				update_button_state(&engine->keys[event.event.key_event.key], true);
 				
 				break;
 			}
 
 			case EventKind_Key_Up: {
 				event_printf("Key Up: %d\n", event.event.key_event.key);
-				update_button_state(&app->keys[event.event.key_event.key], false);
+				update_button_state(&engine->keys[event.event.key_event.key], false);
 				break;
 			}
 			case EventKind_Mouse_Button_Down: {
@@ -79,18 +79,18 @@ static void process_event_queue(App* app) {
 
 				switch (event.event.mouse_button_event.button) {
 					case MouseButton_Left:
-						update_button_state(&app->mouse.mouse_button_left, true);
+						update_button_state(&engine->mouse.mouse_button_left, true);
 						break;
 					case MouseButton_Right:
-						update_button_state(&app->mouse.mouse_button_right, true);
+						update_button_state(&engine->mouse.mouse_button_right, true);
 						break;
 					case MouseButton_Middle:
-						update_button_state(&app->mouse.mouse_button_middle, true);
+						update_button_state(&engine->mouse.mouse_button_middle, true);
 						break;
 					default:
 						break;
 				}
-				app->mouse.pos = event.event.mouse_button_event.pos;
+				engine->mouse.pos = event.event.mouse_button_event.pos;
 				
 				
 				
@@ -104,18 +104,18 @@ static void process_event_queue(App* app) {
 
 				switch (event.event.mouse_button_event.button) {
 					case MouseButton_Left:
-						update_button_state(&app->mouse.mouse_button_left, false);
+						update_button_state(&engine->mouse.mouse_button_left, false);
 						break;
 					case MouseButton_Right:
-						update_button_state(&app->mouse.mouse_button_right, false);
+						update_button_state(&engine->mouse.mouse_button_right, false);
 						break;
 					case MouseButton_Middle:
-						update_button_state(&app->mouse.mouse_button_middle, false);
+						update_button_state(&engine->mouse.mouse_button_middle, false);
 						break;
 					default:
 						break;
 				}
-				app->mouse.pos = event.event.mouse_button_event.pos;
+				engine->mouse.pos = event.event.mouse_button_event.pos;
 
 				break;
 			}
@@ -126,8 +126,8 @@ static void process_event_queue(App* app) {
 				event.event.mouse_move_event.delta_pos.x,
 				event.event.mouse_move_event.delta_pos.y);*/
 
-				app->mouse.pos = event.event.mouse_move_event.pos;
-				app->mouse.delta_pos = event.event.mouse_move_event.delta_pos;
+				engine->mouse.pos = event.event.mouse_move_event.pos;
+				engine->mouse.delta_pos = event.event.mouse_move_event.delta_pos;
 
 				break;
 			}
@@ -137,9 +137,9 @@ static void process_event_queue(App* app) {
 					event.event.window_event.data.data1,
 					event.event.window_event.data.data2);
 
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.pos.x = event.event.window_event.data.data1;
-				app->window.pos.y = event.event.window_event.data.data2;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.pos.x = event.event.window_event.data.data1;
+				engine->window.pos.y = event.event.window_event.data.data2;
 				break;
 			}
 
@@ -149,11 +149,11 @@ static void process_event_queue(App* app) {
 					event.event.window_event.data.data1,
 					event.event.window_event.data.data2);
 
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags &= ~WindowFlag_Minimized;
-				app->window.flags &= ~WindowFlag_Maximized;
-				app->window.size.x = event.event.window_event.data.data1;
-				app->window.size.y = event.event.window_event.data.data2;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags &= ~WindowFlag_Minimized;
+				engine->window.flags &= ~WindowFlag_Maximized;
+				engine->window.size.x = event.event.window_event.data.data1;
+				engine->window.size.y = event.event.window_event.data.data2;
 				break;
 			}
 
@@ -161,9 +161,9 @@ static void process_event_queue(App* app) {
 				event_printf("Window minimized, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags |= WindowFlag_Minimized;
-				app->window.flags &= ~WindowFlag_Maximized;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags |= WindowFlag_Minimized;
+				engine->window.flags &= ~WindowFlag_Maximized;
 				break;
 			}
 
@@ -171,9 +171,9 @@ static void process_event_queue(App* app) {
 				event_printf("Window maximized, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags &= ~WindowFlag_Minimized;
-				app->window.flags |= WindowFlag_Maximized;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags &= ~WindowFlag_Minimized;
+				engine->window.flags |= WindowFlag_Maximized;
 				break;
 			}
 
@@ -195,16 +195,16 @@ static void process_event_queue(App* app) {
 				event_printf("Window hidden, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags |= WindowFlag_Hidden;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags |= WindowFlag_Hidden;
 				break;
 			}
 			case EventKind_Window_Enter_Mouse_Focus: {
 				event_printf("Window enter mouse focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags |= WindowFlag_Has_Mouse_Focus;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags |= WindowFlag_Has_Mouse_Focus;
 				break;
 			}
 
@@ -212,24 +212,24 @@ static void process_event_queue(App* app) {
 				event_printf("Window lose mouse focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags &= ~WindowFlag_Has_Mouse_Focus;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags &= ~WindowFlag_Has_Mouse_Focus;
 				break;
 			}
 			case EventKind_Window_Enter_Keyboard_Focus: {
 				event_printf("Window enter keyboard focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags |= WindowFlag_Has_Keyboard_Focus;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags |= WindowFlag_Has_Keyboard_Focus;
 				break;
 			}
 			case EventKind_Window_Lose_Keyboard_Focus: {
 				event_printf("Window lose keyboard focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
-				app->window.window_id = event.event.window_event.data.window_id;
-				app->window.flags &= ~WindowFlag_Has_Keyboard_Focus;
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->window.flags &= ~WindowFlag_Has_Keyboard_Focus;
 				break;
 			}
 			default:
@@ -238,10 +238,10 @@ static void process_event_queue(App* app) {
 	}
 
 	// Clear the event queue
-	app->event_count = 0;
+	engine->event_count = 0;
 }
 
-static bool init_display(App* app) {
+static bool init_display(Engine* engine) {
 	// Grab the dpi from the display
 	float dpi;
 	if (SDL_GetDisplayDPI(0, &dpi, NULL, NULL) != 0) {
@@ -249,7 +249,7 @@ static bool init_display(App* app) {
 		return false;
 	}
 	assert(dpi > 0);
-	app->display.dpi = dpi;
+	engine->display.dpi = dpi;
 
 
 	SDL_DisplayMode mode;
@@ -263,34 +263,34 @@ static bool init_display(App* app) {
 	assert(mode.refresh_rate > 0);
 
 	// Grab data about the display
-	app->display.refresh_rate = mode.refresh_rate;
-	app->display.w = mode.w;
-	app->display.h = mode.h;
+	engine->display.refresh_rate = mode.refresh_rate;
+	engine->display.w = mode.w;
+	engine->display.h = mode.h;
 
 
 	return true;
 }
 
 
-static bool init_window(App* app) {
+static bool init_window(Engine* engine) {
 
 	SDL_WindowFlags sdl_flags = 0;
-	app->window.flags = 0;
+	engine->window.flags = 0;
 
-	app->window.flags |= WindowFlag_Resizable;
-	//app->window.flags |= WindowFlag_Fullscreen;
+	engine->window.flags |= WindowFlag_Resizable;
+	//engine->window.flags |= WindowFlag_Fullscreen;
 
 
 
-	if (app->renderer.type == BackenedRenderer_OpenGL) {
-		app->window.flags |= WindowFlag_OpenGL;
+	if (engine->renderer.type == BackenedRenderer_OpenGL) {
+		engine->window.flags |= WindowFlag_OpenGL;
 		sdl_flags |= SDL_WINDOW_OPENGL;
 	}
 	
-	if (app->window.flags & WindowFlag_Resizable) {
+	if (engine->window.flags & WindowFlag_Resizable) {
 		sdl_flags |= SDL_WINDOW_RESIZABLE;
 	}
-	if (app->window.flags & WindowFlag_Fullscreen) {
+	if (engine->window.flags & WindowFlag_Fullscreen) {
 		sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 
@@ -332,26 +332,26 @@ static bool init_window(App* app) {
 		return false;
 	}
 
-	app->window.title = title;
-	app->window.pos = (Vec2i) { x, y };
-	app->window.size = (Vec2i) { w, h };
-	app->window.sdl_window = sdl_window;
-	app->window.sdl_window_flags = sdl_flags;
+	engine->window.title = title;
+	engine->window.pos = (Vec2i) { x, y };
+	engine->window.size = (Vec2i) { w, h };
+	engine->window.sdl_window = sdl_window;
+	engine->window.sdl_window_flags = sdl_flags;
 
 	
 
 	return true;
 }
 
-static bool init_renderer(App* app) {
-	switch (app->renderer.type) {
+static bool init_renderer(Engine* engine) {
+	switch (engine->renderer.type) {
 		case BackenedRenderer_Software: {
-			init_software_renderer(app->window.sdl_window, &app->renderer.software_renderer, app->window.size);
+			init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size);
 			break;
 		}
 
 		case BackenedRenderer_OpenGL: {
-			init_opengl_renderer(app->window.sdl_window, &app->renderer.opengl, app->window.size);
+			init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, engine->window.size);
 			break;
 		}
 		default:
@@ -365,92 +365,92 @@ static bool init_renderer(App* app) {
 
 
 
-static bool init_keys(App* app) {
+static bool init_keys(Engine* engine) {
 	// Init mouse buttons
-	reset_button_state(&app->mouse.mouse_button_left);
-	reset_button_state(&app->mouse.mouse_button_middle);
-	reset_button_state(&app->mouse.mouse_button_right);
+	reset_button_state(&engine->mouse.mouse_button_left);
+	reset_button_state(&engine->mouse.mouse_button_middle);
+	reset_button_state(&engine->mouse.mouse_button_right);
 
 	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
-		reset_button_state(&app->keys[c]);
+		reset_button_state(&engine->keys[c]);
 	}
 
 	return true;
 }
 
-static bool init_event_queue(App* app) {
-	app->event_count = 0;
+static bool init_event_queue(Engine* engine) {
+	engine->event_count = 0;
 	return true;
 }
 
 
 
-static bool init_clock(App* app) {
+static bool init_clock(Engine* engine) {
 
-	app->clock.ticks_per_sec = SDL_GetPerformanceFrequency();
-	app->clock.sdl_start_ticks = SDL_GetPerformanceCounter();
-	app->clock.ticks = 0;
-	app->clock.delta_ticks = 0;
-	app->clock.seconds = 0;
-	app->clock.milliseconds = 0;
-	app->clock.delta_seconds = 0;
-	app->clock.delta_milliseconds = 0;
+	engine->clock.ticks_per_sec = SDL_GetPerformanceFrequency();
+	engine->clock.sdl_start_ticks = SDL_GetPerformanceCounter();
+	engine->clock.ticks = 0;
+	engine->clock.delta_ticks = 0;
+	engine->clock.seconds = 0;
+	engine->clock.milliseconds = 0;
+	engine->clock.delta_seconds = 0;
+	engine->clock.delta_milliseconds = 0;
 	return true;
 }
 
-static bool init_game_loop(App* app) {
-	app->game_loop.cap_framerate = false;
-	//app->game_loop.target_fps = app->display.refresh_rate;
-	app->game_loop.target_fps = 60;
-	app->game_loop.fps = 0;
-	app->game_loop.target_delta_time = 1.0f / app->game_loop.target_fps;
-	app->game_loop.delta_time = 0;
+static bool init_game_loop(Engine* engine) {
+	engine->game_loop.cap_framerate = false;
+	//engine->game_loop.target_fps = engine->display.refresh_rate;
+	engine->game_loop.target_fps = 60;
+	engine->game_loop.fps = 0;
+	engine->game_loop.target_delta_time = 1.0f / engine->game_loop.target_fps;
+	engine->game_loop.delta_time = 0;
 
 	// NOTE: the time step is the physics time step.
 	// The time step isnt really tied to the gamer render fps
 	// Right now the time step is fixed to the target fps
-	app->game_loop.time_step = 1.0f / app->game_loop.target_fps;
-	app->game_loop.current_time = SDL_GetTicks() / 1000.0f;
-	app->game_loop.accumulator = 0;
-	app->game_loop.physics_time = 0;
-	app->game_loop.max_delta = 0.05f;
-	app->game_loop.frame_count = 0;
+	engine->game_loop.time_step = 1.0f / engine->game_loop.target_fps;
+	engine->game_loop.current_time = SDL_GetTicks() / 1000.0f;
+	engine->game_loop.accumulator = 0;
+	engine->game_loop.physics_time = 0;
+	engine->game_loop.max_delta = 0.05f;
+	engine->game_loop.frame_count = 0;
 	return true;
 }
 
-static bool init_debug(App* app) {
-	app->debug.print_events = DEBUG_ALLOW_PRINT_EVENT;
+static bool init_debug(Engine* engine) {
+	engine->debug.print_events = DEBUG_ALLOW_PRINT_EVENT;
 	return true;
 }
 
-static void update_clock(App* app) {
-	uint64_t ticks = SDL_GetPerformanceCounter() - app->clock.sdl_start_ticks;
-	app->clock.delta_ticks = (int)(ticks - app->clock.ticks);
-	app->clock.ticks = ticks;
+static void update_clock(Engine* engine) {
+	uint64_t ticks = SDL_GetPerformanceCounter() - engine->clock.sdl_start_ticks;
+	engine->clock.delta_ticks = (int)(ticks - engine->clock.ticks);
+	engine->clock.ticks = ticks;
 
-	app->clock.milliseconds = (app->clock.ticks * 1000) / app->clock.ticks_per_sec;
-	app->clock.seconds = (double)(app->clock.ticks) / (double)(app->clock.ticks_per_sec);
+	engine->clock.milliseconds = (engine->clock.ticks * 1000) / engine->clock.ticks_per_sec;
+	engine->clock.seconds = (double)(engine->clock.ticks) / (double)(engine->clock.ticks_per_sec);
 
-	app->clock.delta_milliseconds = (int)((app->clock.delta_ticks * 1000) / app->clock.ticks_per_sec);
-	app->clock.delta_seconds = (float)(app->clock.delta_ticks) / (float)(app->clock.ticks_per_sec);
+	engine->clock.delta_milliseconds = (int)((engine->clock.delta_ticks * 1000) / engine->clock.ticks_per_sec);
+	engine->clock.delta_seconds = (float)(engine->clock.delta_ticks) / (float)(engine->clock.ticks_per_sec);
 
 	/*printf("Seconds: %lf\tdelta_seconds: %f\tms: %d\tdelta_ms: %d\n",
-	app->time.seconds,
-	app->time.delta_seconds,
-	app->time.milliseconds,
-	app->time.delta_milliseconds);*/
+	engine->time.seconds,
+	engine->time.delta_seconds,
+	engine->time.milliseconds,
+	engine->time.delta_milliseconds);*/
 
 	
 
 }
 
-static void process_inputs(App* app) {
-	post_update_button_state(&app->mouse.mouse_button_left);
-	post_update_button_state(&app->mouse.mouse_button_middle);
-	post_update_button_state(&app->mouse.mouse_button_right);
+static void process_inputs(Engine* engine) {
+	post_update_button_state(&engine->mouse.mouse_button_left);
+	post_update_button_state(&engine->mouse.mouse_button_middle);
+	post_update_button_state(&engine->mouse.mouse_button_right);
 
 	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
-		post_update_button_state(&app->keys[c]);
+		post_update_button_state(&engine->keys[c]);
 	}
 
 	
@@ -470,23 +470,23 @@ static void process_inputs(App* app) {
 			Event event;
 			event.event.key_event.key = i;
 
-			ButtonState* button_state = &app->keys[i];
+			ButtonState* button_state = &engine->keys[i];
 
-			update_button_state(&app->keys[i], (bool)keys[i]);
+			update_button_state(&engine->keys[i], (bool)keys[i]);
 
 			if (button_state->pressed) {
 				event.kind = EventKind_Key_Pressed;
-				push_to_event_queue(app, event);
+				push_to_event_queue(engine, event);
 			}
 
 			else if (button_state->down) {
 				event.kind = EventKind_Key_Down;
-				push_to_event_queue(app, event);
+				push_to_event_queue(engine, event);
 			} 
 	
 			if (button_state->released) {
 				event.kind = EventKind_Key_Up;
-				push_to_event_queue(app, event);
+				push_to_event_queue(engine, event);
 			}
 			
 		}*/
@@ -498,7 +498,7 @@ static void process_inputs(App* app) {
 				event.kind = EventKind_Mouse_Move;
 				event.event.mouse_move_event.pos = (Vec2i) { sdl_event.motion.x, sdl_event.motion.y };;
 				event.event.mouse_move_event.delta_pos = (Vec2i) { sdl_event.motion.xrel, sdl_event.motion.yrel };
-				push_to_event_queue(app, event);
+				push_to_event_queue(engine, event);
 				break;
 			}
 
@@ -508,13 +508,13 @@ static void process_inputs(App* app) {
 				button = MouseButton_None;
 
 				if (sdl_event.button.button == SDL_BUTTON_LEFT) {
-					//update_button_state(&app->mouse.mouse_button_left, sdl_event.button.state == SDL_PRESSED);
+					//update_button_state(&engine->mouse.mouse_button_left, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Left;
 				} else if (sdl_event.button.button == SDL_BUTTON_MIDDLE) {
-					//update_button_state(&app->mouse.mouse_button_middle, sdl_event.button.state == SDL_PRESSED);
+					//update_button_state(&engine->mouse.mouse_button_middle, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Middle;
 				} else if (sdl_event.button.button == SDL_BUTTON_RIGHT) {
-					//update_button_state(&app->mouse.mouse_button_right, sdl_event.button.state == SDL_PRESSED);
+					//update_button_state(&engine->mouse.mouse_button_right, sdl_event.button.state == SDL_PRESSED);
 					button = MouseButton_Right;
 				}
 
@@ -523,7 +523,7 @@ static void process_inputs(App* app) {
 					event.kind = sdl_event.type == SDL_MOUSEBUTTONDOWN ? EventKind_Mouse_Button_Down : EventKind_Mouse_Button_Up;
 					event.event.mouse_button_event.button = button;
 					event.event.mouse_button_event.pos = (Vec2i) { .x = sdl_event.button.x, .y = sdl_event.button.y };
-					push_to_event_queue(app, event);
+					push_to_event_queue(engine, event);
 				}
 
 				break;
@@ -536,7 +536,7 @@ static void process_inputs(App* app) {
 					Event event;
 					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
 					event.event.key_event.key = keycode;
-					push_to_event_queue(app, event);
+					push_to_event_queue(engine, event);
 
 				}
 				break;
@@ -566,14 +566,14 @@ static void process_inputs(App* app) {
 					}
 
 				}
-				push_to_event_queue(app, event);
+				push_to_event_queue(engine, event);
 
 
 				break;
 			}
 
 			case SDL_QUIT: {
-				app->quit = true;
+				engine->quit = true;
 				break;
 			}
 
@@ -581,7 +581,7 @@ static void process_inputs(App* app) {
 	}
 }
 
-bool init_app(App* app) {
+bool init_engine(Engine* engine) {
 
 	if (SDL_Init(SDL_INIT_EVERYTHING)) {
 		printf("Could not init SDL: %s \n", SDL_GetError());
@@ -590,170 +590,172 @@ bool init_app(App* app) {
 
 
 #if DEBUG
-	if (!init_debug(app)) { return false; }
+	if (!init_debug(engine)) { return false; }
 #endif
 
-	app->quit = false;
-	app->platform = SDL_GetPlatform();
-	if (!init_display(app)) { return false; }
-	if (!init_window(app)) { return false; }
-	if (!init_renderer(app)) { return false; }
-	if (!init_keys(app)) { return false; }
-	if (!init_event_queue(app)) { return false; }
-	if (!init_clock(app)) { return false; }
-	if (!init_game_loop(app)) { return false; }
+	engine->quit = false;
+	engine->platform = SDL_GetPlatform();
+	if (!init_display(engine)) { return false; }
+	if (!init_window(engine)) { return false; }
+	if (!init_renderer(engine)) { return false; }
+	if (!init_keys(engine)) { return false; }
+	if (!init_event_queue(engine)) { return false; }
+	if (!init_clock(engine)) { return false; }
+	if (!init_game_loop(engine)) { return false; }
 
 
 
 	return true;
 }
 
-bool destroy_app(App* app) {
+bool destroy_engine(Engine* engine) {
 	 
-	switch (app->renderer.type) {
+	switch (engine->renderer.type) {
 		case BackenedRenderer_Software :
-			destroy_software_renderer(&app->renderer.software_renderer);
+			destroy_software_renderer(&engine->renderer.software_renderer);
 			break;
 
 		case BackenedRenderer_OpenGL:
-			destroy_opengl_renderer(&app->renderer.opengl);
+			destroy_opengl_renderer(&engine->renderer.opengl);
 			break;
 		default:
 			break;
 	}
 	
-	SDL_DestroyWindow(app->window.sdl_window);
+	SDL_DestroyWindow(engine->window.sdl_window);
 	SDL_Quit();
 	return true;
 }
 
 
-void update(App* app, float deltaTime) {
+void update(Engine* engine, float deltaTime) {
+
 	
-	if (app->keys[SDL_SCANCODE_G].just_pressed) {		
-		app->renderer.opengl.show_debug_grid = !app->renderer.opengl.show_debug_grid;
+	
+	if (engine->keys[SDL_SCANCODE_G].just_pressed) {		
+		engine->renderer.opengl.show_debug_grid = !engine->renderer.opengl.show_debug_grid;
 	}
 
-	if (app->keys[SDL_SCANCODE_H].just_pressed) {
-		app->renderer.opengl.show_debug_axes = !app->renderer.opengl.show_debug_axes;
+	if (engine->keys[SDL_SCANCODE_H].just_pressed) {
+		engine->renderer.opengl.show_debug_axes = !engine->renderer.opengl.show_debug_axes;
 	}
 
-	if (app->keys[SDL_SCANCODE_ESCAPE].just_pressed) {
-		app->quit = true;
+	if (engine->keys[SDL_SCANCODE_ESCAPE].just_pressed) {
+		engine->quit = true;
 	}
 
 
 	// TODO: refactor camera to game state when we have one.
 	//dont want to have camera in software renderer and gl renderer.
 	// Seperate input from rendering
-	if (app->keys[SDL_SCANCODE_W].down) {
-		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
+	if (engine->keys[SDL_SCANCODE_W].down) {
+		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
+		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
 	}
 
-	if (app->keys[SDL_SCANCODE_S].down) {
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
-		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
+	if (engine->keys[SDL_SCANCODE_S].down) {
+		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
+		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
 	}
 
-	if (app->keys[SDL_SCANCODE_1].down) {
-		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
+	if (engine->keys[SDL_SCANCODE_1].down) {
+		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
+		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
 	}
 
-	if (app->keys[SDL_SCANCODE_2].down) {
-		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
+	if (engine->keys[SDL_SCANCODE_2].down) {
+		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
+		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
 	}
 
-	if (app->keys[SDL_SCANCODE_A].down) {
-		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
+	if (engine->keys[SDL_SCANCODE_A].down) {
+		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
+		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
 	}
 
-	if (app->keys[SDL_SCANCODE_D].down) {
-		//app->renderer.software_renderer.camera.pos.xyz = vec_add(app->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
-		app->renderer.opengl.main_camera.pos.xyz = vec_add(app->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
+	if (engine->keys[SDL_SCANCODE_D].down) {
+		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
+		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
 	}
 
-	if (app->keys[SDL_SCANCODE_E].down) {
-		//app->renderer.software_renderer.camera.rotation.y += deltaTime * 100;
-		app->renderer.opengl.main_camera.rotation.y += deltaTime * 100;
+	if (engine->keys[SDL_SCANCODE_E].down) {
+		//engine->renderer.software_renderer.camera.rotation.y += deltaTime * 100;
+		engine->renderer.opengl.main_camera.rotation.y += deltaTime * 100;
 	}
 
-	if (app->keys[SDL_SCANCODE_Q].down) {
-		//app->renderer.software_renderer.camera.rotation.y -= deltaTime * 100;
-		app->renderer.opengl.main_camera.rotation.y -= deltaTime * 100;
+	if (engine->keys[SDL_SCANCODE_Q].down) {
+		//engine->renderer.software_renderer.camera.rotation.y -= deltaTime * 100;
+		engine->renderer.opengl.main_camera.rotation.y -= deltaTime * 100;
 	}
 
-	if (app->keys[SDL_SCANCODE_X].down) {
-		app->renderer.opengl.main_camera.rotation.z += deltaTime * 100;
+	if (engine->keys[SDL_SCANCODE_X].down) {
+		engine->renderer.opengl.main_camera.rotation.z += deltaTime * 100;
 	}
 
-	if (app->keys[SDL_SCANCODE_Z].down) {
-		app->renderer.opengl.main_camera.rotation.z -= deltaTime * 100;
+	if (engine->keys[SDL_SCANCODE_Z].down) {
+		engine->renderer.opengl.main_camera.rotation.z -= deltaTime * 100;
 	}
 
 	
 }
 
-void fixed_update(App* app, float fixed_time) {
+void fixed_update(Engine* engine, float fixed_time) {
 	// Physics stuff
 }
 
-void game_loop(App* app) {
+void game_loop(Engine* engine) {
 	// TODO: proper game loop
-	while (!app->quit) {
+	while (!engine->quit) {
 
 		
-		update_clock(app);
+		update_clock(engine);
 
 		// Fixed time step, with an accumulator, and max delta time interpolation
-		double new_time = (SDL_GetTicks() / 1000.0f);
-		double delta_time = new_time - app->game_loop.current_time;
-		app->game_loop.delta_time = delta_time;
+		float new_time = (SDL_GetTicks() / 1000.0f);
+		float delta_time = new_time - engine->game_loop.current_time;
+		engine->game_loop.delta_time = delta_time;
 
 		
 		
 
-		/*if (delta_time >= app->game_loop.max_delta) {
-			delta_time = app->game_loop.max_delta;
+		/*if (delta_time >= engine->game_loop.max_delta) {
+			delta_time = engine->game_loop.max_delta;
 		}*/
 
-		app->game_loop.accumulator += delta_time;
+		engine->game_loop.accumulator += delta_time;
 	
 		// Process inputs once per frame
-		process_inputs(app);
-		process_event_queue(app);
+		process_inputs(engine);
+		process_event_queue(engine);
 
 		
 
-		while (app->game_loop.accumulator >= app->game_loop.time_step) {
+		while (engine->game_loop.accumulator >= engine->game_loop.time_step) {
 			// fixed update zero or more times per frame
-			fixed_update(app, app->game_loop.time_step);
-			app->game_loop.physics_time += app->game_loop.time_step;
-			app->game_loop.accumulator -= app->game_loop.time_step;
+			fixed_update(engine, engine->game_loop.time_step);
+			engine->game_loop.physics_time += engine->game_loop.time_step;
+			engine->game_loop.accumulator -= engine->game_loop.time_step;
 		}
 
 		// Update once per frame
-		update(app, delta_time);
+		update(engine, delta_time);
 
 	
 		// TODO: this is used to interpolate game state during the rendering
-		float alpha = app->game_loop.accumulator / app->game_loop.time_step;
+		float alpha = engine->game_loop.accumulator / engine->game_loop.time_step;
 
-		switch (app->renderer.type) {
+		switch (engine->renderer.type) {
 			case BackenedRenderer_Software: {
-				software_render(&app->renderer.software_renderer);
-				software_debug_render(&app->renderer.software_renderer);
-				software_swap_buffer(&app->renderer.software_renderer);
+				software_render(&engine->renderer.software_renderer);
+				software_debug_render(&engine->renderer.software_renderer);
+				software_swap_buffer(&engine->renderer.software_renderer);
 				break;
 			}
 
 			case BackenedRenderer_OpenGL: {
-				opengl_render(&app->renderer.opengl);
-				opengl_debug_render(&app->renderer.opengl);
-				opengl_swap_buffer(&app->renderer.opengl);
+				opengl_render(&engine->renderer.opengl);
+				opengl_debug_render(&engine->renderer.opengl);
+				opengl_swap_buffer(&engine->renderer.opengl);
 				break;
 			}
 			default:
@@ -761,38 +763,31 @@ void game_loop(App* app) {
 		}
 
 
-		app->game_loop.frame_count++;
-		app->game_loop.fps = (int) (1 / delta_time);
-		app->game_loop.current_time = new_time;
+		engine->game_loop.frame_count++;
+		engine->game_loop.fps = (int) (1 / delta_time);
+		engine->game_loop.current_time = new_time;
 
 
-		printf("FPS %d, dt %f\t", app->game_loop.fps, delta_time);
-		printf("total time %f, physics time %f\n", app->game_loop.current_time, app->game_loop.physics_time);
+		printf("FPS %d, dt %f\t", engine->game_loop.fps, delta_time);
+		printf("total time %f, physics time %f\n", engine->game_loop.current_time, engine->game_loop.physics_time);
 
 
 
-		if (app->game_loop.cap_framerate) {
+		if (engine->game_loop.cap_framerate) {
 			// TODO: if we have low frame rate, we might be skipping events. A possible  way to do this, is to have the input and rendering on seperate threads
 			// https://gamedev.stackexchange.com/questions/90762/taking-advantage-of-multithreading-between-game-loop-and-opengl
-			// As of right now, this frame capping is more of a test
+			// TODO: look up command buffers for our renderer
+			// As of right now, this frame cengineing is more of a test
 			// TODO: we're gonna need debug info overlays for in game stuff
-			double frame_time = (SDL_GetTicks() / 1000.0f) - new_time;
-			// Frame capping
-			if (frame_time < app->game_loop.target_delta_time) {
-				float sleep_for = app->game_loop.target_delta_time - frame_time;
+			float frame_time = (SDL_GetTicks() / 1000.0f) - new_time;
+			// Frame cengineing
+			if (frame_time < engine->game_loop.target_delta_time) {
+				float sleep_for = engine->game_loop.target_delta_time - frame_time;
 				// NOTE: since we can't change the os scheduling, we'll wait at least sleep_for time.
 				// If there is a way to change the granularity of the sleep, then we should do it
-				SDL_Delay(1000 * sleep_for);
+				SDL_Delay((Uint32)(1000 * sleep_for));
 			}
 		}
-		
-
-		
-		
-
-
-
-
 		
 
 	}
