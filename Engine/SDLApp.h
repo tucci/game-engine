@@ -266,9 +266,6 @@ static bool init_debug(Engine* engine);
 static void update_clock(Engine* engine);
 static void process_inputs(Engine* engine);
 
-
-
-
 bool init_engine(Engine* engine);
 bool destroy_engine(Engine* engine);
 void update(Engine* engine, float delta_time);

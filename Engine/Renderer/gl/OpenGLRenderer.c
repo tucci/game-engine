@@ -382,7 +382,7 @@ void opengl_debug_render(OpenGLRenderer * opengl) {
 
 
 	if (opengl->show_debug_grid) {
-		glLineWidth(1);
+		glLineWidth(2);
 		glDrawArrays(GL_LINES, 0, opengl->axes_pos_offset);
 	}
 

@@ -72,11 +72,11 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	//load_obj("Assets/obj/african_head.obj", &renderer->model);
-	//load_image("Assets/obj/african_head_diffuse.tga", &renderer->model.diffuse);
+	load_obj("Assets/obj/african_head.obj", &renderer->model);
+	load_image("Assets/obj/african_head_diffuse.tga", &renderer->texture);
 
-	load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
-	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->texture);
+	/*load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
+	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->texture);*/
 
 	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("cow.obj", &renderer->model);

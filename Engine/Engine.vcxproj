@@ -154,6 +154,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Common\LinearAllocator.c" />
+    <ClCompile Include="Common\StackAllocator.c" />
+    <ClCompile Include="test.c" />
     <ClCompile Include="Core\Camera.c" />
     <ClCompile Include="Core\StaticMesh.c" />
     <ClCompile Include="Renderer\gl\GLShader.c" />
@@ -165,6 +168,9 @@
     <ClCompile Include="Renderer\software_renderer\SoftwareRenderer.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common\LinearAllocator.h" />
+    <ClInclude Include="Common\mem.h" />
+    <ClInclude Include="Common\StackAllocator.h" />
     <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="Renderer\gl\GLShader.h" />

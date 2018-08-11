@@ -747,7 +747,7 @@ void game_loop(Engine* engine) {
 		switch (engine->renderer.type) {
 			case BackenedRenderer_Software: {
 				software_render(&engine->renderer.software_renderer);
-				software_debug_render(&engine->renderer.software_renderer);
+				//software_debug_render(&engine->renderer.software_renderer);
 				software_swap_buffer(&engine->renderer.software_renderer);
 				break;
 			}

@@ -4,6 +4,7 @@
 #include "../Math/Vec.h"
 
 typedef struct Camera {
+	// TODO: should move all vec3s to vec4s for better alignment
 	Vec4f pos;
 	Vec3f dir;
 	Vec3f rotation;

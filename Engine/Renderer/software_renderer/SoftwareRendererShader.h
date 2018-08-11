@@ -9,7 +9,6 @@
 // TODO:The shader for now contains all the pipeline data.
 // The purpose of this software renderer was to be as a learning experience and not actual real world use
 typedef struct SoftwareRendererShader {
-	
 	ObjModel* model;
 	SurfaceData* texture;
 	Mat4x4f* transform;

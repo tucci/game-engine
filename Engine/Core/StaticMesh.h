@@ -5,7 +5,6 @@
 
 
 typedef struct StaticMesh {
-	
 	int vertex_count;
 	int index_count;
 	Vec3f* pos;
