@@ -103,6 +103,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Renderer\todo.txt" />
+    <Text Include="todo.txt" />
   </ItemGroup>
 </Project>

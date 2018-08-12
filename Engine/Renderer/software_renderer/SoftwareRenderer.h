@@ -9,6 +9,7 @@
 #include "../../ObjFile.h"
 #include "../../TextureData.h"
 #include "../../Core/Camera.h"
+#include "../../Common/LinearAllocator.h"
 
 #include "SoftwareRendererShader.h"
 
@@ -23,6 +24,12 @@ typedef struct SoftwareRenderer {
 	Vec2i window_size;
 	float* zbuffer;
 	int zbuffer_size;
+
+	void* renderer_memory;
+	size_t renderer_memory_size;
+	LinearAllocator renderer_allocator;
+
+	
 	
 	SoftwareRendererShader shader;
 
@@ -38,7 +45,7 @@ typedef struct SoftwareRenderer {
 static Vec4f vertex_shader(SoftwareRendererShader* shader, int face_id, int vertex_id);
 static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color);
 
-bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i size);
+bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i size, void* parition_start, size_t partition_size);
 static bool init_z_buffer(SoftwareRenderer* renderer);
 static void clear_z_buffer(SoftwareRenderer* renderer);
 static void init_shader(SoftwareRenderer* renderer);

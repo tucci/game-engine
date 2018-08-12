@@ -36,7 +36,7 @@ static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f fr
 	int x = (int)remap(uv.u, 0.0f, 1.0f, 0.0f, (float)surface->w);
 	int y = (int)remap(uv.v, 0.0f, 1.0f, 0.0f, (float)surface->h);
 
-	uint32_t pixel = *((uint32_t *)surface->pixels + y * surface->w + x);
+	uint32_t pixel = *((uint32_t *)surface->pixels + y * surface->w + x);//cast
 
 	uint8_t r;
 	uint8_t g;
@@ -56,14 +56,21 @@ static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f fr
 	return false; // discard
 }
 
-bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_size) {
+bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_size, void* parition_start, size_t partition_size) {
 	// NOTE:(steven) for now we are doing software rendering, eventually, we'll get back to hardware rendering
 	renderer->surface = SDL_GetWindowSurface(window);
 	renderer->renderer = SDL_CreateSoftwareRenderer(renderer->surface);
 	renderer->sdl_window = window;
 	renderer->window_size = window_size;
+
+	renderer->renderer_memory = parition_start;
+	renderer->renderer_memory_size = partition_size;
+
+	linear_init(&renderer->renderer_allocator, renderer->renderer_memory, renderer->renderer_memory_size);
+
 	
-	init_z_buffer(renderer);
+	if (!init_z_buffer(renderer)) { return false; }
+
 	init_camera_default(&renderer->camera);
 	set_camera_pos(&renderer->camera, (Vec3f){ 0, 0, 10 });
 
@@ -89,11 +96,13 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 
 
 static bool init_z_buffer(SoftwareRenderer* renderer) {
-	// TODO: remove seperate malloc call, we need to start using custom allocators
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
-	renderer->zbuffer = (float*) malloc(size);
+	renderer->zbuffer = (float*)linear_alloc(&renderer->renderer_allocator, size, 1);//cast
+	if (renderer->zbuffer == NULL) {
+		return false;
+	}
 	for (size_t i = 0; i < window_size; i++) {
 		renderer->zbuffer[i] = INFINITY;
 	}
@@ -120,7 +129,7 @@ static void init_shader(SoftwareRenderer* renderer) {
 bool destroy_software_renderer(SoftwareRenderer* renderer) {
 	free_obj(&renderer->model);
 	free_texture(&renderer->texture);
-	free(renderer->zbuffer);
+	linear_reset(&renderer->renderer_allocator);
 	SDL_DestroyRenderer(renderer->renderer);
 	return true;
 }

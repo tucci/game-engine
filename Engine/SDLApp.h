@@ -227,6 +227,12 @@ typedef struct Renderer {
 } Renderer;
 
 
+typedef struct MemoryEnginePartition {
+	void* start_ptr;
+	size_t partition_size;
+} MemoryEnginePartition;
+
+
 
 typedef struct Engine {
 	Renderer renderer;
@@ -245,6 +251,12 @@ typedef struct Engine {
 	bool quit;
 	DebugData debug;
 
+
+	// Fixed memory for the entire engine/game
+	void* engine_memory;
+	size_t engine_memory_size;
+	void* partition_ptr;
+	
 	
 
 	
@@ -255,6 +267,10 @@ typedef struct Engine {
 static void log_error(const char* name);
 static bool push_to_event_queue(Engine* engine, Event event);
 static void process_event_queue(Engine* engine);
+
+static bool init_engine_memory(Engine* engine);
+static MemoryEnginePartition give_memory_partition(Engine* engine, size_t size);
+
 static bool init_display(Engine* engine);
 static bool init_window(Engine* engine);
 static bool init_renderer(Engine* engine);
@@ -268,7 +284,7 @@ static void process_inputs(Engine* engine);
 
 bool init_engine(Engine* engine);
 bool destroy_engine(Engine* engine);
-void update(Engine* engine, float delta_time);
-void fixed_update(Engine* engine, float fixed_time);
+static void update(Engine* engine, float delta_time);
+static void fixed_update(Engine* engine, float fixed_time);
 void game_loop(Engine* engine);
 

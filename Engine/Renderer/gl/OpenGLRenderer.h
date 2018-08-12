@@ -14,6 +14,8 @@
 #include "../../Core/Camera.h"
 #include "../../TextureData.h"
 
+#include "../../Common/LinearAllocator.h"
+
 #include "GLShader.h"
 
 #define GLEW_STATIC
@@ -29,8 +31,12 @@ typedef struct OpenGLRenderer {
 	SDL_Window* sdl_window;
 	Vec2i window_size;
 
+	void* renderer_memory;
+	size_t renderer_memory_size;
+	LinearAllocator renderer_allocator;
 
-	// TODO: move this to it's own place struture. use some sort of allocator
+
+	// TODO: move this to it's own place struture. use some sort of allocator and custom model loader
 	StaticMesh mesh;
 	SurfaceData texture;
 	GLuint textureID;
@@ -40,7 +46,6 @@ typedef struct OpenGLRenderer {
 	GLuint VBO; // id to the Buffer that stores our vertices
 	GLuint EBO; // id to the Buffer that stores our indices
 
-	
 
 	
 
@@ -67,7 +72,7 @@ typedef struct OpenGLRenderer {
 
 static void load_shaders(OpenGLRenderer* opengl);
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size);
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size, void* parition_start, size_t partition_size);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 
 

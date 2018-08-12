@@ -3,16 +3,17 @@
 
 #include "StaticMesh.h"
 
-void  convert_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
+void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
 
 	int index_count = obj->face_count;
 	static_mesh->index_count = index_count;
-	static_mesh->indices = (Vec3i*)malloc(index_count * sizeof(Vec3i));
-
+	static_mesh->indices = (Vec3i*)malloc(index_count * sizeof(Vec3i));//cast
+	
 
 	static_mesh->vertex_count = index_count * 3;
-	static_mesh->pos = (Vec3f*)malloc(static_mesh->vertex_count * sizeof(Vec3f));
-	static_mesh->texcoords = (Vec2f*)malloc(static_mesh->vertex_count * sizeof(Vec2f));
+	// TODO: Convert the mallocs to use our custom alloctors when we have a better idea on how we want to load models in
+	static_mesh->pos = (Vec3f*)malloc(static_mesh->vertex_count * sizeof(Vec3f));//cast
+	static_mesh->texcoords = (Vec2f*)malloc(static_mesh->vertex_count * sizeof(Vec2f));//cast
 
 
 

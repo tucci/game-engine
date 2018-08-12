@@ -15,5 +15,5 @@ typedef struct StaticMesh {
 } StaticMesh;
 
 
-void convert_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh);
+void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh);
 void free_static_mesh(StaticMesh* static_mesh);

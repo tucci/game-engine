@@ -70,6 +70,7 @@ void load_obj(const char* filename, ObjModel* model) {
 
 	err = fopen_s(&file, filename, "r");
 
+	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
 		printf("The file was opened\n");
 	} else {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SDLApp.h"
+#include "Common\mem.h"
 
 
 static void update_button_state(ButtonState* button_state, bool down_now) {
@@ -241,6 +242,38 @@ static void process_event_queue(Engine* engine) {
 	engine->event_count = 0;
 }
 
+
+static bool init_engine_memory(Engine* engine) {
+	// 
+	size_t size = MEGABYTES(100);
+
+	// Align the memory size to 64 bits
+	// TODO: should this depend on the machine? 32bits vs 64bits
+	engine->engine_memory_size = ALIGN_UP(size, 64);
+	engine->engine_memory = malloc(engine->engine_memory_size);
+	// Set initial partition ptr to the start of the memory
+	engine->partition_ptr = engine->engine_memory;
+
+	if (engine->engine_memory == NULL) {
+		// Memory failiure
+		return false;
+	} else {
+		// TODO: do we want to zero out the memory at start
+		return true;
+	}
+	
+}
+
+static MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
+	MemoryEnginePartition parition;
+	size_t aligned_size = ALIGN_UP(size, 64);
+	parition.partition_size = aligned_size;
+	parition.start_ptr = engine->partition_ptr;
+	// Increment ptr for next partition
+	engine->partition_ptr = ((char*)engine->partition_ptr) + aligned_size; // cast
+	return parition;
+}
+
 static bool init_display(Engine* engine) {
 	// Grab the dpi from the display
 	float dpi;
@@ -346,12 +379,14 @@ static bool init_window(Engine* engine) {
 static bool init_renderer(Engine* engine) {
 	switch (engine->renderer.type) {
 		case BackenedRenderer_Software: {
-			init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size);
+			MemoryEnginePartition parition_start = give_memory_partition(engine, MEGABYTES(10));
+			return init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
 
 		case BackenedRenderer_OpenGL: {
-			init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, engine->window.size);
+			MemoryEnginePartition parition_start = give_memory_partition(engine, MEGABYTES(10));
+			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
 		default:
@@ -588,6 +623,11 @@ bool init_engine(Engine* engine) {
 		exit(-1);
 	}
 
+	if (!init_engine_memory(engine)) {
+		printf("Engine failed to allocate memory at startup");
+		return false;
+	}
+
 
 #if DEBUG
 	if (!init_debug(engine)) { return false; }
@@ -611,7 +651,7 @@ bool init_engine(Engine* engine) {
 bool destroy_engine(Engine* engine) {
 	 
 	switch (engine->renderer.type) {
-		case BackenedRenderer_Software :
+		case BackenedRenderer_Software:
 			destroy_software_renderer(&engine->renderer.software_renderer);
 			break;
 
@@ -622,13 +662,18 @@ bool destroy_engine(Engine* engine) {
 			break;
 	}
 	
+	
 	SDL_DestroyWindow(engine->window.sdl_window);
 	SDL_Quit();
+
+	// NOTE: this frees the entire game engine memory and all the subsystems
+	free(engine->engine_memory);
+
 	return true;
 }
 
 
-void update(Engine* engine, float deltaTime) {
+static void update(Engine* engine, float deltaTime) {
 
 	
 	
@@ -699,17 +744,13 @@ void update(Engine* engine, float deltaTime) {
 	
 }
 
-void fixed_update(Engine* engine, float fixed_time) {
+static void fixed_update(Engine* engine, float fixed_time) {
 	// Physics stuff
 }
 
 void game_loop(Engine* engine) {
-	// TODO: proper game loop
 	while (!engine->quit) {
-
-		
 		update_clock(engine);
-
 		// Fixed time step, with an accumulator, and max delta time interpolation
 		float new_time = (SDL_GetTicks() / 1000.0f);
 		float delta_time = new_time - engine->game_loop.current_time;

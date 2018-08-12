@@ -11,7 +11,7 @@
 
 
 
-
+// TODO: seperate out sdl surface from the actual data array, when we pass this around to opengl/directx, we wont need the surface
 void load_image(char* filename, SurfaceData* sd) {
 
 	// NOTE: Flip textures verticall on load, our texture mengineer expects textures to be upside down
@@ -37,7 +37,7 @@ void load_image(char* filename, SurfaceData* sd) {
 	}
 
 	sd->surface = SDL_CreateRGBSurfaceWithFormatFrom((void*)sd->data, width, height,
-		depth, pitch, pixel_format);
+		depth, pitch, pixel_format);//cast
 
 	if (sd->surface == NULL) {
 		SDL_Log("Creating surface failed: %s", SDL_GetError());

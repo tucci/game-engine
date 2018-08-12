@@ -82,13 +82,11 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->grid_debug_VBO);
 	
 
-
-
 	int grid_size = DEBUG_GRID_SIZE;
 	int axis_vertex_count = 6;
 	opengl->grid_mesh.vertex_count = (grid_size + 1) * 4 + axis_vertex_count;
-	opengl->grid_mesh.pos = (Vec3f*) malloc(opengl->grid_mesh.vertex_count * sizeof(Vec3f));
-	opengl->grid_mesh.color = (Vec3f*)malloc(opengl->grid_mesh.vertex_count * sizeof(Vec3f));
+	opengl->grid_mesh.pos = (Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);//cast
+	opengl->grid_mesh.color = (Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);//cast
 	
 
 	
@@ -157,8 +155,7 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 
 }
 void destroy_gl_debug(OpenGLRenderer* opengl) {
-	free(opengl->grid_mesh.pos);
-	free(opengl->grid_mesh.color);
+	
 
 	delete_gl_program(&opengl->debug_shader);
 	
@@ -168,10 +165,17 @@ void destroy_gl_debug(OpenGLRenderer* opengl) {
 
 }
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size) {
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size, void* parition_start, size_t partition_size) {
 	opengl->gl_context = SDL_GL_CreateContext(window);
 	opengl->sdl_window = window;
 	opengl->window_size = window_size;
+
+
+	opengl->renderer_memory = parition_start;
+	opengl->renderer_memory_size = partition_size;
+
+	linear_init(&opengl->renderer_allocator, opengl->renderer_memory, opengl->renderer_memory_size);
+
 
 	init_gl_extensions(opengl);
 	init_camera_default(&opengl->main_camera);
@@ -192,15 +196,15 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	ObjModel model;
 
-	//load_obj("Assets/obj/african_head.obj", &model);
-	//load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);
+	load_obj("Assets/obj/african_head.obj", &model);
+	load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);
 
 	
 
-	load_obj("Assets/obj/diablo3_pose.obj", &model);
-	load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
+	//load_obj("Assets/obj/diablo3_pose.obj", &model);
+	//load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
 
-	convert_to_static_mesh(&model, &opengl->mesh);
+	obj_to_static_mesh(&model, &opengl->mesh);
 
 	free_obj(&model);
 
@@ -251,6 +255,7 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	free_static_mesh(&opengl->mesh);
 
 	destroy_gl_debug(opengl);
+	linear_reset(&opengl->renderer_allocator);
 	return true;
 }
 
@@ -306,10 +311,10 @@ void opengl_render(OpenGLRenderer* opengl) {
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
 	// Should we pre interleave our data, or create sperate vbos for textures.
 	// Also note, since our textcoords array is not offset from our vert array. 2 seperate malloc calls, so different addresses
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);//cast
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), (GLvoid*)(opengl->mesh.vertex_count * sizeof(Vec3f)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), (GLvoid*)(opengl->mesh.vertex_count * sizeof(Vec3f)));//cast
 	glEnableVertexAttribArray(1);
 
 
@@ -373,11 +378,11 @@ void opengl_debug_render(OpenGLRenderer * opengl) {
 
 
 	// Pos attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);//cast
 	glEnableVertexAttribArray(0);
 
 	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)(opengl->grid_mesh.vertex_count * sizeof(Vec3f)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)(opengl->grid_mesh.vertex_count * sizeof(Vec3f)));//cast
 	glEnableVertexAttribArray(1);
 
 

@@ -29,7 +29,7 @@ void inline test_linear_alloc(void) {
 	linear_init(&la, game_mem, 512);
 
 	// Test string
-	char* test = (char*)linear_alloc(&la, 16, 16);
+	char* test = (char*)linear_alloc(&la, 16, 16);// cast
 	if (test != NULL) {
 		const char* c = "this is a test.";
 		strcpy_s(test, strlen(c) + 1, c);
@@ -37,7 +37,7 @@ void inline test_linear_alloc(void) {
 	
 	int s = 0;
 	for (int i = 0; i < 40 ; i++) {
-		TestAllocStruct* test2 = (TestAllocStruct*)linear_alloc(&la, sizeof(TestAllocStruct), 4);
+		TestAllocStruct* test2 = (TestAllocStruct*)linear_alloc(&la, sizeof(TestAllocStruct), 4);//cast
 		if (test2 != NULL) {
 			test2->x = s + 0;
 			test2->y = s + 1;
@@ -62,7 +62,7 @@ void inline test_stack_alloc(void) {
 	stack_alloc_init(&sa, game_mem, 512);
 
 	// Test string
-	char* test = (char*)stack_alloc(&sa, 16, 16);
+	char* test = (char*)stack_alloc(&sa, 16, 16); //cast
 	if (test != NULL) {
 		const char* c = "this is a test.";
 		strcpy_s(test, strlen(c) + 1, c);
@@ -72,7 +72,7 @@ void inline test_stack_alloc(void) {
 
 	int s = 0;
 	for (int i = 0; i < 10; i++) {
-		TestAllocStruct* test2 = (TestAllocStruct*)stack_alloc(&sa, sizeof(TestAllocStruct), 4);
+		TestAllocStruct* test2 = (TestAllocStruct*)stack_alloc(&sa, sizeof(TestAllocStruct), 4);//cast
 		if (test2 != NULL) {
 			test2->x = s + 0;
 			test2->y = s + 1;
