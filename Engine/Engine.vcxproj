@@ -160,7 +160,7 @@
     <ClCompile Include="Core\Camera.c" />
     <ClCompile Include="Core\StaticMesh.c" />
     <ClCompile Include="Renderer\gl\GLShader.c" />
-    <ClCompile Include="TextureData.c" />
+    <ClCompile Include="Core\TextureData.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="ObjFile.c" />
     <ClCompile Include="Renderer\gl\OpenGLRenderer.c" />
@@ -175,7 +175,7 @@
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="Renderer\gl\GLShader.h" />
     <ClInclude Include="Renderer\software_renderer\SoftwareRendererShader.h" />
-    <ClInclude Include="TextureData.h" />
+    <ClInclude Include="Core\TextureData.h" />
     <ClInclude Include="Core\StaticMesh.h" />
     <ClInclude Include="Math\Mat.h" />
     <ClInclude Include="Math\Math.h" />

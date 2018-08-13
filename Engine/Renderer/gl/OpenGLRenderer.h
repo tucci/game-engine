@@ -12,7 +12,7 @@
 
 #include "../../Core/StaticMesh.h"
 #include "../../Core/Camera.h"
-#include "../../TextureData.h"
+#include "../../Core/TextureData.h"
 
 #include "../../Common/LinearAllocator.h"
 
@@ -37,6 +37,7 @@ typedef struct OpenGLRenderer {
 
 
 	// TODO: move this to it's own place struture. use some sort of allocator and custom model loader
+	// Also the meshes should be loaded in the scene, once we have that figured out
 	StaticMesh mesh;
 	SimpleTexture texture;
 

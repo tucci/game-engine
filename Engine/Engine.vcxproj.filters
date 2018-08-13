@@ -24,9 +24,6 @@
     <ClCompile Include="SDLApp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextureData.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer\gl\OpenGLRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,6 +48,9 @@
     <ClCompile Include="Common\StackAllocator.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\TextureData.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -66,9 +66,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SDLApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\Transform.h">
@@ -99,6 +96,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Common\mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\TextureData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

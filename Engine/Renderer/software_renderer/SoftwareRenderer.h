@@ -7,7 +7,7 @@
 #include "../../Math/Mat.h" // TODO: figure out better way to do this. dont want ../.. stuff
 #include "../../Math/Vec.h"
 #include "../../ObjFile.h"
-#include "../../TextureData.h"
+#include "../../Core/TextureData.h"
 #include "../../Core/Camera.h"
 #include "../../Common/LinearAllocator.h"
 

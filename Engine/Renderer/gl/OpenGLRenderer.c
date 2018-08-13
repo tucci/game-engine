@@ -197,16 +197,24 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	ObjModel model;
 
 	load_obj("Assets/obj/african_head.obj", &model);
-	load_texture("Assets/obj/african_head_diffuse.tga", &opengl->texture);
+	//load_obj("Assets/obj/diablo3_pose.obj", &model);
+
+
+	obj_to_static_mesh(&model, &opengl->mesh);
+	free_obj(&model);
+
+
+	bool loaded_texture = load_texture("Assets/obj/african_head_diffuse.tga", &opengl->texture);
+	//bool loaded_texture = load_texture("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
+
+	if (!loaded_texture) return false;
 
 	
 
-	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	//load_image2("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture2);
+	
 
-	obj_to_static_mesh(&model, &opengl->mesh);
 
-	free_obj(&model);
+
 
 
 

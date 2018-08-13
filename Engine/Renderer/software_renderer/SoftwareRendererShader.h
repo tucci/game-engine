@@ -4,7 +4,7 @@
 #include "../../Math/Mat.h" 
 #include "../../Math/Vec.h"
 #include "../../ObjFile.h"
-#include "../../TextureData.h"
+#include "../../Core/TextureData.h"
 
 // TODO:The shader for now contains all the pipeline data.
 // The purpose of this software renderer was to be as a learning experience and not actual real world use

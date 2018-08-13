@@ -6,7 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ASSERT(x)
 
-#include "Common/stb_image.h"
+#include "../Common/stb_image.h"
 
 
 // Returns 1 if loaded successfully, 0 if failed
