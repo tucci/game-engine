@@ -24,7 +24,8 @@ static Vec4f vertex_shader(SoftwareRendererShader* shader, int face_id, int vert
 
 static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color) {
 	
-	SDL_Surface* surface = shader->texture->surface;
+	//SDL_Surface* surface = shader->texture->surface;
+	SimpleTexture* texture = shader->texture;
 	
 	Vec2f uv = {
 		bary.x * shader->uv[0].u + bary.y * shader->uv[1].u + bary.z * shader->uv[2].u,
@@ -33,31 +34,24 @@ static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f fr
 	};
 	
 	
-	int x = (int)remap(uv.u, 0.0f, 1.0f, 0.0f, (float)surface->w);
-	int y = (int)remap(uv.v, 0.0f, 1.0f, 0.0f, (float)surface->h);
+	int x = (int)remap(uv.u, 0.0f, 1.0f, 0.0f, (float)texture->width);
+	int y = (int)remap(uv.v, 0.0f, 1.0f, 0.0f, (float)texture->height);
 
-	uint32_t pixel = *((uint32_t *)surface->pixels + y * surface->w + x);//cast
-
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
-	uint8_t a;
-
-	SDL_GetRGBA(pixel, surface->format, &r, &g, &b, &a);
-
+	unsigned char* pixelOffset = texture->data + (x + y * texture->width) * texture->channels;
+	unsigned char r = pixelOffset[0];
+	unsigned char g = pixelOffset[1];
+	unsigned char b = pixelOffset[2];
+	//unsigned char a = texture->channels >= 4 ? pixelOffset[3] : 0xff;
 
 	output_color->r = r;
 	output_color->g = g;
 	output_color->b = b;
 	output_color->a = 1;
 
-	
-
 	return false; // discard
 }
 
 bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2i window_size, void* parition_start, size_t partition_size) {
-	// NOTE:(steven) for now we are doing software rendering, eventually, we'll get back to hardware rendering
 	renderer->surface = SDL_GetWindowSurface(window);
 	renderer->renderer = SDL_CreateSoftwareRenderer(renderer->surface);
 	renderer->sdl_window = window;
@@ -79,11 +73,11 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	SDL_RenderClear(renderer->renderer);
 	//renderer->renderer = SDL_CreateRenderer(renderer->sdl_window, -1, SDL_RENDERER_ACCELERATED);
 
-	load_obj("Assets/obj/african_head.obj", &renderer->model);
-	load_image("Assets/obj/african_head_diffuse.tga", &renderer->texture);
+	//load_obj("Assets/obj/african_head.obj", &renderer->model);
+	//load_texture("Assets/obj/african_head_diffuse.tga", &renderer->texture2);
 
-	/*load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
-	load_image("Assets/obj/diablo3_pose_diffuse.tga", &renderer->texture);*/
+	load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
+	load_texture("Assets/obj/diablo3_pose_diffuse.tga", &renderer->texture);
 
 	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("cow.obj", &renderer->model);

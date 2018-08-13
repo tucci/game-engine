@@ -3,11 +3,15 @@
 
 #include "SDL.h"
 
-typedef struct SurfaceData {
-	SDL_Surface* surface;
+
+typedef struct SimpleTexture {
 	unsigned char* data;
-} SurfaceData;
+	int width;
+	int height;
+	int channels;
+	int depth;
+} SimpleTexture;
 
 
-void load_image(char* filename, SurfaceData* sd);
-void free_texture(SurfaceData* surfaceData);
+int load_texture(char* filename, SimpleTexture* texture);
+void free_texture(SimpleTexture* texture);

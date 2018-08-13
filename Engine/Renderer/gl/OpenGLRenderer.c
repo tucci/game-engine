@@ -197,12 +197,12 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	ObjModel model;
 
 	load_obj("Assets/obj/african_head.obj", &model);
-	load_image("Assets/obj/african_head_diffuse.tga", &opengl->texture);
+	load_texture("Assets/obj/african_head_diffuse.tga", &opengl->texture);
 
 	
 
 	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	//load_image("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
+	//load_image2("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture2);
 
 	obj_to_static_mesh(&model, &opengl->mesh);
 
@@ -218,7 +218,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	glGenTextures(1, &opengl->textureID);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, opengl->texture.surface->w, opengl->texture.surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, opengl->texture.data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, opengl->texture.width, opengl->texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, opengl->texture.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameterf(opengl->textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameterf(opengl->textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

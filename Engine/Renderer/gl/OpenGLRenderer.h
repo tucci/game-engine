@@ -38,7 +38,8 @@ typedef struct OpenGLRenderer {
 
 	// TODO: move this to it's own place struture. use some sort of allocator and custom model loader
 	StaticMesh mesh;
-	SurfaceData texture;
+	SimpleTexture texture;
+
 	GLuint textureID;
 	
 	GLShader main_shader;

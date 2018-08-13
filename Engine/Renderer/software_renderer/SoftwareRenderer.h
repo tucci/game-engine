@@ -35,7 +35,7 @@ typedef struct SoftwareRenderer {
 
 	// TODO: find a better way to store these things
 	ObjModel model;
-	SurfaceData texture;
+	SimpleTexture texture;
 
 } SoftwareRenderer;
 
