@@ -166,6 +166,10 @@ void destroy_gl_debug(OpenGLRenderer* opengl) {
 }
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size, void* parition_start, size_t partition_size) {
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
 	opengl->gl_context = SDL_GL_CreateContext(window);
 	opengl->sdl_window = window;
 	opengl->window_size = window_size;
@@ -198,14 +202,21 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 
 	load_obj("Assets/obj/african_head.obj", &model);
 	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-
-
 	obj_to_static_mesh(&model, &opengl->mesh);
 	free_obj(&model);
 
 
-	bool loaded_texture = load_texture("Assets/obj/african_head_diffuse.tga", &opengl->texture);
-	//bool loaded_texture = load_texture("Assets/obj/diablo3_pose_diffuse.tga", &opengl->texture);
+
+	const char* texture_file = "Assets/obj/african_head_diffuse.tga";
+	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+
+	fill_texture_info(texture_file, &opengl->texture);
+
+	opengl->texture.data = (unsigned char*) linear_alloc(
+		&opengl->renderer_allocator,
+		opengl->texture.width * opengl->texture.height * opengl->texture.channels,
+		4);
+	bool loaded_texture = load_and_copyto_texture(texture_file, &opengl->texture);
 
 	if (!loaded_texture) return false;
 
@@ -259,7 +270,6 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	glDeleteBuffers(1, &opengl->VBO);
 	glDeleteBuffers(1, &opengl->EBO);
 	
-	free_texture(&opengl->texture);
 	free_static_mesh(&opengl->mesh);
 
 	destroy_gl_debug(opengl);

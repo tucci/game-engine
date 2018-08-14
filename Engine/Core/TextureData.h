@@ -13,5 +13,6 @@ typedef struct SimpleTexture {
 } SimpleTexture;
 
 
-int load_texture(char* filename, SimpleTexture* texture);
-void free_texture(SimpleTexture* texture);
+
+void fill_texture_info(const char* filename, SimpleTexture* texture);
+int load_and_copyto_texture(const char* filename, SimpleTexture* texture);

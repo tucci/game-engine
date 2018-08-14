@@ -77,7 +77,19 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	//load_texture("Assets/obj/african_head_diffuse.tga", &renderer->texture2);
 
 	load_obj("Assets/obj/diablo3_pose.obj", &renderer->model);
-	load_texture("Assets/obj/diablo3_pose_diffuse.tga", &renderer->texture);
+
+	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
+	const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+
+	fill_texture_info(texture_file, &renderer->texture);
+
+	renderer->texture.data = (unsigned char*)linear_alloc(
+		&renderer->renderer_allocator,
+		renderer->texture.width * renderer->texture.height * renderer->texture.channels,
+		4);
+	bool loaded_texture = load_and_copyto_texture(texture_file, &renderer->texture);
+
+	if (!loaded_texture) return false;
 
 	//load_obj("teapot.obj", &renderer->model);
 	//load_obj("cow.obj", &renderer->model);
@@ -122,7 +134,6 @@ static void init_shader(SoftwareRenderer* renderer) {
 
 bool destroy_software_renderer(SoftwareRenderer* renderer) {
 	free_obj(&renderer->model);
-	free_texture(&renderer->texture);
 	linear_reset(&renderer->renderer_allocator);
 	SDL_DestroyRenderer(renderer->renderer);
 	return true;

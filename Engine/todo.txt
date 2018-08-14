@@ -1,11 +1,12 @@
 - memory allocators. No more random mallocs
-- Multiple button presses at the same time
+- Simd/ Optimize / Profile/ Vtune
+- Set up renderdoc
+- debug windows
 - Hot loading
 - Directx backend
 - Vulkan backend
 - Scene tree
 - Collisions
-- Simd/ Optimize / Profile/ Vtune
-- Set up renderdoc
 - Triangle list<first index, num index, material_index> for multiple materials per mesh
 - Write some swizzling data to interleave, positions, uvs, other data
+- Editor guis

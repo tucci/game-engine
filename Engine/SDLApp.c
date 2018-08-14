@@ -689,10 +689,6 @@ static void update(Engine* engine, float deltaTime) {
 		engine->quit = true;
 	}
 
-	if (engine->keys[SDL_SCANCODE_F5].just_pressed) {
-		printf("Hot load");
-	}
-
 
 	// TODO: refactor camera to game state when we have one.
 	//dont want to have camera in software renderer and gl renderer.
