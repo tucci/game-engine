@@ -8,20 +8,7 @@
 #include "Renderer/software_renderer/SoftwareRenderer.h"
 #include "Renderer/gl/OpenGLRenderer.h"
 
-#define DEBUG 1
-
-
-#if DEBUG
-#define DEBUG_ALLOW_PRINT_EVENT true
-#define event_printf(...) printf(__VA_ARGS__)
-
-#else
-#define DEBUG_ALLOW_PRINT_EVENT false
-#define NDEBUG 
-#define event_printf(...) do {} while (0)
-#endif
-
-#include <assert.h>
+#include "debug_macros.h"
 
 
 #define WINDOW_TITLE "Engine"
@@ -204,12 +191,6 @@ typedef struct GameTimer {
 } GameTimer;
 
 
-
-typedef struct DebugData {
-	bool print_events;
-} DebugData;
-
-
 typedef enum BackenedRendererType {
 	BackenedRenderer_Software,
 	BackenedRenderer_OpenGL
@@ -249,7 +230,7 @@ typedef struct Engine {
 
 	char const* platform;
 	bool quit;
-	DebugData debug;
+
 
 
 	// Fixed memory for the entire engine/game

@@ -1,7 +1,9 @@
 - memory allocators. No more random mallocs
+- pool allocator
 - Simd/ Optimize / Profile/ Vtune
 - Set up renderdoc
-- debug windows
+- proper mesh importers using our custom allocators
+- debug windows/overlays
 - Hot loading
 - Directx backend
 - Vulkan backend

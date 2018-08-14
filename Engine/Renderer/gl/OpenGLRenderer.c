@@ -2,6 +2,7 @@
 
 
 #include "OpenGLRenderer.h"
+#include "../../debug_macros.h"
 
 
 const char * vertex_shader = "#version 330 core\n\
@@ -46,9 +47,9 @@ const char * debug_fragment_shader = "#version 330 core\n\
 static void init_gl_extensions(OpenGLRenderer* opengl) {
 	glewExperimental = true; // Needed in core profile
 	if (glewInit() != GLEW_OK) {
-		printf("Failed to init GLEW\n");
+		debug_print("Failed to init GLEW\n");
 	} else {
-		printf("Succeeded to init GLEW\n");
+		debug_print("Succeeded to init GLEW\n");
 	}
 }
 
@@ -165,15 +166,14 @@ void destroy_gl_debug(OpenGLRenderer* opengl) {
 
 }
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size, void* parition_start, size_t partition_size) {
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* parition_start, size_t partition_size) {
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
 	opengl->gl_context = SDL_GL_CreateContext(window);
 	opengl->sdl_window = window;
-	opengl->window_size = window_size;
-
+	
 
 	opengl->renderer_memory = parition_start;
 	opengl->renderer_memory_size = partition_size;
@@ -223,14 +223,6 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i wind
 	
 
 	
-
-
-
-
-
-
-	glViewport(0, 0, window_size.x, window_size.y);
-	
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
@@ -277,9 +269,10 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	return true;
 }
 
-void opengl_render(OpenGLRenderer* opengl) {
+void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	
+	glViewport(0, 0, viewport_size.x, viewport_size.y);
 
 	
 	Camera camera = opengl->main_camera;
@@ -349,8 +342,9 @@ void opengl_render(OpenGLRenderer* opengl) {
 	
 }
 
-void opengl_debug_render(OpenGLRenderer * opengl) {
+void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
+	glViewport(0, 0, viewport_size.x, viewport_size.y);
 
 	Camera camera = opengl->main_camera;
 	//Mat4x4f model_mat = mat4x4f_identity();

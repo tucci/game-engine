@@ -3,6 +3,7 @@
 #include "GLShader.h"
 #include <stdio.h>
 #include  "SDL_opengl.h"
+#include "../../debug_macros.h"
 
 void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fragment_code) {
 
@@ -18,7 +19,7 @@ void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fra
 	glGetShaderiv(shader->vertex_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(shader->vertex_shader, 512, NULL, infoLog);
-		printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED, %s\n", infoLog);
+		debug_print("ERROR::SHADER::VERTEX::COMPILATION_FAILED, %s\n", infoLog);
 	};
 
 
@@ -29,7 +30,7 @@ void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fra
 	glGetShaderiv(shader->fragment_shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
 		glGetShaderInfoLog(shader->fragment_shader, 512, NULL, infoLog);
-		printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED, %s\n", infoLog);
+		debug_print("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED, %s\n", infoLog);
 	};
 
 	// Shader Program
@@ -42,7 +43,7 @@ void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fra
 	glGetProgramiv(shader->program, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(shader->program, 512, NULL, infoLog);
-		printf("ERROR::SHADER::PROGRAM::LINKING_FAILED, %s\n", infoLog);
+		debug_print("ERROR::SHADER::PROGRAM::LINKING_FAILED, %s\n", infoLog);
 	}
 
 	// Delete the shaders as they're linked into our program now and no longer necessery

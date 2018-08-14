@@ -25,11 +25,14 @@
 
 #define DEBUG_GRID_SIZE 100
 
+
+
 typedef struct OpenGLRenderer {
 	Camera main_camera;
+
 	SDL_GLContext gl_context;
 	SDL_Window* sdl_window;
-	Vec2i window_size;
+	
 
 	void* renderer_memory;
 	size_t renderer_memory_size;
@@ -74,7 +77,7 @@ typedef struct OpenGLRenderer {
 
 static void load_shaders(OpenGLRenderer* opengl);
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, Vec2i window_size, void* parition_start, size_t partition_size);
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* parition_start, size_t partition_size);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 
 
@@ -82,6 +85,6 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 void init_gl_debug(OpenGLRenderer* opengl);
 void destroy_gl_debug(OpenGLRenderer* opengl);
 
-void opengl_render(OpenGLRenderer* opengl);
-void opengl_debug_render(OpenGLRenderer* opengl);
+void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size);
+void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size);
 void opengl_swap_buffer(OpenGLRenderer* opengl);

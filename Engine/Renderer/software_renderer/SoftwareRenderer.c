@@ -243,9 +243,6 @@ void software_render(SoftwareRenderer* r) {
 						if (!discard_fragment) {
 							r->zbuffer[index] = z;
 							SDL_SetRenderDrawColor(renderer, (Uint8) frag_color.r, (Uint8)frag_color.g, (Uint8)frag_color.b , SDL_ALPHA_OPAQUE);
-							//float depth = remap(z, -1, 1, 0, 255);
-							//printf("depth %f\n", depth);
-							//SDL_SetRenderDrawColor(renderer, depth, depth, depth, SDL_ALPHA_OPAQUE);
 							// Flip y coordiinate
 							SDL_RenderDrawPoint(renderer, x, flip_y(height, y));
 						}

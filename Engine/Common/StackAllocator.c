@@ -2,6 +2,7 @@
 
 #include "StackAllocator.h"
 #include "mem.h"
+#include "../debug_macros.h"
 
 void stack_alloc_init(StackAllocator* sa, void* start, size_t aligned_size) {
 	sa->start = start;
@@ -14,7 +15,7 @@ void* stack_alloc(StackAllocator* sa, size_t size, size_t alignment) {
 	size_t aligned_size = ALIGN_UP(size + sizeof(StackHeader), alignment);
 	// TODO: only do this in debug mode
 	if (aligned_size > (size_t)(sa->end - sa->current)) {
-		printf("stack allocate overrun\n");
+		debug_print("stack allocate overrun\n");
 		return NULL;
 	}
 

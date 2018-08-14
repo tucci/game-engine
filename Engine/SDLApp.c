@@ -36,7 +36,7 @@ static void post_update_button_state(ButtonState* button_state) {
 static void log_error(const char* name) {
 	const char* error = SDL_GetError();
 	if (*error) {
-		printf("Name %s, SDl_Error %s", name, error);
+		debug_print("Name %s, SDl_Error %s", name, error);
 	}
 
 }
@@ -44,7 +44,7 @@ static void log_error(const char* name) {
 static bool push_to_event_queue(Engine* engine, Event event) {
 
 	if (engine->event_count > MAX_EVENTS - 1) {
-		printf("Event queue full");
+		debug_print("Event queue full");
 		return false;
 	}
 	engine->event_queue[engine->event_count] = event;
@@ -61,19 +61,19 @@ static void process_event_queue(Engine* engine) {
 		switch (event.kind) {
 
 			case EventKind_Key_Down:{
-				event_printf("Key Down: %d\n", event.event.key_event.key);
+				debug_print("Key Down: %d\n", event.event.key_event.key);
 				update_button_state(&engine->keys[event.event.key_event.key], true);
 				
 				break;
 			}
 
 			case EventKind_Key_Up: {
-				event_printf("Key Up: %d\n", event.event.key_event.key);
+				debug_print("Key Up: %d\n", event.event.key_event.key);
 				update_button_state(&engine->keys[event.event.key_event.key], false);
 				break;
 			}
 			case EventKind_Mouse_Button_Down: {
-				event_printf("Mouse Button Down: Button:%d\tPos:<%d,%d>\n",
+				debug_print("Mouse Button Down: Button:%d\tPos:<%d,%d>\n",
 					event.event.mouse_button_event.button,
 					event.event.mouse_button_event.pos.x,
 					event.event.mouse_button_event.pos.y);
@@ -98,7 +98,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind_Mouse_Button_Up: {
-				event_printf("Mouse Button Up: Button%d\tPos:<%d,%d>\n",
+				debug_print("Mouse Button Up: Button%d\tPos:<%d,%d>\n",
 					event.event.mouse_button_event.button,
 					event.event.mouse_button_event.pos.x,
 					event.event.mouse_button_event.pos.y);
@@ -134,7 +134,7 @@ static void process_event_queue(Engine* engine) {
 			}
 
 			case EventKind_Window_Moved: {
-				event_printf("Window move: Pos<%d,%d>\n",
+				debug_print("Window move: Pos<%d,%d>\n",
 					event.event.window_event.data.data1,
 					event.event.window_event.data.data2);
 
@@ -145,7 +145,7 @@ static void process_event_queue(Engine* engine) {
 			}
 
 			case EventKind_Window_Resized: {
-				event_printf("Window resized: winId: %d, Size<%d,%d>\n",
+				debug_print("Window resized: winId: %d, Size<%d,%d>\n",
 					event.event.window_event.data.window_id,
 					event.event.window_event.data.data1,
 					event.event.window_event.data.data2);
@@ -159,7 +159,7 @@ static void process_event_queue(Engine* engine) {
 			}
 
 			case EventKind_Window_Minimized: {
-				event_printf("Window minimized, winId:%d\n",
+				debug_print("Window minimized, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -169,7 +169,7 @@ static void process_event_queue(Engine* engine) {
 			}
 
 			case EventKind_Window_Maximized: {
-				event_printf("Window maximized, winId:%d\n",
+				debug_print("Window maximized, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -179,21 +179,21 @@ static void process_event_queue(Engine* engine) {
 			}
 
 			case EventKind_Window_Restored: {
-				event_printf("Window restored, winId:%d\n",
+				debug_print("Window restored, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				break;
 			}
 
 			case EventKind_Window_Shown: {
-				event_printf("Window shown, winId:%d\n",
+				debug_print("Window shown, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				break;
 			}
 
 			case EventKind_Window_Hidden: {
-				event_printf("Window hidden, winId:%d\n",
+				debug_print("Window hidden, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -201,7 +201,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind_Window_Enter_Mouse_Focus: {
-				event_printf("Window enter mouse focus, winId:%d\n",
+				debug_print("Window enter mouse focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -210,7 +210,7 @@ static void process_event_queue(Engine* engine) {
 			}
 
 			case EventKind_Window_Lose_Mouse_Focus: {
-				event_printf("Window lose mouse focus, winId:%d\n",
+				debug_print("Window lose mouse focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -218,7 +218,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind_Window_Enter_Keyboard_Focus: {
-				event_printf("Window enter keyboard focus, winId:%d\n",
+				debug_print("Window enter keyboard focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -226,7 +226,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind_Window_Lose_Keyboard_Focus: {
-				event_printf("Window lose keyboard focus, winId:%d\n",
+				debug_print("Window lose keyboard focus, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
@@ -386,7 +386,7 @@ static bool init_renderer(Engine* engine) {
 
 		case BackenedRenderer_OpenGL: {
 			MemoryEnginePartition parition_start = give_memory_partition(engine, MEGABYTES(10));
-			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
+			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
 		default:
@@ -454,7 +454,6 @@ static bool init_game_loop(Engine* engine) {
 }
 
 static bool init_debug(Engine* engine) {
-	engine->debug.print_events = DEBUG_ALLOW_PRINT_EVENT;
 	return true;
 }
 
@@ -469,7 +468,7 @@ static void update_clock(Engine* engine) {
 	engine->clock.delta_milliseconds = (int)((engine->clock.delta_ticks * 1000) / engine->clock.ticks_per_sec);
 	engine->clock.delta_seconds = (float)(engine->clock.delta_ticks) / (float)(engine->clock.ticks_per_sec);
 
-	/*printf("Seconds: %lf\tdelta_seconds: %f\tms: %d\tdelta_ms: %d\n",
+	/* ("Seconds: %lf\tdelta_seconds: %f\tms: %d\tdelta_ms: %d\n",
 	engine->time.seconds,
 	engine->time.delta_seconds,
 	engine->time.milliseconds,
@@ -619,12 +618,12 @@ static void process_inputs(Engine* engine) {
 bool init_engine(Engine* engine) {
 
 	if (SDL_Init(SDL_INIT_EVERYTHING)) {
-		printf("Could not init SDL: %s \n", SDL_GetError());
+		debug_print("Could not init SDL: %s \n", SDL_GetError());
 		exit(-1);
 	}
 
 	if (!init_engine_memory(engine)) {
-		printf("Engine failed to allocate memory at startup");
+		debug_print("Engine failed to allocate memory at startup");
 		return false;
 	}
 
@@ -788,14 +787,14 @@ void game_loop(Engine* engine) {
 		switch (engine->renderer.type) {
 			case BackenedRenderer_Software: {
 				software_render(&engine->renderer.software_renderer);
-				//software_debug_render(&engine->renderer.software_renderer);
+				software_debug_render(&engine->renderer.software_renderer);
 				software_swap_buffer(&engine->renderer.software_renderer);
 				break;
 			}
 
 			case BackenedRenderer_OpenGL: {
-				opengl_render(&engine->renderer.opengl);
-				opengl_debug_render(&engine->renderer.opengl);
+				opengl_render(&engine->renderer.opengl, engine->window.size);
+				opengl_debug_render(&engine->renderer.opengl, engine->window.size);
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;
 			}
@@ -808,9 +807,8 @@ void game_loop(Engine* engine) {
 		engine->game_loop.fps = (int) (1 / delta_time);
 		engine->game_loop.current_time = new_time;
 
-
-		printf("FPS %d, dt %f\t", engine->game_loop.fps, delta_time);
-		printf("total time %f, physics time %f\n", engine->game_loop.current_time, engine->game_loop.physics_time);
+		debug_print("FPS %d, dt %f\t", engine->game_loop.fps, delta_time);
+		debug_print("total time %f, physics time %f\n", engine->game_loop.current_time, engine->game_loop.physics_time);
 
 
 

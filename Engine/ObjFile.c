@@ -9,6 +9,8 @@
 
 #include "Common/stretchy_buffer.h"
 
+#include "debug_macros.h"
+
 #define LINE_SIZE 256
 
 static float parse_float(char** stream) {
@@ -72,9 +74,9 @@ void load_obj(const char* filename, ObjModel* model) {
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
-		printf("The file was opened\n");
+		debug_print("The file was opened\n");
 	} else {
-		printf("The file was not opened\n");
+		debug_print("The file was not opened\n");
 	}
 
 
@@ -163,15 +165,15 @@ void load_obj(const char* filename, ObjModel* model) {
 
 	}
 
-	printf("Vertex count %d\n", stb_sb_count(model->verts));
-	printf("Face count %d\n", stb_sb_count(model->v_id));
+	debug_print("Vertex count %d\n", stb_sb_count(model->verts));
+	debug_print("Face count %d\n", stb_sb_count(model->v_id));
 
 	if (file) {
 		err = fclose(file);
 		if (err == 0) {
-			printf("The file was closed\n");
+			debug_print("The file was closed\n");
 		} else {
-			printf("The file was not closed\n");
+			debug_print("The file was not closed\n");
 		}
 	}
 

@@ -3,6 +3,7 @@
 #include "LinearAllocator.h"
 #include "mem.h"
 
+#include "../debug_macros.h"
 
 
 
@@ -21,7 +22,7 @@ void* linear_alloc(LinearAllocator* arena, size_t size, size_t alignment) {
 
 	// TODO: only do this in debug mode
 	if (aligned_size > (size_t)(arena->end - arena->current)) {
-		printf("Linear allocate overrun\n");
+		debug_print("Linear allocate overrun\n");
 		return NULL;
 	}
 

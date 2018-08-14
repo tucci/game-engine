@@ -14,7 +14,8 @@
 #include "SoftwareRendererShader.h"
 
 
-
+// NOTE: Software renderer is deprecated and not updated anymore
+// this was built to learn a basic level of the graphics pipeline
 typedef struct SoftwareRenderer {
 	Camera camera;
 
@@ -29,11 +30,7 @@ typedef struct SoftwareRenderer {
 	size_t renderer_memory_size;
 	LinearAllocator renderer_allocator;
 
-	
-	
 	SoftwareRendererShader shader;
-
-	// TODO: find a better way to store these things
 	ObjModel model;
 	SimpleTexture texture;
 
