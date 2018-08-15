@@ -3,17 +3,19 @@
 
 #include "StaticMesh.h"
 
+#include "../Common/common_macros.h"
+
 void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
 
 	int index_count = obj->face_count;
 	static_mesh->index_count = index_count;
-	static_mesh->indices = (Vec3i*)malloc(index_count * sizeof(Vec3i));//cast
+	static_mesh->indices = cast(Vec3i*)malloc(index_count * sizeof(Vec3i));
 	
 
 	static_mesh->vertex_count = index_count * 3;
 	// TODO: Convert the mallocs to use our custom alloctors when we have a better idea on how we want to load models in
-	static_mesh->pos = (Vec3f*)malloc(static_mesh->vertex_count * sizeof(Vec3f));//cast
-	static_mesh->texcoords = (Vec2f*)malloc(static_mesh->vertex_count * sizeof(Vec2f));//cast
+	static_mesh->pos = cast(Vec3f*)malloc(static_mesh->vertex_count * sizeof(Vec3f));
+	static_mesh->texcoords = cast(Vec2f*)malloc(static_mesh->vertex_count * sizeof(Vec2f));
 
 
 

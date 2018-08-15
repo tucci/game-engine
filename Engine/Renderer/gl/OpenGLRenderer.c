@@ -3,6 +3,7 @@
 
 #include "OpenGLRenderer.h"
 #include "../../debug_macros.h"
+#include "../../Common/common_macros.h"
 
 
 const char * vertex_shader = "#version 330 core\n\
@@ -86,8 +87,9 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 	int grid_size = DEBUG_GRID_SIZE;
 	int axis_vertex_count = 6;
 	opengl->grid_mesh.vertex_count = (grid_size + 1) * 4 + axis_vertex_count;
-	opengl->grid_mesh.pos = (Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);//cast
-	opengl->grid_mesh.color = (Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);//cast
+	opengl->grid_mesh.pos = cast(Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
+
+	opengl->grid_mesh.color = cast(Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
 	
 
 	
@@ -322,10 +324,10 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
 	// Should we pre interleave our data, or create sperate vbos for textures.
 	// Also note, since our textcoords array is not offset from our vert array. 2 seperate malloc calls, so different addresses
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);//cast
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), (GLvoid*)(opengl->mesh.vertex_count * sizeof(Vec3f)));//cast
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->mesh.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 
@@ -390,11 +392,11 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 	// Pos attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)0);//cast
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (GLvoid*)(opengl->grid_mesh.vertex_count * sizeof(Vec3f)));//cast
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(opengl->grid_mesh.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 
@@ -406,6 +408,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	if (opengl->show_debug_axes) {
 		glLineWidth(4);
 		glDrawArrays(GL_LINES, opengl->axes_pos_offset, opengl->grid_mesh.vertex_count - opengl->axes_pos_offset);
+
 	} 
 	
 }

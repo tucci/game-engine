@@ -1,7 +1,7 @@
 #pragma once
 
 #include "LinearAllocator.h"
-#include "mem.h"
+#include "common_macros.h"
 
 #include "../debug_macros.h"
 

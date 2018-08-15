@@ -12,3 +12,4 @@
 - Triangle list<first index, num index, material_index> for multiple materials per mesh
 - Write some swizzling data to interleave, positions, uvs, other data
 - Editor guis
+- multi threaded game loop

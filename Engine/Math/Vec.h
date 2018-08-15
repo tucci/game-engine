@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#include <immintrin.h>
+
 typedef union Vec2i {
 	struct {
 		int x;
@@ -206,6 +208,7 @@ Vec4i inline vec4f_to_vec4i(Vec4f v) {
 // TODO: speed up with simd
 
 Vec3f inline vec_add(Vec3f v1, Vec3f v2) {
+	
 	Vec3f result = {
 		v1.x + v2.x,
 		v1.y + v2.y,
@@ -233,6 +236,7 @@ Vec3f inline vec_sub(Vec3f v1, Vec3f v2) {
 }
 
 Vec3f inline vec_multiply(float scalar, Vec3f v) {
+	
 	Vec3f result = {
 		scalar * v.x,
 		scalar * v.y,
@@ -246,10 +250,12 @@ Vec3f inline vec_multiply(float scalar, Vec3f v) {
 float inline vec_length(Vec3f vec) {
 	// Replace sqrt with simd ones
 	float length = sqrtf((vec.x * vec.x) + (vec.y * vec.y) + (vec.z * vec.z));
+	
 	return length;
 }
 
-Vec3f inline vec_normalize(Vec3f vec) {
+Vec3f inline vec_normalize(Vec3f vec) 
+{
 	float len = vec_length(vec);
 	float inv_len = 1 / len;
 	Vec3f result = {

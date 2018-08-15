@@ -169,7 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\LinearAllocator.h" />
-    <ClInclude Include="Common\mem.h" />
+    <ClInclude Include="Common\common_macros.h" />
     <ClInclude Include="Common\StackAllocator.h" />
     <ClInclude Include="Core\Camera.h" />
     <ClInclude Include="debug_macros.h" />

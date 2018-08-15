@@ -1,7 +1,7 @@
 #pragma once
 
 #include "StackAllocator.h"
-#include "mem.h"
+#include "common_macros.h"
 #include "../debug_macros.h"
 
 void stack_alloc_init(StackAllocator* sa, void* start, size_t aligned_size) {
@@ -20,9 +20,9 @@ void* stack_alloc(StackAllocator* sa, size_t size, size_t alignment) {
 	}
 
 	// NOTE: the header is at the end of the block
-	StackHeader* header = (StackHeader*)(sa->current + aligned_size - sizeof(StackHeader));//cast
+	StackHeader* header = cast(StackHeader*)(sa->current + aligned_size - sizeof(StackHeader));
 	header->block_size = aligned_size - sizeof(StackHeader);
-	void* ptr = (void*)sa->current;//cast
+	void* ptr = cast(void*)sa->current;
 	sa->current += aligned_size;
 	return ptr;
 
@@ -33,7 +33,7 @@ void stack_pop(StackAllocator* sa) {
 	// If there is nothing on the stack. do nothing
 	if (sa->start == sa->current) return;
 
-	StackHeader* header = (StackHeader*)(sa->current - sizeof(StackHeader));//cast
+	StackHeader* header = cast(StackHeader*)(sa->current - sizeof(StackHeader));
 	sa->current -= header->block_size + sizeof(StackHeader);
 
 }

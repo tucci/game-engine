@@ -95,13 +95,13 @@
     <ClInclude Include="Common\StackAllocator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Common\mem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\TextureData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="debug_macros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\common_macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

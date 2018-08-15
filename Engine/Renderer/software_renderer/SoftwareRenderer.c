@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SoftwareRenderer.h"
+#include "../../Common/common_macros.h"
 
 
 #define flip_y(height, y)  height - 1 - y
@@ -105,7 +106,7 @@ static bool init_z_buffer(SoftwareRenderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
-	renderer->zbuffer = (float*)linear_alloc(&renderer->renderer_allocator, size, 1);//cast
+	renderer->zbuffer = cast(float*)linear_alloc(&renderer->renderer_allocator, size, 1);
 	if (renderer->zbuffer == NULL) {
 		return false;
 	}

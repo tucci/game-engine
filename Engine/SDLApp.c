@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SDLApp.h"
-#include "Common\mem.h"
+#include "Common\common_macros.h"
 
 
 static void update_button_state(ButtonState* button_state, bool down_now) {
@@ -270,7 +270,7 @@ static MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) 
 	parition.partition_size = aligned_size;
 	parition.start_ptr = engine->partition_ptr;
 	// Increment ptr for next partition
-	engine->partition_ptr = ((char*)engine->partition_ptr) + aligned_size; // cast
+	engine->partition_ptr = (cast(char*)engine->partition_ptr) + aligned_size;
 	return parition;
 }
 
