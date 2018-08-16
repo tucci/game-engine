@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Vec.h"
-// TODO: deprecate need for math lib, go full simd
+
 
 #define PI 3.141592653589f
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -12,6 +12,17 @@
 
 // Converts radians to degrees.
 #define rad_to_deg(rad) ((rad) * 180.0f / PI)
+
+
+// Good for small floating pts, bad for large pts
+#define F_EQUAL_ABS(x, y, EPSILON) (int)(ABS(x - y) <= EPSILON)
+// Bad for small floating pts, Good for large pts
+#define F_EQUAL_REL(x, y, EPSILON) (int)(ABS(x - y) <= EPSILON * MAX(ABS(x), ABS(y)) 
+// A basic balance between relative and absolute comparision
+#define F_EQUAL_BALANCE(x, y, EPSILON) (int)(ABS(x - y) <= EPSILON * MAX(1.0f, ABS(x), ABS(y))
+// A more controlled floating pt equal with control for relative and absolute
+#define F_EQUAL_CONTROL(x, y, relTol, absTol) (int)(ABS(x - y) <= MAX(absTol, relTol * MAX(ABS(x), ABS(y))))
+
 
 
 
@@ -29,6 +40,7 @@ typedef struct BoundingBox2i {
 
 // Taken from https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage
 // Paper from https://www.cs.drexel.edu/~david/Classes/Papers/comp175-06-pineda.pdf
+// TODO: simd
 float inline edge_function(Vec3f a, Vec3f b, Vec3f c) {
 	return -(b.y - a.y)*(c.x - a.x) + (b.x - a.x)*(c.y - a.y);	
 }
@@ -61,15 +73,15 @@ float inline clamp(float x, float min, float max) {
 // Taken from real time collision detection
 Vec3f inline barycentric(Vec3f a, Vec3f b, Vec3f c, Vec3f p) {
 	
-	Vec3f v0 = vec_sub(b, a);
-	Vec3f v1 = vec_sub(c, a);
-	Vec3f v2 = vec_sub(p, a);
+	Vec3f v0 = v3_sub(b, a);
+	Vec3f v1 = v3_sub(c, a);
+	Vec3f v2 = v3_sub(p, a);
 	
-	float d00 = vec_dot(v0, v0);
-	float d01 = vec_dot(v0, v1);
-	float d11 = vec_dot(v1, v1);
-	float d20 = vec_dot(v2, v0);
-	float d21 = vec_dot(v2, v1);
+	float d00 = v3_dot(v0, v0);
+	float d01 = v3_dot(v0, v1);
+	float d11 = v3_dot(v1, v1);
+	float d20 = v3_dot(v2, v0);
+	float d21 = v3_dot(v2, v1);
 	float denom = d00 * d11 - d01 * d01;
 	Vec3f bc;
 	

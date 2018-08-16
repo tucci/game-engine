@@ -1,18 +1,19 @@
 #pragma once
 
 #include "Camera.h"
+#include "../Common/common_macros.h"
 
 
 void init_camera(Camera* camera,
-	Vec3f pos,
-	Vec3f dir,
-	Vec3f orientation,
+	Vec4f pos,
+	Vec4f dir,
+	Vec4f orientation,
 	float near,
 	float far,
 	float fov,
 	float aspect_ratio) {
 
-	camera->pos = (Vec4f) { pos.x, pos.y, pos.z, 1 };
+	camera->pos = pos;
 	camera->dir = dir;
 	camera->rotation = orientation;
 
@@ -25,9 +26,9 @@ void init_camera(Camera* camera,
 
 
 void init_camera_default(Camera* camera) {
-	camera->pos = (Vec4f) { 0, 0, 0, 1 };
-	camera->dir = (Vec3f) { 0, 0, -1 };
-	camera->rotation = Vec3f_Zero;
+	camera->pos = ToVec4f( 0, 0, 0, 1);
+	camera->dir = ToVec4f( 0, 0, -1, 0);
+	camera->rotation = Vec4f_Zero;
 
 	camera->near = 0.1f;
 	camera->far = 100.0f;
@@ -36,6 +37,6 @@ void init_camera_default(Camera* camera) {
 	camera->aspect_ratio = 1.0f;
 }
 
-void set_camera_pos(Camera* camera, Vec3f pos) {
-	camera->pos = (Vec4f) { pos.x, pos.y, pos.z, 1 };
+void set_camera_pos(Camera* camera, Vec4f pos) {
+	camera->pos = pos;
 }

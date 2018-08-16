@@ -694,32 +694,32 @@ static void update(Engine* engine, float deltaTime) {
 	// Seperate input from rendering
 	if (engine->keys[SDL_SCANCODE_W].down) {
 		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
-		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
+		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Backward));
 	}
 
 	if (engine->keys[SDL_SCANCODE_S].down) {
-		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
+		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Forward));
 		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
 	}
 
 	if (engine->keys[SDL_SCANCODE_1].down) {
 		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
-		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
+		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Up));
 	}
 
 	if (engine->keys[SDL_SCANCODE_2].down) {
 		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
-		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
+		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Down));
 	}
 
 	if (engine->keys[SDL_SCANCODE_A].down) {
 		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
-		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
+		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Left));
 	}
 
 	if (engine->keys[SDL_SCANCODE_D].down) {
 		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
-		engine->renderer.opengl.main_camera.pos.xyz = vec_add(engine->renderer.opengl.main_camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
+		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Right));
 	}
 
 	if (engine->keys[SDL_SCANCODE_E].down) {

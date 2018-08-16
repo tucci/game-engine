@@ -106,8 +106,8 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 		opengl->grid_mesh.pos[index + 1] = pt2;
 
 
-		pt = (Vec3f) { i_f, 0, -size_f };
-		pt2 = (Vec3f) { i_f, 0, size_f };
+		pt =  ToVec3f( i_f, 0, -size_f);
+		pt2 = ToVec3f( i_f, 0, size_f);
 
 		opengl->grid_mesh.pos[index + 2] = pt;
 		opengl->grid_mesh.pos[index + 3] = pt2;
@@ -185,7 +185,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* pari
 
 	init_gl_extensions(opengl);
 	init_camera_default(&opengl->main_camera);
-	set_camera_pos(&opengl->main_camera, (Vec3f) { 0, 0, 0 });
+	set_camera_pos(&opengl->main_camera, Vec4f_Zero);
 
 
 	load_shaders(opengl);
@@ -286,7 +286,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	
 
-	Mat4x4f view_mat = look_at(camera.pos.xyz, vec_add(camera.pos.xyz, camera.dir), Vec3f_Up);
+	Mat4x4f view_mat = look_at(camera.pos.xyz, v3_add(camera.pos.xyz, camera.dir.xyz), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
@@ -356,7 +356,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 
-	Mat4x4f view_mat = look_at(camera.pos.xyz, vec_add(camera.pos.xyz, camera.dir), Vec3f_Up);
+	Mat4x4f view_mat = look_at(camera.pos.xyz, v3_add(camera.pos.xyz, camera.dir.xyz), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);

@@ -67,7 +67,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	if (!init_z_buffer(renderer)) { return false; }
 
 	init_camera_default(&renderer->camera);
-	set_camera_pos(&renderer->camera, (Vec3f){ 0, 0, 10 });
+	set_camera_pos(&renderer->camera, ToVec4f( 0, 0, 10, 1 ));
 
 	/* Clear the rendering surface with the specified color */
 	SDL_SetRenderDrawColor(renderer->renderer, 0, 0, 0, 0xFF);
@@ -161,7 +161,7 @@ void software_render(SoftwareRenderer* r) {
 	int height = r->window_size.y;
 
 	Vec3f eye = camera.pos.xyz;
-	Vec3f dir = camera.dir;
+	Vec3f dir = camera.dir.xyz;
 
 
 	
@@ -169,7 +169,7 @@ void software_render(SoftwareRenderer* r) {
 	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
-	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
+	Mat4x4f view_mat = look_at(eye, v3_add(eye, dir), Vec3f_Up);
 	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
 	view_mat = transpose(&view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
@@ -216,7 +216,8 @@ void software_render(SoftwareRenderer* r) {
 
 		for (int x = bounds.min.x; x <= bounds.max.x; x++) {
 			for (int y = bounds.min.y; y <= bounds.max.y; y++) {
-				Vec3f pt = (Vec3f) { (float)x, (float)y, 0.0};
+				Vec3f pt = 
+				{ (float)x, (float)y, 0.0};
 				Vec3f bc = {
 					edge_function(v1Raster, v2Raster, pt),
 					edge_function(v2Raster, v0Raster, pt),
@@ -279,7 +280,7 @@ void software_debug_render(SoftwareRenderer* r) {
 	int height = r->window_size.y;
 
 	Vec3f eye = camera.pos.xyz;
-	Vec3f dir = camera.dir;
+	Vec3f dir = camera.dir.xyz;
 
 
 	
@@ -287,7 +288,7 @@ void software_debug_render(SoftwareRenderer* r) {
 	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
-	Mat4x4f view_mat = look_at(eye, vec_add(eye, dir), Vec3f_Up);
+	Mat4x4f view_mat = look_at(eye, v3_add(eye, dir), Vec3f_Up);
 	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
 	view_mat = transpose(&view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
@@ -353,8 +354,8 @@ void software_debug_render(SoftwareRenderer* r) {
 		SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 
-		ptf = (Vec4f) { i_f, 0, -size_f, 1 };
-		pt2f = (Vec4f) { i_f, 0, size_f, 1 };
+		ptf = ToVec4f( i_f, 0, -size_f, 1 );
+		pt2f = ToVec4f( i_f, 0, size_f, 1 );
 
 		pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, ptf));
 		pt2 = vec4f_to_vec4i(mat4x4_vec_mul(&mat, pt2f));

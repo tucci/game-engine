@@ -263,9 +263,9 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 
 
 Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
-	Vec3f forward = vec_normalize(vec_sub(eye, to));
-	Vec3f right = vec_normalize(vec_cross(up, forward));
-	up = vec_normalize(vec_cross(forward, right));
+	Vec3f forward = vec_normalize(v3_sub(eye, to));
+	Vec3f right = vec_normalize(v3_cross(up, forward));
+	up = vec_normalize(v3_cross(forward, right));
 
 	Mat4x4f mat = mat4x4f_identity();
 	Mat4x4f mat2 = mat4x4f_identity();
