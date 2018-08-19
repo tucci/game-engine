@@ -1,5 +1,6 @@
 - memory allocators. No more random mallocs
 - pool allocator
+- more unit tests and assertions
 - Simd/ Optimize / Profile/ Vtune
 - Set up renderdoc
 - proper mesh importers using our custom allocators

@@ -8,7 +8,7 @@
 #include "../../Math/Vec.h"
 #include "../../ObjFile.h"
 #include "../../Core/TextureData.h"
-#include "../../Core/Camera.h"
+#include "../../Core/Entities/Camera.h"
 #include "../../Common/LinearAllocator.h"
 
 #include "SoftwareRendererShader.h"

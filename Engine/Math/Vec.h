@@ -199,9 +199,19 @@ typedef union Vec4i {
 
 
 // Makes passing to vec parameters faster
-#define vec34pack(v1, v2) ToVec4fFrom3f(v1, 0), ToVec4fFrom3f(v2, 0)
+#define vec34pack(v1, v2) vec3f_to_vec4f(v1, 0), vec3f_to_vec4f(v2, 0)
 
-Vec3f inline ToVec3f(float x, float y, float z) {
+
+Vec2f inline make_vec2f(float x, float y) {
+	Vec2f result = {
+		x,
+		y,
+	};
+	return result;
+}
+
+
+Vec3f inline make_vec3f(float x, float y, float z) {
 	Vec3f result = {
 		x,
 		y,
@@ -210,7 +220,16 @@ Vec3f inline ToVec3f(float x, float y, float z) {
 	return result;
 }
 
-Vec4f inline ToVec4f(float x, float y, float z, float w) {
+Vec3i inline make_vec3i(int x, int y, int z) {
+	Vec3i result = {
+		x,
+		y,
+		z
+	};
+	return result;
+}
+
+Vec4f inline make_vec4f(float x, float y, float z, float w) {
 	Vec4f result = {
 		x,
 		y,
@@ -220,7 +239,7 @@ Vec4f inline ToVec4f(float x, float y, float z, float w) {
 	return result;
 }
 
-Vec4f inline ToVec4fFrom3f(Vec3f v, float w) {
+Vec4f inline vec3f_to_vec4f(Vec3f v, float w) {
 	Vec4f result = {
 		v.x,
 		v.y,
@@ -403,7 +422,7 @@ Vec3f inline v3_add(Vec3f v1, Vec3f v2) {
 }
 
 Vec3f inline v3_negate(Vec3f vec) {
-	Vec3f result = v4_negate(ToVec4fFrom3f(vec, 0)).xyz;
+	Vec3f result = v4_negate(vec3f_to_vec4f(vec, 0)).xyz;
 	return result;
 }
 
@@ -413,18 +432,18 @@ Vec3f inline v3_sub(Vec3f v1, Vec3f v2) {
 }
 
 Vec3f inline v3_multiply(float scalar, Vec3f v) {
-	Vec3f result = v4_multiply(scalar, ToVec4fFrom3f(v, 0)).xyz;
+	Vec3f result = v4_multiply(scalar, vec3f_to_vec4f(v, 0)).xyz;
 	return result;
 }
 
 
 float inline v3_length(Vec3f vec) {
-	float length = v4_length(ToVec4fFrom3f(vec, 0));
+	float length = v4_length(vec3f_to_vec4f(vec, 0));
 	return length;
 }
 
 Vec3f inline vec_normalize(Vec3f vec) {
-	Vec3f result = v4_normalize(ToVec4fFrom3f(vec, 0)).xyz;
+	Vec3f result = v4_normalize(vec3f_to_vec4f(vec, 0)).xyz;
 	return result;
 }
 
@@ -436,8 +455,8 @@ float inline v3_dot(Vec3f v1, Vec3f v2) {
 Vec3f inline v3_cross(Vec3f v1, Vec3f v2) {
 
 #ifdef _INCLUDED_MM2
-	Vec4f v41 = ToVec4fFrom3f(v1, 0);
-	Vec4f v42 = ToVec4fFrom3f(v2, 0);
+	Vec4f v41 = vec3f_to_vec4f(v1, 0);
+	Vec4f v42 = vec3f_to_vec4f(v2, 0);
 
 	__m128 m1 = _mm_load_ps(&v41);
 	__m128 m2 = _mm_load_ps(&v42);

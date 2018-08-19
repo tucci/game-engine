@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Camera.h"
-#include "../Common/common_macros.h"
+#include "../../Common/common_macros.h"
+
 
 
 void init_camera(Camera* camera,
@@ -26,8 +27,8 @@ void init_camera(Camera* camera,
 
 
 void init_camera_default(Camera* camera) {
-	camera->pos = ToVec4f( 0, 0, 0, 1);
-	camera->dir = ToVec4f( 0, 0, -1, 0);
+	camera->pos = make_vec4f( 0, 0, 0, 1);
+	camera->dir = make_vec4f( 0, 0, -1, 0);
 	camera->rotation = Vec4f_Zero;
 
 	camera->near = 0.1f;
@@ -39,4 +40,10 @@ void init_camera_default(Camera* camera) {
 
 void set_camera_pos(Camera* camera, Vec4f pos) {
 	camera->pos = pos;
+}
+
+
+
+void move_camera(Camera* camera, Vec3f direction, float delta_time) {
+	camera->pos.xyz = v3_add(camera->pos.xyz, v3_multiply(delta_time, direction));
 }

@@ -8,13 +8,14 @@
 
 #include "../../Math/Vec.h"
 #include "../../Math/Mat.h"
-#include "../../ObjFile.h"
 
-#include "../../Core/StaticMesh.h"
-#include "../../Core/Camera.h"
-#include "../../Core/TextureData.h"
+
+
 
 #include "../../Common/LinearAllocator.h"
+
+#include "../../Core/Scene.h"
+#include "../../Core/StaticMesh.h"
 
 #include "GLShader.h"
 
@@ -28,7 +29,8 @@
 
 
 typedef struct OpenGLRenderer {
-	Camera main_camera;
+
+	Scene* render_scene;
 
 	SDL_GLContext gl_context;
 	SDL_Window* sdl_window;
@@ -39,20 +41,12 @@ typedef struct OpenGLRenderer {
 	LinearAllocator renderer_allocator;
 
 
-	// TODO: move this to it's own place struture. use some sort of allocator and custom model loader
-	// Also the meshes should be loaded in the scene, once we have that figured out
-	StaticMesh mesh;
-	SimpleTexture texture;
-
 	GLuint textureID;
 	
 	GLShader main_shader;
 	GLuint VAO;
 	GLuint VBO; // id to the Buffer that stores our vertices
 	GLuint EBO; // id to the Buffer that stores our indices
-
-
-	
 
 	
 
@@ -65,20 +59,16 @@ typedef struct OpenGLRenderer {
 
 	GLuint grid_debug_VAO;
 	GLuint grid_debug_VBO;
-	
-
-
-
-	
-
-
-
 } OpenGLRenderer;
 
+
+void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene);
 static void load_shaders(OpenGLRenderer* opengl);
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* parition_start, size_t partition_size);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
+
+
 
 
 

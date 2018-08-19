@@ -1,7 +1,13 @@
 #pragma once
 
 #include "SDLApp.h"
-#include "Common\common_macros.h"
+#include "Common/common_macros.h"
+
+#include "Core/Game.h"
+
+
+
+
 
 
 static void update_button_state(ButtonState* button_state, bool down_now) {
@@ -264,7 +270,7 @@ static bool init_engine_memory(Engine* engine) {
 	
 }
 
-static MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
+MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
 	MemoryEnginePartition parition;
 	size_t aligned_size = ALIGN_UP(size, 64);
 	parition.partition_size = aligned_size;
@@ -342,8 +348,8 @@ static bool init_window(Engine* engine) {
 	int x = SDL_WINDOWPOS_CENTERED;
 	int y = SDL_WINDOWPOS_CENTERED;
 
-	int w = WINDOW_SIZE_X;
-	int h = WINDOW_SIZE_Y;
+	int w = DEFAULT_WINDOW_SIZE_X;
+	int h = DEFAULT_WINDOW_SIZE_Y;
 
 	sdl_window = SDL_CreateWindow(
 		title,
@@ -497,35 +503,6 @@ static void process_inputs(Engine* engine) {
 	
 	while (SDL_PollEvent(&sdl_event)) {
 
-		
-		/*const Uint8 *keys = SDL_GetKeyboardState(NULL);
-		for (int i = 0; i < SDL_NUM_SCANCODES; i++) {
-			
-			Event event;
-			event.event.key_event.key = i;
-
-			ButtonState* button_state = &engine->keys[i];
-
-			update_button_state(&engine->keys[i], (bool)keys[i]);
-
-			if (button_state->pressed) {
-				event.kind = EventKind_Key_Pressed;
-				push_to_event_queue(engine, event);
-			}
-
-			else if (button_state->down) {
-				event.kind = EventKind_Key_Down;
-				push_to_event_queue(engine, event);
-			} 
-	
-			if (button_state->released) {
-				event.kind = EventKind_Key_Up;
-				push_to_event_queue(engine, event);
-			}
-			
-		}*/
-		
-
 		switch (sdl_event.type) {
 			case SDL_MOUSEMOTION: {
 				Event event;
@@ -615,6 +592,38 @@ static void process_inputs(Engine* engine) {
 	}
 }
 
+static bool load_game(Engine* engine, const char* game_file) {
+
+
+	// TODO: read game/project file
+	debug_print("Loading Game\n");
+	// Load scene, get how much potential memory we would need from the scene
+
+	// Init some memory for our game
+	MemoryEnginePartition game_partition = give_memory_partition(engine, MEGABYTES(50));
+
+
+	// Bootstrap loading
+	// Load game into it's own owned memory partition
+	engine->loaded_game = cast(Game*) game_partition.start_ptr;
+	linear_init(&engine->loaded_game->game_memory, game_partition.start_ptr, game_partition.partition_size);
+	// Alloc the game object size so we dont overwrite the loaded game struct
+	linear_alloc(&engine->loaded_game->game_memory, sizeof(Game), 4);
+
+	// load all resources, static meshes from files
+	debug_print("Loading scene objects\n");
+	load_scene(engine->loaded_game, 1);
+
+	set_scene_for_opengl_renderer(&engine->renderer.opengl, engine->loaded_game->loaded_scene);
+
+
+	debug_print("Starting Game\n");
+
+
+
+	return true;
+}
+
 bool init_engine(Engine* engine) {
 
 	if (SDL_Init(SDL_INIT_EVERYTHING)) {
@@ -641,6 +650,10 @@ bool init_engine(Engine* engine) {
 	if (!init_event_queue(engine)) { return false; }
 	if (!init_clock(engine)) { return false; }
 	if (!init_game_loop(engine)) { return false; }
+
+
+	if (!load_game(engine, "mygame.gamefile")) { return false; }
+	
 
 
 
@@ -692,52 +705,45 @@ static void update(Engine* engine, float deltaTime) {
 	// TODO: refactor camera to game state when we have one.
 	//dont want to have camera in software renderer and gl renderer.
 	// Seperate input from rendering
+
 	if (engine->keys[SDL_SCANCODE_W].down) {
-		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Backward));
-		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Backward));
+		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Backward, deltaTime);
 	}
 
 	if (engine->keys[SDL_SCANCODE_S].down) {
-		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Forward));
-		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Forward));
+		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Forward, deltaTime);
 	}
 
 	if (engine->keys[SDL_SCANCODE_1].down) {
-		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Up));
-		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Up));
+		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Up, deltaTime);
 	}
 
 	if (engine->keys[SDL_SCANCODE_2].down) {
-		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Down));
-		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Down));
+		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Down, deltaTime);
 	}
 
 	if (engine->keys[SDL_SCANCODE_A].down) {
-		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Left));
-		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Left));
+		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Left, deltaTime);
 	}
 
 	if (engine->keys[SDL_SCANCODE_D].down) {
-		//engine->renderer.software_renderer.camera.pos.xyz = vec_add(engine->renderer.software_renderer.camera.pos.xyz, vec_multiply(deltaTime, Vec3f_Right));
-		engine->renderer.opengl.main_camera.pos.xyz = v3_add(engine->renderer.opengl.main_camera.pos.xyz, v3_multiply(deltaTime, Vec3f_Right));
+		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Right, deltaTime);
 	}
 
 	if (engine->keys[SDL_SCANCODE_E].down) {
-		//engine->renderer.software_renderer.camera.rotation.y += deltaTime * 100;
-		engine->renderer.opengl.main_camera.rotation.y += deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.y += deltaTime * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_Q].down) {
-		//engine->renderer.software_renderer.camera.rotation.y -= deltaTime * 100;
-		engine->renderer.opengl.main_camera.rotation.y -= deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.y -= deltaTime * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_X].down) {
-		engine->renderer.opengl.main_camera.rotation.z += deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.z += deltaTime * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_Z].down) {
-		engine->renderer.opengl.main_camera.rotation.z -= deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.z -= deltaTime * 100;
 	}
 
 	

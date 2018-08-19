@@ -61,6 +61,7 @@ void load_obj(const char* filename, ObjModel* model) {
 	model->v_id = 0;
 	model->vt_id = 0;
 	model->vn_id = 0;
+
 	
 
 

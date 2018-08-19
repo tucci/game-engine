@@ -67,7 +67,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	if (!init_z_buffer(renderer)) { return false; }
 
 	init_camera_default(&renderer->camera);
-	set_camera_pos(&renderer->camera, ToVec4f( 0, 0, 10, 1 ));
+	set_camera_pos(&renderer->camera, make_vec4f( 0, 0, 10, 1 ));
 
 	/* Clear the rendering surface with the specified color */
 	SDL_SetRenderDrawColor(renderer->renderer, 0, 0, 0, 0xFF);
@@ -354,8 +354,8 @@ void software_debug_render(SoftwareRenderer* r) {
 		SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 
-		ptf = ToVec4f( i_f, 0, -size_f, 1 );
-		pt2f = ToVec4f( i_f, 0, size_f, 1 );
+		ptf = make_vec4f( i_f, 0, -size_f, 1 );
+		pt2f = make_vec4f( i_f, 0, size_f, 1 );
 
 		pt = vec4f_to_vec4i(mat4x4_vec_mul(&mat, ptf));
 		pt2 = vec4f_to_vec4i(mat4x4_vec_mul(&mat, pt2f));

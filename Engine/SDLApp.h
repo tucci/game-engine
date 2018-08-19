@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+
+
 #include "Renderer/software_renderer/SoftwareRenderer.h"
 #include "Renderer/gl/OpenGLRenderer.h"
 
@@ -12,8 +15,8 @@
 
 
 #define WINDOW_TITLE "Engine"
-#define WINDOW_SIZE_X 800
-#define WINDOW_SIZE_Y 800
+#define DEFAULT_WINDOW_SIZE_X 800
+#define DEFAULT_WINDOW_SIZE_Y 800
 #define WINDOW_RESIZEABlE true
 #define MAX_EVENTS 32
 
@@ -215,7 +218,12 @@ typedef struct MemoryEnginePartition {
 
 
 
+
+#include "Core/Game.h"
+
 typedef struct Engine {
+
+
 	Renderer renderer;
 	Display display;
 	Window window;
@@ -237,6 +245,9 @@ typedef struct Engine {
 	void* engine_memory;
 	size_t engine_memory_size;
 	void* partition_ptr;
+
+	// TODO: find a better way to hold this reference
+	Game* loaded_game;
 	
 	
 
@@ -250,7 +261,7 @@ static bool push_to_event_queue(Engine* engine, Event event);
 static void process_event_queue(Engine* engine);
 
 static bool init_engine_memory(Engine* engine);
-static MemoryEnginePartition give_memory_partition(Engine* engine, size_t size);
+MemoryEnginePartition give_memory_partition(Engine* engine, size_t size);
 
 static bool init_display(Engine* engine);
 static bool init_window(Engine* engine);
@@ -262,6 +273,9 @@ static bool init_game_loop(Engine* engine);
 static bool init_debug(Engine* engine);
 static void update_clock(Engine* engine);
 static void process_inputs(Engine* engine);
+
+static bool load_game(Engine* engine, const char* game_file);
+
 
 bool init_engine(Engine* engine);
 bool destroy_engine(Engine* engine);

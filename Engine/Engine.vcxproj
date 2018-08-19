@@ -158,8 +158,11 @@
   <ItemGroup>
     <ClCompile Include="Common\LinearAllocator.c" />
     <ClCompile Include="Common\StackAllocator.c" />
+    <ClCompile Include="Core\Entities\Primitives.c" />
+    <ClCompile Include="Core\Game.c" />
+    <ClCompile Include="Core\Scene.c" />
     <ClCompile Include="test.c" />
-    <ClCompile Include="Core\Camera.c" />
+    <ClCompile Include="Core\Entities\Camera.c" />
     <ClCompile Include="Core\StaticMesh.c" />
     <ClCompile Include="Renderer\gl\GLShader.c" />
     <ClCompile Include="Core\TextureData.c" />
@@ -173,8 +176,10 @@
     <ClInclude Include="Common\LinearAllocator.h" />
     <ClInclude Include="Common\common_macros.h" />
     <ClInclude Include="Common\StackAllocator.h" />
-    <ClInclude Include="Core\Camera.h" />
+    <ClInclude Include="Core\Entities\Camera.h" />
+    <ClInclude Include="Core\Game.h" />
     <ClInclude Include="debug_macros.h" />
+    <ClInclude Include="Core\Scene.h" />
     <ClInclude Include="Math\Transform.h" />
     <ClInclude Include="Renderer\gl\GLShader.h" />
     <ClInclude Include="Renderer\software_renderer\SoftwareRendererShader.h" />

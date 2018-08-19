@@ -44,6 +44,36 @@ const char * debug_fragment_shader = "#version 330 core\n\
 
 
 
+void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
+	// TODO: instead of passing the entire scene, we should pass a culled scene for faster rendering
+	opengl->render_scene = scene;
+
+
+	glGenTextures(1, &opengl->textureID);
+	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->texture_test.width, scene->texture_test.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->texture_test.data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameterf(opengl->textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(opengl->textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+	// set up vertex buffers
+	// Generate the vertex array
+	glGenVertexArrays(1, &opengl->VAO);
+	// Bind vertex array to buffer
+	glBindVertexArray(opengl->VAO);
+	// Generate element buffer object
+	glGenBuffers(1, &opengl->EBO);
+	// Generate vertex buffer object
+	glGenBuffers(1, &opengl->VBO);
+	// bind vertex buffer object to buffer
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->VBO);
+	// bind element buffer object to buffer
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+}
+
 
 static void init_gl_extensions(OpenGLRenderer* opengl) {
 	glewExperimental = true; // Needed in core profile
@@ -106,8 +136,8 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 		opengl->grid_mesh.pos[index + 1] = pt2;
 
 
-		pt =  ToVec3f( i_f, 0, -size_f);
-		pt2 = ToVec3f( i_f, 0, size_f);
+		pt =  make_vec3f( i_f, 0, -size_f);
+		pt2 = make_vec3f( i_f, 0, size_f);
 
 		opengl->grid_mesh.pos[index + 2] = pt;
 		opengl->grid_mesh.pos[index + 3] = pt2;
@@ -168,6 +198,7 @@ void destroy_gl_debug(OpenGLRenderer* opengl) {
 
 }
 
+
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* parition_start, size_t partition_size) {
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -179,78 +210,20 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* pari
 
 	opengl->renderer_memory = parition_start;
 	opengl->renderer_memory_size = partition_size;
-
 	linear_init(&opengl->renderer_allocator, opengl->renderer_memory, opengl->renderer_memory_size);
 
-
-	init_gl_extensions(opengl);
-	init_camera_default(&opengl->main_camera);
-	set_camera_pos(&opengl->main_camera, Vec4f_Zero);
-
+	init_gl_extensions(opengl);	
 
 	load_shaders(opengl);
 
-	
-	
-
-	
-
 	init_gl_debug(opengl);
 
-
-	
-
-	ObjModel model;
-
-	load_obj("Assets/obj/african_head.obj", &model);
-	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	obj_to_static_mesh(&model, &opengl->mesh);
-	free_obj(&model);
-
-
-
-	const char* texture_file = "Assets/obj/african_head_diffuse.tga";
-	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
-
-	fill_texture_info(texture_file, &opengl->texture);
-
-	opengl->texture.data = (unsigned char*) linear_alloc(
-		&opengl->renderer_allocator,
-		opengl->texture.width * opengl->texture.height * opengl->texture.channels,
-		4);
-	bool loaded_texture = load_and_copyto_texture(texture_file, &opengl->texture);
-
-	if (!loaded_texture) return false;
-
-	
 
 	
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
 
-	glGenTextures(1, &opengl->textureID);
-	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, opengl->texture.width, opengl->texture.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, opengl->texture.data);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameterf(opengl->textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(opengl->textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-
-
-	// set up vertex buffers
-	// Generate the vertex array
-	glGenVertexArrays(1, &opengl->VAO);
-	// Bind vertex array to buffer
-	glBindVertexArray(opengl->VAO);
-	// Generate element buffer object
-	glGenBuffers(1, &opengl->EBO);
-	// Generate vertex buffer object
-	glGenBuffers(1, &opengl->VBO);
-	// bind vertex buffer object to buffer
-	glBindBuffer(GL_ARRAY_BUFFER, opengl->VBO);
-	// bind element buffer object to buffer
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 	
 	return true;
 }
@@ -264,12 +237,14 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	glDeleteBuffers(1, &opengl->VBO);
 	glDeleteBuffers(1, &opengl->EBO);
 	
-	free_static_mesh(&opengl->mesh);
+	
 
 	destroy_gl_debug(opengl);
 	linear_reset(&opengl->renderer_allocator);
 	return true;
 }
+
+
 
 void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
@@ -277,7 +252,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
 
 	
-	Camera camera = opengl->main_camera;
+	Camera camera = opengl->render_scene->main_camera;
 	//Mat4x4f model_mat = mat4x4f_identity();
 	
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
@@ -303,22 +278,23 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	glUniform1i(glGetUniformLocation(opengl->main_shader.program, "txtSampler"), 0);
 
+	
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->mesh.vertex_count * sizeof(Vec3f)
-		+ opengl->mesh.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)
+		+ opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		opengl->mesh.vertex_count * sizeof(Vec3f),
-		opengl->mesh.pos);
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->mesh_test.pos);
 
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->mesh.vertex_count * sizeof(Vec3f),
-		opengl->mesh.vertex_count * sizeof(Vec2f),
-		opengl->mesh.texcoords);
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test.texcoords);
 
 
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
@@ -327,20 +303,21 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->mesh.vertex_count * sizeof(Vec3f)));
+	
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		 opengl->mesh.index_count * sizeof(Vec3i),
-		opengl->mesh.indices,
+		opengl->render_scene->mesh_test.index_count * sizeof(Vec3i),
+		opengl->render_scene->mesh_test.indices,
 		GL_STATIC_DRAW);
 
 	
 	
-	glDrawElements(GL_TRIANGLES, 3 * opengl->mesh.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
 	
 }
 
@@ -348,7 +325,8 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
 
-	Camera camera = opengl->main_camera;
+	
+	Camera camera = opengl->render_scene->main_camera;
 	//Mat4x4f model_mat = mat4x4f_identity();
 
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
