@@ -4,8 +4,11 @@
 
 
 #include <SDL.h>
-#include "../../Math/Mat.h" // TODO: figure out better way to do this. dont want ../.. stuff
+#include "../../Math/Mat.h"
 #include "../../Math/Vec.h"
+
+#include "../../Core/Scene.h"
+
 #include "../../ObjFile.h"
 #include "../../Core/TextureData.h"
 #include "../../Core/Entities/Camera.h"
@@ -17,7 +20,7 @@
 // NOTE: Software renderer is deprecated and not updated anymore
 // this was built to learn a basic level of the graphics pipeline
 typedef struct SoftwareRenderer {
-	Camera camera;
+	Scene* render_scene;
 
 	SDL_Renderer* renderer;
 	SDL_Surface* surface;
@@ -38,7 +41,7 @@ typedef struct SoftwareRenderer {
 
 
 
-
+void set_scene_for_software_renderer(SoftwareRenderer* renderer, Scene* scene);
 static Vec4f vertex_shader(SoftwareRendererShader* shader, int face_id, int vertex_id);
 static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color);
 

@@ -6,6 +6,11 @@
 
 #define flip_y(height, y)  height - 1 - y
 
+
+void set_scene_for_software_renderer(SoftwareRenderer* renderer, Scene* scene) {
+	renderer->render_scene = scene;
+}
+
 static Vec4f vertex_shader(SoftwareRendererShader* shader, int face_id, int vertex_id) {
 
 	
@@ -65,9 +70,6 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 
 	
 	if (!init_z_buffer(renderer)) { return false; }
-
-	init_camera_default(&renderer->camera);
-	set_camera_pos(&renderer->camera, make_vec4f( 0, 0, 10, 1 ));
 
 	/* Clear the rendering surface with the specified color */
 	SDL_SetRenderDrawColor(renderer->renderer, 0, 0, 0, 0xFF);
@@ -150,7 +152,7 @@ void software_render(SoftwareRenderer* r) {
 	
 
 	SDL_Renderer* renderer = r->renderer;
-	Camera camera = r->camera;
+	Camera camera = r->render_scene->main_camera;
 
 
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -265,7 +267,7 @@ void software_render(SoftwareRenderer* r) {
 
 void software_debug_render(SoftwareRenderer* r) {
 	SDL_Renderer* renderer = r->renderer;
-	Camera camera = r->camera;
+	Camera camera = r->render_scene->main_camera;
 
 	
 	/*SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);

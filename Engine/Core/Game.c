@@ -15,7 +15,7 @@ void load_scene(struct Game* game, int scene_id) {
 
 
 	init_camera_default(&scene->main_camera);
-	set_camera_pos(&scene->main_camera, Vec4f_Zero);
+	set_camera_pos(&scene->main_camera, cast(Vec4f){0, 0, 5, 0});
 
 
 

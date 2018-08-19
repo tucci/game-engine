@@ -604,7 +604,7 @@ static bool load_game(Engine* engine, const char* game_file) {
 
 
 	// Bootstrap loading
-	// Load game into it's own owned memory partition
+	// Load game into it's own memory partition
 	engine->loaded_game = cast(Game*) game_partition.start_ptr;
 	linear_init(&engine->loaded_game->game_memory, game_partition.start_ptr, game_partition.partition_size);
 	// Alloc the game object size so we dont overwrite the loaded game struct
@@ -614,7 +614,21 @@ static bool load_game(Engine* engine, const char* game_file) {
 	debug_print("Loading scene objects\n");
 	load_scene(engine->loaded_game, 1);
 
-	set_scene_for_opengl_renderer(&engine->renderer.opengl, engine->loaded_game->loaded_scene);
+	switch (engine->renderer.type) {
+
+		case BackenedRenderer_OpenGL: 
+			set_scene_for_opengl_renderer(&engine->renderer.opengl, engine->loaded_game->loaded_scene);
+			break;
+
+		case BackenedRenderer_Software:
+			set_scene_for_software_renderer(&engine->renderer.software_renderer, engine->loaded_game->loaded_scene);
+			break;
+		default:
+			break;
+	}
+	
+
+	
 
 
 	debug_print("Starting Game\n");

@@ -15,6 +15,8 @@ int main(int argc, char* argv[]) {
 	Engine engine;
 
 	engine.renderer.type = BackenedRenderer_OpenGL;
+
+	// NOTE: Software renderer is deprecated, it doenst load the game scene
 	//engine.renderer.type = BackenedRenderer_Software;
 
 
