@@ -4,9 +4,11 @@
 
 #include "../Common/common_macros.h"
 
+#include "Entities/Primitives.c"
 
 
-void load_scene(struct Game* game, int scene_id) {
+
+void load_scene(Game* game, int scene_id) {
 	ObjModel model;
 
 	game->loaded_scene = cast(Scene*) linear_alloc(&game->game_memory, sizeof(Scene), 4);
@@ -19,19 +21,23 @@ void load_scene(struct Game* game, int scene_id) {
 
 
 
-	load_obj("Assets/obj/african_head.obj", &model);
-	////load_obj("Assets/obj/diablo3_pose.obj", &model);
-	obj_to_static_mesh(&model, &scene->mesh_test);
+	//load_obj("Assets/obj/african_head.obj", &model);
+	load_obj("Assets/obj/diablo3_pose.obj", &model);
+	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
 	free_obj(&model);
 
+	make_plane(&scene->plane_test, &game->game_memory);
+
+	
 
 
-	const char* texture_file = "Assets/obj/african_head_diffuse.tga";
-	////const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+
+	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
+	const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
 
 	fill_texture_info(texture_file, &scene->texture_test);
 
-	scene->texture_test.data = (unsigned char*)linear_alloc(
+	scene->texture_test.data = (unsigned char*) linear_alloc(
 		&game->game_memory,
 		scene->texture_test.width * scene->texture_test.height * scene->texture_test.channels,
 		4);
@@ -40,9 +46,9 @@ void load_scene(struct Game* game, int scene_id) {
 }
 
 
+// TODO: give pack partition in the engine
 void unload_scene(Game* game, Scene* scene) {
-
-	free_static_mesh(&scene->mesh_test);
+	linear_reset(&game->game_memory);
 }
 
 

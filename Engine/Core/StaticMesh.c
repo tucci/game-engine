@@ -5,17 +5,18 @@
 
 #include "../Common/common_macros.h"
 
-void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
+
+// TODO: instead of using a linerar allocator, we could probably use something better
+void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh, LinearAllocator* memory) {
 
 	int index_count = obj->face_count;
 	static_mesh->index_count = index_count;
-	static_mesh->indices = cast(Vec3i*)malloc(index_count * sizeof(Vec3i));
-	
+	static_mesh->indices = cast(Vec3i*)linear_alloc(memory, index_count * sizeof(Vec3i), 4);
 
+	
 	static_mesh->vertex_count = index_count * 3;
-	// TODO: Convert the mallocs to use our custom alloctors when we have a better idea on how we want to load models in
-	static_mesh->pos = cast(Vec3f*)malloc(static_mesh->vertex_count * sizeof(Vec3f));
-	static_mesh->texcoords = cast(Vec2f*)malloc(static_mesh->vertex_count * sizeof(Vec2f));
+	static_mesh->pos = cast(Vec3f*)linear_alloc(memory, static_mesh->vertex_count * sizeof(Vec3f), 4);
+	static_mesh->texcoords = cast(Vec2f*)linear_alloc(memory, static_mesh->vertex_count * sizeof(Vec2f), 4);
 
 
 
@@ -37,18 +38,4 @@ void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh) {
 
 	}
 
-}
-
-void free_static_mesh(StaticMesh* static_mesh) {
-	if (static_mesh->pos != 0) {
-		free(static_mesh->pos);
-	}
-
-	if (static_mesh->texcoords != 0) {
-		free(static_mesh->texcoords);
-	}
-
-	if (static_mesh->indices != 0) {
-		free(static_mesh->indices);
-	}
 }

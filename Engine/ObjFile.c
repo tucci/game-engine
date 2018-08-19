@@ -51,8 +51,6 @@ static int parse_int(char** stream) {
 }
 
 
-
-
 void load_obj(const char* filename, ObjModel* model) {
 	model->verts = 0;
 	model->texcoords = 0;

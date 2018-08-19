@@ -14,7 +14,5 @@ typedef struct Game {
 
 
 
-
-
 void load_scene(Game* game, int scene_id);
 void unload_scene(Game* game, Scene* scene);

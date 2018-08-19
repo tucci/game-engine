@@ -298,8 +298,9 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
-	// Should we pre interleave our data, or create sperate vbos for textures.
-	// Also note, since our textcoords array is not offset from our vert array. 2 seperate malloc calls, so different addresses
+	// Should we pre interleave our data?
+	// since our pos and texcoords are not interleaved as pt pt pt, we need to batch the pos first then texcoords
+	// our mesh is laid out like ppp ttt
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
@@ -318,6 +319,8 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	
 	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
+
+	
 	
 }
 

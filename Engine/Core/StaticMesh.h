@@ -3,6 +3,8 @@
 #include "../Math/Vec.h"
 #include "../ObjFile.h"
 
+#include "../Common/LinearAllocator.h"
+
 
 typedef struct StaticMesh {
 	int vertex_count;
@@ -15,5 +17,4 @@ typedef struct StaticMesh {
 } StaticMesh;
 
 
-void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh);
-void free_static_mesh(StaticMesh* static_mesh);
+void obj_to_static_mesh(ObjModel* obj, StaticMesh* static_mesh, LinearAllocator* memory);

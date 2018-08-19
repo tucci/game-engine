@@ -7,9 +7,6 @@
 
 
 
-
-
-
 static void update_button_state(ButtonState* button_state, bool down_now) {
 	// Update for edge events
 	bool was_down = button_state->down;
@@ -265,6 +262,7 @@ static bool init_engine_memory(Engine* engine) {
 		return false;
 	} else {
 		// TODO: do we want to zero out the memory at start
+		
 		return true;
 	}
 	
@@ -665,7 +663,7 @@ bool init_engine(Engine* engine) {
 	if (!init_clock(engine)) { return false; }
 	if (!init_game_loop(engine)) { return false; }
 
-
+	// TODO: we should load the game/level with a stack alloactor
 	if (!load_game(engine, "mygame.gamefile")) { return false; }
 	
 
@@ -675,6 +673,9 @@ bool init_engine(Engine* engine) {
 }
 
 bool destroy_engine(Engine* engine) {
+
+	// TODO: this should be somewherer else. example unload game function?
+	unload_scene(engine->loaded_game, engine->loaded_game->loaded_scene);
 	 
 	switch (engine->renderer.type) {
 		case BackenedRenderer_Software:
@@ -699,7 +700,7 @@ bool destroy_engine(Engine* engine) {
 }
 
 
-static void update(Engine* engine, float deltaTime) {
+static void update(Engine* engine, float delta_time) {
 
 	
 	
@@ -721,43 +722,43 @@ static void update(Engine* engine, float deltaTime) {
 	// Seperate input from rendering
 
 	if (engine->keys[SDL_SCANCODE_W].down) {
-		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Backward, deltaTime);
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Backward, delta_time);
 	}
 
 	if (engine->keys[SDL_SCANCODE_S].down) {
-		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Forward, deltaTime);
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Forward, delta_time);
 	}
 
 	if (engine->keys[SDL_SCANCODE_1].down) {
-		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Up, deltaTime);
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Up, delta_time);
 	}
 
 	if (engine->keys[SDL_SCANCODE_2].down) {
-		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Down, deltaTime);
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Down, delta_time);
 	}
 
 	if (engine->keys[SDL_SCANCODE_A].down) {
-		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Left, deltaTime);
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Left, delta_time);
 	}
 
 	if (engine->keys[SDL_SCANCODE_D].down) {
-		move_camera(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Right, deltaTime);
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Right, delta_time);
 	}
 
 	if (engine->keys[SDL_SCANCODE_E].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.y += deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.y += delta_time * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_Q].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.y -= deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.y -= delta_time * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_X].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.z += deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.z += delta_time * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_Z].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.z -= deltaTime * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.z -= delta_time * 100;
 	}
 
 	
