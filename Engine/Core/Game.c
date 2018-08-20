@@ -21,19 +21,19 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	//load_obj("Assets/obj/african_head.obj", &model);
-	load_obj("Assets/obj/diablo3_pose.obj", &model);
+	load_obj("Assets/obj/african_head.obj", &model);
+	//load_obj("Assets/obj/diablo3_pose.obj", &model);
 	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
 	free_obj(&model);
 
-	make_plane(&scene->primative_test, &game->game_memory);
+	make_cube(&scene->primative_test, &game->game_memory);
 
 	
 
 
 
-	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
-	const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+	const char* texture_file = "Assets/obj/african_head_diffuse.tga";
+	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
 
 	fill_texture_info(texture_file, &scene->texture_test);
 

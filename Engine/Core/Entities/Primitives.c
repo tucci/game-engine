@@ -81,22 +81,23 @@ void make_cube(StaticMesh* mesh, LinearAllocator* memory) {
 
 
 	mesh->texcoords = cast(Vec2f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec2f), 1);
+
 	// Bottom uv
 	mesh->texcoords[0] = make_vec2f(1, 1);
-	mesh->texcoords[1] = make_vec2f(0, 1);
+	mesh->texcoords[1] = make_vec2f(1, 0);
 	mesh->texcoords[2] = make_vec2f(0, 0);
-	mesh->texcoords[3] = make_vec2f(1, 0);
+	mesh->texcoords[3] = make_vec2f(0, 1);
 
 	// Top uv
-	mesh->texcoords[5] = make_vec2f(0, 1);
-	mesh->texcoords[4] = make_vec2f(1, 1);
-	mesh->texcoords[6] = make_vec2f(0, 0);
-	mesh->texcoords[7] = make_vec2f(1, 0);
+	mesh->texcoords[5] = make_vec2f(1, 1);
+	mesh->texcoords[4] = make_vec2f(1, 0);
+	mesh->texcoords[6] = make_vec2f(0, 1);
+	mesh->texcoords[7] = make_vec2f(0, 0);
 
 
 	// Right uv
-	mesh->texcoords[8] = make_vec2f(0, 1);
-	mesh->texcoords[9] = make_vec2f(1, 1);
+	mesh->texcoords[8] = make_vec2f(1, 1);
+	mesh->texcoords[9] = make_vec2f(0, 1);
 	mesh->texcoords[10] = make_vec2f(0, 0);
 	mesh->texcoords[11] = make_vec2f(1, 0);
 
@@ -104,8 +105,8 @@ void make_cube(StaticMesh* mesh, LinearAllocator* memory) {
 	// Left uv
 	mesh->texcoords[12] = make_vec2f(0, 1);
 	mesh->texcoords[13] = make_vec2f(1, 1);
-	mesh->texcoords[14] = make_vec2f(0, 0);
-	mesh->texcoords[15] = make_vec2f(1, 0);
+	mesh->texcoords[14] = make_vec2f(1, 0);
+	mesh->texcoords[15] = make_vec2f(0, 0);
 
 	// Front uv
 	mesh->texcoords[16] = make_vec2f(0, 1);

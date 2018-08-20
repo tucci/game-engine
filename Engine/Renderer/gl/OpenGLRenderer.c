@@ -90,7 +90,8 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->grid_debug_VBO);
 	
 
-	int grid_size = DEBUG_GRID_SIZE;
+	int grid_size = DEBUG_GRID_SIZE; 
+
 	int axis_vertex_count = 6;
 	opengl->grid_mesh.vertex_count = (grid_size + 1) * 4 + axis_vertex_count;
 	opengl->grid_mesh.pos = cast(Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
@@ -101,9 +102,10 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 	
 	Vec3f color_white = { 1, 1, 1 };
 	int index = 0;
+	float half_unit_size = 0.5f;
 	for (int i = -grid_size; i <= grid_size; i+=2) {
-		float size_f = 1.0f * grid_size;
-		float i_f = 1.0f * i;
+		float size_f = half_unit_size  * grid_size;
+		float i_f = half_unit_size * i;
 
 		Vec3f pt = { -size_f, 0, i_f };
 		Vec3f pt2 = { size_f, 0, i_f };
@@ -232,7 +234,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	//Mat4x4f model_mat = mat4x4f_identity();
 	
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
-	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
+	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.x), Vec3f_Right);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 	
 	
@@ -304,15 +306,16 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 	glBindVertexArray(opengl->VAO);
-	glUseProgram(opengl->simple_shader.program);
+	//glUseProgram(opengl->simple_shader.program);
 
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->simple_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
 
+
+	// Draw primative test
 
 	glBufferData(GL_ARRAY_BUFFER,
 		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
+		+ opengl->render_scene->primative_test.vertex_count * sizeof(Vec2f),
 		NULL,
 		GL_STATIC_DRAW);
 
@@ -323,8 +326,8 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->primative_test.color);
+		opengl->render_scene->primative_test.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->primative_test.texcoords);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
@@ -337,7 +340,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 
@@ -359,7 +362,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	//Mat4x4f model_mat = mat4x4f_identity();
 
 	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
-	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
+	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.x), Vec3f_Right);
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 

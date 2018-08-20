@@ -729,12 +729,12 @@ static void update(Engine* engine, float delta_time) {
 		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Forward, delta_time);
 	}
 
-	if (engine->keys[SDL_SCANCODE_1].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Up, delta_time);
+	if (engine->keys[SDL_SCANCODE_E].down) {
+		engine->loaded_game->loaded_scene->main_camera.rotation.y += delta_time * 100;
 	}
 
-	if (engine->keys[SDL_SCANCODE_2].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Down, delta_time);
+	if (engine->keys[SDL_SCANCODE_Q].down) {
+		engine->loaded_game->loaded_scene->main_camera.rotation.y -= delta_time * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_A].down) {
@@ -745,20 +745,23 @@ static void update(Engine* engine, float delta_time) {
 		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Right, delta_time);
 	}
 
-	if (engine->keys[SDL_SCANCODE_E].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.y += delta_time * 100;
+
+	if (engine->keys[SDL_SCANCODE_LSHIFT].down) {
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Up, delta_time);
+		
 	}
 
-	if (engine->keys[SDL_SCANCODE_Q].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.y -= delta_time * 100;
+	if (engine->keys[SDL_SCANCODE_LCTRL].down) {
+		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Down, delta_time);
+		
 	}
 
 	if (engine->keys[SDL_SCANCODE_X].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.z += delta_time * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.x += delta_time * 100;
 	}
 
 	if (engine->keys[SDL_SCANCODE_Z].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.z -= delta_time * 100;
+		engine->loaded_game->loaded_scene->main_camera.rotation.x -= delta_time * 100;
 	}
 
 	
