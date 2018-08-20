@@ -5,42 +5,7 @@
 #include "../../debug_macros.h"
 #include "../../Common/common_macros.h"
 
-
-const char * vertex_shader = "#version 330 core\n\
-		layout (location = 0) in vec3 position;\
-		layout (location = 1) in vec2 uv;\
-		uniform mat4 transform;\
-		out vec2 frag_uv;\
-		void main(){\
-			gl_Position =   transform * vec4(position, 1); \
-			frag_uv = uv;\
-		}";
-
-const char * fragment_shader = "#version 330 core\n\
-		in vec2 frag_uv;\
-		out vec4 color;\
-		uniform sampler2D txtSampler;\
-		void main(){\
-			color = texture(txtSampler, frag_uv).rgba;\
-		}";
-
-
-const char * debug_vertex_shader = "#version 330 core\n\
-		layout (location = 0) in vec3 position;\
-		layout (location = 1) in vec3 color;\
-		uniform mat4 transform;\
-		out vec4 vertexColor;\
-		void main(){\
-			gl_Position = transform * vec4(position, 1);\
-			vertexColor = vec4(color, 1);\
-		}";
-
-const char * debug_fragment_shader = "#version 330 core\n\
-		in vec4 vertexColor;\
-		out vec4 color;\
-		void main(){\
-			color = vertexColor;\
-		}";
+#include "../../utils.c"
 
 
 
@@ -85,7 +50,17 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 }
 
 static void load_shaders(OpenGLRenderer* opengl) {
+
+	// TODO: move shader up to scene, also the scene shader has to be graphics backended independant, ex gl/ d3d
+	const char* vertex_shader   = file_to_str("Assets/shaders/textured.vs", &opengl->renderer_allocator);
+	const char* fragment_shader = file_to_str("Assets/shaders/textured.fs", &opengl->renderer_allocator);
 	load_gl_shader(&opengl->main_shader, &vertex_shader, &fragment_shader);
+
+	vertex_shader = file_to_str("Assets/shaders/simple.vs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/simple.fs", &opengl->renderer_allocator);
+
+	load_gl_shader(&opengl->simple_shader, &vertex_shader, &fragment_shader);
+
 }
 
 
@@ -94,7 +69,8 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 	opengl->show_debug_axes = false;
 	
 
-
+	const char* debug_vertex_shader = file_to_str("Assets/shaders/debug.vs", &opengl->renderer_allocator);
+	const char* debug_fragment_shader = file_to_str("Assets/shaders/debug.fs", &opengl->renderer_allocator);
 	load_gl_shader(&opengl->debug_shader, &debug_vertex_shader, &debug_fragment_shader);
 
 
@@ -319,6 +295,56 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	
 	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
+
+
+
+
+
+
+
+
+	glBindVertexArray(opengl->VAO);
+	glUseProgram(opengl->simple_shader.program);
+
+
+	glUniformMatrix4fv(glGetUniformLocation(opengl->simple_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
+
+
+	glBufferData(GL_ARRAY_BUFFER,
+		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)
+		+ opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
+		NULL,
+		GL_STATIC_DRAW);
+
+	glBufferSubData(GL_ARRAY_BUFFER,
+		0,
+		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->primative_test.pos);
+
+	glBufferSubData(GL_ARRAY_BUFFER,
+		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->primative_test.color);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		opengl->render_scene->primative_test.index_count * sizeof(Vec3i),
+		opengl->render_scene->primative_test.indices,
+		GL_STATIC_DRAW);
+
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)));
+	glEnableVertexAttribArray(1);
+
+
+
+	
+	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->primative_test.index_count, GL_UNSIGNED_INT, 0);
+
 
 	
 	

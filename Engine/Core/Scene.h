@@ -11,7 +11,7 @@ typedef struct Scene {
 	Camera main_camera;
 	StaticMesh mesh_test;
 	SimpleTexture texture_test;
-	StaticMesh plane_test;
+	StaticMesh primative_test;
 } Scene;
 
 

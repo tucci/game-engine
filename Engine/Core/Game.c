@@ -4,7 +4,7 @@
 
 #include "../Common/common_macros.h"
 
-#include "Entities/Primitives.c"
+#include "Entities/Primitives.h"
 
 
 
@@ -26,7 +26,7 @@ void load_scene(Game* game, int scene_id) {
 	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
 	free_obj(&model);
 
-	make_plane(&scene->plane_test, &game->game_memory);
+	make_plane(&scene->primative_test, &game->game_memory);
 
 	
 

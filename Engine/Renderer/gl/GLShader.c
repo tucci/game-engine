@@ -8,6 +8,8 @@
 void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fragment_code) {
 
 	shader->vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	
+
 	glShaderSource(shader->vertex_shader, 1, vertex_code, NULL);
 	glCompileShader(shader->vertex_shader);
 

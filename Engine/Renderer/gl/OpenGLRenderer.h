@@ -44,6 +44,7 @@ typedef struct OpenGLRenderer {
 	GLuint textureID;
 	
 	GLShader main_shader;
+	GLShader simple_shader;
 	GLuint VAO;
 	GLuint VBO; // id to the Buffer that stores our vertices
 	GLuint EBO; // id to the Buffer that stores our indices

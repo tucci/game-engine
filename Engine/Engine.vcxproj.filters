@@ -60,6 +60,9 @@
     <ClCompile Include="Core\Scene.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -119,8 +122,19 @@
     <ClInclude Include="Core\Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Entities\Primitives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\shaders\textured.vs" />
+    <None Include="Assets\shaders\textured.fs" />
+    <None Include="Assets\shaders\debug.vs" />
+    <None Include="Assets\shaders\debug.fs" />
+    <None Include="Assets\shaders\simple.vs" />
+    <None Include="Assets\shaders\simple.fs" />
   </ItemGroup>
 </Project>

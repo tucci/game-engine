@@ -14,3 +14,4 @@
 - Write some swizzling data to interleave, positions, uvs, other data
 - Editor guis
 - multi threaded game loop
+- implement deffered rendering
