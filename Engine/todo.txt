@@ -15,3 +15,8 @@
 - Editor guis
 - multi threaded game loop
 - implement deffered rendering
+- frustum culling
+- occlusion culling
+- lod  
+- ecs without inheritance
+- more asserts

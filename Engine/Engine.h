@@ -5,7 +5,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
+#include "Core/Game.h"
+#include "Core/Input.h"
+#include "Core/GameTimer.h"
 
 
 #include "Renderer/software_renderer/SoftwareRenderer.h"
@@ -58,31 +60,6 @@ typedef struct Window {
 } Window;
 
 
-typedef enum MouseButton {
-	MouseButton_None,
-	MouseButton_Left,
-	MouseButton_Middle,
-	MouseButton_Right,
-
-} MouseButton;
-
-typedef struct ButtonState {
-	bool down;
-	bool just_pressed;
-	bool just_released;
-} ButtonState;
-
-
-
-typedef struct Mouse {
-	Vec2i pos;
-	Vec2i delta_pos;
-
-	ButtonState mouse_button_left;
-	ButtonState mouse_button_middle;
-	ButtonState mouse_button_right;
-
-} Mouse;
 
 
 typedef enum EventKind {
@@ -145,7 +122,6 @@ typedef union EventData {
 typedef struct Event {
 	EventKind kind;
 	EventData event;
-
 } Event;
 
 typedef struct Clock {
@@ -165,33 +141,6 @@ typedef struct Clock {
 
 } Clock;
 
-
-typedef struct GameTimer {
-	
-	bool cap_framerate;
-	int frame_count;
-	int target_fps;
-	int fps;
-
-	// Target delta time used to cap frame rate
-	float target_delta_time;
-	// Time since last frame
-	float delta_time;
-	// Physics time step. This is fixed
-	float time_step;
-	// The current time since game start up
-	float current_time;
-
-	float max_delta;
-	// Accumulator used for the fixed time step
-	float accumulator;
-	// The current time for physics calculations since game start up
-	float physics_time;
-	
-	
-
-	
-} GameTimer;
 
 
 typedef enum BackenedRendererType {
@@ -219,7 +168,7 @@ typedef struct MemoryEnginePartition {
 
 
 
-#include "Core/Game.h"
+
 
 typedef struct Engine {
 
@@ -228,8 +177,8 @@ typedef struct Engine {
 	Display display;
 	Window window;
 
-	Mouse mouse;
-	ButtonState keys[SDL_NUM_SCANCODES];
+	Input input;
+
 	Event event_queue[MAX_EVENTS];
 	int event_count;
 
@@ -272,6 +221,7 @@ static bool init_clock(Engine* engine);
 static bool init_game_loop(Engine* engine);
 static bool init_debug(Engine* engine);
 static void update_clock(Engine* engine);
+
 static void process_inputs(Engine* engine);
 
 static bool load_game(Engine* engine, const char* game_file);

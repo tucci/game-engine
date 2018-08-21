@@ -6,8 +6,8 @@
 
 
 void init_camera(Camera* camera,
-	Vec4f pos,
-	Vec4f dir,
+	Vec3f pos,
+	Vec3f dir,
 	Vec4f orientation,
 	float near,
 	float far,
@@ -27,8 +27,12 @@ void init_camera(Camera* camera,
 
 
 void init_camera_default(Camera* camera) {
-	camera->pos = make_vec4f( 0, 0, 0, 1);
-	camera->dir = make_vec4f( 0, 0, -1, 0);
+	camera->pos = make_vec3f( 0, 0, 0);
+	camera->dir = make_vec3f( 0, 0, -1);
+
+	camera->up = make_vec3f(0, 1, 0);
+	camera->right = v3_cross(camera->dir, camera->up);
+	
 	camera->rotation = Vec4f_Zero;
 
 	camera->near = 0.1f;
@@ -38,12 +42,12 @@ void init_camera_default(Camera* camera) {
 	camera->aspect_ratio = 1.0f;
 }
 
-void set_camera_pos(Camera* camera, Vec4f pos) {
+void set_camera_pos(Camera* camera, Vec3f pos) {
 	camera->pos = pos;
 }
 
 
 
 void move_camera_in_direction(Camera* camera, Vec3f direction, float delta_time) {
-	camera->pos.xyz = v3_add(camera->pos.xyz, v3_multiply(delta_time, direction));
+	camera->pos= v3_add(camera->pos, v3_multiply(delta_time, direction));
 }

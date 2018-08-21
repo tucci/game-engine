@@ -239,7 +239,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	
 
-	Mat4x4f view_mat = look_at(camera.pos.xyz, v3_add(camera.pos.xyz, camera.dir.xyz), Vec3f_Up);
+	Mat4x4f view_mat = look_at(camera.pos, v3_add(camera.pos, camera.dir), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
@@ -366,7 +366,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	model_mat = mat4x4_mul(&model_mat, &rot2);
 
 
-	Mat4x4f view_mat = look_at(camera.pos.xyz, v3_add(camera.pos.xyz, camera.dir.xyz), Vec3f_Up);
+	Mat4x4f view_mat = look_at(camera.pos, v3_add(camera.pos, camera.dir), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);

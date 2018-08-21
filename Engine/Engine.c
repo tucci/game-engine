@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SDLApp.h"
+#include "Engine.h"
 #include "Common/common_macros.h"
 
 #include "Core/Game.h"
@@ -65,14 +65,14 @@ static void process_event_queue(Engine* engine) {
 
 			case EventKind_Key_Down:{
 				debug_print("Key Down: %d\n", event.event.key_event.key);
-				update_button_state(&engine->keys[event.event.key_event.key], true);
+				update_button_state(&engine->input.keys[event.event.key_event.key], true);
 				
 				break;
 			}
 
 			case EventKind_Key_Up: {
 				debug_print("Key Up: %d\n", event.event.key_event.key);
-				update_button_state(&engine->keys[event.event.key_event.key], false);
+				update_button_state(&engine->input.keys[event.event.key_event.key], false);
 				break;
 			}
 			case EventKind_Mouse_Button_Down: {
@@ -83,18 +83,18 @@ static void process_event_queue(Engine* engine) {
 
 				switch (event.event.mouse_button_event.button) {
 					case MouseButton_Left:
-						update_button_state(&engine->mouse.mouse_button_left, true);
+						update_button_state(&engine->input.mouse.mouse_button_left, true);
 						break;
 					case MouseButton_Right:
-						update_button_state(&engine->mouse.mouse_button_right, true);
+						update_button_state(&engine->input.mouse.mouse_button_right, true);
 						break;
 					case MouseButton_Middle:
-						update_button_state(&engine->mouse.mouse_button_middle, true);
+						update_button_state(&engine->input.mouse.mouse_button_middle, true);
 						break;
 					default:
 						break;
 				}
-				engine->mouse.pos = event.event.mouse_button_event.pos;
+				engine->input.mouse.pos = event.event.mouse_button_event.pos;
 				
 				
 				
@@ -108,30 +108,35 @@ static void process_event_queue(Engine* engine) {
 
 				switch (event.event.mouse_button_event.button) {
 					case MouseButton_Left:
-						update_button_state(&engine->mouse.mouse_button_left, false);
+						update_button_state(&engine->input.mouse.mouse_button_left, false);
 						break;
 					case MouseButton_Right:
-						update_button_state(&engine->mouse.mouse_button_right, false);
+						update_button_state(&engine->input.mouse.mouse_button_right, false);
 						break;
 					case MouseButton_Middle:
-						update_button_state(&engine->mouse.mouse_button_middle, false);
+						update_button_state(&engine->input.mouse.mouse_button_middle, false);
 						break;
 					default:
 						break;
 				}
-				engine->mouse.pos = event.event.mouse_button_event.pos;
+				engine->input.mouse.pos = event.event.mouse_button_event.pos;
 
 				break;
 			}
 			case EventKind_Mouse_Move: {
-				/*event_printf("Mouse move: Pos<%d,%d>\tDelta<%d,%d>\n",
-				event.event.mouse_move_event.pos.x,
-				event.event.mouse_move_event.pos.y,
-				event.event.mouse_move_event.delta_pos.x,
-				event.event.mouse_move_event.delta_pos.y);*/
+				
 
-				engine->mouse.pos = event.event.mouse_move_event.pos;
-				engine->mouse.delta_pos = event.event.mouse_move_event.delta_pos;
+
+				
+				//engine->input.mouse.delta_pos = cast(Vec2i){ event.event.mouse_move_event.pos.x - engine->input.mouse.pos.x, event.event.mouse_move_event.pos.y - engine->input.mouse.pos.y};
+				engine->input.mouse.pos = event.event.mouse_move_event.pos;
+				engine->input.mouse.delta_pos = event.event.mouse_move_event.delta_pos;
+
+				debug_print("Mouse move: Pos<%d,%d>\tDelta<%d,%d>\n",
+					engine->input.mouse.pos.x,
+					engine->input.mouse.pos.y,
+					engine->input.mouse.delta_pos.x,
+					engine->input.mouse.delta_pos.y);
 
 				break;
 			}
@@ -405,13 +410,15 @@ static bool init_renderer(Engine* engine) {
 
 
 static bool init_keys(Engine* engine) {
+	//SDL_SetRelativeMouseMode(true);
+
 	// Init mouse buttons
-	reset_button_state(&engine->mouse.mouse_button_left);
-	reset_button_state(&engine->mouse.mouse_button_middle);
-	reset_button_state(&engine->mouse.mouse_button_right);
+	reset_button_state(&engine->input.mouse.mouse_button_left);
+	reset_button_state(&engine->input.mouse.mouse_button_middle);
+	reset_button_state(&engine->input.mouse.mouse_button_right);
 
 	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
-		reset_button_state(&engine->keys[c]);
+		reset_button_state(&engine->input.keys[c]);
 	}
 
 	return true;
@@ -483,33 +490,57 @@ static void update_clock(Engine* engine) {
 }
 
 static void process_inputs(Engine* engine) {
-	post_update_button_state(&engine->mouse.mouse_button_left);
-	post_update_button_state(&engine->mouse.mouse_button_middle);
-	post_update_button_state(&engine->mouse.mouse_button_right);
+	post_update_button_state(&engine->input.mouse.mouse_button_left);
+	post_update_button_state(&engine->input.mouse.mouse_button_middle);
+	post_update_button_state(&engine->input.mouse.mouse_button_right);
 
 	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
-		post_update_button_state(&engine->keys[c]);
+		post_update_button_state(&engine->input.keys[c]);
 	}
 
 	
 
-	
-	
 
 
+	// Handle mouse seperatly
+	{
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+
+		Event event;
+		event.kind = EventKind_Mouse_Move;
+		event.event.mouse_move_event.pos = (Vec2i) { x, y };
+		event.event.mouse_move_event.delta_pos  = cast(Vec2i) { x - engine->input.mouse.pos.x, y - engine->input.mouse.pos.y };
+
+		
+		// if last delta == 0 && new delta  == 0, skip. dont send events if the mouse hasnt moved since last time we polled
+		if ((engine->input.mouse.delta_pos.x == 0 && engine->input.mouse.delta_pos.y == 0)
+			&& (event.event.mouse_move_event.delta_pos.x == 0 && event.event.mouse_move_event.delta_pos.y == 0)) {
+			// Do nothing. We could flip the condition, but this reads more clear
+		} else {
+			push_to_event_queue(engine, event);
+		}
+		
+	}
+	
+	
 	SDL_Event sdl_event;
-	
 	while (SDL_PollEvent(&sdl_event)) {
 
+
+
+		
+
 		switch (sdl_event.type) {
-			case SDL_MOUSEMOTION: {
+			// This mouse events dont capture when mouse deltas go to zero
+			/*case SDL_MOUSEMOTION: {
 				Event event;
 				event.kind = EventKind_Mouse_Move;
 				event.event.mouse_move_event.pos = (Vec2i) { sdl_event.motion.x, sdl_event.motion.y };;
 				event.event.mouse_move_event.delta_pos = (Vec2i) { sdl_event.motion.xrel, sdl_event.motion.yrel };
 				push_to_event_queue(engine, event);
 				break;
-			}
+			}*/
 
 			case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP: {
 
@@ -701,68 +732,22 @@ bool destroy_engine(Engine* engine) {
 
 
 static void update(Engine* engine, float delta_time) {
-
 	
-	
-	if (engine->keys[SDL_SCANCODE_G].just_pressed) {		
+	// Engine specific updates
+	if (engine->input.keys[SDL_SCANCODE_G].just_pressed) {
 		engine->renderer.opengl.show_debug_grid = !engine->renderer.opengl.show_debug_grid;
 	}
 
-	if (engine->keys[SDL_SCANCODE_H].just_pressed) {
+	if (engine->input.keys[SDL_SCANCODE_H].just_pressed) {
 		engine->renderer.opengl.show_debug_axes = !engine->renderer.opengl.show_debug_axes;
 	}
 
-	if (engine->keys[SDL_SCANCODE_ESCAPE].just_pressed) {
+	if (engine->input.keys[SDL_SCANCODE_ESCAPE].just_pressed) {
 		engine->quit = true;
 	}
 
-
-	// TODO: refactor camera to game state when we have one.
-	//dont want to have camera in software renderer and gl renderer.
-	// Seperate input from rendering
-
-	if (engine->keys[SDL_SCANCODE_W].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Backward, delta_time);
-	}
-
-	if (engine->keys[SDL_SCANCODE_S].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Forward, delta_time);
-	}
-
-	if (engine->keys[SDL_SCANCODE_E].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.y += delta_time * 100;
-	}
-
-	if (engine->keys[SDL_SCANCODE_Q].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.y -= delta_time * 100;
-	}
-
-	if (engine->keys[SDL_SCANCODE_A].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Left, delta_time);
-	}
-
-	if (engine->keys[SDL_SCANCODE_D].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Right, delta_time);
-	}
-
-
-	if (engine->keys[SDL_SCANCODE_LSHIFT].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Up, delta_time);
-		
-	}
-
-	if (engine->keys[SDL_SCANCODE_LCTRL].down) {
-		move_camera_in_direction(&engine->loaded_game->loaded_scene->main_camera, Vec3f_Down, delta_time);
-		
-	}
-
-	if (engine->keys[SDL_SCANCODE_X].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.x += delta_time * 100;
-	}
-
-	if (engine->keys[SDL_SCANCODE_Z].down) {
-		engine->loaded_game->loaded_scene->main_camera.rotation.x -= delta_time * 100;
-	}
+	// Game specific update
+	game_update(engine->loaded_game, &engine->input, &engine->game_loop);
 
 	
 }
@@ -831,8 +816,8 @@ void game_loop(Engine* engine) {
 		engine->game_loop.fps = (int) (1 / delta_time);
 		engine->game_loop.current_time = new_time;
 
-		debug_print("FPS %d, dt %f\t", engine->game_loop.fps, delta_time);
-		debug_print("total time %f, physics time %f\n", engine->game_loop.current_time, engine->game_loop.physics_time);
+		//debug_print("FPS %d, dt %f\t", engine->game_loop.fps, delta_time);
+		//debug_print("total time %f, physics time %f\n", engine->game_loop.current_time, engine->game_loop.physics_time);
 
 
 

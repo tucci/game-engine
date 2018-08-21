@@ -162,8 +162,8 @@ void software_render(SoftwareRenderer* r) {
 	int width = r->window_size.x;
 	int height = r->window_size.y;
 
-	Vec3f eye = camera.pos.xyz;
-	Vec3f dir = camera.dir.xyz;
+	Vec3f eye = camera.pos;
+	Vec3f dir = camera.dir;
 
 
 	
@@ -281,8 +281,8 @@ void software_debug_render(SoftwareRenderer* r) {
 	int width = r->window_size.x;
 	int height = r->window_size.y;
 
-	Vec3f eye = camera.pos.xyz;
-	Vec3f dir = camera.dir.xyz;
+	Vec3f eye = camera.pos;
+	Vec3f dir = camera.dir;
 
 
 	

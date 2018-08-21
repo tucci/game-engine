@@ -21,9 +21,6 @@
     <ClCompile Include="ObjFile.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SDLApp.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Renderer\gl\OpenGLRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -63,6 +60,9 @@
     <ClCompile Include="utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Engine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -75,9 +75,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\Vec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SDLApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Math\Transform.h">
@@ -123,6 +120,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\Entities\Primitives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\GameTimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

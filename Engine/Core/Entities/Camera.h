@@ -4,8 +4,12 @@
 #include "../../Math/Vec.h"
 
 typedef struct Camera {
-	Vec4f pos;
-	Vec4f dir;
+	Vec3f pos;
+
+	Vec3f dir;
+	Vec3f up;
+	Vec3f right;
+
 	Vec4f rotation;
 
 	float near;
@@ -16,8 +20,8 @@ typedef struct Camera {
 } Camera;
 
 
-void init_camera(Camera* camera, Vec4f pos, Vec4f dir, Vec4f orientation, float near, float far, float fov, float aspect_ratio);
+void init_camera(Camera* camera, Vec3f pos, Vec3f dir, Vec4f orientation, float near, float far, float fov, float aspect_ratio);
 void init_camera_default(Camera* camera);
-void set_camera_pos(Camera* camera, Vec4f pos);
+void set_camera_pos(Camera* camera, Vec3f pos);
 
 void move_camera_in_direction(Camera* camera, Vec3f direction, float delta_time);
