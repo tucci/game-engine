@@ -263,9 +263,9 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 
 
 Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
-	Vec3f forward = vec_normalize(v3_sub(eye, to));
-	Vec3f right = vec_normalize(v3_cross(up, forward));
-	up = vec_normalize(v3_cross(forward, right));
+	Vec3f forward = v3_normalize(v3_sub(eye, to));
+	Vec3f right = v3_normalize(v3_cross(up, forward));
+	up = v3_normalize(v3_cross(forward, right));
 
 	Mat4x4f mat = mat4x4f_identity();
 	Mat4x4f mat2 = mat4x4f_identity();
@@ -323,8 +323,9 @@ Mat4x4f inline translate(Vec3f vec) {
 	return mat;
 }
 
-Mat4x4f inline rotate(float rads, Vec3f axis) {
-	Mat4x4f rot = mat4x4f_identity();
+Mat4x4f inline rotate_with_mat(Mat4x4f m, float rads, Vec3f axis) {
+	
+
 	float cos_angle = cosf(rads);
 	float sin_angle = sinf(rads);
 
@@ -334,20 +335,27 @@ Mat4x4f inline rotate(float rads, Vec3f axis) {
 	float yz = axis.y * axis.z;
 	float xz = axis.x * axis.z;
 
-	rot.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
-	rot.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
-	rot.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
-
-	rot.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
-	rot.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
-	rot.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
-
-	rot.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
-	rot.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
-	rot.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
+	m.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
+	m.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
+	m.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
+	
+	m.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
+	m.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
+	m.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
+	
+	m.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
+	m.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
+	m.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
 
 	//rot = transpose(&rot);
-	return rot;
+	return m;
 }
+
+Mat4x4f inline rotate(float rads, Vec3f axis) {
+	Mat4x4f rot = mat4x4f_identity();
+	return rotate_with_mat(rot, rads, axis);
+}
+
+
 
 

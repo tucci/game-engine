@@ -90,7 +90,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 		&renderer->renderer_allocator,
 		renderer->texture.width * renderer->texture.height * renderer->texture.channels,
 		4);
-	bool loaded_texture = load_and_copyto_texture(texture_file, &renderer->texture);
+	bool loaded_texture = load_and_copyto_texture(texture_file, &renderer->texture, true);
 
 	if (!loaded_texture) return false;
 
@@ -163,13 +163,13 @@ void software_render(SoftwareRenderer* r) {
 	int height = r->window_size.y;
 
 	Vec3f eye = camera.pos;
-	Vec3f dir = camera.dir;
+	Vec3f dir = camera.forward;
 
 
 	
-	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
-	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
-	model_mat = mat4x4_mul(&model_mat, &rot2);
+	Mat4x4f model_mat = mat4x4f_identity();
+	
+	
 
 	Mat4x4f view_mat = look_at(eye, v3_add(eye, dir), Vec3f_Up);
 	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
@@ -282,13 +282,13 @@ void software_debug_render(SoftwareRenderer* r) {
 	int height = r->window_size.y;
 
 	Vec3f eye = camera.pos;
-	Vec3f dir = camera.dir;
+	Vec3f dir = camera.forward;
 
 
 	
-	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
-	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.z), Vec3f_Forward);
-	model_mat = mat4x4_mul(&model_mat, &rot2);
+	Mat4x4f model_mat = mat4x4f_identity();
+	
+	
 
 	Mat4x4f view_mat = look_at(eye, v3_add(eye, dir), Vec3f_Up);
 	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer

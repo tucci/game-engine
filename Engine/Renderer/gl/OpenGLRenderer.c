@@ -8,12 +8,55 @@
 #include "../../utils.c"
 
 
+static void init_skybox(OpenGLRenderer* opengl, Scene* scene) {
+	// Bind skybox
+	glGenTextures(1, &opengl->skybox_id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->skybox_id);
+	int width = scene->skybox.front.width;
+	int height = scene->skybox.front.height;
+
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.right.data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.left.data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.top.data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.bottom.data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.back.data);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.front.data);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+
+	
+
+	glGenVertexArrays(1, &opengl->skybox_VAO);
+	glGenBuffers(1, &opengl->skybox_VBO);
+	glBindVertexArray(opengl->skybox_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
+	glBufferData(GL_ARRAY_BUFFER, scene->skybox.cube.vertex_count * sizeof(Vec3f), scene->skybox.cube.pos, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
+	
+	
+
+	const char* vertex_shader = file_to_str("Assets/shaders/skybox.vs", &opengl->renderer_allocator);
+	const char* fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->renderer_allocator);
+
+	load_gl_shader(&opengl->skybox_shader, &vertex_shader, &fragment_shader);
+}
+
 
 void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	// TODO: instead of passing the entire scene, we should pass a culled scene for faster rendering
 	opengl->render_scene = scene;
 
+	init_skybox(opengl, scene);
 
+
+
+	// Bind Model textures
 	glGenTextures(1, &opengl->textureID);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
 	
@@ -208,7 +251,10 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* pari
 
 bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	SDL_GL_DeleteContext(opengl->gl_context);
+	// TODO: we should have a list of shaders instead of manually having to call it
 	delete_gl_program(&opengl->main_shader);
+	delete_gl_program(&opengl->debug_shader);
+	delete_gl_program(&opengl->skybox_shader);
 	
 
 	glDeleteVertexArrays(1, &opengl->VAO);
@@ -231,15 +277,10 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	
 	Camera camera = opengl->render_scene->main_camera;
-	//Mat4x4f model_mat = mat4x4f_identity();
-	
-	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
-	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.x), Vec3f_Right);
-	model_mat = mat4x4_mul(&model_mat, &rot2);
 	
 	
-
-	Mat4x4f view_mat = look_at(camera.pos, v3_add(camera.pos, camera.dir), Vec3f_Up);
+	Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f view_mat = look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
@@ -346,9 +387,53 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 	
-	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->primative_test.index_count, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->primative_test.index_count, GL_UNSIGNED_INT, 0);
 
 
+
+	// Draw skybox
+
+	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+
+	glUseProgram(opengl->skybox_shader.program);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
+	glActiveTexture(GL_TEXTURE0);
+	
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->skybox_id);
+	
+	
+
+
+	
+	glBufferData(GL_ARRAY_BUFFER,
+		opengl->render_scene->skybox.cube.vertex_count * sizeof(Vec3f),
+		NULL,
+		GL_STATIC_DRAW);
+
+	glBufferSubData(GL_ARRAY_BUFFER,
+		0,
+		opengl->render_scene->skybox.cube.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->skybox.cube.pos);
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		opengl->render_scene->skybox.cube.index_count * sizeof(Vec3i),
+		opengl->render_scene->skybox.cube.indices,
+		GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glFrontFace(GL_CW);
+
+	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->skybox.cube.index_count, GL_UNSIGNED_INT, 0);
+
+
+	glFrontFace(GL_CCW);
+
+	glDepthFunc(GL_LESS); // set depth function back to default
 	
 	
 }
@@ -359,14 +444,8 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	
 	Camera camera = opengl->render_scene->main_camera;
-	//Mat4x4f model_mat = mat4x4f_identity();
-
-	Mat4x4f model_mat = rotate(deg_to_rad(camera.rotation.y), Vec3f_Up);
-	Mat4x4f rot2 = rotate(deg_to_rad(camera.rotation.x), Vec3f_Right);
-	model_mat = mat4x4_mul(&model_mat, &rot2);
-
-
-	Mat4x4f view_mat = look_at(camera.pos, v3_add(camera.pos, camera.dir), Vec3f_Up);
+	Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f view_mat = look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
 	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);

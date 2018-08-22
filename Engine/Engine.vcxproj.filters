@@ -63,6 +63,9 @@
     <ClCompile Include="Engine.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Entities\Skybox.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ObjFile.h">
@@ -131,6 +134,9 @@
     <ClInclude Include="Engine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Entities\Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
@@ -142,5 +148,7 @@
     <None Include="Assets\shaders\debug.fs" />
     <None Include="Assets\shaders\simple.vs" />
     <None Include="Assets\shaders\simple.fs" />
+    <None Include="Assets\shaders\skybox.vs" />
+    <None Include="Assets\shaders\skybox.fs" />
   </ItemGroup>
 </Project>

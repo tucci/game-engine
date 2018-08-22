@@ -202,6 +202,9 @@ typedef union Vec4i {
 #define vec34pack(v1, v2) vec3f_to_vec4f(v1, 0), vec3f_to_vec4f(v2, 0)
 
 
+
+
+
 Vec2f inline make_vec2f(float x, float y) {
 	Vec2f result = {
 		x,
@@ -442,7 +445,7 @@ float inline v3_length(Vec3f vec) {
 	return length;
 }
 
-Vec3f inline vec_normalize(Vec3f vec) {
+Vec3f inline v3_normalize(Vec3f vec) {
 	Vec3f result = v4_normalize(vec3f_to_vec4f(vec, 0)).xyz;
 	return result;
 }
@@ -479,5 +482,15 @@ Vec3f inline v3_cross(Vec3f v1, Vec3f v2) {
 	cross.data[2] = v1.data[0] * v2.data[1] - v1.data[1] * v2.data[0];
 	return cross; 
 #endif
+	
+}
+
+
+
+Vec3f inline rotate_vector_around_axis(Vec3f v, float rads, Vec3f n) {
+	Vec3f result = v3_add(
+		v3_add(v3_multiply(cosf(rads), v), v3_multiply(sinf(rads), v3_cross(n, v))),
+		v3_multiply((1 - cosf(rads)) * v3_dot(n, v), n));
+	return result;
 	
 }

@@ -25,12 +25,12 @@ void fill_texture_info(const char* filename, SimpleTexture* texture) {
 }
 
 // Returns 1 if loaded successfully, 0 if failed
-int load_and_copyto_texture(const char* filename, SimpleTexture* texture) {
+bool load_and_copyto_texture(const char* filename, SimpleTexture* texture, bool flip) {
 	int req_format = texture->channels;
 	int orig_format = 0;
 
 	// NOTE: Flip textures verticalu on load, our renderer expects textures to be upside down
-	stbi_set_flip_vertically_on_load(1);
+	stbi_set_flip_vertically_on_load(flip);
 
 	// Load the image
 	unsigned char* data = stbi_load(filename, &texture->width, &texture->height, &orig_format, req_format);

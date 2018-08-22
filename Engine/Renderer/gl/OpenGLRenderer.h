@@ -41,6 +41,12 @@ typedef struct OpenGLRenderer {
 	LinearAllocator renderer_allocator;
 
 
+
+	GLuint skybox_id;
+	GLuint skybox_VAO;
+	GLuint skybox_VBO;
+	GLShader skybox_shader;
+
 	GLuint textureID;
 	
 	GLShader main_shader;

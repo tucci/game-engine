@@ -100,7 +100,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>$(ProjectDir)\lib\glew210\include\GL;$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
@@ -139,7 +139,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <Optimization>Full</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -158,6 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\Entities\Skybox.c" />
     <ClCompile Include="utils.c" />
     <ClCompile Include="Common\LinearAllocator.c" />
     <ClCompile Include="Common\StackAllocator.c" />
@@ -181,6 +182,7 @@
     <ClInclude Include="Common\StackAllocator.h" />
     <ClInclude Include="Core\Entities\Camera.h" />
     <ClInclude Include="Core\Entities\Primitives.h" />
+    <ClInclude Include="Core\Entities\Skybox.h" />
     <ClInclude Include="Core\Game.h" />
     <ClInclude Include="Core\GameTimer.h" />
     <ClInclude Include="Core\Input.h" />
@@ -207,6 +209,8 @@
     <None Include="Assets\shaders\debug.vs" />
     <None Include="Assets\shaders\simple.fs" />
     <None Include="Assets\shaders\simple.vs" />
+    <None Include="Assets\shaders\skybox.fs" />
+    <None Include="Assets\shaders\skybox.vs" />
     <None Include="Assets\shaders\textured.fs" />
     <None Include="Assets\shaders\textured.vs" />
   </ItemGroup>

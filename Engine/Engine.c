@@ -498,10 +498,6 @@ static void process_inputs(Engine* engine) {
 		post_update_button_state(&engine->input.keys[c]);
 	}
 
-	
-
-
-
 	// Handle mouse seperatly
 	{
 		int x, y;
@@ -526,10 +522,6 @@ static void process_inputs(Engine* engine) {
 	
 	SDL_Event sdl_event;
 	while (SDL_PollEvent(&sdl_event)) {
-
-
-
-		
 
 		switch (sdl_event.type) {
 			// This mouse events dont capture when mouse deltas go to zero
