@@ -6,8 +6,11 @@
 #include <stdbool.h>
 
 #include "Core/Game.h"
+#include "Core/Display.h"
+#include "Core/Window.h"
 #include "Core/Input.h"
 #include "Core/GameTimer.h"
+
 
 
 #include "Renderer/software_renderer/SoftwareRenderer.h"
@@ -16,6 +19,7 @@
 #include "debug_macros.h"
 
 
+// TODO: move these to a config file
 #define WINDOW_TITLE "Engine"
 #define DEFAULT_WINDOW_SIZE_X 1280
 #define DEFAULT_WINDOW_SIZE_Y 1024
@@ -23,41 +27,6 @@
 #define MAX_EVENTS 32
 
 
-
-typedef struct Display {
-	float dpi;
-	int refresh_rate;
-	int w;
-	int h;
-
-} Display;
-
-typedef enum WindowFlag {
-	// NOTE:(steven) These flags try to have the same values as the flags from SDL_WindowFlags
-	WindowFlag_None = 0,
-	WindowFlag_Fullscreen = 1 << 0,
-	WindowFlag_OpenGL = 1 << 1,
-	WindowFlag_Hidden = 1 << 3,
-	WindowFlag_Resizable = 1 << 5,
-	WindowFlag_Minimized = 1 << 6,
-	WindowFlag_Maximized = 1 << 7,
-	WindowFlag_Has_Keyboard_Focus = 1 << 9,
-	WindowFlag_Has_Mouse_Focus = 1 << 10,
-
-} WindowFlag;
-
-typedef struct Window {
-	uint32_t window_id;
-
-	const char* title;
-	Vec2i pos;
-	Vec2i size;
-	uint32_t flags;
-
-	SDL_Window* sdl_window;
-	SDL_WindowFlags sdl_window_flags;
-
-} Window;
 
 
 
@@ -172,23 +141,24 @@ typedef struct MemoryEnginePartition {
 
 typedef struct Engine {
 
-
-	Renderer renderer;
+	// Exposed subsystems that the game can query, though should not modify
 	Display display;
 	Window window;
-
 	Input input;
+	Clock clock;
+	GameTimer game_loop;
+	
 
+
+	// Internal subsystems
+	Renderer renderer;
 	Event event_queue[MAX_EVENTS];
 	int event_count;
 
-	Clock clock;
-	GameTimer game_loop;
+
 
 	char const* platform;
 	bool quit;
-
-
 
 	// Fixed memory for the entire engine/game
 	void* engine_memory;

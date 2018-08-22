@@ -4,7 +4,7 @@
 #define DEBUG 1
 
 
-#if DEBUG == 1
+#if DEBUG
 #define debug_print(...) printf(__VA_ARGS__)
 
 #else

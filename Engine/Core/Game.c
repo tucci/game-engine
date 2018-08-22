@@ -6,18 +6,43 @@
 #include "../Math/Mat.h"
 
 #include "../Common/common_macros.h"
+#include "../debug_macros.h"
 
 #include "Entities/Primitives.h"
+void attach_engine_subsytems(Game* game, EngineAPI api) {
+	game->engineAPI = api;
 
+	assert(api.input != NULL);
+	assert(api.display != NULL);
+	assert(api.game_loop != NULL);
+	assert(api.window != NULL);
+}
 
 
 void load_scene(Game* game, int scene_id) {
-	ObjModel model;
 
+	
 	game->loaded_scene = cast(Scene*) linear_alloc(&game->game_memory, sizeof(Scene), 4);
+
 
 	Scene* scene = game->loaded_scene;
 
+	
+	assert(scene != NULL);
+	
+
+	EngineAPI* api = &game->engineAPI;
+
+	
+
+	// Camera loading
+	init_camera_default(&scene->main_camera);
+	set_camera_pos(&scene->main_camera, cast(Vec3f){0, 0, 5});
+	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
+
+	
+
+	
 	load_skybox(&scene->skybox,
 		&game->game_memory,
 		"Assets/skyboxes/stonegods/sgod_lf.tga",
@@ -27,16 +52,7 @@ void load_scene(Game* game, int scene_id) {
 		"Assets/skyboxes/stonegods/sgod_up.tga",
 		"Assets/skyboxes/stonegods/sgod_dn.tga");
 
-	
-	init_camera_default(&scene->main_camera);
-	set_camera_pos(&scene->main_camera, cast(Vec3f){0, 0, 5});
-
-	// TODO: this should be taken from the window
-	scene->main_camera.aspect_ratio = 1280.0f / 1024.0f;
-
-
-
-
+	ObjModel model;
 	load_obj("Assets/obj/african_head.obj", &model);
 	//load_obj("Assets/obj/diablo3_pose.obj", &model);
 	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
@@ -68,10 +84,12 @@ void unload_scene(Game* game, Scene* scene) {
 }
 
 
-void game_update(Game* game, Input* input, GameTimer* timer) {
+void game_update(Game* game) {
 
 
 	Camera* camera = &game->loaded_scene->main_camera;
+	Input* input = game->engineAPI.input;
+	GameTimer* timer = game->engineAPI.game_loop;
 		
 
 	if (input->mouse.mouse_button_left.down) {
@@ -79,17 +97,6 @@ void game_update(Game* game, Input* input, GameTimer* timer) {
 
 		camera->right = v3_cross(camera->forward, camera->up);
 
-	/*	camera->orientation.x += -delta_pos.x * 0.0025f;
-		camera->orientation.y += -delta_pos.y * 0.0025f;
-
-		
-		camera->orientation.y = clamp(camera->orientation.y, -89.0f, 89.0f);
-
-		
-		camera->forward.x = cosf(camera->orientation.x) * cosf(camera->orientation.y);
-		camera->forward.y = sinf(camera->orientation.y);
-		camera->forward.z = sinf(camera->orientation.x) * cosf(camera->orientation.y);
-		camera->forward = v3_normalize(camera->forward);*/
 		
 
 		

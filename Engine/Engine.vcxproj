@@ -180,12 +180,15 @@
     <ClInclude Include="Common\LinearAllocator.h" />
     <ClInclude Include="Common\common_macros.h" />
     <ClInclude Include="Common\StackAllocator.h" />
+    <ClInclude Include="Core\Display.h" />
+    <ClInclude Include="Core\EngineAPI.h" />
     <ClInclude Include="Core\Entities\Camera.h" />
     <ClInclude Include="Core\Entities\Primitives.h" />
     <ClInclude Include="Core\Entities\Skybox.h" />
     <ClInclude Include="Core\Game.h" />
     <ClInclude Include="Core\GameTimer.h" />
     <ClInclude Include="Core\Input.h" />
+    <ClInclude Include="Core\Window.h" />
     <ClInclude Include="debug_macros.h" />
     <ClInclude Include="Core\Scene.h" />
     <ClInclude Include="Math\Transform.h" />

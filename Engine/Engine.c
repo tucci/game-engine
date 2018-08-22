@@ -267,12 +267,13 @@ static bool init_engine_memory(Engine* engine) {
 		return false;
 	} else {
 		// TODO: do we want to zero out the memory at start
-		
+
 		return true;
 	}
 	
 }
 
+// TODO: move to a more general purpose allocator?
 MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
 	MemoryEnginePartition parition;
 	size_t aligned_size = ALIGN_UP(size, 64);
@@ -618,9 +619,10 @@ static bool load_game(Engine* engine, const char* game_file) {
 
 	// TODO: read game/project file
 	debug_print("Loading Game\n");
-	// Load scene, get how much potential memory we would need from the scene
+	
 
 	// Init some memory for our game
+	// Load scene, get how much potential memory we would need from the scene
 	MemoryEnginePartition game_partition = give_memory_partition(engine, MEGABYTES(50));
 
 
@@ -630,6 +632,16 @@ static bool load_game(Engine* engine, const char* game_file) {
 	linear_init(&engine->loaded_game->game_memory, game_partition.start_ptr, game_partition.partition_size);
 	// Alloc the game object size so we dont overwrite the loaded game struct
 	linear_alloc(&engine->loaded_game->game_memory, sizeof(Game), 4);
+
+	// Attach and expose our engine subsystems to the game
+	EngineAPI api = {
+		&engine->display,
+		&engine->window,
+		&engine->input,
+		&engine->game_loop,
+	};
+
+	attach_engine_subsytems(engine->loaded_game, api);
 
 	// load all resources, static meshes from files
 	debug_print("Loading scene objects\n");

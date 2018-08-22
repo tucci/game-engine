@@ -137,6 +137,15 @@
     <ClInclude Include="Core\Entities\Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\EngineAPI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
