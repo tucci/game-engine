@@ -11,7 +11,7 @@ typedef struct Camera {
 	Vec3f up;
 	Vec3f right;
 
-	Vec3f orientation;
+	Vec3f euler_angles;
 
 	float near;
 	float far;

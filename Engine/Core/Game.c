@@ -3,6 +3,7 @@
 #include "Game.h"
 
 #include "../Math/Mat.h"
+#include "../Math/Quaternion.h"
 
 #include "../Common/common_macros.h"
 #include "../debug_macros.h"
@@ -39,7 +40,7 @@ void load_scene(Game* game, int scene_id) {
 	init_camera_default(&scene->main_camera);
 	set_camera_pos(&scene->main_camera, cast(Vec3f){0, 0, 5});
 	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
-	scene->main_camera.orientation = Vec3f_Zero;
+	scene->main_camera.euler_angles = Vec3f_Zero;
 
 	
 
@@ -104,46 +105,32 @@ void game_update(Game* game) {
 	Vec2i delta_pos = input->mouse.delta_pos;
 
 
-	camera->orientation.y += (-delta_pos.x * 0.25f);
-	camera->orientation.x += (-delta_pos.y * 0.25f);
-	camera->orientation.x = clamp(camera->orientation.x, -89, 89);
-	camera->orientation.y = fmod(camera->orientation.y, 360.0f);
+	camera->euler_angles.y += (-delta_pos.x * 0.25f);
+	camera->euler_angles.x += (-delta_pos.y * 0.25f);
+	camera->euler_angles.x = clamp(camera->euler_angles.x, -89, 89);
+	camera->euler_angles.y = fmod(camera->euler_angles.y, 360.0f);
 		
 
 	Mat4x4f t = translate(v3_multiply(1, camera->pos));
 	t = transpose(&t);
 	
 
-	//Mat4x4f m1 = rotate(-delta_pos.x * 0.0025f, camera->up);
-	//Mat4x4f m2 = rotate(-delta_pos.y * 0.0025f, camera->right);
+	Quat q = axis_angle_to_quat(Vec3f_Up, camera->euler_angles.y);
+	q = quat_mult(q, axis_angle_to_quat(Vec3f_Right, camera->euler_angles.x));
 
-	Mat4x4f m1 = rotate(deg_to_rad(camera->orientation.y), Vec3f_Up);
-	Mat4x4f m2 = rotate(deg_to_rad(camera->orientation.x), Vec3f_Right);
 
-	Mat4x4f rot_xy = mat4x4_mul(&m2, &m1);
+	Mat4x4f rot_xy = quat_to_rotation_matrix(q);
 	Mat4x4f posrot = mat4x4_mul(&rot_xy, &t);
 
-	// TODO: move to quats
-	
-	// Convert oriention (yaw,pitch) to our forward vector
-	camera->forward = euler_to_vector(camera->orientation);
+	// Convert euler angles (yaw,pitch) to our forward vector
+	camera->forward = euler_to_vector(camera->euler_angles);
 	camera->forward.y *= -1; // flip y axis
-		
-
-
-		
+				
 	camera->right = v3_cross(camera->forward, camera->up);
 	camera->view_mat = posrot;
 	debug_print("orientation %f, %f, %f, forward, %f, %f, %f \n",
-		camera->orientation.x, camera->orientation.y, camera->orientation.z,
+		camera->euler_angles.x, camera->euler_angles.y, camera->euler_angles.z,
 		camera->forward.x, camera->forward.y, camera->forward.z);
-
-	////Vec4f forward4 = vec3f_to_vec4f(camera->forward, 0);
-	////forward4 = v4_normalize(forward4);
-	////camera->forward = mat4x4_vec_mul(&posrot, forward4).xyz;
-	//camera->view_mat = look_at(camera->pos, v3_add(camera->pos, camera->forward), Vec3f_Up);
-	
-
 
 }
 

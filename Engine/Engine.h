@@ -199,7 +199,7 @@ static bool load_game(Engine* engine, const char* game_file);
 
 bool init_engine(Engine* engine);
 bool destroy_engine(Engine* engine);
-static void update(Engine* engine, float delta_time);
-static void fixed_update(Engine* engine, float fixed_time);
+static void update_engine_state(Engine* engine, float delta_time);
+static void fixed_physics_update(Engine* engine, float fixed_time);
 void game_loop(Engine* engine);
 

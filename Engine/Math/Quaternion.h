@@ -2,6 +2,7 @@
 
 #include "Math.h"
 #include "Vec.h"
+#include "Mat.h"
 
 typedef struct Quaternion {
 	float w;
@@ -23,18 +24,19 @@ typedef Quaternion Quat;
 
 
 
-Quat inline axis_angle_to_quat(Vec3f n, float a) {
+// Where 
+Quat inline axis_angle_to_quat(Vec3f n, float deg) {
 	Quat result;
 	// Convert to radians
-	a = deg_to_rad(a);
-	float half_a = a * 0.5f;
-	result.w = cosf(half_a);
+	float rad = deg_to_rad(deg);
+	float half_angle = rad * 0.5f;
+	float sinf_half_angle = sinf(half_angle);
 
-	float sinf_half_a = sinf(half_a);
 
-	result.x = n.x * sinf_half_a;
-	result.y = n.y * sinf_half_a;
-	result.z = n.z * sinf_half_a;
+	result.w = cosf(half_angle);
+	result.x = n.x * sinf_half_angle;
+	result.y = n.y * sinf_half_angle;
+	result.z = n.z * sinf_half_angle;
 
 	return result;
 }
@@ -75,3 +77,26 @@ Vec3f inline quat_mult_pt(Quat q, Vec3f pt) {
 // TODO: implement slerp
 
 // TODO: quat to rotation matrix
+
+Mat4x4f inline quat_to_rotation_matrix(Quat q) {
+	Mat4x4f result = mat4x4f_identity();
+	float qx2 = q.x * q.x;
+	float qy2 = q.y * q.y;
+	float qz2 = q.z * q.z;
+
+
+	result.mat2d[0][0] = 1 - 2 * (qy2 + qz2);
+	result.mat2d[0][1] = 2 * (q.x * q.y - q.z * q.w);
+	result.mat2d[0][2] = 2 * (q.x * q.z + q.y * q.w);
+
+	result.mat2d[1][0] = 2 * (q.x * q.y + q.z * q.w);
+	result.mat2d[1][1] = 1 - 2 * (qx2 + qz2);
+	result.mat2d[1][2] = 2 * (q.y * q.z - q.x * q.w);
+
+	result.mat2d[2][0] = 2 * (q.x * q.z - q.y * q.w);
+	result.mat2d[2][1] = 2 * (q.y * q.z + q.x * q.w);
+	result.mat2d[2][2] = 1 - 2 * (qx2 + qy2);
+
+
+	return result;
+}

@@ -736,7 +736,7 @@ bool destroy_engine(Engine* engine) {
 }
 
 
-static void update(Engine* engine, float delta_time) {
+static void update_engine_state(Engine* engine, float delta_time) {
 	
 	// Engine specific updates
 	if (engine->input.keys[SDL_SCANCODE_G].just_pressed) {
@@ -759,7 +759,7 @@ static void update(Engine* engine, float delta_time) {
 	
 }
 
-static void fixed_update(Engine* engine, float fixed_time) {
+static void fixed_physics_update(Engine* engine, float fixed_time) {
 	// Physics stuff
 }
 
@@ -788,13 +788,13 @@ void game_loop(Engine* engine) {
 
 		while (engine->game_loop.accumulator >= engine->game_loop.time_step) {
 			// fixed update zero or more times per frame
-			fixed_update(engine, engine->game_loop.time_step);
+			fixed_physics_update(engine, engine->game_loop.time_step);
 			engine->game_loop.physics_time += engine->game_loop.time_step;
 			engine->game_loop.accumulator -= engine->game_loop.time_step;
 		}
 
 		// Update once per frame
-		update(engine, delta_time);
+		update_engine_state(engine, delta_time);
 
 	
 		// TODO: this is used to interpolate game state during the rendering
