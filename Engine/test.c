@@ -7,6 +7,7 @@
 
 #include "debug_macros.h"
 #include "Math/Math.h"
+#include "Math/Quaternion.h"
 
 
 
@@ -115,8 +116,35 @@ void inline test_simd_vec(void) {
 	result.xyz = v3_cross(v1.xyz, v2.xyz);
 }
 
+
+void inline test_quats(void) {
+	Quat a;
+	a = axis_angle_to_quat(make_vec3f(1, 0, 0), 0);
+	a = axis_angle_to_quat(make_vec3f(1, 0, 0), 90);
+	a = axis_angle_to_quat(make_vec3f(1, 0, 0), 180);
+
+	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 0);
+	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 90);
+	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 180);
+
+
+
+	a = axis_angle_to_quat(make_vec3f(0, 0, 1), 0);
+	a = axis_angle_to_quat(make_vec3f(0, 0, 1), 90);
+	a = axis_angle_to_quat(make_vec3f(0, 0, 1), 180);
+
+
+	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 270);
+
+	Vec3f pt = make_vec3f(1, 0, 0);
+	Vec3f result = quat_mult_pt(a, pt);
+
+}
+
 void inline main_test(void) {
-	test_linear_alloc();
+	test_quats();
+
+	/*test_linear_alloc();
 	test_stack_alloc();
-	test_simd_vec();
+	test_simd_vec();*/
 }

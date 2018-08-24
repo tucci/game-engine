@@ -84,13 +84,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
 	const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
 
-	fill_texture_info(texture_file, &renderer->texture);
-
-	renderer->texture.data = (unsigned char*)linear_alloc(
-		&renderer->renderer_allocator,
-		renderer->texture.width * renderer->texture.height * renderer->texture.channels,
-		4);
-	bool loaded_texture = load_and_copyto_texture(texture_file, &renderer->texture, true);
+	bool loaded_texture = load_texture(texture_file, &renderer->texture, &renderer->renderer_allocator, true);
 
 	if (!loaded_texture) return false;
 
@@ -171,8 +165,7 @@ void software_render(SoftwareRenderer* r) {
 	
 	
 
-	Mat4x4f view_mat = look_at(eye, v3_add(eye, dir), Vec3f_Up);
-	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
+	Mat4x4f view_mat = camera.view_mat;//look_at(eye, v3_add(eye, dir), Vec3f_Up);
 	view_mat = transpose(&view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);
@@ -290,8 +283,7 @@ void software_debug_render(SoftwareRenderer* r) {
 	
 	
 
-	Mat4x4f view_mat = look_at(eye, v3_add(eye, dir), Vec3f_Up);
-	// TODO: this shouldnt be transposed, that means there is a bug somewhere in the software renderer
+	Mat4x4f view_mat = camera.view_mat;//look_at(eye, v3_add(eye, dir), Vec3f_Up);
 	view_mat = transpose(&view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = mat4x4_mul(&model_mat, &view_mat);

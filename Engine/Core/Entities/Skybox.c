@@ -13,28 +13,14 @@ void load_skybox(Skybox* skybox, LinearAllocator* mem,
 	const char* top,
 	const char* bottom) {
 
-	fill_texture_info(front, &skybox->front);
-	fill_texture_info(back, &skybox->back);
-	fill_texture_info(left, &skybox->left);
-	fill_texture_info(right, &skybox->right);
-	fill_texture_info(top, &skybox->top);
-	fill_texture_info(bottom, &skybox->bottom);
-	// NOTE: all the textures should be same width and height, and channel count
-	int image_size = skybox->front.width * skybox->front.height * skybox->front.channels;
+	
 
-	skybox->front.data = cast(unsigned char*)linear_alloc(mem, image_size, 4);
-	skybox->back.data = cast(unsigned char*)linear_alloc(mem, image_size, 4);
-	skybox->left.data = cast(unsigned char*)linear_alloc(mem, image_size, 4);
-	skybox->right.data = cast(unsigned char*)linear_alloc(mem, image_size, 4);
-	skybox->top.data = cast(unsigned char*)linear_alloc(mem, image_size, 4);
-	skybox->bottom.data = cast(unsigned char*)linear_alloc(mem, image_size, 4);
-
-	load_and_copyto_texture(front, &skybox->front, false);
-	load_and_copyto_texture(back, &skybox->back, false);
-	load_and_copyto_texture(left, &skybox->left, false);
-	load_and_copyto_texture(right, &skybox->right, false);
-	load_and_copyto_texture(top, &skybox->top, false);
-	load_and_copyto_texture(bottom, &skybox->bottom, false);
+	load_texture(front, &skybox->front, mem, false);
+	load_texture(back, &skybox->back, mem, false);
+	load_texture(left, &skybox->left, mem, false);
+	load_texture(right, &skybox->right, mem, false);
+	load_texture(top, &skybox->top, mem, false);
+	load_texture(bottom, &skybox->bottom, mem, false);
 
 	
 	make_cube(&skybox->cube, mem);

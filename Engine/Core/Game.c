@@ -2,13 +2,13 @@
 
 #include "Game.h"
 
-
 #include "../Math/Mat.h"
 
 #include "../Common/common_macros.h"
 #include "../debug_macros.h"
 
 #include "Entities/Primitives.h"
+
 void attach_engine_subsytems(Game* game, EngineAPI api) {
 	game->engineAPI = api;
 
@@ -39,6 +39,7 @@ void load_scene(Game* game, int scene_id) {
 	init_camera_default(&scene->main_camera);
 	set_camera_pos(&scene->main_camera, cast(Vec3f){0, 0, 5});
 	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
+	scene->main_camera.orientation = Vec3f_Zero;
 
 	
 
@@ -67,13 +68,8 @@ void load_scene(Game* game, int scene_id) {
 	const char* texture_file = "Assets/obj/african_head_diffuse.tga";
 	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
 
-	// TODO: instead of having a pre fill check, we can probably pass the alloactor to the load texture function
-	fill_texture_info(texture_file, &scene->texture_test);
-	scene->texture_test.data = (unsigned char*) linear_alloc(
-		&game->game_memory,
-		scene->texture_test.width * scene->texture_test.height * scene->texture_test.channels,
-		4);
-	bool loaded_texture = load_and_copyto_texture(texture_file, &scene->texture_test, true);
+	
+	bool loaded_texture = load_texture(texture_file, &scene->texture_test, &game->game_memory, true);
 
 }
 
@@ -90,51 +86,64 @@ void game_update(Game* game) {
 	Camera* camera = &game->loaded_scene->main_camera;
 	Input* input = game->engineAPI.input;
 	GameTimer* timer = game->engineAPI.game_loop;
-		
-
-	if (input->mouse.mouse_button_left.down) {
-		Vec2i delta_pos = input->mouse.delta_pos;
-
-		camera->right = v3_cross(camera->forward, camera->up);
-
-		
-
-		
-		Vec3f origin_offset = v3_sub(Vec3f_Zero, camera->pos);
-
-		
-		Mat4x4f m1 = rotate(-delta_pos.x * 0.0025f, camera->up);
-		Mat4x4f m2 = rotate(-delta_pos.y * 0.0025f, camera->right);
-
-		Mat4x4f rot_xy = mat4x4_mul(&m1, &m2);
-		
-
-		
-		
-		Vec4f new_dir = make_vec4f(camera->forward.x, camera->forward.y, camera->forward.z, 1);
-		new_dir = v4_normalize(new_dir);
-		
-		camera->forward =  mat4x4_vec_mul(&rot_xy, new_dir).xyz;
-
-		
-		
-	}
 
 
 
-	
-
-	
-	
 
 	float delta_time = timer->delta_time;
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
-	if (input->keys[SDL_SCANCODE_W].down)      {move_camera_in_direction(camera, Vec3f_Backward, delta_time);}
-	if (input->keys[SDL_SCANCODE_S].down)      {move_camera_in_direction(camera, Vec3f_Forward, delta_time);}
-	if (input->keys[SDL_SCANCODE_A].down)      {move_camera_in_direction(camera, Vec3f_Left, delta_time);}
-	if (input->keys[SDL_SCANCODE_D].down)      {move_camera_in_direction(camera, Vec3f_Right, delta_time);}
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) {move_camera_in_direction(camera, Vec3f_Up, delta_time);}
-	if (input->keys[SDL_SCANCODE_LCTRL].down)  {move_camera_in_direction(camera, Vec3f_Down, delta_time);}
+	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, v3_negate(camera->forward), delta_time); }
+	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, camera->forward, delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->right, delta_time); }
+	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, v3_negate(camera->right), delta_time); }
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, v3_negate(camera->up), delta_time); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, camera->up, delta_time); }
+		
+
+	
+	Vec2i delta_pos = input->mouse.delta_pos;
+
+
+	camera->orientation.y += (-delta_pos.x * 0.25f);
+	camera->orientation.x += (-delta_pos.y * 0.25f);
+	camera->orientation.x = clamp(camera->orientation.x, -89, 89);
+	camera->orientation.y = fmod(camera->orientation.y, 360.0f);
+		
+
+	Mat4x4f t = translate(v3_multiply(1, camera->pos));
+	t = transpose(&t);
+	
+
+	//Mat4x4f m1 = rotate(-delta_pos.x * 0.0025f, camera->up);
+	//Mat4x4f m2 = rotate(-delta_pos.y * 0.0025f, camera->right);
+
+	Mat4x4f m1 = rotate(deg_to_rad(camera->orientation.y), Vec3f_Up);
+	Mat4x4f m2 = rotate(deg_to_rad(camera->orientation.x), Vec3f_Right);
+
+	Mat4x4f rot_xy = mat4x4_mul(&m2, &m1);
+	Mat4x4f posrot = mat4x4_mul(&rot_xy, &t);
+
+	// TODO: move to quats
+	
+	// Convert oriention (yaw,pitch) to our forward vector
+	camera->forward = euler_to_vector(camera->orientation);
+	camera->forward.y *= -1; // flip y axis
+		
+
+
+		
+	camera->right = v3_cross(camera->forward, camera->up);
+	camera->view_mat = posrot;
+	debug_print("orientation %f, %f, %f, forward, %f, %f, %f \n",
+		camera->orientation.x, camera->orientation.y, camera->orientation.z,
+		camera->forward.x, camera->forward.y, camera->forward.z);
+
+	////Vec4f forward4 = vec3f_to_vec4f(camera->forward, 0);
+	////forward4 = v4_normalize(forward4);
+	////camera->forward = mat4x4_vec_mul(&posrot, forward4).xyz;
+	//camera->view_mat = look_at(camera->pos, v3_add(camera->pos, camera->forward), Vec3f_Up);
+	
+
 
 }
 

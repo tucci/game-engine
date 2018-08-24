@@ -48,5 +48,5 @@ void set_camera_pos(Camera* camera, Vec3f pos) {
 
 
 void move_camera_in_direction(Camera* camera, Vec3f direction, float delta_time) {
-	camera->pos = v3_add(camera->pos, v3_multiply(delta_time, direction));
+	camera->pos = v3_add(camera->pos, v3_multiply(1 * delta_time, direction));
 }

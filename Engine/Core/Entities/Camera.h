@@ -2,6 +2,7 @@
 
 
 #include "../../Math/Vec.h"
+#include "../../Math/Mat.h"
 
 typedef struct Camera {
 	Vec3f pos;
@@ -10,12 +11,14 @@ typedef struct Camera {
 	Vec3f up;
 	Vec3f right;
 
+	Vec3f orientation;
 
 	float near;
 	float far;
 	float fov;
 	float aspect_ratio;
 
+	Mat4x4f view_mat;
 } Camera;
 
 

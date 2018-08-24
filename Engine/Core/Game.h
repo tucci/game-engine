@@ -1,9 +1,7 @@
 #pragma once
 
-#include <stdbool.h>
 
 #include "Scene.h"
-
 #include "EngineAPI.h"
 
 

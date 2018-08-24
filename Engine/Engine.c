@@ -132,11 +132,11 @@ static void process_event_queue(Engine* engine) {
 				engine->input.mouse.pos = event.event.mouse_move_event.pos;
 				engine->input.mouse.delta_pos = event.event.mouse_move_event.delta_pos;
 
-				debug_print("Mouse move: Pos<%d,%d>\tDelta<%d,%d>\n",
+				/*debug_print("Mouse move: Pos<%d,%d>\tDelta<%d,%d>\n",
 					engine->input.mouse.pos.x,
 					engine->input.mouse.pos.y,
 					engine->input.mouse.delta_pos.x,
-					engine->input.mouse.delta_pos.y);
+					engine->input.mouse.delta_pos.y);*/
 
 				break;
 			}
@@ -257,7 +257,8 @@ static bool init_engine_memory(Engine* engine) {
 
 	// Align the memory size to 64 bits
 	// TODO: should this depend on the machine? 32bits vs 64bits
-	engine->engine_memory_size = ALIGN_UP(size, 64);
+	int alignment = SDL_GetCPUCacheLineSize();
+	engine->engine_memory_size = ALIGN_UP(size, alignment);
 	engine->engine_memory = malloc(engine->engine_memory_size);
 	// Set initial partition ptr to the start of the memory
 	engine->partition_ptr = engine->engine_memory;
@@ -411,8 +412,9 @@ static bool init_renderer(Engine* engine) {
 
 
 static bool init_keys(Engine* engine) {
-	//SDL_SetRelativeMouseMode(true);
-
+	// TODO: we should expose these to the game, to see if they want to toggle these
+	SDL_SetRelativeMouseMode(true);
+	SDL_CaptureMouse(true);
 	// Init mouse buttons
 	reset_button_state(&engine->input.mouse.mouse_button_left);
 	reset_button_state(&engine->input.mouse.mouse_button_middle);
@@ -698,7 +700,6 @@ bool init_engine(Engine* engine) {
 	if (!init_clock(engine)) { return false; }
 	if (!init_game_loop(engine)) { return false; }
 
-	// TODO: we should load the game/level with a stack alloactor
 	if (!load_game(engine, "mygame.gamefile")) { return false; }
 	
 
@@ -750,6 +751,8 @@ static void update(Engine* engine, float delta_time) {
 		engine->quit = true;
 	}
 
+	
+
 	// Game specific update
 	game_update(engine->loaded_game, &engine->input, &engine->game_loop);
 
@@ -797,6 +800,9 @@ void game_loop(Engine* engine) {
 		// TODO: this is used to interpolate game state during the rendering
 		float alpha = engine->game_loop.accumulator / engine->game_loop.time_step;
 
+
+		// TODO: cull scene geometry here, do any culling and vertex processing here. Eventually thread the renderer
+		
 		switch (engine->renderer.type) {
 			case BackenedRenderer_Software: {
 				software_render(&engine->renderer.software_renderer);

@@ -21,8 +21,8 @@
 
 // TODO: move these to a config file
 #define WINDOW_TITLE "Engine"
-#define DEFAULT_WINDOW_SIZE_X 1280
-#define DEFAULT_WINDOW_SIZE_Y 1024
+#define DEFAULT_WINDOW_SIZE_X 800
+#define DEFAULT_WINDOW_SIZE_Y 800
 #define WINDOW_RESIZEABlE true
 #define MAX_EVENTS 32
 
@@ -165,7 +165,7 @@ typedef struct Engine {
 	size_t engine_memory_size;
 	void* partition_ptr;
 
-	// TODO: find a better way to hold this reference
+	
 	Game* loaded_game;
 	
 	

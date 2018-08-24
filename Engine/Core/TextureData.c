@@ -3,14 +3,21 @@
 
 #include "TextureData.h"
 
+#include "../Common/common_macros.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ASSERT(x)
 
 #include "../Common/stb_image.h"
 
 
-void fill_texture_info(const char* filename, SimpleTexture* texture) {
+
+
+// Returns 1 if loaded successfully, 0 if failed
+bool load_texture(const char* filename, SimpleTexture* texture, LinearAllocator* mem, bool flip) {
+
 	texture->channels = STBI_rgb_alpha;
+	// Precheck for width and height, so we can tell our allocator how much memory to reserve
 	stbi_info(filename, &texture->width, &texture->height, &texture->channels);
 	// NOTE: hack, for some reason stbi info gets 3 channels, but when loading gets 4 channels
 	// since we pre allocate the image chunk before calling stbi_load, we need the # of channels
@@ -22,10 +29,11 @@ void fill_texture_info(const char* filename, SimpleTexture* texture) {
 	} else { // STBI_rgb_alpha (RGBA)
 		texture->depth = 32;
 	}
-}
 
-// Returns 1 if loaded successfully, 0 if failed
-bool load_and_copyto_texture(const char* filename, SimpleTexture* texture, bool flip) {
+	int image_size = texture->width * texture->height * texture->channels;
+
+	texture->data = cast(unsigned char*) linear_alloc(mem, image_size, 4);
+
 	int req_format = texture->channels;
 	int orig_format = 0;
 
@@ -33,6 +41,7 @@ bool load_and_copyto_texture(const char* filename, SimpleTexture* texture, bool 
 	stbi_set_flip_vertically_on_load(flip);
 
 	// Load the image
+	// TODO: figure out a way to load straight into our own allocated memory, instead of memcpy 
 	unsigned char* data = stbi_load(filename, &texture->width, &texture->height, &orig_format, req_format);
 
 	if (data == NULL) {

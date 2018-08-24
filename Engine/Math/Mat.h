@@ -3,6 +3,7 @@
 #include "Vec.h"
 #include "Math.h"
 
+#include <stdbool.h>
 // TODO: speed up with simd
 // TODO: look up strict aliasing rules
 typedef union Mat4x4f {

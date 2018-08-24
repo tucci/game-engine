@@ -1,9 +1,11 @@
 #pragma once
 
-//#include <math.h>
+
 
 #include <intrin.h>
 #include <xmmintrin.h>
+
+#include "Math.h"
 
 
 
@@ -487,10 +489,21 @@ Vec3f inline v3_cross(Vec3f v1, Vec3f v2) {
 
 
 
-Vec3f inline rotate_vector_around_axis(Vec3f v, float rads, Vec3f n) {
+Vec3f inline angle_axis_rotate(Vec3f v, Vec3f n, float rads) {
 	Vec3f result = v3_add(
 		v3_add(v3_multiply(cosf(rads), v), v3_multiply(sinf(rads), v3_cross(n, v))),
 		v3_multiply((1 - cosf(rads)) * v3_dot(n, v), n));
 	return result;
 	
 }
+
+
+Vec3f inline euler_to_vector(Vec3f euler_angles) {
+	Vec3f result;
+	// Since our x,z axis are flipped, we also flip the calculation
+	result.x = sinf(deg_to_rad(euler_angles.y)) * cosf(deg_to_rad(euler_angles.x));
+	result.y = sinf(deg_to_rad(euler_angles.x));
+	result.z = cosf(deg_to_rad(euler_angles.y)) * cosf(deg_to_rad(euler_angles.x));
+	return result;
+}
+
