@@ -93,10 +93,10 @@ void game_update(Game* game) {
 
 	float delta_time = timer->delta_time;
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
-	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, v3_negate(camera->forward), delta_time); }
 	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, camera->forward, delta_time); }
-	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->right, delta_time); }
+	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, v3_negate(camera->forward), delta_time); }
 	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, v3_negate(camera->right), delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->right, delta_time); }
 	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, v3_negate(camera->up), delta_time); }
 	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, camera->up, delta_time); }
 		
@@ -107,6 +107,7 @@ void game_update(Game* game) {
 
 	camera->euler_angles.y += (-delta_pos.x * 0.25f);
 	camera->euler_angles.x += (-delta_pos.y * 0.25f);
+
 	camera->euler_angles.x = clamp(camera->euler_angles.x, -89, 89);
 	camera->euler_angles.y = fmod(camera->euler_angles.y, 360.0f);
 		
@@ -122,9 +123,12 @@ void game_update(Game* game) {
 	Mat4x4f rot_xy = quat_to_rotation_matrix(q);
 	Mat4x4f posrot = mat4x4_mul(&rot_xy, &t);
 
+	
 	// Convert euler angles (yaw,pitch) to our forward vector
 	camera->forward = euler_to_vector(camera->euler_angles);
 	camera->forward.y *= -1; // flip y axis
+	
+	
 				
 	camera->right = v3_cross(camera->forward, camera->up);
 	camera->view_mat = posrot;

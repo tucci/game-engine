@@ -27,8 +27,8 @@ void init_camera(Camera* camera,
 void init_camera_default(Camera* camera) {
 	
 	camera->pos = make_vec3f( 0, 0, 0);
-	camera->forward = make_vec3f( 0, 0, -1);
 
+	camera->forward = make_vec3f( 0, 0, -1);
 	camera->up = make_vec3f(0, 1, 0);
 	camera->right = v3_cross(camera->forward, camera->up);
 	
