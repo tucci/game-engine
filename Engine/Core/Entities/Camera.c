@@ -13,8 +13,9 @@ void init_camera(Camera* camera,
 	float fov,
 	float aspect_ratio) {
 
-	camera->pos = pos;
-	camera->forward = dir;
+	
+	camera->transform.position = pos;
+	camera->transform.forward = dir;
 
 	camera->near = near;
 	camera->far = far;
@@ -26,11 +27,11 @@ void init_camera(Camera* camera,
 
 void init_camera_default(Camera* camera) {
 	
-	camera->pos = make_vec3f( 0, 0, 0);
+	camera->transform.position = make_vec3f( 0, 0, 0);
 
-	camera->forward = make_vec3f( 0, 0, -1);
-	camera->up = make_vec3f(0, 1, 0);
-	camera->right = v3_cross(camera->forward, camera->up);
+	camera->transform.forward = make_vec3f( 0, 0, -1);
+	camera->transform.up = make_vec3f(0, 1, 0);
+	camera->transform.right = v3_cross(camera->transform.forward, camera->transform.up);
 	
 	
 
@@ -42,11 +43,11 @@ void init_camera_default(Camera* camera) {
 }
 
 void set_camera_pos(Camera* camera, Vec3f pos) {
-	camera->pos = pos;
+	camera->transform.position = pos;
 }
 
 
 
 void move_camera_in_direction(Camera* camera, Vec3f direction, float delta_time) {
-	camera->pos = v3_add(camera->pos, v3_multiply(1 * delta_time, direction));
+	camera->transform.position = v3_add(camera->transform.position, v3_multiply(1 * delta_time, direction));
 }

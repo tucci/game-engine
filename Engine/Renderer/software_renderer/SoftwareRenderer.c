@@ -156,8 +156,8 @@ void software_render(SoftwareRenderer* r) {
 	int width = r->window_size.x;
 	int height = r->window_size.y;
 
-	Vec3f eye = camera.pos;
-	Vec3f dir = camera.forward;
+	Vec3f eye = camera.transform.position;
+	Vec3f dir = camera.transform.forward;
 
 
 	
@@ -274,8 +274,8 @@ void software_debug_render(SoftwareRenderer* r) {
 	int width = r->window_size.x;
 	int height = r->window_size.y;
 
-	Vec3f eye = camera.pos;
-	Vec3f dir = camera.forward;
+	Vec3f eye = camera.transform.position;
+	Vec3f dir = camera.transform.forward;
 
 
 	

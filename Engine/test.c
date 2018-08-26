@@ -1,13 +1,21 @@
 #pragma once
 
+
+
+#include "debug_macros.h"
+
+#include "Core/Transform.h"
+
+
 #include "Common/LinearAllocator.h"
 #include "Common/StackAllocator.h"
 #include "Common/common_macros.h"
-#include "Math/Vec.h"
 
-#include "debug_macros.h"
+#include "Math/Vec.h"
 #include "Math/Math.h"
 #include "Math/Quaternion.h"
+
+
 
 
 
@@ -119,32 +127,54 @@ void inline test_simd_vec(void) {
 
 void inline test_quats(void) {
 	Quat a;
-	a = axis_angle_to_quat(make_vec3f(1, 0, 0), 0);
-	a = axis_angle_to_quat(make_vec3f(1, 0, 0), 90);
-	a = axis_angle_to_quat(make_vec3f(1, 0, 0), 180);
+	a = quat_from_axis_angle(make_vec3f(1, 0, 0), 0);
+	a = quat_from_axis_angle(make_vec3f(1, 0, 0), 90);
+	a = quat_from_axis_angle(make_vec3f(1, 0, 0), 180);
 
-	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 0);
-	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 90);
-	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 180);
-
-
-
-	a = axis_angle_to_quat(make_vec3f(0, 0, 1), 0);
-	a = axis_angle_to_quat(make_vec3f(0, 0, 1), 90);
-	a = axis_angle_to_quat(make_vec3f(0, 0, 1), 180);
+	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 0);
+	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 90);
+	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 180);
 
 
-	a = axis_angle_to_quat(make_vec3f(0, 1, 0), 270);
+
+	a = quat_from_axis_angle(make_vec3f(0, 0, 1), 0);
+	a = quat_from_axis_angle(make_vec3f(0, 0, 1), 90);
+	a = quat_from_axis_angle(make_vec3f(0, 0, 1), 180);
+
+
+	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 270);
 
 	Vec3f pt = make_vec3f(1, 0, 0);
 	Vec3f result = quat_mult_pt(a, pt);
 
 }
 
+void inline test_transforms(void) {
+	Transform t;
+	init_transform(&t);
+
+
+	Mat4x4f m = trs_mat_from_transform(&t);
+
+
+	//t.scale = make_vec3f(5, 2, 4);
+	t.position = make_vec3f(10, 2, 3);
+
+	t.euler_angles.x = 90.0f;
+	t.euler_angles.y = 45.0f;
+	t.euler_angles.z = 180.0f;
+	m = trs_mat_from_transform(&t);
+
+
+
+}
+
 void inline main_test(void) {
-	test_quats();
+	
 
 	/*test_linear_alloc();
 	test_stack_alloc();
-	test_simd_vec();*/
+	test_simd_vec();
+	test_quats();*/
+	test_transforms();
 }

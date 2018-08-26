@@ -28,11 +28,28 @@ void load_scene(Game* game, int scene_id) {
 
 	Scene* scene = game->loaded_scene;
 
+	//// Init root node
+	//scene->root.type = SceneNodeType_Root;
+	//scene->root.parent = NULL;
+	//scene->root.children = NULL;
+	//scene->root.child_count = 0;
+	
+
 	
 	assert(scene != NULL);
 	
-
+	
 	EngineAPI* api = &game->engineAPI;
+
+
+
+	
+
+
+
+
+
+
 
 	
 
@@ -40,7 +57,7 @@ void load_scene(Game* game, int scene_id) {
 	init_camera_default(&scene->main_camera);
 	set_camera_pos(&scene->main_camera, cast(Vec3f){0, 0, 5});
 	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
-	scene->main_camera.euler_angles = Vec3f_Zero;
+	scene->main_camera.transform.euler_angles = Vec3f_Zero;
 
 	
 
@@ -59,6 +76,13 @@ void load_scene(Game* game, int scene_id) {
 	//load_obj("Assets/obj/diablo3_pose.obj", &model);
 	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
 	free_obj(&model);
+
+
+	init_transform(&scene->mesh_test.transform);
+
+	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
+	scene->mesh_test.transform.position = make_vec3f(5, 0, 0);
+	scene->mesh_test.transform.euler_angles.y = 90.0f;
 
 	make_cube(&scene->primative_test, &game->game_memory);
 
@@ -88,36 +112,60 @@ void game_update(Game* game) {
 	Input* input = game->engineAPI.input;
 	GameTimer* timer = game->engineAPI.game_loop;
 
+	StaticMesh* test = &game->loaded_scene->mesh_test;
 
 
 
 	float delta_time = timer->delta_time;
+
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
-	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, camera->forward, delta_time); }
-	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, v3_negate(camera->forward), delta_time); }
-	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, v3_negate(camera->right), delta_time); }
-	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->right, delta_time); }
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, v3_negate(camera->up), delta_time); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, camera->up, delta_time); }
+	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
+	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, v3_negate(camera->transform.forward), delta_time); }
+	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, v3_negate(camera->transform.right), delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, v3_negate(camera->transform.up), delta_time); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
+
+	if (input->keys[SDL_SCANCODE_LEFT].down) {
+		test->transform.position.z -= 0.1f;
+		test->transform.euler_angles.y += 1.0f;
+	}
+
+	if (input->keys[SDL_SCANCODE_RIGHT].down) {
+		test->transform.position.z += 0.1f;
+		test->transform.euler_angles.y -= 1.0f;
+	}
+
+
+	if (input->keys[SDL_SCANCODE_UP].down) {
+		test->transform.position.x += 0.1f;
+	}
+
+	if (input->keys[SDL_SCANCODE_DOWN].down) {
+		test->transform.position.x -= 0.1f;
+	}
+
+
+	
 		
 
 	
 	Vec2i delta_pos = input->mouse.delta_pos;
 
 
-	camera->euler_angles.y += (-delta_pos.x * 0.25f);
-	camera->euler_angles.x += (-delta_pos.y * 0.25f);
+	camera->transform.euler_angles.y += (-delta_pos.x * 0.25f);
+	camera->transform.euler_angles.x += (-delta_pos.y * 0.25f);
 
-	camera->euler_angles.x = clamp(camera->euler_angles.x, -89, 89);
-	camera->euler_angles.y = fmod(camera->euler_angles.y, 360.0f);
+	camera->transform.euler_angles.x = clamp(camera->transform.euler_angles.x, -89, 89);
+	camera->transform.euler_angles.y = fmod(camera->transform.euler_angles.y, 360.0f);
 		
 
-	Mat4x4f t = translate(v3_multiply(1, camera->pos));
+	Mat4x4f t = translate(v3_multiply(1, camera->transform.position));
 	t = transpose(&t);
 	
 
-	Quat q = axis_angle_to_quat(Vec3f_Up, camera->euler_angles.y);
-	q = quat_mult(q, axis_angle_to_quat(Vec3f_Right, camera->euler_angles.x));
+	Quat q = quat_from_axis_angle(Vec3f_Up, camera->transform.euler_angles.y);
+	q = quat_mult(q, quat_from_axis_angle(Vec3f_Right, camera->transform.euler_angles.x));
 
 
 	Mat4x4f rot_xy = quat_to_rotation_matrix(q);
@@ -125,16 +173,17 @@ void game_update(Game* game) {
 
 	
 	// Convert euler angles (yaw,pitch) to our forward vector
-	camera->forward = euler_to_vector(camera->euler_angles);
-	camera->forward.y *= -1; // flip y axis
+	camera->transform.forward = euler_to_vector(camera->transform.euler_angles);
+	camera->transform.forward.y *= -1; // flip y axis
 	
 	
 				
-	camera->right = v3_cross(camera->forward, camera->up);
+	camera->transform.right = v3_cross(camera->transform.forward, camera->transform.up);
 	camera->view_mat = posrot;
-	debug_print("orientation %f, %f, %f, forward, %f, %f, %f \n",
-		camera->euler_angles.x, camera->euler_angles.y, camera->euler_angles.z,
-		camera->forward.x, camera->forward.y, camera->forward.z);
+
+	//debug_print("orientation %f, %f, %f, forward, %f, %f, %f \n",
+	//	camera->transform.euler_angles.x, camera->transform.euler_angles.y, camera->transform.euler_angles.z,
+	//	camera->transform.forward.x, camera->transform.forward.y, camera->transform.forward.z);
 
 }
 

@@ -280,18 +280,23 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	
 	
-	Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test.transform);
 	Mat4x4f view_mat = camera.view_mat;//look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
-	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
-	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
+	Mat4x4f mesh_mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
+	mesh_mvp_mat = mat4x4_mul(&mesh_mvp_mat, &model_mat);
+
+
+	Mat4x4f model_mat2 = mat4x4f_identity();
+	Mat4x4f non_mesh_transform = mat4x4_mul(&projection_mat, &view_mat);
+	non_mesh_transform = mat4x4_mul(&non_mesh_transform, &model_mat2);
 
 
 
 	glBindVertexArray(opengl->VAO);
 	glUseProgram(opengl->main_shader.program);
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, mesh_mvp_mat.mat1d);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
@@ -352,7 +357,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 
-
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, non_mesh_transform.mat1d);
 	// Draw primative test
 
 	glBufferData(GL_ARRAY_BUFFER,
@@ -397,7 +402,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 
 	glUseProgram(opengl->skybox_shader.program);
-	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "transform"), 1, GL_FALSE, non_mesh_transform.mat1d);
 	glActiveTexture(GL_TEXTURE0);
 	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->skybox_id);

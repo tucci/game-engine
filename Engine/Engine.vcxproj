@@ -192,7 +192,7 @@
     <ClInclude Include="debug_macros.h" />
     <ClInclude Include="Core\Scene.h" />
     <ClInclude Include="Math\Quaternion.h" />
-    <ClInclude Include="Math\Transform.h" />
+    <ClInclude Include="Core\Transform.h" />
     <ClInclude Include="Renderer\gl\GLShader.h" />
     <ClInclude Include="Renderer\software_renderer\SoftwareRendererShader.h" />
     <ClInclude Include="Core\TextureData.h" />

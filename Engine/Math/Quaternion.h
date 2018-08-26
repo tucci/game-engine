@@ -23,9 +23,15 @@ typedef struct Quaternion {
 typedef Quaternion Quat;
 
 
+Quat inline quat_identity() {
+	Quat result;
+	result.w = 1.0f;
+	result.v = Vec3f_Zero;
+	return result;
+}
 
 // Where 
-Quat inline axis_angle_to_quat(Vec3f n, float deg) {
+Quat inline quat_from_axis_angle(Vec3f n, float deg) {
 	Quat result;
 	// Convert to radians
 	float rad = deg_to_rad(deg);

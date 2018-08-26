@@ -5,8 +5,13 @@
 
 #include "../Common/LinearAllocator.h"
 
+#include "Transform.h"
+
 
 typedef struct StaticMesh {
+	// TODO: move this to the entity stuff. transform shoudldnt be in the static mesh
+	Transform transform;
+
 	int vertex_count;
 	int index_count;
 	Vec3f* pos;

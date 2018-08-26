@@ -307,55 +307,6 @@ Mat4x4f inline viewport(int x, int y, int w, int h, float normalized_near, float
 
 
 
-Mat4x4f inline scale(Vec3f vec) {
-	Mat4x4f mat = mat4x4f_identity();
-	mat.m00 = vec.x;
-	mat.m11 = vec.y;
-	mat.m22 = vec.z;
-	return mat;
-}
-
-
-Mat4x4f inline translate(Vec3f vec) {
-	Mat4x4f mat = mat4x4f_identity();
-	mat.m03 = vec.x;
-	mat.m13 = vec.y;
-	mat.m23 = vec.z;
-	return mat;
-}
-
-Mat4x4f inline rotate_with_mat(Mat4x4f m, float rads, Vec3f axis) {
-	
-
-	float cos_angle = cosf(rads);
-	float sin_angle = sinf(rads);
-
-	float one_minus_cos = 1 - cos_angle;
-
-	float xy = axis.x * axis.y;
-	float yz = axis.y * axis.z;
-	float xz = axis.x * axis.z;
-
-	m.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
-	m.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
-	m.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
-	
-	m.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
-	m.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
-	m.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
-	
-	m.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
-	m.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
-	m.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
-
-	//rot = transpose(&rot);
-	return m;
-}
-
-Mat4x4f inline rotate(float rads, Vec3f axis) {
-	Mat4x4f rot = mat4x4f_identity();
-	return rotate_with_mat(rot, rads, axis);
-}
 
 
 

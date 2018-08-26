@@ -4,14 +4,12 @@
 #include "../../Math/Vec.h"
 #include "../../Math/Mat.h"
 
+#include "../Transform.h"
+
+
 typedef struct Camera {
-	Vec3f pos;
-
-	Vec3f forward;
-	Vec3f up;
-	Vec3f right;
-
-	Vec3f euler_angles;
+	
+	Transform transform;
 
 	float near;
 	float far;

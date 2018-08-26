@@ -8,11 +8,50 @@
 
 
 
+typedef enum SceneNodeType {
+	SceneNodeType_Root,
+	SceneNodeType_Camera,
+	SceneNodeType_StaticMesh,
+} SceneNodeType;
 
 
-// TODO: implement proper tree with root and child transforms 
+typedef struct SceneNodeArray {
+	int size;
+	int capacity;
+	struct SceneNode* nodes;
+} SceneNodeArray;
+
+
+typedef struct SceneNode {
+	SceneNodeType type;
+
+	struct SceneNode* parent;
+	SceneNodeArray children;
+
+	union {
+		Camera camera;
+		StaticMesh mesh;
+	};
+	
+
+} SceneNode;
+
+
+
+
+
+
+
+
+
 typedef struct Scene {
 	int scene_id;
+	
+	// TODO: implement proper tree with root and child transforms 
+	//SceneNode root;
+	// LinearAllocator* scene_mem;
+
+	
 	Camera main_camera;
 	Skybox skybox;
 	StaticMesh mesh_test;
