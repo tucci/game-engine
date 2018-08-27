@@ -21,8 +21,8 @@
 
 // TODO: move these to a config file
 #define WINDOW_TITLE "Engine"
-#define DEFAULT_WINDOW_SIZE_X 800
-#define DEFAULT_WINDOW_SIZE_Y 800
+#define DEFAULT_WINDOW_SIZE_X 1024
+#define DEFAULT_WINDOW_SIZE_Y 720
 #define WINDOW_RESIZEABlE true
 #define MAX_EVENTS 32
 

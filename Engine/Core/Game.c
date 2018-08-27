@@ -72,8 +72,8 @@ void load_scene(Game* game, int scene_id) {
 		"Assets/skyboxes/stonegods/sgod_dn.tga");
 
 	ObjModel model;
-	load_obj("Assets/obj/african_head.obj", &model);
-	//load_obj("Assets/obj/diablo3_pose.obj", &model);
+	//load_obj("Assets/obj/african_head.obj", &model);
+	load_obj("Assets/obj/diablo3_pose.obj", &model);
 	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
 	free_obj(&model);
 
@@ -84,17 +84,22 @@ void load_scene(Game* game, int scene_id) {
 	scene->mesh_test.transform.position = make_vec3f(5, 0, 0);
 	scene->mesh_test.transform.euler_angles.y = 90.0f;
 
-	make_cube(&scene->primative_test, &game->game_memory);
+
+	init_transform(&scene->primative_test.transform);
+	//make_cube(&scene->primative_test, &game->game_memory);
+	make_uv_sphere(&scene->primative_test, 16, 32, &game->game_memory);
 
 	
 
 
 
-	const char* texture_file = "Assets/obj/african_head_diffuse.tga";
-	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
+	const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+	//const char* texture_file = "Assets/obj/earth_tex.jpg";
+	//const char* texture_file = "Assets/obj/test.png";
 
 	
-	bool loaded_texture = load_texture(texture_file, &scene->texture_test, &game->game_memory, true);
+	bool loaded_texture = load_texture(texture_file, &scene->texture_test, &game->game_memory, false);
 
 }
 
@@ -126,26 +131,51 @@ void game_update(Game* game) {
 	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, v3_negate(camera->transform.up), delta_time); }
 	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
 
+
+
+	// Test inputs on model
 	if (input->keys[SDL_SCANCODE_LEFT].down) {
-		test->transform.position.z -= 0.1f;
-		test->transform.euler_angles.y += 1.0f;
+		test->transform.position.z -= delta_time * 10.0f;
+		
 	}
 
+	if (input->keys[SDL_SCANCODE_PAGEUP].down) {
+		test->transform.scale.x += delta_time * 10;
+		test->transform.scale.y += delta_time * 10;
+		test->transform.scale.z += delta_time * 10;
+	}
+
+	if (input->keys[SDL_SCANCODE_PAGEDOWN].down) {
+		test->transform.scale.x -= delta_time * 10;
+		test->transform.scale.y -= delta_time * 10;
+		test->transform.scale.z -= delta_time * 10;
+	}
+
+
 	if (input->keys[SDL_SCANCODE_RIGHT].down) {
-		test->transform.position.z += 0.1f;
-		test->transform.euler_angles.y -= 1.0f;
+		test->transform.position.z += delta_time * 10.0f;
+		
 	}
 
 
 	if (input->keys[SDL_SCANCODE_UP].down) {
-		test->transform.position.x += 0.1f;
+		test->transform.position.x += delta_time * 10.0f;;
 	}
 
 	if (input->keys[SDL_SCANCODE_DOWN].down) {
-		test->transform.position.x -= 0.1f;
+		test->transform.position.x -= delta_time * 10.0f;
 	}
 
 
+	if (input->mouse.mouse_button_left.down) {
+		test->transform.euler_angles.y -= 1.0f;
+	}
+
+	if (input->mouse.mouse_button_right.down) {
+		test->transform.euler_angles.y += 1.0f;
+	}
+
+	
 	
 		
 
@@ -180,6 +210,8 @@ void game_update(Game* game) {
 				
 	camera->transform.right = v3_cross(camera->transform.forward, camera->transform.up);
 	camera->view_mat = posrot;
+
+	// TODO: we also need to update the up vector since it could change when we change the x angle >
 
 	//debug_print("orientation %f, %f, %f, forward, %f, %f, %f \n",
 	//	camera->transform.euler_angles.x, camera->transform.euler_angles.y, camera->transform.euler_angles.z,

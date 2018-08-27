@@ -63,6 +63,7 @@ typedef struct OpenGLRenderer {
 	int axes_pos_offset;
 	bool show_debug_grid;
 	bool show_debug_axes;
+	bool draw_lines;
 
 	GLuint grid_debug_VAO;
 	GLuint grid_debug_VBO;

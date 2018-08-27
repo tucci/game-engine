@@ -108,8 +108,9 @@ static void load_shaders(OpenGLRenderer* opengl) {
 
 
 void init_gl_debug(OpenGLRenderer* opengl) {
-	opengl->show_debug_grid = false;
-	opengl->show_debug_axes = false;
+	opengl->show_debug_grid = true;
+	opengl->show_debug_axes = true;
+	opengl->draw_lines = false;
 	
 
 	const char* debug_vertex_shader = file_to_str("Assets/shaders/debug.vs", &opengl->renderer_allocator);
@@ -278,7 +279,12 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	
 	Camera camera = opengl->render_scene->main_camera;
 	
-	
+	int draw_type = GL_TRIANGLES;
+	if (opengl->draw_lines) {
+		draw_type = GL_LINES;
+	} else {
+		draw_type = GL_TRIANGLES;
+	}
 	
 	Mat4x4f model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test.transform);
 	Mat4x4f view_mat = camera.view_mat;//look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
@@ -343,7 +349,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	
 	
-	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
+	//glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
 
 
 
@@ -357,7 +363,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, non_mesh_transform.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, mesh_mvp_mat.mat1d);
 	// Draw primative test
 
 	glBufferData(GL_ARRAY_BUFFER,
@@ -392,8 +398,8 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 
-	
-	//glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->primative_test.index_count, GL_UNSIGNED_INT, 0);
+	glLineWidth(1.0f);
+	glDrawElements(draw_type, 3 * opengl->render_scene->primative_test.index_count, GL_UNSIGNED_INT, 0);
 
 
 

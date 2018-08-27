@@ -747,6 +747,10 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		engine->renderer.opengl.show_debug_axes = !engine->renderer.opengl.show_debug_axes;
 	}
 
+	if (engine->input.keys[SDL_SCANCODE_L].just_pressed) {
+		engine->renderer.opengl.draw_lines = !engine->renderer.opengl.draw_lines;
+	}
+
 	if (engine->input.keys[SDL_SCANCODE_ESCAPE].just_pressed) {
 		engine->quit = true;
 	}
