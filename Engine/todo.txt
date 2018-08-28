@@ -1,6 +1,6 @@
 - memory allocators. No more random mallocs
+- general purpose allocator
 - pool allocator
-- more unit tests and assertions
 - Simd/ Optimize / Profile/ Vtune
 - Set up renderdoc
 - proper mesh importers using our custom allocators
@@ -23,4 +23,3 @@
 - gamma corrected lighting
 - allocator stats. How much has been allocated, freed, how many allocs, etc
 - pbr workflow / material system
-- Quaterions and fix camera movement code to be less ugly

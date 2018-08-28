@@ -56,7 +56,7 @@ typedef struct Scene {
 	Skybox skybox;
 	StaticMesh mesh_test;
 	SimpleTexture texture_test;
-	StaticMesh primative_test;
+	StaticMesh flat_plane;
 } Scene;
 
 

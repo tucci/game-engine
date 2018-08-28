@@ -22,9 +22,9 @@ void make_plane(StaticMesh* mesh, LinearAllocator* memory) {
 
 
 	mesh->color = cast(Vec3f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec3f), 4);
-	mesh->color[0] = make_vec3f(1, 0, 0);
-	mesh->color[1] = make_vec3f(0, 1, 0);
-	mesh->color[2] = make_vec3f(0, 0, 1);
+	mesh->color[0] = make_vec3f(1, 1, 1);
+	mesh->color[1] = make_vec3f(1, 1, 1);
+	mesh->color[2] = make_vec3f(1, 1, 1);
 	mesh->color[3] = make_vec3f(1, 1, 1);
 
 	

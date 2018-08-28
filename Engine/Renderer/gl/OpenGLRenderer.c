@@ -286,23 +286,37 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 		draw_type = GL_TRIANGLES;
 	}
 	
-	Mat4x4f model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test.transform);
-	Mat4x4f view_mat = camera.view_mat;//look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
+
+
+	Mat4x4f view_mat = camera.view_mat;
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
-	Mat4x4f mesh_mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
-	mesh_mvp_mat = mat4x4_mul(&mesh_mvp_mat, &model_mat);
 
 
-	Mat4x4f model_mat2 = mat4x4f_identity();
+	// TODO: need a better way to handle these as the scene complexity goes us
+	Mat4x4f test_mesh_model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test.transform);
+	Mat4x4f test_mesh_mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
+	test_mesh_mvp_mat = mat4x4_mul(&test_mesh_mvp_mat, &test_mesh_model_mat);
+
+
+	Mat4x4f plane_mesh_model_mat = trs_mat_from_transform(&opengl->render_scene->flat_plane.transform);
+	Mat4x4f plane_mesh_mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
+	plane_mesh_mvp_mat = mat4x4_mul(&plane_mesh_mvp_mat, &plane_mesh_model_mat);
+
+
+
+	Mat4x4f static_geo_mat = mat4x4f_identity();
 	Mat4x4f non_mesh_transform = mat4x4_mul(&projection_mat, &view_mat);
-	non_mesh_transform = mat4x4_mul(&non_mesh_transform, &model_mat2);
+	non_mesh_transform = mat4x4_mul(&non_mesh_transform, &static_geo_mat);
 
 
 
+	// TODO: figure out shader organization. Uber shader?
+
+	// Texture Shader
 	glBindVertexArray(opengl->VAO);
 	glUseProgram(opengl->main_shader.program);
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, mesh_mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, test_mesh_mvp_mat.mat1d);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
@@ -349,7 +363,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	
 	
-	//glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
 
 
 
@@ -357,49 +371,49 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 
-
+	// Simple colored shader
 	glBindVertexArray(opengl->VAO);
-	//glUseProgram(opengl->simple_shader.program);
+	glUseProgram(opengl->simple_shader.program);
 
 
 
-	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, mesh_mvp_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->main_shader.program, "transform"), 1, GL_FALSE, plane_mesh_mvp_mat.mat1d);
 	// Draw primative test
 
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->primative_test.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f)
+		+ opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->primative_test.pos);
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->flat_plane.pos);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->primative_test.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->primative_test.texcoords);
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->flat_plane.color);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		opengl->render_scene->primative_test.index_count * sizeof(Vec3i),
-		opengl->render_scene->primative_test.indices,
+		opengl->render_scene->flat_plane.index_count * sizeof(Vec3i),
+		opengl->render_scene->flat_plane.indices,
 		GL_STATIC_DRAW);
 
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->primative_test.vertex_count * sizeof(Vec3f)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 
 
 	glLineWidth(1.0f);
-	glDrawElements(draw_type, 3 * opengl->render_scene->primative_test.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(draw_type, 3 * opengl->render_scene->flat_plane.index_count, GL_UNSIGNED_INT, 0);
 
 
 

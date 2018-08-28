@@ -85,17 +85,20 @@ void load_scene(Game* game, int scene_id) {
 	scene->mesh_test.transform.euler_angles.y = 90.0f;
 
 
-	init_transform(&scene->primative_test.transform);
-	//make_cube(&scene->primative_test, &game->game_memory);
-	make_uv_sphere(&scene->primative_test, 16, 32, &game->game_memory);
+	init_transform(&scene->flat_plane.transform);
+	make_plane(&scene->flat_plane, &game->game_memory);
 
+	//make_cube(&scene->flat_plane, &game->game_memory);
+	//make_uv_sphere(&scene->flat_plane, 16, 32, &game->game_memory);
+
+	scene->flat_plane.transform.scale = make_vec3f(10, 10, 10);
 	
 
 
 
 	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
-	const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
-	//const char* texture_file = "Assets/obj/earth_tex.jpg";
+	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+	const char* texture_file = "Assets/obj/earth_tex.jpg";
 	//const char* texture_file = "Assets/obj/test.png";
 
 	
