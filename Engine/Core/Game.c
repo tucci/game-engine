@@ -72,13 +72,13 @@ void load_scene(Game* game, int scene_id) {
 		"Assets/skyboxes/stonegods/sgod_up.tga",
 		"Assets/skyboxes/stonegods/sgod_dn.tga");
 
-	//ObjModel model;
-	//load_obj("Assets/obj/african_head.obj", &model);
+	ObjModel model;
+	load_obj("Assets/obj/african_head.obj", &model);
 	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	//obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
-	//free_obj(&model);
+	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
+	free_obj(&model);
 
-	make_cube(&scene->mesh_test, &game->game_memory);
+	//make_cube(&scene->mesh_test, &game->game_memory);
 
 
 	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
@@ -106,7 +106,7 @@ void load_scene(Game* game, int scene_id) {
 	//make_cube(&scene->flat_plane, &game->game_memory);
 	//make_uv_sphere(&scene->flat_plane, 16, 32, &game->game_memory);
 
-	scene->flat_plane.transform.scale = make_vec3f(20, 20, 20);
+	scene->flat_plane.transform.scale = make_vec3f(100, 100, 100);
 	
 
 

@@ -8,6 +8,7 @@
 #include "../../utils.c"
 
 
+
 static void init_skybox(OpenGLRenderer* opengl, Scene* scene) {
 	// Bind skybox
 	glGenTextures(1, &opengl->skybox_id);
@@ -72,8 +73,10 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, opengl->shadow_width_res, opengl->shadow_height_res, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
 	
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, opengl->shadow_map, 0);
@@ -429,6 +432,9 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		view_mat = look_at(opengl->render_scene->test_light.transform.position , make_vec3f(0, 0, 0), Vec3f_Up);
 		projection_mat = ortho(-camera.far, camera.far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
+	
+		
+
 		opengl->light_space_mat = pv_mat;
 	} else {
 		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
