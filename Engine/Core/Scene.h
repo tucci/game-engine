@@ -2,6 +2,7 @@
 
 #include "Entities/Camera.h"
 #include "Entities/Skybox.h"
+#include "Entities/Lights.h"
 
 #include "StaticMesh.h"
 #include "TextureData.h"
@@ -51,7 +52,7 @@ typedef struct Scene {
 	//SceneNode root;
 	// LinearAllocator* scene_mem;
 
-	
+	TestLight test_light;
 	Camera main_camera;
 	Skybox skybox;
 	StaticMesh mesh_test;

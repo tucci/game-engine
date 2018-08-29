@@ -183,6 +183,7 @@
     <ClInclude Include="Core\Display.h" />
     <ClInclude Include="Core\EngineAPI.h" />
     <ClInclude Include="Core\Entities\Camera.h" />
+    <ClInclude Include="Core\Entities\Lights.h" />
     <ClInclude Include="Core\Entities\Primitives.h" />
     <ClInclude Include="Core\Entities\Skybox.h" />
     <ClInclude Include="Core\Game.h" />
@@ -211,6 +212,8 @@
   <ItemGroup>
     <None Include="Assets\shaders\debug.fs" />
     <None Include="Assets\shaders\debug.vs" />
+    <None Include="Assets\shaders\shadows.fs" />
+    <None Include="Assets\shaders\shadows.vs" />
     <None Include="Assets\shaders\simple.fs" />
     <None Include="Assets\shaders\simple.vs" />
     <None Include="Assets\shaders\skybox.fs" />

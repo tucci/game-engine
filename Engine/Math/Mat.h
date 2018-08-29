@@ -263,6 +263,37 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 }
 
 
+
+Mat4x4f inline ortho(float near, float far, float top, float bottom, float right, float left) {
+
+	Mat4x4f mat = mat4x4f_identity();
+
+	float rl = right - left;
+	float tb = top - bottom;
+	float fn = far - near;
+
+	float inverse_rl = 1 / rl;
+	float inverse_tb = 1 / tb;
+	float inverse_fn = 1 / fn;
+
+
+	mat.mat2d[0][0] = 2 * inverse_rl;
+	mat.mat2d[1][1] = 2 * inverse_tb;
+	mat.mat2d[2][2] = -2 * inverse_fn;
+	mat.mat2d[3][3] = 1;
+
+
+	mat.mat2d[3][0] = -(right + left) * inverse_rl;
+	mat.mat2d[3][1] = -(top + bottom) * inverse_tb;
+	mat.mat2d[3][2] = -(far + near) * inverse_fn;
+
+
+	
+	
+	return mat;
+}
+
+
 Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
 	Vec3f forward = v3_normalize(v3_sub(eye, to));
 	Vec3f right = v3_normalize(v3_cross(up, forward));

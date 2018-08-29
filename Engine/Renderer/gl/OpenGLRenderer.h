@@ -26,6 +26,10 @@
 
 #define DEBUG_GRID_SIZE 100
 
+#define SHADOW_WIDTH_RES 1024
+#define SHADOW_HEIGHT_RES 1024
+
+
 
 
 typedef struct OpenGLRenderer {
@@ -41,6 +45,14 @@ typedef struct OpenGLRenderer {
 	LinearAllocator renderer_allocator;
 
 
+
+
+	GLShader shadow_shader;
+	Mat4x4f light_space_mat;
+	int shadow_width_res;
+	int shadow_height_res;
+	GLuint shadow_fbo;
+	GLuint shadow_map;
 
 	GLuint skybox_id;
 	GLuint skybox_VAO;
@@ -83,6 +95,7 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 void init_gl_debug(OpenGLRenderer* opengl);
 void destroy_gl_debug(OpenGLRenderer* opengl);
 
-void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size);
+static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, bool light_pass);
+void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debug);
 void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size);
 void opengl_swap_buffer(OpenGLRenderer* opengl);

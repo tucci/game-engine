@@ -6,7 +6,7 @@
 
 
 typedef struct Transform {
-	Vec3f position;
+	
 	Vec3f scale;
 	Vec3f euler_angles;
 
@@ -15,6 +15,7 @@ typedef struct Transform {
 	Vec3f right;
 
 	Quat rotation;
+	Vec3f position;
 
 } Transform;
 

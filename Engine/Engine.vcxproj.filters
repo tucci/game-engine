@@ -149,6 +149,9 @@
     <ClInclude Include="Core\Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Entities\Lights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
@@ -162,5 +165,7 @@
     <None Include="Assets\shaders\simple.fs" />
     <None Include="Assets\shaders\skybox.vs" />
     <None Include="Assets\shaders\skybox.fs" />
+    <None Include="Assets\shaders\shadows.vs" />
+    <None Include="Assets\shaders\shadows.fs" />
   </ItemGroup>
 </Project>

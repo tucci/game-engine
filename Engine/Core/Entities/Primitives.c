@@ -317,8 +317,8 @@ void make_uv_sphere(StaticMesh* mesh, int lats, int longs, LinearAllocator* memo
 		}
 	}
 
-	/*assert(mesh->index_count == index_count);
-	assert(mesh->vertex_count == vertex_count);*/
+	assert(mesh->index_count == index_count);
+	assert(mesh->vertex_count == vertex_count);
 
 	
 

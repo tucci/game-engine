@@ -816,8 +816,7 @@ void game_loop(Engine* engine) {
 			}
 
 			case BackenedRenderer_OpenGL: {
-				opengl_render(&engine->renderer.opengl, engine->window.size);
-				opengl_debug_render(&engine->renderer.opengl, engine->window.size);
+				opengl_render(&engine->renderer.opengl, engine->window.size, true);
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;
 			}

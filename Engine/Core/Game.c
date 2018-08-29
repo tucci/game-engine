@@ -49,13 +49,14 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-
-
+	// Init lights
+	init_transform(&scene->test_light.transform);
+	scene->test_light.transform.position = make_vec3f(1, 1, 0);
 	
 
 	// Camera loading
 	init_camera_default(&scene->main_camera);
-	set_camera_pos(&scene->main_camera, cast(Vec3f){0, 0, 5});
+	set_camera_pos(&scene->main_camera, make_vec3f(0, 0, 0));
 	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
 	scene->main_camera.transform.euler_angles = Vec3f_Zero;
 
@@ -71,18 +72,32 @@ void load_scene(Game* game, int scene_id) {
 		"Assets/skyboxes/stonegods/sgod_up.tga",
 		"Assets/skyboxes/stonegods/sgod_dn.tga");
 
-	ObjModel model;
+	//ObjModel model;
 	//load_obj("Assets/obj/african_head.obj", &model);
-	load_obj("Assets/obj/diablo3_pose.obj", &model);
-	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
-	free_obj(&model);
+	//load_obj("Assets/obj/diablo3_pose.obj", &model);
+	//obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
+	//free_obj(&model);
+
+	make_cube(&scene->mesh_test, &game->game_memory);
+
+
+	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
+	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
+	//const char* texture_file = "Assets/obj/earth_tex.jpg";
+	const char* texture_file = "Assets/obj/test.png";
+
+
+	bool loaded_texture = load_texture(texture_file, &scene->texture_test, &game->game_memory, true);
 
 
 	init_transform(&scene->mesh_test.transform);
 
 	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
-	scene->mesh_test.transform.position = make_vec3f(5, 0, 0);
+	scene->mesh_test.transform.position = make_vec3f(0, 0, 0);
 	scene->mesh_test.transform.euler_angles.y = 90.0f;
+
+
+
 
 
 	init_transform(&scene->flat_plane.transform);
@@ -91,18 +106,10 @@ void load_scene(Game* game, int scene_id) {
 	//make_cube(&scene->flat_plane, &game->game_memory);
 	//make_uv_sphere(&scene->flat_plane, 16, 32, &game->game_memory);
 
-	scene->flat_plane.transform.scale = make_vec3f(10, 10, 10);
+	scene->flat_plane.transform.scale = make_vec3f(20, 20, 20);
 	
 
 
-
-	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
-	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
-	const char* texture_file = "Assets/obj/earth_tex.jpg";
-	//const char* texture_file = "Assets/obj/test.png";
-
-	
-	bool loaded_texture = load_texture(texture_file, &scene->texture_test, &game->game_memory, false);
 
 }
 
@@ -121,6 +128,7 @@ void game_update(Game* game) {
 	GameTimer* timer = game->engineAPI.game_loop;
 
 	StaticMesh* test = &game->loaded_scene->mesh_test;
+	TestLight* test_light = &game->loaded_scene->test_light;
 
 
 
@@ -136,11 +144,6 @@ void game_update(Game* game) {
 
 
 
-	// Test inputs on model
-	if (input->keys[SDL_SCANCODE_LEFT].down) {
-		test->transform.position.z -= delta_time * 10.0f;
-		
-	}
 
 	if (input->keys[SDL_SCANCODE_PAGEUP].down) {
 		test->transform.scale.x += delta_time * 10;
@@ -154,22 +157,6 @@ void game_update(Game* game) {
 		test->transform.scale.z -= delta_time * 10;
 	}
 
-
-	if (input->keys[SDL_SCANCODE_RIGHT].down) {
-		test->transform.position.z += delta_time * 10.0f;
-		
-	}
-
-
-	if (input->keys[SDL_SCANCODE_UP].down) {
-		test->transform.position.x += delta_time * 10.0f;;
-	}
-
-	if (input->keys[SDL_SCANCODE_DOWN].down) {
-		test->transform.position.x -= delta_time * 10.0f;
-	}
-
-
 	if (input->mouse.mouse_button_left.down) {
 		test->transform.euler_angles.y -= 1.0f;
 	}
@@ -177,6 +164,30 @@ void game_update(Game* game) {
 	if (input->mouse.mouse_button_right.down) {
 		test->transform.euler_angles.y += 1.0f;
 	}
+
+
+
+	
+	if (input->keys[SDL_SCANCODE_LEFT].down) {
+		test_light->transform.position.z -= delta_time * 10.0f;
+		
+	}
+
+	if (input->keys[SDL_SCANCODE_RIGHT].down) {
+		test_light->transform.position.z += delta_time * 10.0f;
+	}
+
+
+	if (input->keys[SDL_SCANCODE_UP].down) {
+		test_light->transform.position.x += delta_time * 10.0f;;
+	}
+
+	if (input->keys[SDL_SCANCODE_DOWN].down) {
+		test_light->transform.position.x -= delta_time * 10.0f;
+	}
+
+
+	
 
 	
 	
