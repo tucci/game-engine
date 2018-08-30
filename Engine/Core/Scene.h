@@ -52,10 +52,12 @@ typedef struct Scene {
 	//SceneNode root;
 	// LinearAllocator* scene_mem;
 
-	TestLight test_light;
+	DirectionalLight test_light;
 	Camera main_camera;
 	Skybox skybox;
 	StaticMesh mesh_test;
+	StaticMesh mesh_test2;
+
 	SimpleTexture texture_test;
 	StaticMesh flat_plane;
 } Scene;

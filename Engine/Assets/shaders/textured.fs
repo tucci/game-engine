@@ -10,29 +10,47 @@ uniform sampler2D textureSampler;
 uniform sampler2D shadowMap;
 
 
-float bias = 0.0005f;
+float bias = 0.005f;
 
 float shadow_value = 0.5f;
 
 
-float calc_shadow(vec4 fragPosLightSpace)
+// TODO: move to variance shadow mapping
+float calc_shadow(vec4 light_space_pos)
 {
-    // perform perspective divide
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-	if(projCoords.z > 1.0) {
+    
+    vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
+    proj_coords  = proj_coords  * 0.5 + 0.5;
+
+	
+	if(proj_coords.z > 1.0) {
 		return 0;
 	}
-        
-    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
-    float closestDepth = texture(shadowMap, projCoords.xy).r; 
+	
+    // Get depth from shadow map. light's pov
+    float closestDepth = texture(shadowMap, proj_coords.xy).r; 
     // get depth of current fragment from light's perspective
-    float currentDepth = projCoords.z;
+    float currentDepth = proj_coords.z;
     // check whether current frag pos is in shadow
-    float shadow = currentDepth - bias > closestDepth  ? shadow_value : 0.0; 
+    //float shadow = currentDepth - bias > closestDepth  ? shadow_value : 0.0; 
+
+	float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x)
+    {
+        for(int y = -1; y <= 1; ++y)
+        {
+            float pcfDepth = texture(shadowMap, proj_coords.xy + vec2(x, y) * texelSize).r; 
+            shadow += currentDepth - bias > pcfDepth  ? shadow_value : 0.0;        
+        }    
+    }
+    shadow /= 9.0;
+
+        
 
     return shadow;
+
+
 }  
 
 

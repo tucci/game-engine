@@ -71,10 +71,11 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glGenTextures(1, &opengl->shadow_map);
 	glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, opengl->shadow_width_res, opengl->shadow_height_res, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
@@ -380,35 +381,45 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 	// Draw light
 
+
+	Vec3f dir_light_line[2];
+	Vec3f dir_light_color[2];
+
+	dir_light_line[1]  = opengl->render_scene->test_light.direction;
+	dir_light_line[0] = make_vec3f(0, 0, 0);
+	
+
+	dir_light_color[0] = make_vec3f(1, 1, 1);
+	dir_light_color[1] = make_vec3f(1, 1, 1);
 	glBufferData(GL_ARRAY_BUFFER,
-		2 * sizeof(Vec3f),
+		4 * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	// Buffer pos data
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		sizeof(Vec3f),
-		&opengl->render_scene->test_light.transform.position);
+		2 * sizeof(Vec3f),
+		&dir_light_line);
 
 
 	Vec3f color = make_vec3f(1, 1, 1);
 	// Buffer color data
 	glBufferSubData(GL_ARRAY_BUFFER,
-		sizeof(Vec3f),
-		sizeof(Vec3f),
-		&color);
+		2 * sizeof(Vec3f),
+		2 * sizeof(Vec3f),
+		&dir_light_color);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(sizeof(Vec3f)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(2 * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 
 	glPointSize(25);
-	glDrawArrays(GL_POINTS, 0, 1);
+	glDrawArrays(GL_LINES, 0, 2);
 
 }
 
@@ -429,7 +440,8 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	Mat4x4f pv_mat;
 	// TODO: hoist up the scene var
 	if (light_pass) {
-		view_mat = look_at(opengl->render_scene->test_light.transform.position , make_vec3f(0, 0, 0), Vec3f_Up);
+		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
+		view_mat = look_at(opengl->render_scene->test_light.direction, make_vec3f(0, 0, 0), Vec3f_Up);
 		projection_mat = ortho(-camera.far, camera.far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
 	
@@ -443,6 +455,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	// TODO: need a better way to handle these as the scene complexity goes us
 	Mat4x4f test_mesh_model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test.transform);
+	Mat4x4f test_mesh2_model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test2.transform);
 	Mat4x4f plane_mesh_model_mat = trs_mat_from_transform(&opengl->render_scene->flat_plane.transform);
 
 
@@ -513,6 +526,48 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 	glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
+
+
+
+	glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, test_mesh2_model_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(current_shader, "projection_view"), 1, GL_FALSE, pv_mat.mat1d);
+	glBufferData(GL_ARRAY_BUFFER,
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
+		NULL,
+		GL_STATIC_DRAW);
+
+	glBufferSubData(GL_ARRAY_BUFFER,
+		0,
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->mesh_test2.pos);
+
+
+	glBufferSubData(GL_ARRAY_BUFFER,
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test2.texcoords);
+
+
+	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
+	// Should we pre interleave our data?
+	// since our pos and texcoords are not interleaved as pt pt pt, we need to batch the pos first then texcoords
+	// our mesh is laid out like ppp ttt
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f)));
+	glEnableVertexAttribArray(1);
+
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+		opengl->render_scene->mesh_test2.index_count * sizeof(Vec3i),
+		opengl->render_scene->mesh_test2.indices,
+		GL_STATIC_DRAW);
+
+
+
+	glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test2.index_count, GL_UNSIGNED_INT, 0);
 
 
 

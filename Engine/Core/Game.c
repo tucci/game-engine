@@ -50,8 +50,7 @@ void load_scene(Game* game, int scene_id) {
 
 
 	// Init lights
-	init_transform(&scene->test_light.transform);
-	scene->test_light.transform.position = make_vec3f(1, 1, 0);
+	scene->test_light.direction = make_vec3f(1, 1, 0);
 	
 
 	// Camera loading
@@ -78,7 +77,7 @@ void load_scene(Game* game, int scene_id) {
 	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
 	free_obj(&model);
 
-	//make_cube(&scene->mesh_test, &game->game_memory);
+	
 
 
 	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
@@ -97,6 +96,15 @@ void load_scene(Game* game, int scene_id) {
 	scene->mesh_test.transform.euler_angles.y = 90.0f;
 
 
+
+	make_cube(&scene->mesh_test2, &game->game_memory);
+
+
+	init_transform(&scene->mesh_test2.transform);
+
+	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
+	scene->mesh_test2.transform.position = make_vec3f(1, 0, 1);
+	
 
 
 
@@ -128,7 +136,7 @@ void game_update(Game* game) {
 	GameTimer* timer = game->engineAPI.game_loop;
 
 	StaticMesh* test = &game->loaded_scene->mesh_test;
-	TestLight* test_light = &game->loaded_scene->test_light;
+	DirectionalLight* test_light = &game->loaded_scene->test_light;
 
 
 
@@ -169,21 +177,21 @@ void game_update(Game* game) {
 
 	
 	if (input->keys[SDL_SCANCODE_LEFT].down) {
-		test_light->transform.position.z -= delta_time * 10.0f;
+		test_light->direction.z -= delta_time * 10.0f;
 		
 	}
 
 	if (input->keys[SDL_SCANCODE_RIGHT].down) {
-		test_light->transform.position.z += delta_time * 10.0f;
+		test_light->direction.z += delta_time * 10.0f;
 	}
 
 
 	if (input->keys[SDL_SCANCODE_UP].down) {
-		test_light->transform.position.x += delta_time * 10.0f;;
+		test_light->direction.x += delta_time * 10.0f;;
 	}
 
 	if (input->keys[SDL_SCANCODE_DOWN].down) {
-		test_light->transform.position.x -= delta_time * 10.0f;
+		test_light->direction.x -= delta_time * 10.0f;
 	}
 
 

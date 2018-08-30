@@ -12,6 +12,7 @@ out vec2 frag_uv;
 out vec3 frag_pos;
 out vec4 frag_pos_light_space;
 
+
 void main(){
 	
 	frag_pos = vec3(model * vec4(position, 1.0f));

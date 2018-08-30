@@ -2,6 +2,7 @@
 
 #include "../Transform.h"
 
-typedef struct TestLight {
-	Transform transform;
-} TestLight;
+typedef struct DirectionalLight {
+	Vec3f direction;
+	//Transform transform;
+} DirectionalLight;
