@@ -48,11 +48,41 @@ bool load_texture(const char* filename, SimpleTexture* texture, LinearAllocator*
 		SDL_Log("Loading image failed: %s", stbi_failure_reason());
 	}
 
-	// Move the image to our own memory space, we wont the data to live in our allocator
+	// Move the image to our own memory space, we want the data to live in our allocator
 	memcpy(texture->data, data, texture->width * texture->height * texture->channels);
 	// Free the original data, we have the image in our own memory
 	stbi_image_free(data);	
 	return 1;
+}
+
+bool load_hdr_texture(const char* filename, HDRTexture* texture, LinearAllocator* mem, bool flip) {
+	
+
+	texture->channels = STBI_rgb;
+	stbi_info(filename, &texture->width, &texture->height, &texture->channels);
+
+	size_t image_size = texture->width * texture->height * texture->channels * sizeof(float);
+
+
+	texture->data = cast(float*) linear_alloc(mem, image_size, 4);
+
+	
+	int n_comp = STBI_rgb;
+
+	stbi_set_flip_vertically_on_load(flip);
+
+	float *data = stbi_loadf(filename, &texture->width, &texture->height, &n_comp, 0);
+	
+	if (data == NULL) {
+		SDL_Log("Loading hdr image failed: %s", stbi_failure_reason());
+	}
+	
+
+	// Move the image to our own memory space, we want the data to live in our allocator
+	memcpy(texture->data, data, image_size);
+	// Free the original data, we have the image in our own memory
+	stbi_image_free(data);
+
 }
 
 

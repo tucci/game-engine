@@ -253,7 +253,7 @@ static void process_event_queue(Engine* engine) {
 
 static bool init_engine_memory(Engine* engine) {
 	// 
-	size_t size = MEGABYTES(100);
+	size_t size = ENGINE_MEMORY;
 
 	// Align the memory size to 64 bits
 	// TODO: should this depend on the machine? 32bits vs 64bits
@@ -390,13 +390,13 @@ static bool init_window(Engine* engine) {
 static bool init_renderer(Engine* engine) {
 	switch (engine->renderer.type) {
 		case BackenedRenderer_Software: {
-			MemoryEnginePartition parition_start = give_memory_partition(engine, MEGABYTES(10));
+			MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
 			return init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
 
 		case BackenedRenderer_OpenGL: {
-			MemoryEnginePartition parition_start = give_memory_partition(engine, MEGABYTES(10));
+			MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
 			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
@@ -625,7 +625,7 @@ static bool load_game(Engine* engine, const char* game_file) {
 
 	// Init some memory for our game
 	// Load scene, get how much potential memory we would need from the scene
-	MemoryEnginePartition game_partition = give_memory_partition(engine, MEGABYTES(50));
+	MemoryEnginePartition game_partition = give_memory_partition(engine, GAME_MEMORY);
 
 
 	// Bootstrap loading
@@ -754,6 +754,8 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	if (engine->input.keys[SDL_SCANCODE_ESCAPE].just_pressed) {
 		engine->quit = true;
 	}
+
+
 
 	
 

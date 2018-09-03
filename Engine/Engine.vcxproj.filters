@@ -167,5 +167,12 @@
     <None Include="Assets\shaders\skybox.fs" />
     <None Include="Assets\shaders\shadows.vs" />
     <None Include="Assets\shaders\shadows.fs" />
+    <None Include="Assets\shaders\hdr_skymap.vs" />
+    <None Include="Assets\shaders\hdr_skymap.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\rustediron2_normal.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -53,12 +53,23 @@ typedef struct Scene {
 	// LinearAllocator* scene_mem;
 
 	DirectionalLight test_light;
+	DirectionalLight test_light2;
+
 	Camera main_camera;
-	Skybox skybox;
+	
+
+
+	HDR_SkyMap hdr_skymap;
+
 	StaticMesh mesh_test;
 	StaticMesh mesh_test2;
 
-	SimpleTexture texture_test;
+	SimpleTexture albedo_map;
+	SimpleTexture normal_map;
+	SimpleTexture metallic_map;
+	SimpleTexture roughness_map;
+	SimpleTexture ao_map;
+	
 	StaticMesh flat_plane;
 } Scene;
 

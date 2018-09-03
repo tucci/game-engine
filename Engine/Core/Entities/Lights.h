@@ -4,5 +4,8 @@
 
 typedef struct DirectionalLight {
 	Vec3f direction;
-	//Transform transform;
 } DirectionalLight;
+
+typedef struct PointLight {
+	Transform transform;
+} PointLight;

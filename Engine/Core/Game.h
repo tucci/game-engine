@@ -11,6 +11,8 @@
 
 
 
+
+
 typedef struct Game {
 	// Reference to underlying engine api subsystems the game might need
 	EngineAPI engineAPI;

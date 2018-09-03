@@ -51,6 +51,7 @@ void load_scene(Game* game, int scene_id) {
 
 	// Init lights
 	scene->test_light.direction = make_vec3f(1, 1, 0);
+	scene->test_light2.direction = make_vec3f(0, 1, 1);
 	
 
 	// Camera loading
@@ -61,38 +62,66 @@ void load_scene(Game* game, int scene_id) {
 
 	
 
+
+
+	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+
+	//ObjModel model;
+	//load_obj("Assets/obj/african_head.obj", &model);
+	////load_obj("Assets/obj/diablo3_pose.obj", &model);
+	//obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
+	//free_obj(&model);
+
+	//make_cube(&scene->mesh_test, &game->game_memory);
+	//make_plane(&scene->mesh_test, &game->game_memory);
+	make_uv_sphere(&scene->mesh_test, 16, 32, &game->game_memory);
+
 	
-	load_skybox(&scene->skybox,
-		&game->game_memory,
-		"Assets/skyboxes/stonegods/sgod_lf.tga",
-		"Assets/skyboxes/stonegods/sgod_rt.tga",
-		"Assets/skyboxes/stonegods/sgod_bk.tga",
-		"Assets/skyboxes/stonegods/sgod_ft.tga",
-		"Assets/skyboxes/stonegods/sgod_up.tga",
-		"Assets/skyboxes/stonegods/sgod_dn.tga");
-
-	ObjModel model;
-	load_obj("Assets/obj/african_head.obj", &model);
-	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
-	free_obj(&model);
-
 	
 
 
 	//const char* texture_file = "Assets/obj/african_head_diffuse.tga";
 	//const char* texture_file = "Assets/obj/diablo3_pose_diffuse.tga";
 	//const char* texture_file = "Assets/obj/earth_tex.jpg";
-	const char* texture_file = "Assets/obj/test.png";
+	//const char* texture_file = "Assets/obj/test.png";
 
 
-	bool loaded_texture = load_texture(texture_file, &scene->texture_test, &game->game_memory, true);
+	
+	
+	//load_texture("Assets/textures/rust_iron/rustediron2_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_ao.png", &scene->ao_map, &game->game_memory, false);
+
+
+
+	
+
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->game_memory, false);
+
+
+	load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
+
+	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-albedo.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-metalness.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 	init_transform(&scene->mesh_test.transform);
 
 	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
-	scene->mesh_test.transform.position = make_vec3f(0, 0, 0);
+	scene->mesh_test.transform.position = make_vec3f(0, 0, -5);
 	scene->mesh_test.transform.euler_angles.y = 90.0f;
 
 
@@ -103,7 +132,7 @@ void load_scene(Game* game, int scene_id) {
 	init_transform(&scene->mesh_test2.transform);
 
 	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
-	scene->mesh_test2.transform.position = make_vec3f(1, 0, 1);
+	scene->mesh_test2.transform.position = make_vec3f(5, 0, 1);
 	
 
 
@@ -143,12 +172,12 @@ void game_update(Game* game) {
 	float delta_time = timer->delta_time;
 
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
-	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
-	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, v3_negate(camera->transform.forward), delta_time); }
-	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, v3_negate(camera->transform.right), delta_time); }
-	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, v3_negate(camera->transform.up), delta_time); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
+	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
+	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, v3_negate(camera->transform.forward), delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, v3_negate(camera->transform.right), delta_time); }
+	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, v3_negate(camera->transform.up), delta_time); }
 
 
 
@@ -212,7 +241,7 @@ void game_update(Game* game) {
 	camera->transform.euler_angles.y = fmod(camera->transform.euler_angles.y, 360.0f);
 		
 
-	Mat4x4f t = translate(v3_multiply(1, camera->transform.position));
+	Mat4x4f t = translate(v3_multiply(-1, camera->transform.position));
 	t = transpose(&t);
 	
 

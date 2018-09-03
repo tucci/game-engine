@@ -1,0 +1,41 @@
+[Header]
+ICOfile = "Alexs_Apt_Thumb.jpg"
+PREVIEWfile = "Alexs_Apt_preview.jpg"
+Name = "Alexs Apartment"
+Author = "Blochi"
+Location = "Hollywood"
+Comment = "Indoor, living room with big TV screen and great framed artwork"
+GEOlat = 34.08725758646521
+GEOlong = -118.3259779214859
+Link = "http://www.hdrlabs.com/sibl/archive.html"
+Date = "2009:03:30"
+Time = "21:00:00"
+Height = 1.6
+
+[Background]
+; maybe a bit too strongly tonemapped
+BGfile = "Alexs_Apt_8k.jpg"
+BGmap = 1
+BGu = 0.000000
+BGv = 0.000000
+BGheight = 4000
+
+[Enviroment]
+EVfile = "Alexs_Apt_Env.hdr"
+EVmap = 1
+EVu = 0.000000
+EVv = 0.000000
+EVheight = 180
+EVmulti = 1.500000
+EVgamma = 1.800000
+
+[Reflection]
+REFfile = "Alexs_Apt_2k.hdr"
+REFmap = 1
+REFu = 0.000000
+REFv = 0.000000
+REFheight = 1200
+REFmulti = 1.500000
+REFgamma = 1.800000
+
+

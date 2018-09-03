@@ -32,9 +32,12 @@
 
 
 
+
 typedef struct OpenGLRenderer {
 
 	Scene* render_scene;
+
+
 
 	SDL_GLContext gl_context;
 	SDL_Window* sdl_window;
@@ -54,15 +57,30 @@ typedef struct OpenGLRenderer {
 	GLuint shadow_fbo;
 	GLuint shadow_map;
 
-	GLuint skybox_id;
-	GLuint skybox_VAO;
-	GLuint skybox_VBO;
+	
 	GLShader skybox_shader;
 
-	GLuint textureID;
+	GLuint skybox_VAO;
+	GLuint skybox_VBO;
+	
+
+
+	GLuint hdr_skymap_id;
+	GLuint capture_FBO;
+	GLuint capture_RBO;
+	GLuint env_cubemap;
+	GLShader equi_rect_shader;
+	
+	
+
+	GLuint albedo_map_id;
+	GLuint normal_map_id;
+	GLuint metallic_map_id;
+	GLuint roughness_map_id;
+	GLuint ao_map_id;
 	
 	GLShader main_shader;
-	GLShader simple_shader;
+	
 	GLuint VAO;
 	GLuint VBO; // id to the Buffer that stores our vertices
 	GLuint EBO; // id to the Buffer that stores our indices

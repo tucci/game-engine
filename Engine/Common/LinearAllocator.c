@@ -22,6 +22,7 @@ void* linear_alloc(LinearAllocator* arena, size_t size, size_t alignment) {
 
 	// TODO: only do this in debug mode
 	if (aligned_size > (size_t)(arena->end - arena->current)) {
+		assert(aligned_size <= (size_t)(arena->end - arena->current));
 		debug_print("Linear allocate overrun\n");
 		return NULL;
 	}

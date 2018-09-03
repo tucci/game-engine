@@ -237,7 +237,8 @@ Vec4f inline mat4x4_vec_mul(Mat4x4f* m, Vec4f v) {
 }
 
 
-Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio) {
+
+Mat4x4f inline perspective(float near, float far, float fov_deg, float aspect_ratio) {
 
 	Mat4x4f mat = mat4x4f_identity();
 
@@ -248,7 +249,7 @@ Mat4x4f inline perspective(float near, float far, float fov, float aspect_ratio)
 	float depth = near - far;
 	float inverse_depth = 1 / depth;
 
-	float f = 1 / tanf(fov * 0.5f * PI / 180.0f);
+	float f = 1 / tanf(fov_deg * 0.5f * PI / 180.0f);
 
 	mat.mat2d[0][0] = f / aspect_ratio;
 	mat.mat2d[1][1] = f;

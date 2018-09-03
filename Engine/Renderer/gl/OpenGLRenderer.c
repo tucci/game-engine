@@ -9,45 +9,140 @@
 
 
 
-static void init_skybox(OpenGLRenderer* opengl, Scene* scene) {
-	// Bind skybox
-	glGenTextures(1, &opengl->skybox_id);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->skybox_id);
-	int width = scene->skybox.front.width;
-	int height = scene->skybox.front.height;
+static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
+	
+	int skymap_buffer_width = 512;
+	int skymap_buffer_height = 512;
 
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.right.data);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.left.data);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.top.data);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.bottom.data);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.back.data);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->skybox.front.data);
+	glGenFramebuffers(1, &opengl->capture_FBO);
+	glGenRenderbuffers(1, &opengl->capture_RBO);
 
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, opengl->capture_RBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, skymap_buffer_width, skymap_buffer_height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, opengl->capture_RBO);
+
+
+	glGenTextures(1, &opengl->hdr_skymap_id);
+	glBindTexture(GL_TEXTURE_2D, opengl->hdr_skymap_id);
+
+	int width = scene->hdr_skymap.map.width;
+	int height = scene->hdr_skymap.map.height;
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, scene->hdr_skymap.map.data);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// TODO: we can free the image from our texture on memory, since it is in the gpu mem now
+
+	
+	glGenTextures(1, &opengl->env_cubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->env_cubemap);
+	for (unsigned int i = 0; i < 6; ++i) {
+		// note that we store each face with 16 bit floating point values
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, skymap_buffer_width, skymap_buffer_height, 0, GL_RGB, GL_FLOAT, NULL);
+	}
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+
+
+	//// Load skymap to equirectangular shader 
+	const char* vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
+	const char* fragment_shader = file_to_str("Assets/shaders/hdr_skymap.fs", &opengl->renderer_allocator);
+	load_gl_shader(&opengl->equi_rect_shader, &vertex_shader, &fragment_shader);
+	//// TODO: pop off stack allocator
+
+	//// Load skybox shader
+	vertex_shader = file_to_str("Assets/shaders/skybox.vs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->renderer_allocator);
+	load_gl_shader(&opengl->skybox_shader, &vertex_shader, &fragment_shader);
+	//// TODO: pop off stack allocator
 
 
 	
+
+	Mat4x4f captureProjection = perspective(0.1f, 10.0f, 90.0f, 1.0f);
+	
+	Vec3f center = make_vec3f(0, 0, 0);
+	Mat4x4f captureViews[] =
+	{
+		look_at(center, make_vec3f(1.0f,  0.0f,  0.0f), make_vec3f(0.0f, -1.0f,  0.0f)),
+		look_at(center, make_vec3f(-1.0f,  0.0f,  0.0f),make_vec3f(0.0f, -1.0f,  0.0f)),
+		look_at(center, make_vec3f(0.0f,  1.0f,  0.0f), make_vec3f(0.0f,  0.0f,  1.0f)),
+		look_at(center, make_vec3f(0.0f, -1.0f,  0.0f), make_vec3f(0.0f,  0.0f, -1.0f)),
+		look_at(center, make_vec3f(0.0f,  0.0f,  1.0f), make_vec3f(0.0f, -1.0f,  0.0f)),
+		look_at(center, make_vec3f(0.0f,  0.0f, -1.0f), make_vec3f(0.0f, -1.0f,  0.0f))
+	};
+
+
+
 
 	glGenVertexArrays(1, &opengl->skybox_VAO);
 	glGenBuffers(1, &opengl->skybox_VBO);
+
 	glBindVertexArray(opengl->skybox_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
-	glBufferData(GL_ARRAY_BUFFER, scene->skybox.cube.vertex_count * sizeof(Vec3f), scene->skybox.cube.pos, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f), scene->hdr_skymap.cube.pos, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
+
+	
+	glUseProgram(opengl->equi_rect_shader.program);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->equi_rect_shader.program, "projection"), 1, GL_FALSE, captureProjection.mat1d);
+
+	glUniform1i(glGetUniformLocation(opengl->equi_rect_shader.program, "equirectangular_map"), 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, opengl->hdr_skymap_id);
+
+
+	glViewport(0, 0, skymap_buffer_width, skymap_buffer_height); // don't forget to configure the viewport to the capture dimensions.
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+
+	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+	glFrontFace(GL_CW);
+
+	GLint i_uni = glGetUniformLocation(opengl->equi_rect_shader.program, "view");
+	for (unsigned int i = 0; i < 6; ++i) {
 	
 	
+		glUniformMatrix4fv(i_uni, 1, GL_FALSE, captureViews[i].mat1d);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, opengl->env_cubemap, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	const char* vertex_shader = file_to_str("Assets/shaders/skybox.vs", &opengl->renderer_allocator);
-	const char* fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->renderer_allocator);
+		
+		
+	
 
-	load_gl_shader(&opengl->skybox_shader, &vertex_shader, &fragment_shader);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+			opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+			opengl->render_scene->hdr_skymap.cube.indices,
+			GL_STATIC_DRAW);
+
+		
+
+		
+		glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+		
+
+
+	}
+	glFrontFace(GL_CCW);
+	glDepthFunc(GL_LESS); // set depth function back to default
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-
 
 
 
@@ -57,14 +152,15 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	// TODO: instead of passing the entire scene, we should pass a culled scene for faster rendering
 	opengl->render_scene = scene;
 
-	init_skybox(opengl, scene);
+	
+	
 
 
 
 	opengl->shadow_width_res = SHADOW_WIDTH_RES;
 	opengl->shadow_height_res = SHADOW_HEIGHT_RES;
 	
-
+	
 	glGenFramebuffers(1, &opengl->shadow_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, opengl->shadow_fbo);
 
@@ -94,12 +190,62 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 
 
 	// Bind Model textures
-	glGenTextures(1, &opengl->textureID);
-	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->texture_test.width, scene->texture_test.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->texture_test.data);
+	glGenTextures(1, &opengl->albedo_map_id);
+	glBindTexture(GL_TEXTURE_2D, opengl->albedo_map_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->albedo_map.width, scene->albedo_map.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->albedo_map.data);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameterf(opengl->textureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(opengl->textureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(opengl->albedo_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+	
+	glGenTextures(1, &opengl->normal_map_id);
+	glBindTexture(GL_TEXTURE_2D, opengl->normal_map_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->normal_map.width, scene->normal_map.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->normal_map.data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(opengl->normal_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+	glGenTextures(1, &opengl->metallic_map_id);
+	glBindTexture(GL_TEXTURE_2D, opengl->metallic_map_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->metallic_map.width, scene->metallic_map.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->metallic_map.data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(opengl->metallic_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+	glGenTextures(1, &opengl->roughness_map_id);
+	glBindTexture(GL_TEXTURE_2D, opengl->roughness_map_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->roughness_map.width, scene->roughness_map.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->roughness_map.data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(opengl->roughness_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+	glGenTextures(1, &opengl->ao_map_id);
+	glBindTexture(GL_TEXTURE_2D, opengl->ao_map_id);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scene->ao_map.width, scene->ao_map.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scene->ao_map.data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameterf(opengl->ao_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+
+
+
 
 
 
@@ -116,6 +262,8 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->VBO);
 	// bind element buffer object to buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+
+	init_hdr_map(opengl, scene);
 }
 
 
@@ -139,11 +287,6 @@ static void load_shaders(OpenGLRenderer* opengl) {
 	load_gl_shader(&opengl->main_shader, &vertex_shader, &fragment_shader);
 	// Free stack
 
-	// Alloc on stack
-	vertex_shader = file_to_str("Assets/shaders/simple.vs", &opengl->renderer_allocator);
-	fragment_shader = file_to_str("Assets/shaders/simple.fs", &opengl->renderer_allocator);
-	load_gl_shader(&opengl->simple_shader, &vertex_shader, &fragment_shader);
-	// Free stack
 
 	// Alloc on stack
 	vertex_shader = file_to_str("Assets/shaders/shadows.vs", &opengl->renderer_allocator);
@@ -269,7 +412,6 @@ void destroy_gl_debug(OpenGLRenderer* opengl) {
 
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* parition_start, size_t partition_size) {
-
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
@@ -299,7 +441,7 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	// TODO: we should have a list of shaders instead of manually having to call it
 	delete_gl_program(&opengl->main_shader);
 	delete_gl_program(&opengl->debug_shader);
-	delete_gl_program(&opengl->skybox_shader);
+	delete_gl_program(&opengl->equi_rect_shader);
 	delete_gl_program(&opengl->shadow_shader);
 	
 
@@ -435,6 +577,9 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		draw_type = GL_TRIANGLES;
 	}
 
+
+	
+
 	Mat4x4f view_mat = camera.view_mat;
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f pv_mat;
@@ -477,20 +622,42 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->light_space_mat.mat1d);
 
 
+
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, opengl->textureID);
-		glUniform1i(glGetUniformLocation(current_shader, "textureSampler"), 0);
-		
-		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
-		glUniform1i(glGetUniformLocation(current_shader, "shadowMap"), 1);
+		glUniform1i(glGetUniformLocation(current_shader, "shadowMap"), 0);
+
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, opengl->albedo_map_id);
+		glUniform1i(glGetUniformLocation(current_shader, "albedo_map"), 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, opengl->normal_map_id);
+		glUniform1i(glGetUniformLocation(current_shader, "normal_map"), 2);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, opengl->metallic_map_id);
+		glUniform1i(glGetUniformLocation(current_shader, "metallic_map"), 3);
+
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, opengl->roughness_map_id);
+		glUniform1i(glGetUniformLocation(current_shader, "roughness_map"), 4);
+
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, opengl->ao_map_id);
+		glUniform1i(glGetUniformLocation(current_shader, "ao_map"), 5);	
+		
+		
 	}
 	
 	
 
 
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)
+		+ opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f)
+		+ opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
@@ -505,15 +672,30 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
 		opengl->render_scene->mesh_test.texcoords);
 
+	glBufferSubData(GL_ARRAY_BUFFER,
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)
+		 + opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->mesh_test.normal);
+
 
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
 	// Should we pre interleave our data?
-	// since our pos and texcoords are not interleaved as pt pt pt, we need to batch the pos first then texcoords
-	// our mesh is laid out like ppp ttt
+	// since our pos and texcoords are not interleaved as ptn ptn pt, we need to batch the pos first then texcoords
+	
+
+	// Position
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
+
+	// Texcoords
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
+
+	// Normals
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f),
+		cast(GLvoid*)(opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f)));
+	glEnableVertexAttribArray(2);
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
@@ -529,10 +711,13 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 
+
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, test_mesh2_model_mat.mat1d);
-	glUniformMatrix4fv(glGetUniformLocation(current_shader, "projection_view"), 1, GL_FALSE, pv_mat.mat1d);
+
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f)
+		+ opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f)
+		+ opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
@@ -547,15 +732,30 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
 		opengl->render_scene->mesh_test2.texcoords);
 
+	glBufferSubData(GL_ARRAY_BUFFER,
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f)
+		+ opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->mesh_test2.normal);
+
 
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
 	// Should we pre interleave our data?
-	// since our pos and texcoords are not interleaved as pt pt pt, we need to batch the pos first then texcoords
-	// our mesh is laid out like ppp ttt
+	// since our pos and texcoords are not interleaved as ptn ptn pt, we need to batch the pos first then texcoords
+
+
+	// Position
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
+
+	// Texcoords
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
+
+	// Normals
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f),
+		cast(GLvoid*)(opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f)));
+	glEnableVertexAttribArray(2);
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
@@ -574,7 +774,6 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 
-
 	// Simple colored shader
 	glBindVertexArray(opengl->VAO);
 
@@ -582,29 +781,22 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glUseProgram(current_shader);
 
 
+	//debug_print("camera pos %f, %f, %f\n", camera.transform.position.x, camera.transform.position.y, camera.transform.position.z);
+	//debug_print("light pos %f, %f, %f\n", opengl->render_scene->test_light.direction.x, opengl->render_scene->test_light.direction.y, opengl->render_scene->test_light.direction.z);
+
+	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), camera.transform.position.x, camera.transform.position.y, camera.transform.position.z);
+	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), opengl->render_scene->test_light.direction.x, opengl->render_scene->test_light.direction.y, opengl->render_scene->test_light.direction.z);
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, plane_mesh_model_mat.mat1d);
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "projection_view"), 1, GL_FALSE, pv_mat.mat1d);
 
-	//if (!light_pass) {
-	//	glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->light_space_mat.mat1d);
-
-
-	//	glUniform1i(glGetUniformLocation(current_shader, "textureSampler"), 0);
-	//	glActiveTexture(GL_TEXTURE0);
-	//	glBindTexture(GL_TEXTURE_2D, opengl->textureID);
-
-
-	//	glUniform1i(glGetUniformLocation(current_shader, "shadowMap"), 0);
-	//	glActiveTexture(GL_TEXTURE1);
-	//	glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
-	//	
-	//}
+	
 
 	// Draw primative test
 
 	glBufferData(GL_ARRAY_BUFFER,
 		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f),
+		+ opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f)
+		+ opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
@@ -617,6 +809,12 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
 		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f),
 		opengl->render_scene->flat_plane.texcoords);
+
+	glBufferSubData(GL_ARRAY_BUFFER,
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f) +
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f),
+		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->flat_plane.normal);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
@@ -632,9 +830,10 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f),
+		cast(GLvoid*)(opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f) + opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f)));
+	glEnableVertexAttribArray(2);
 
-
-	glLineWidth(1.0f);
 	glDrawElements(draw_type, 3 * opengl->render_scene->flat_plane.index_count, GL_UNSIGNED_INT, 0);
 
 
@@ -642,36 +841,42 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	if (light_pass) return;
 	// Draw skybox
 
-	Mat4x4f skybox_mat = mat4x4f_identity();
-	Mat4x4f skybox_transform = mat4x4_mul(&pv_mat, &skybox_mat);
+	
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 
 	glUseProgram(opengl->skybox_shader.program);
-	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "transform"), 1, GL_FALSE, skybox_transform.mat1d);
+
+	
+	
+	
+	
+
+	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "projection"), 1, GL_FALSE, projection_mat.mat1d);
+	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "view"), 1, GL_FALSE, view_mat.mat1d);
+	
 
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->skybox_id);
-
-
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->env_cubemap);
+	//glUniform1i(glGetUniformLocation(opengl->skybox_shader.program, "skybox"), 0);
 
 
 
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->skybox.cube.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		opengl->render_scene->skybox.cube.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->skybox.cube.pos);
+		opengl->render_scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f),
+		opengl->render_scene->hdr_skymap.cube.pos);
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		opengl->render_scene->skybox.cube.index_count * sizeof(Vec3i),
-		opengl->render_scene->skybox.cube.indices,
+		opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+		opengl->render_scene->hdr_skymap.cube.indices,
 		GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
@@ -679,7 +884,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	glFrontFace(GL_CW);
 
-	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->skybox.cube.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
 
 
 	glFrontFace(GL_CCW);
@@ -702,7 +907,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debu
 	glViewport(0, 0, opengl->shadow_width_res, opengl->shadow_height_res);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	opengl_render_scene(opengl, viewport_size, true);
-	//glCullFace(GL_BACK); // don't forget to reset original culling face
+	////glCullFace(GL_BACK); // don't forget to reset original culling face
 	
 
 	// Normal lighting pass

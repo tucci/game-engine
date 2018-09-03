@@ -212,6 +212,8 @@
   <ItemGroup>
     <None Include="Assets\shaders\debug.fs" />
     <None Include="Assets\shaders\debug.vs" />
+    <None Include="Assets\shaders\hdr_skymap.fs" />
+    <None Include="Assets\shaders\hdr_skymap.vs" />
     <None Include="Assets\shaders\shadows.fs" />
     <None Include="Assets\shaders\shadows.vs" />
     <None Include="Assets\shaders\simple.fs" />
@@ -220,6 +222,9 @@
     <None Include="Assets\shaders\skybox.vs" />
     <None Include="Assets\shaders\textured.fs" />
     <None Include="Assets\shaders\textured.vs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\..\Downloads\rustediron2_normal.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

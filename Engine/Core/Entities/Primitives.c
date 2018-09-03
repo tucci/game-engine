@@ -27,6 +27,12 @@ void make_plane(StaticMesh* mesh, LinearAllocator* memory) {
 	mesh->color[2] = make_vec3f(1, 1, 1);
 	mesh->color[3] = make_vec3f(1, 1, 1);
 
+	mesh->normal = cast(Vec3f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec3f), 4);
+	mesh->normal[0] = make_vec3f(0, 1, 0);
+	mesh->normal[1] = make_vec3f(0, 1, 0);
+	mesh->normal[2] = make_vec3f(0, 1, 0);
+	mesh->normal[3] = make_vec3f(0, 1, 0);
+
 	
 	mesh->indices = cast(Vec3i*) linear_alloc(memory, mesh->index_count * sizeof(Vec3i), 4);
 	mesh->indices[0] = make_vec3i(0, 1, 2);
@@ -164,6 +170,46 @@ void make_cube(StaticMesh* mesh, LinearAllocator* memory) {
 	mesh->color[23] = make_vec3f(0, 0, 1);
 
 
+	mesh->normal = cast(Vec3f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec3f), 1);
+	// Bottom normal
+	mesh->normal[0] = make_vec3f(0, -1, 0);
+	mesh->normal[1] = make_vec3f(0, -1, 0);
+	mesh->normal[2] = make_vec3f(0, -1, 0);
+	mesh->normal[3] = make_vec3f(0, -1, 0);
+
+	// Top normal
+	mesh->normal[5] = make_vec3f(0, 1, 0);
+	mesh->normal[4] = make_vec3f(0, 1, 0);
+	mesh->normal[6] = make_vec3f(0, 1, 0);
+	mesh->normal[7] = make_vec3f(0, 1, 0);
+
+
+	// Right normal
+	mesh->normal[8] = make_vec3f(1, 0, 0);
+	mesh->normal[9] = make_vec3f(1, 0, 0);
+	mesh->normal[10] = make_vec3f(1, 0, 0);
+	mesh->normal[11] = make_vec3f(1, 0, 0);
+
+
+	// Left normal
+	mesh->normal[12] = make_vec3f(-1, 0, 0);
+	mesh->normal[13] = make_vec3f(-1, 0, 0);
+	mesh->normal[14] = make_vec3f(-1, 0, 0);
+	mesh->normal[15] = make_vec3f(-1, 0, 0);
+
+	// Front normal
+	mesh->normal[16] = make_vec3f(0, 0, 1);
+	mesh->normal[17] = make_vec3f(0, 0, 1);
+	mesh->normal[18] = make_vec3f(0, 0, 1);
+	mesh->normal[19] = make_vec3f(0, 0, 1);
+
+	// Back normal
+	mesh->normal[20] = make_vec3f(0, 0, -1);
+	mesh->normal[21] = make_vec3f(0, 0, -1);
+	mesh->normal[22] = make_vec3f(0, 0, -1);
+	mesh->normal[23] = make_vec3f(0, 0, -1);
+
+
 	mesh->indices = cast(Vec3i*) linear_alloc(memory, mesh->index_count * sizeof(Vec3i), 1);
 
 	// Bottom face
@@ -202,6 +248,7 @@ void make_uv_sphere(StaticMesh* mesh, int lats, int longs, LinearAllocator* memo
 
 	mesh->pos = cast(Vec3f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec3f), 1);
 	mesh->color = cast(Vec3f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec3f), 1);
+	mesh->normal = cast(Vec3f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec3f), 1);
 	mesh->texcoords = cast(Vec2f*) linear_alloc(memory, mesh->vertex_count * sizeof(Vec2f), 1);
 	mesh->indices = cast(Vec3i*) linear_alloc(memory, mesh->index_count * sizeof(Vec3i), 1);
 
@@ -254,6 +301,11 @@ void make_uv_sphere(StaticMesh* mesh, int lats, int longs, LinearAllocator* memo
 			mesh->color[vertex_index2] = make_vec3f(1,0, 0);
 			mesh->color[vertex_index3] = make_vec3f(1,0, 0);
 			mesh->color[vertex_index4] = make_vec3f(1,0, 0);
+
+			mesh->normal[vertex_index1] = v1;
+			mesh->normal[vertex_index2] = v2;
+			mesh->normal[vertex_index3] = v3;
+			mesh->normal[vertex_index4] = v4;
 			
 
 			v1 = v3_normalize(v1);
