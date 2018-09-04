@@ -49,32 +49,35 @@ typedef struct OpenGLRenderer {
 
 
 
-
-	GLShader shadow_shader;
+	// Shadow map
+	GLShader shadowmap_shader;
 	Mat4x4f light_space_mat;
 	int shadow_width_res;
 	int shadow_height_res;
 	GLuint shadow_fbo;
 	GLuint shadow_map;
 
+	// IBL cubemaps
+	GLuint env_cubemap;
+	GLuint hdr_skymap_id;
+	GLuint irradiance_map_id;
+	GLuint prefilter_map;
+	GLuint brdf_lut;
+
+	// IBL shaders
 	
+	GLShader equi_rect_shader;
 	GLShader skybox_shader;
 	GLShader irradiance_conv_shader;
+	GLShader prefilter_shader;
+	GLShader brdf_shader;
 
+	// IBL Buffers
+	GLuint capture_FBO;
+	GLuint capture_RBO;
 	GLuint skybox_VAO;
 	GLuint skybox_VBO;
 	GLuint skybox_EBO;
-	
-
-
-	GLuint hdr_skymap_id;
-	GLuint irradiance_map_id;
-
-	GLuint capture_FBO;
-	GLuint capture_RBO;
-	GLuint env_cubemap;
-	GLShader equi_rect_shader;
-	
 	
 
 	GLuint albedo_map_id;

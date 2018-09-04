@@ -25,8 +25,10 @@ uniform sampler2D metallic_map;
 uniform sampler2D roughness_map;
 uniform sampler2D ao_map;
 
-uniform samplerCube irradiance_map;
 
+uniform samplerCube irradiance_map;
+uniform samplerCube prefilter_map;
+uniform sampler2D brdf_lut;
 
 uniform vec3 camera_pos;
 
@@ -154,8 +156,7 @@ void main(){
 	 
 
 	
-	// Vector from point to camera
-    vec3 V = normalize(camera_pos - frag_pos);
+	
 
 
 	vec3 albedo     = pow(texture(albedo_map, frag_uv).rgb, vec3(2.2));
@@ -163,7 +164,10 @@ void main(){
     float roughness = texture(roughness_map, frag_uv).r;
 	float ao        = texture(ao_map, frag_uv).r;
 	vec3 N = getNormalFromMap();
-	
+
+	// Vector from point to camera
+    vec3 V = normalize(camera_pos - frag_pos);
+	vec3 R = reflect(-V, N);
 	
 
 	
@@ -192,7 +196,7 @@ void main(){
         float distance = length(light_pos - frag_pos);
         float attenuation = 1.0 / (distance * distance);
 
-        vec3 radiance = vec3(255, 255, 255) * attenuation;
+        vec3 radiance = vec3(10, 10, 10);
 
 		//vec3 radiance = texture(env_map, frag_pos).rgb;
 
@@ -228,10 +232,18 @@ void main(){
     vec3 kS = F;
     vec3 kD = 1.0 - kS;
     kD *= 1.0 - metallic;	  
+
+
     vec3 irradiance = texture(irradiance_map, N).rgb;
-	
     vec3 diffuse = irradiance * albedo;
-    vec3 ambient = (kD * diffuse) * ao;
+    
+    // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
+    const float MAX_REFLECTION_LOD = 4.0;
+    vec3 prefilteredColor = textureLod(prefilter_map, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    vec2 brdf  = texture(brdf_lut, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+    vec3 ambient = (kD * diffuse + specular) * ao;
     
     vec3 color = ambient + Lo;
 

@@ -64,19 +64,9 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-
-	//ObjModel model;
-	//load_obj("Assets/obj/african_head.obj", &model);
-	////load_obj("Assets/obj/diablo3_pose.obj", &model);
-	//obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
-	//free_obj(&model);
-
-	//make_cube(&scene->mesh_test, &game->game_memory);
-	//make_plane(&scene->mesh_test, &game->game_memory);
-	make_uv_sphere(&scene->mesh_test, 16, 32, &game->game_memory);
-
+	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 	
 	
 
@@ -89,11 +79,23 @@ void load_scene(Game* game, int scene_id) {
 
 	
 	
-	load_texture("Assets/textures/rust_iron/rustediron2_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	load_texture("Assets/textures/rust_iron/rustediron2_normal.png", &scene->normal_map, &game->game_memory, false);
-	load_texture("Assets/textures/rust_iron/rustediron2_metallic.png", &scene->metallic_map, &game->game_memory, false);
-	load_texture("Assets/textures/rust_iron/rustediron2_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	load_texture("Assets/textures/rust_iron/rustediron2_ao.png", &scene->ao_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/rust_iron/rustediron2_ao.png", &scene->ao_map, &game->game_memory, false);
+
+	load_texture("Assets/textures/granite_smooth/granitesmooth1-albedo.png", &scene->albedo_map, &game->game_memory, false);
+	load_texture("Assets/textures/granite_smooth/granitesmooth1-normal2.png", &scene->normal_map, &game->game_memory, false);
+	load_texture("Assets/textures/granite_smooth/granitesmooth1-metalness.png", &scene->metallic_map, &game->game_memory, false);
+	load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
+	load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
+
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 
@@ -112,6 +114,14 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
 
+	//load_texture("Assets/textures/mahogfloor/mahogfloor_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/mahogfloor/mahogfloor_normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/mahogfloor/mahogfloor_metal.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/mahogfloor/mahogfloor_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/mahogfloor/mahogfloor_AO.png", &scene->ao_map, &game->game_memory, false);
+
+	
+
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-albedo.png", &scene->albedo_map, &game->game_memory, false);
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-normal.png", &scene->normal_map, &game->game_memory, false);
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-metalness.png", &scene->metallic_map, &game->game_memory, false);
@@ -119,31 +129,33 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-ao.png", &scene->ao_map, &game->game_memory, false);
 
 
+
+	//ObjModel model;
+	//load_obj("Assets/obj/african_head.obj", &model);
+	////load_obj("Assets/obj/diablo3_pose.obj", &model);
+	//obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
+	//free_obj(&model);
+
+
+	make_uv_sphere(&scene->mesh_test, 16, 32, &game->game_memory);
+
 	init_transform(&scene->mesh_test.transform);
-
-	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
 	scene->mesh_test.transform.position = make_vec3f(0, 0, -5);
-	scene->mesh_test.transform.euler_angles.y = 90.0f;
 
 
 
-	make_cube(&scene->mesh_test2, &game->game_memory);
+	
 
 
+	make_uv_sphere(&scene->mesh_test2, 16, 32, &game->game_memory);
 	init_transform(&scene->mesh_test2.transform);
-
-	//scene->mesh_test.transform.scale = make_vec3f(1, 1, 1);
 	scene->mesh_test2.transform.position = make_vec3f(5, 0, 1);
 	
 
 
-
-	init_transform(&scene->flat_plane.transform);
 	make_plane(&scene->flat_plane, &game->game_memory);
-
-	//make_cube(&scene->flat_plane, &game->game_memory);
-	//make_uv_sphere(&scene->flat_plane, 16, 32, &game->game_memory);
-
+	init_transform(&scene->flat_plane.transform);
+	scene->flat_plane.transform.position = make_vec3f(0, -5, 0);
 	scene->flat_plane.transform.scale = make_vec3f(100, 100, 100);
 	
 

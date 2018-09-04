@@ -210,11 +210,14 @@
     <Text Include="todo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\shaders\brdf.fs" />
+    <None Include="Assets\shaders\brdf.vs" />
     <None Include="Assets\shaders\debug.fs" />
     <None Include="Assets\shaders\debug.vs" />
     <None Include="Assets\shaders\hdr_skymap.fs" />
     <None Include="Assets\shaders\hdr_skymap.vs" />
     <None Include="Assets\shaders\irradiance_conv.fs" />
+    <None Include="Assets\shaders\prefilter.fs" />
     <None Include="Assets\shaders\shadows.fs" />
     <None Include="Assets\shaders\shadows.vs" />
     <None Include="Assets\shaders\simple.fs" />

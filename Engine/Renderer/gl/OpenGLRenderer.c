@@ -11,6 +11,11 @@
 
 static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	
+	// IBL, and pbr code taken from https://learnopengl.com/PBR/IBL/Specular-IBL
+	// Code is very similar but slightly modified to our engine
+	// For now, we'll start our renderer using this code, but eventually move to something more custom and flexible
+	// Example, reflection probes
+	// Precompute irradiance maps, and other maps
 	int skymap_buffer_width = 512;
 	int skymap_buffer_height = 512;
 
@@ -60,10 +65,20 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	load_gl_shader(&opengl->equi_rect_shader, &vertex_shader, &fragment_shader);
 	//// TODO: pop off stack allocator
 
-	// skybox already in the memory
+	
 	//vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
 	fragment_shader = file_to_str("Assets/shaders/irradiance_conv.fs", &opengl->renderer_allocator);
 	load_gl_shader(&opengl->irradiance_conv_shader, &vertex_shader, &fragment_shader);
+	//// TODO: pop off stack allocator
+
+	//vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/prefilter.fs", &opengl->renderer_allocator);
+	load_gl_shader(&opengl->prefilter_shader, &vertex_shader, &fragment_shader);
+	//// TODO: pop off stack allocator
+
+	vertex_shader = file_to_str("Assets/shaders/brdf.vs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/brdf.fs", &opengl->renderer_allocator);
+	load_gl_shader(&opengl->brdf_shader, &vertex_shader, &fragment_shader);
 	//// TODO: pop off stack allocator
 
 
@@ -72,6 +87,7 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->renderer_allocator);
 	load_gl_shader(&opengl->skybox_shader, &vertex_shader, &fragment_shader);
 	//// TODO: pop off stack allocator
+	
 
 	
 
@@ -156,13 +172,6 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 	int conv_width = 32;
 	int conv_height = 32;
-	
-	
-
-	
-
-	
-
 	glGenTextures(1, &opengl->irradiance_map_id);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->irradiance_map_id);
 	for (unsigned int i = 0; i < 6; ++i) {
@@ -182,22 +191,10 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	
 	glUseProgram(opengl->irradiance_conv_shader.program);
 	
-
-
-
-
-
 	glUniformMatrix4fv(glGetUniformLocation(opengl->irradiance_conv_shader.program, "projection"), 1, GL_FALSE, captureProjection.mat1d);
-
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->env_cubemap);
 	glUniform1i(glGetUniformLocation(opengl->irradiance_conv_shader.program, "environment_map"), 0);
-	
-	
-	
-
-	
 	
 	
 	glBindVertexArray(opengl->skybox_VAO);
@@ -214,6 +211,7 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
 	i_uni = glGetUniformLocation(opengl->irradiance_conv_shader.program, "view");
 	for (unsigned int i = 0; i < 6; ++i) {
+		
 		glUniformMatrix4fv(i_uni, 1, GL_FALSE, captureViews[i].mat1d);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, opengl->irradiance_map_id, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -234,12 +232,146 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
-	GLenum err;
-	while ((err = glGetError()) != GL_NO_ERROR) {
-		debug_print(err);
-	}
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// pbr: create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale.
+	 
 
 	
+	glGenTextures(1, &opengl->prefilter_map);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->prefilter_map);
+	for (unsigned int i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, NULL);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // be sure to set minifcation filter to mip_linear 
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+
+	
+
+
+
+	glUseProgram(opengl->prefilter_shader.program);
+
+	glUniformMatrix4fv(glGetUniformLocation(opengl->prefilter_shader.program, "projection"), 1, GL_FALSE, captureProjection.mat1d);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->env_cubemap);
+	glUniform1i(glGetUniformLocation(opengl->prefilter_shader.program, "environment_map"), 0);
+
+
+	glBindVertexArray(opengl->skybox_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
+	glBufferData(GL_ARRAY_BUFFER, scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f), scene->hdr_skymap.cube.pos, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
+
+
+	
+	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+	glFrontFace(GL_CW);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+	unsigned int maxMipLevels = 5;
+	for (unsigned int mip = 0; mip < maxMipLevels; ++mip) {
+		// reisze framebuffer according to mip-level size.
+		unsigned int mipWidth = 128 * powf(0.5, mip);
+		unsigned int mipHeight = 128 * powf(0.5, mip);
+		glBindRenderbuffer(GL_RENDERBUFFER, opengl->capture_RBO);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+		glViewport(0, 0, mipWidth, mipHeight);
+
+		float roughness = (float)mip / (float)(maxMipLevels - 1);
+		glUniform1f(glGetUniformLocation(opengl->prefilter_shader.program, "roughness"), roughness);
+		
+		i_uni = glGetUniformLocation(opengl->prefilter_shader.program, "view");
+		
+		for (unsigned int i = 0; i < 6; ++i) {
+			glUniformMatrix4fv(i_uni, 1, GL_FALSE, captureViews[i].mat1d);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, opengl->prefilter_map, mip);
+
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+				opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+				opengl->render_scene->hdr_skymap.cube.indices,
+				GL_STATIC_DRAW);
+
+			glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+			
+		}
+	}
+	glFrontFace(GL_CCW);
+	glDepthFunc(GL_LESS); // set depth function back to default
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// pbr: generate a 2D LUT from the BRDF equations used.
+	// ----------------------------------------------------
+	
+	glGenTextures(1, &opengl->brdf_lut);
+
+	// pre-allocate enough memory for the LUT texture.
+	glBindTexture(GL_TEXTURE_2D, opengl->brdf_lut);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+	// be sure to set wrapping mode to GL_CLAMP_TO_EDGE
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, opengl->capture_RBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, opengl->brdf_lut, 0);
+
+	glViewport(0, 0, 512, 512);
+	glUseProgram(opengl->brdf_shader.program);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	
+
+	// Render quad
+	unsigned int quadVAO = 0;
+	unsigned int quadVBO;
+
+	float quadVertices[] = {
+		// positions        // texture Coords
+		-1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+		-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+		1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+		1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+	};
+	// setup plane VAO
+	glGenVertexArrays(1, &quadVAO);
+	glGenBuffers(1, &quadVBO);
+	glBindVertexArray(quadVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	
+	glBindVertexArray(quadVAO);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 }
 
 
@@ -389,7 +521,7 @@ static void load_shaders(OpenGLRenderer* opengl) {
 	// Alloc on stack
 	vertex_shader = file_to_str("Assets/shaders/shadows.vs", &opengl->renderer_allocator);
 	fragment_shader = file_to_str("Assets/shaders/shadows.fs", &opengl->renderer_allocator);
-	load_gl_shader(&opengl->shadow_shader, &vertex_shader, &fragment_shader);
+	load_gl_shader(&opengl->shadowmap_shader, &vertex_shader, &fragment_shader);
 	// Free stack
 
 }
@@ -539,14 +671,27 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	// TODO: we should have a list of shaders instead of manually having to call it
 	delete_gl_program(&opengl->main_shader);
 	delete_gl_program(&opengl->debug_shader);
+	delete_gl_program(&opengl->shadowmap_shader);
+	
 	delete_gl_program(&opengl->equi_rect_shader);
-	delete_gl_program(&opengl->shadow_shader);
+	delete_gl_program(&opengl->skybox_shader);
+	delete_gl_program(&opengl->irradiance_conv_shader);
+	delete_gl_program(&opengl->prefilter_shader);
+	delete_gl_program(&opengl->brdf_shader);
+
 	
 
 	glDeleteVertexArrays(1, &opengl->VAO);
 	glDeleteBuffers(1, &opengl->VBO);
 	glDeleteBuffers(1, &opengl->EBO);
 	glDeleteFramebuffers(1, &opengl->shadow_fbo);
+
+	glDeleteVertexArrays(1, &opengl->skybox_VAO);
+	glDeleteBuffers(1, &opengl->skybox_VBO);
+	glDeleteBuffers(1, &opengl->skybox_VAO);
+
+	glDeleteFramebuffers(1, &opengl->capture_FBO);
+	glDeleteRenderbuffers(1, &opengl->capture_RBO);
 	
 	
 
@@ -705,7 +850,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 
 
-	GLint current_shader = light_pass ? opengl->shadow_shader.program : opengl->main_shader.program;
+	GLint current_shader = light_pass ? opengl->shadowmap_shader.program : opengl->main_shader.program;
 
 	// TODO: figure out shader organization. Uber shader?
 
@@ -758,6 +903,16 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->irradiance_map_id);
 		glUniform1i(uniform_index, 6);
+
+		uniform_index = glGetUniformLocation(current_shader, "prefilter_map");
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->prefilter_map);
+		glUniform1i(uniform_index, 7);
+
+		uniform_index = glGetUniformLocation(current_shader, "brdf_lut");
+		glActiveTexture(GL_TEXTURE8);
+		glBindTexture(GL_TEXTURE_2D, opengl->brdf_lut);
+		glUniform1i(uniform_index, 8);
 		
 		
 	}
@@ -990,7 +1145,6 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glFrontFace(GL_CCW);
 
 	glDepthFunc(GL_LESS); // set depth function back to default
-
 
 
 	
