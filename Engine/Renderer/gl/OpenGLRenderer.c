@@ -60,12 +60,20 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	load_gl_shader(&opengl->equi_rect_shader, &vertex_shader, &fragment_shader);
 	//// TODO: pop off stack allocator
 
+	// skybox already in the memory
+	//vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/irradiance_conv.fs", &opengl->renderer_allocator);
+	load_gl_shader(&opengl->irradiance_conv_shader, &vertex_shader, &fragment_shader);
+	//// TODO: pop off stack allocator
+
+
 	//// Load skybox shader
 	vertex_shader = file_to_str("Assets/shaders/skybox.vs", &opengl->renderer_allocator);
 	fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->renderer_allocator);
 	load_gl_shader(&opengl->skybox_shader, &vertex_shader, &fragment_shader);
 	//// TODO: pop off stack allocator
 
+	
 
 	
 
@@ -87,14 +95,21 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 	glGenVertexArrays(1, &opengl->skybox_VAO);
 	glGenBuffers(1, &opengl->skybox_VBO);
+	glGenBuffers(1, &opengl->skybox_EBO);
+	
+	
+
 
 	glBindVertexArray(opengl->skybox_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
 	glBufferData(GL_ARRAY_BUFFER, scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f), scene->hdr_skymap.cube.pos, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
+	
 
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Generate env map from equirectangular map
 	glUseProgram(opengl->equi_rect_shader.program);
 	glUniformMatrix4fv(glGetUniformLocation(opengl->equi_rect_shader.program, "projection"), 1, GL_FALSE, captureProjection.mat1d);
 
@@ -119,29 +134,112 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 		
 		
-	
-
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
-
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 			opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
 			opengl->render_scene->hdr_skymap.cube.indices,
 			GL_STATIC_DRAW);
 
-		
-
-		
 		glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
-		
-
-
 	}
 	glFrontFace(GL_CCW);
 	glDepthFunc(GL_LESS); // set depth function back to default
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Generate irridiance map
+
+	int conv_width = 32;
+	int conv_height = 32;
+	
+	
+
+	
+
+	
+
+	glGenTextures(1, &opengl->irradiance_map_id);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->irradiance_map_id);
+	for (unsigned int i = 0; i < 6; ++i) {
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, conv_width, conv_height, 0, GL_RGB, GL_FLOAT, NULL);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, opengl->capture_RBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, conv_width, conv_height);
+
+	
+	
+	glUseProgram(opengl->irradiance_conv_shader.program);
+	
+
+
+
+
+
+	glUniformMatrix4fv(glGetUniformLocation(opengl->irradiance_conv_shader.program, "projection"), 1, GL_FALSE, captureProjection.mat1d);
+
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->env_cubemap);
+	glUniform1i(glGetUniformLocation(opengl->irradiance_conv_shader.program, "environment_map"), 0);
+	
+	
+	
+
+	
+	
+	
+	glBindVertexArray(opengl->skybox_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
+	glBufferData(GL_ARRAY_BUFFER, scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f), scene->hdr_skymap.cube.pos, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
+	
+
+	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
+	glFrontFace(GL_CW);
+
+	glViewport(0, 0, conv_width, conv_height);
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+	i_uni = glGetUniformLocation(opengl->irradiance_conv_shader.program, "view");
+	for (unsigned int i = 0; i < 6; ++i) {
+		glUniformMatrix4fv(i_uni, 1, GL_FALSE, captureViews[i].mat1d);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, opengl->irradiance_map_id, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+			opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+			opengl->render_scene->hdr_skymap.cube.indices,
+			GL_STATIC_DRAW);
+
+		glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+	}
+	glFrontFace(GL_CCW);
+	glDepthFunc(GL_LESS); // set depth function back to default
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+
+	GLenum err;
+	while ((err = glGetError()) != GL_NO_ERROR) {
+		debug_print(err);
+	}
+
+	
 }
 
 
@@ -152,7 +250,7 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	// TODO: instead of passing the entire scene, we should pass a culled scene for faster rendering
 	opengl->render_scene = scene;
 
-	
+	init_hdr_map(opengl, scene);
 	
 
 
@@ -197,7 +295,7 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(opengl->albedo_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
 	
@@ -208,7 +306,7 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(opengl->normal_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
 
@@ -219,7 +317,7 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(opengl->metallic_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
 
@@ -230,7 +328,7 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(opengl->roughness_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
 
@@ -241,10 +339,10 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameterf(opengl->ao_map_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-
+	
 
 
 
@@ -263,7 +361,7 @@ void set_scene_for_opengl_renderer(OpenGLRenderer* opengl, Scene* scene) {
 	// bind element buffer object to buffer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
-	init_hdr_map(opengl, scene);
+	
 }
 
 
@@ -578,7 +676,6 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	}
 
 
-	
 
 	Mat4x4f view_mat = camera.view_mat;
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
@@ -594,6 +691,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 		opengl->light_space_mat = pv_mat;
 	} else {
+		glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
 		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
 	}
 
@@ -623,30 +721,43 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 
+		GLuint uniform_index = glGetUniformLocation(current_shader, "shadowMap");
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
-		glUniform1i(glGetUniformLocation(current_shader, "shadowMap"), 0);
+		glUniform1i(uniform_index, 0);
 
 
+		uniform_index = glGetUniformLocation(current_shader, "albedo_map");
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, opengl->albedo_map_id);
-		glUniform1i(glGetUniformLocation(current_shader, "albedo_map"), 1);
+		glUniform1i(uniform_index, 1);
 
+		uniform_index = glGetUniformLocation(current_shader, "normal_map");
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, opengl->normal_map_id);
-		glUniform1i(glGetUniformLocation(current_shader, "normal_map"), 2);
+		glUniform1i(uniform_index, 2);
 
+
+		uniform_index = glGetUniformLocation(current_shader, "metallic_map");
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, opengl->metallic_map_id);
-		glUniform1i(glGetUniformLocation(current_shader, "metallic_map"), 3);
+		glUniform1i(uniform_index, 3);
 
+		uniform_index = glGetUniformLocation(current_shader, "roughness_map");
 		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, opengl->roughness_map_id);
-		glUniform1i(glGetUniformLocation(current_shader, "roughness_map"), 4);
+		glUniform1i(uniform_index, 4);
 
+		uniform_index = glGetUniformLocation(current_shader, "ao_map");
 		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, opengl->ao_map_id);
-		glUniform1i(glGetUniformLocation(current_shader, "ao_map"), 5);	
+		glUniform1i(uniform_index, 5);	
+
+		uniform_index = glGetUniformLocation(current_shader, "irradiance_map");
+		glActiveTexture(GL_TEXTURE6);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->irradiance_map_id);
+		glUniform1i(uniform_index, 6);
 		
 		
 	}
@@ -775,10 +886,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 	// Simple colored shader
-	glBindVertexArray(opengl->VAO);
-
-	current_shader = light_pass ? opengl->shadow_shader.program : opengl->main_shader.program;
-	glUseProgram(current_shader);
+	//glBindVertexArray(opengl->VAO);
 
 
 	//debug_print("camera pos %f, %f, %f\n", camera.transform.position.x, camera.transform.position.y, camera.transform.position.z);
@@ -841,38 +949,30 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	if (light_pass) return;
 	// Draw skybox
 
-	
 	glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
 
+	glBindVertexArray(opengl->skybox_VAO);
 	glUseProgram(opengl->skybox_shader.program);
-
-	
-	
-	
-	
-
 	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "projection"), 1, GL_FALSE, projection_mat.mat1d);
 	glUniformMatrix4fv(glGetUniformLocation(opengl->skybox_shader.program, "view"), 1, GL_FALSE, view_mat.mat1d);
 	
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->env_cubemap);
-	//glUniform1i(glGetUniformLocation(opengl->skybox_shader.program, "skybox"), 0);
+	glUniform1i(glGetUniformLocation(opengl->skybox_shader.program, "skybox"), 0);
 
 
-
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
 	glBufferData(GL_ARRAY_BUFFER,
 		opengl->render_scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f),
-		NULL,
+		opengl->render_scene->hdr_skymap.cube.pos,
 		GL_STATIC_DRAW);
-
-	glBufferSubData(GL_ARRAY_BUFFER,
-		0,
-		opengl->render_scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->hdr_skymap.cube.pos);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
 
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 		opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
@@ -914,7 +1014,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debu
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
+	
 	opengl_render_scene(opengl, viewport_size, false);
 	
 	if (render_debug) {

@@ -59,13 +59,17 @@ typedef struct OpenGLRenderer {
 
 	
 	GLShader skybox_shader;
+	GLShader irradiance_conv_shader;
 
 	GLuint skybox_VAO;
 	GLuint skybox_VBO;
+	GLuint skybox_EBO;
 	
 
 
 	GLuint hdr_skymap_id;
+	GLuint irradiance_map_id;
+
 	GLuint capture_FBO;
 	GLuint capture_RBO;
 	GLuint env_cubemap;

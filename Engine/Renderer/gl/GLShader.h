@@ -13,5 +13,5 @@ typedef struct GLShader {
 } GLShader;
 
 
-void  load_gl_shader(GLShader* shader, const char** vertex_code, const char** fragment_code);
+void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fragment_code);
 void delete_gl_program(GLShader* shader);

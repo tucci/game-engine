@@ -169,6 +169,7 @@
     <None Include="Assets\shaders\shadows.fs" />
     <None Include="Assets\shaders\hdr_skymap.vs" />
     <None Include="Assets\shaders\hdr_skymap.fs" />
+    <None Include="Assets\shaders\irradiance_conv.fs" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Downloads\rustediron2_normal.png">
