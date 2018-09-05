@@ -1,3 +1,7 @@
+- pbr workflow / material system
+- material id
+- Triangle list<first index, num index, material_index> for multiple materials per mesh
+
 - memory allocators. No more random mallocs
 - general purpose allocator
 - pool allocator
@@ -10,7 +14,7 @@
 - Vulkan backend
 - Scene tree
 - Collisions
-- Triangle list<first index, num index, material_index> for multiple materials per mesh
+
 - Write some swizzling data to interleave, positions, uvs, other data
 - Editor guis
 - multi threaded game loop
@@ -22,4 +26,3 @@
 - more asserts
 - gamma corrected lighting
 - allocator stats. How much has been allocated, freed, how many allocs, etc
-- pbr workflow / material system

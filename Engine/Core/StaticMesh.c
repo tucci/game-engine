@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 
 #include "../debug_macros.h"
@@ -214,7 +215,8 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, LinearAll
 
 
 	for (int i = 0; i < index_count; i++) {
-		static_mesh->indices[i] = (Vec3i) { 3 * i, 3 * i + 1, 3 * i + 2 };
+		
+		static_mesh->indices[i] = make_vec3i( 3 * i, 3 * i + 1, 3 * i + 2 );
 		Vec3i uv =     model.vt_id[i];
 		Vec3i face =   model.v_id[i];
 		Vec3i normal = model.vn_id[i];

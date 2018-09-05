@@ -5,7 +5,7 @@
 #include "../debug_macros.h"
 
 void stack_alloc_init(StackAllocator* sa, void* start, size_t aligned_size) {
-	sa->start = start;
+	sa->start = cast(char*) start;
 	sa->end = sa->start + aligned_size;
 	sa->current = sa->start;
 }

@@ -139,7 +139,7 @@ void load_scene(Game* game, int scene_id) {
 
 	//make_cube(&scene->mesh_test, &game->game_memory);
 
-	init_transform(&scene->mesh_test.transform);
+	default_transform(&scene->mesh_test.transform);
 	scene->mesh_test.transform.position = make_vec3f(0, 0, -5);
 
 
@@ -148,13 +148,13 @@ void load_scene(Game* game, int scene_id) {
 
 
 	make_uv_sphere(&scene->mesh_test2, 16, 32, &game->game_memory);
-	init_transform(&scene->mesh_test2.transform);
+	default_transform(&scene->mesh_test2.transform);
 	scene->mesh_test2.transform.position = make_vec3f(5, 0, 1);
 	
 
 
 	make_plane(&scene->flat_plane, &game->game_memory);
-	init_transform(&scene->flat_plane.transform);
+	default_transform(&scene->flat_plane.transform);
 	scene->flat_plane.transform.position = make_vec3f(0, -5, 0);
 	scene->flat_plane.transform.scale = make_vec3f(100, 100, 100);
 	
@@ -186,11 +186,11 @@ void game_update(Game* game) {
 
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
 	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
-	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, v3_negate(camera->transform.forward), delta_time); }
-	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, v3_negate(camera->transform.right), delta_time); }
+	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, -camera->transform.forward, delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, -camera->transform.right, delta_time); }
 	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
 	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, v3_negate(camera->transform.up), delta_time); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, -camera->transform.up, delta_time); }
 
 
 
@@ -251,19 +251,19 @@ void game_update(Game* game) {
 	camera->transform.euler_angles.x += (-delta_pos.y * 0.25f);
 
 	camera->transform.euler_angles.x = clamp(camera->transform.euler_angles.x, -89, 89);
-	camera->transform.euler_angles.y = fmod(camera->transform.euler_angles.y, 360.0f);
+	camera->transform.euler_angles.y = fmodf_(camera->transform.euler_angles.y, 360.0f);
 		
 
-	Mat4x4f t = translate(v3_multiply(-1, camera->transform.position));
+	Mat4x4f t = translate(-1 * camera->transform.position);
 	t = transpose(&t);
 	
 
 	Quat q = quat_from_axis_angle(Vec3f_Up, camera->transform.euler_angles.y);
-	q = quat_mult(q, quat_from_axis_angle(Vec3f_Right, camera->transform.euler_angles.x));
+	q = q * quat_from_axis_angle(Vec3f_Right, camera->transform.euler_angles.x);
 
 
 	Mat4x4f rot_xy = quat_to_rotation_matrix(q);
-	Mat4x4f posrot = mat4x4_mul(&rot_xy, &t);
+	Mat4x4f posrot = rot_xy * t;
 
 	
 	// Convert euler angles (yaw,pitch) to our forward vector
@@ -272,7 +272,7 @@ void game_update(Game* game) {
 	
 	
 				
-	camera->transform.right = v3_cross(camera->transform.forward, camera->transform.up);
+	camera->transform.right = cross(camera->transform.forward, camera->transform.up);
 	camera->view_mat = posrot;
 
 	

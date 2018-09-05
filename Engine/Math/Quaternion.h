@@ -36,10 +36,10 @@ Quat inline quat_from_axis_angle(Vec3f n, float deg) {
 	// Convert to radians
 	float rad = deg_to_rad(deg);
 	float half_angle = rad * 0.5f;
-	float sinf_half_angle = sinf(half_angle);
+	float sinf_half_angle = sinf_(half_angle);
 
 
-	result.w = cosf(half_angle);
+	result.w = cosf_(half_angle);
 	result.x = n.x * sinf_half_angle;
 	result.y = n.y * sinf_half_angle;
 	result.z = n.z * sinf_half_angle;
@@ -59,23 +59,23 @@ Quat inline quat_invert(Quat q) {
 }
 
 
-Quat inline quat_mult(Quat q1, Quat q2) {
+Quat inline operator*(Quat q1, Quat q2) {
 	Quat result;
-	result.w = (q1.w * q2.w) - (v3_dot(q1.v, q2.v));
+	result.w = (q1.w * q2.w) - (dot(q1.v, q2.v));
 	// Note q1 * q2 != q2 * q1
-	result.v = v3_add(v3_add(v3_multiply(q1.w, q2.v), v3_multiply(q2.w, q1.v)), v3_cross(q1.v, q2.v));
+	result.v = ((q1.w * q2.v) + (q2.w * q1.v)) + cross(q1.v, q2.v);
 	
 	return result;
 }
 
-Vec3f inline quat_mult_pt(Quat q, Vec3f pt) {
+Vec3f inline operator*(Quat q, Vec3f pt) {
 	Vec3f result;
 	Quat pt_quat;
 	pt_quat.w = 0;
 	pt_quat.v = pt;
 
 	// TODO: optimize
-	result = quat_mult(quat_mult(q, pt_quat), quat_invert(q)).v;
+	result = ((q * pt_quat) * quat_invert(q)).v;
 
 	return result;
 }

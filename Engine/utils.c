@@ -4,6 +4,8 @@
 #include <stdbool.h>
 
 
+#include "debug_macros.h"
+#include "Common/common_macros.h"
 #include "Common/StackAllocator.h"
 
 inline char* file_to_str(const char* filename, StackAllocator* mem) {
@@ -32,7 +34,7 @@ inline char* file_to_str(const char* filename, StackAllocator* mem) {
 		length = ftell(file);
 		fseek(file, 0, SEEK_SET);
 		// + 1 for the \0 terminator
-		buffer = stack_alloc(mem, length + 1, 1);
+		buffer = cast(char*) stack_alloc(mem, length + 1, 1);
 		if (buffer) {
 			fread(buffer, 1, length, file);
 		}

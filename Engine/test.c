@@ -113,15 +113,15 @@ void inline test_simd_vec(void) {
 	Vec4f v1 = make_vec4f(1, 2, 3, 4);
 	Vec4f v2 = make_vec4f(5, 6, 7, 8);
 
-	Vec4f result = v4_add(v1, v2);
+	Vec4f result = v1 + v2;
 	//assert_vec(v1, ToVec4f(6.0f, 8.0f, 10.0f, 12.0f), 0.1f);
-	result = v4_negate(v1);
-	result = v4_sub(v1, v2);
-	result = v4_multiply(5, v2);
-	float dot = v4_dot(v1, v2);
-	float length = v4_length(v1);
-	result = v4_normalize(v1);
-	result.xyz = v3_cross(v1.xyz, v2.xyz);
+	result = -v1;
+	result = v1 - v2;
+	result = 5 * v2;
+	float dotproduct = dot(v1, v2);
+	float length = magnitude(v1);
+	result = normalize(v1);
+	result.xyz = cross(v1.xyz, v2.xyz);
 }
 
 
@@ -145,13 +145,13 @@ void inline test_quats(void) {
 	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 270);
 
 	Vec3f pt = make_vec3f(1, 0, 0);
-	Vec3f result = quat_mult_pt(a, pt);
+	Vec3f result = a * pt;
 
 }
 
 void inline test_transforms(void) {
 	Transform t;
-	init_transform(&t);
+	//init_transform(&t);
 
 
 	Mat4x4f m = trs_mat_from_transform(&t);

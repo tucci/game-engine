@@ -1,5 +1,8 @@
 #pragma once
 
+// TODO: move away from math runtime
+// and implement in simd
+#include <math.h>
 
 
 #define PI 3.141592653589f
@@ -44,8 +47,38 @@ float inline clamp(float x, float min, float max) {
 
 float inline remap(float value, float from1, float to1, float from2, float to2) {
 	float result = (value - from1) / (to1 - from1) * (to2 - from2) + from2;
+	
 	return result;
 }
 
 
+float inline sinf_(float x) {
+	return sinf(x);
+}
+
+float inline cosf_(float x) {
+	return cosf(x);
+}
+
+float inline tanf_(float x) {
+	return tanf(x);
+}
+
+float inline atan2f_(float y, float x) {
+	return atan2f(y, x);
+}
+
+float inline asinf_(float x) {
+	return asinf(x);
+}
+
+float inline sqrtf_(float x) {
+	return sqrtf(x);
+}
+
+float inline fmodf_(float number, float denom) {
+	return fmodf(number, denom);
+}
+
 // TODO: implement lerp
+

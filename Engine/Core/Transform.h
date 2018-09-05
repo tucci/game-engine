@@ -7,20 +7,20 @@
 
 typedef struct Transform {
 	
-	Vec3f scale;
-	Vec3f euler_angles;
+	Vec3f scale;// = Vec3f_One;
+	Vec3f euler_angles;// = Vec3f_Zero;
 
-	Vec3f forward;
-	Vec3f up;
-	Vec3f right;
+	Vec3f forward;// = Vec3f_Forward;
+	Vec3f up;// = Vec3f_Up;
+	Vec3f right;// = Vec3f_Right;
 
-	Quat rotation;
-	Vec3f position;
-
+	Quat rotation;// = quat_identity();
+	Vec3f position;// = Vec3f_Zero;
 } Transform;
 
 
-void inline init_transform(Transform* transform) {
+// TODO: move this to a default constructor
+void inline default_transform(Transform* transform) {
 	transform->position = Vec3f_Zero;
 	transform->scale = Vec3f_One;
 	transform->euler_angles = Vec3f_Zero;
@@ -57,8 +57,8 @@ Mat4x4f inline translate(Vec3f vec) {
 Mat4x4f inline rotate_with_mat(Mat4x4f m, float rads, Vec3f axis) {
 
 
-	float cos_angle = cosf(rads);
-	float sin_angle = sinf(rads);
+	float cos_angle = cosf_(rads);
+	float sin_angle = sinf_(rads);
 
 	float one_minus_cos = 1 - cos_angle;
 
@@ -98,8 +98,8 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 	// Build quat from our euler angles
 	Quat q;
 	q =				 quat_from_axis_angle(Vec3f_Up, transform->euler_angles.y);
-	q = quat_mult(q, quat_from_axis_angle(Vec3f_Right, transform->euler_angles.x));
-	q = quat_mult(q, quat_from_axis_angle(Vec3f_Forward, transform->euler_angles.z));
+	q = (q * quat_from_axis_angle(Vec3f_Right, transform->euler_angles.x));
+	q = (q * quat_from_axis_angle(Vec3f_Forward, transform->euler_angles.z));
 
 	// Build the rotation matrix from our quat
 	Mat4x4f r = quat_to_rotation_matrix(q);
@@ -112,8 +112,8 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 	// Scale first
 	// Then rotate
 	// Then translate
-	result = mat4x4_mul(&r, &s);
-	result = mat4x4_mul(&t, &result);
+	result = r * s;
+	result = t * result;
 	
 
 

@@ -31,7 +31,7 @@ void init_camera_default(Camera* camera) {
 
 	camera->transform.forward = make_vec3f( 0, 0, -1);
 	camera->transform.up = make_vec3f(0, 1, 0);
-	camera->transform.right = v3_cross(camera->transform.forward, camera->transform.up);
+	camera->transform.right = cross(camera->transform.forward, camera->transform.up);
 	
 	
 
@@ -49,5 +49,5 @@ void set_camera_pos(Camera* camera, Vec3f pos) {
 
 
 void move_camera_in_direction(Camera* camera, Vec3f direction, float delta_time) {
-	camera->transform.position = v3_add(camera->transform.position, v3_multiply(10 * delta_time, direction));
+	camera->transform.position = camera->transform.position + (10 * delta_time) * direction;
 }

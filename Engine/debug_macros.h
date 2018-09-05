@@ -5,6 +5,7 @@
 
 
 #if DEBUG
+#include <stdio.h>
 #define debug_print(...) printf(__VA_ARGS__)
 
 #else

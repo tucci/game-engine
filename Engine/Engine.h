@@ -168,10 +168,7 @@ typedef struct Engine {
 	void* partition_ptr;
 
 	
-	Game* loaded_game;
-	
-	
-
+	Game* loaded_game;	
 	
 } Engine;
 

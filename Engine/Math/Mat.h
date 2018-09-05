@@ -33,7 +33,7 @@ Mat4x4f inline transpose(Mat4x4f* mat) {
 	return result;
 }
 
-
+// TODO: also have a constructor that does this
 Mat4x4f inline mat4x4f_identity() {
 	Mat4x4f mat;
 
@@ -198,7 +198,7 @@ bool inline mat4x4f_invert(Mat4x4f* m, Mat4x4f* invOut) {
 
 
 
-Mat4x4f inline mat4x4_mul(Mat4x4f* m1, Mat4x4f* m2) {
+Mat4x4f inline operator*(Mat4x4f& m1, Mat4x4f& m2) {
 	int i, j, k;
 	Mat4x4f result;
 
@@ -207,7 +207,7 @@ Mat4x4f inline mat4x4_mul(Mat4x4f* m1, Mat4x4f* m2) {
 			result.mat1d[j * 4 + i] = 0;
 
 			for (k = 0; k < 4; k++) {
-				result.mat1d[j * 4 + i] += m1->mat1d[k * 4 + i] * m2->mat1d[j * 4 + k];
+				result.mat1d[j * 4 + i] += m1.mat1d[k * 4 + i] * m2.mat1d[j * 4 + k];
 			}
 		}
 	}
@@ -215,13 +215,15 @@ Mat4x4f inline mat4x4_mul(Mat4x4f* m1, Mat4x4f* m2) {
 	//result = transpose(&result);
 	return result;
 }
-Vec4f inline mat4x4_vec_mul(Mat4x4f* m, Vec4f v) {
+
+
+Vec4f inline operator*(Mat4x4f& m, Vec4f v) {
 	// NOTE: this is column major multiplication
 	Vec4f result;
-	result.x = (m->m00 * v.x) + (m->m01 * v.y) + (m->m02 * v.z) + (m->m03 * v.w);
-	result.y = (m->m10 * v.x) + (m->m11 * v.y) + (m->m12 * v.z) + (m->m13 * v.w);
-	result.z = (m->m20 * v.x) + (m->m21 * v.y) + (m->m22 * v.z) + (m->m23 * v.w);
-	result.w = (m->m30 * v.x) + (m->m31 * v.y) + (m->m32 * v.z) + (m->m33 * v.w);
+	result.x = (m.m00 * v.x) + (m.m01 * v.y) + (m.m02 * v.z) + (m.m03 * v.w);
+	result.y = (m.m10 * v.x) + (m.m11 * v.y) + (m.m12 * v.z) + (m.m13 * v.w);
+	result.z = (m.m20 * v.x) + (m.m21 * v.y) + (m.m22 * v.z) + (m.m23 * v.w);
+	result.w = (m.m30 * v.x) + (m.m31 * v.y) + (m.m32 * v.z) + (m.m33 * v.w);
 	
 
 	
@@ -249,7 +251,7 @@ Mat4x4f inline perspective(float near, float far, float fov_deg, float aspect_ra
 	float depth = near - far;
 	float inverse_depth = 1 / depth;
 
-	float f = 1 / tanf(fov_deg * 0.5f * PI / 180.0f);
+	float f = 1 / tanf_(fov_deg * 0.5f * PI / 180.0f);
 
 	mat.mat2d[0][0] = f / aspect_ratio;
 	mat.mat2d[1][1] = f;
@@ -296,9 +298,9 @@ Mat4x4f inline ortho(float near, float far, float top, float bottom, float right
 
 
 Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
-	Vec3f forward = v3_normalize(v3_sub(eye, to));
-	Vec3f right = v3_normalize(v3_cross(up, forward));
-	up = v3_normalize(v3_cross(forward, right));
+	Vec3f forward = normalize(eye - to);
+	Vec3f right = normalize(cross(up, forward));
+	up = normalize(cross(forward, right));
 
 	Mat4x4f mat = mat4x4f_identity();
 	Mat4x4f mat2 = mat4x4f_identity();
@@ -310,7 +312,7 @@ Mat4x4f inline look_at(Vec3f eye, Vec3f to, Vec3f up) {
 		mat.mat2d[i][2] = forward.data[i];
 		mat2.mat2d[3][i] = -eye.data[i];
 	}
-	mat = mat4x4_mul(&mat2, &mat);
+	mat = mat2 * mat;
 
 	//mat = transpose(&mat);
 	//mat4x4f_invert(&mat, &mat);*/

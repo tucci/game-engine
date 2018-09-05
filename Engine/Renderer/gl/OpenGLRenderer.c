@@ -730,8 +730,8 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	Mat4x4f view_mat = camera.view_mat;//look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	
-	Mat4x4f mvp_mat = mat4x4_mul(&projection_mat, &view_mat);
-	mvp_mat = mat4x4_mul(&mvp_mat, &model_mat);
+	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
+	
 
 
 	glBindVertexArray(opengl->grid_debug_VAO);
@@ -808,7 +808,6 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 		&dir_light_line);
 
 
-	Vec3f color = make_vec3f(1, 1, 1);
 	// Buffer color data
 	glBufferSubData(GL_ARRAY_BUFFER,
 		2 * sizeof(Vec3f),
@@ -852,14 +851,14 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
 		view_mat = look_at(scene->test_light.direction, make_vec3f(0, 0, 0), Vec3f_Up);
 		projection_mat = ortho(-camera.far, camera.far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
-		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
+		pv_mat = projection_mat * view_mat;
 	
 		
 
 		opengl->light_space_mat = pv_mat;
 	} else {
 		glBindTexture(GL_TEXTURE_2D, opengl->shadow_map);
-		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
+		pv_mat = projection_mat * view_mat;
 	}
 
 

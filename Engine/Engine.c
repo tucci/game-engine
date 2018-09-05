@@ -318,29 +318,26 @@ static bool init_display(Engine* engine) {
 
 static bool init_window(Engine* engine) {
 
-	SDL_WindowFlags sdl_flags = 0;
+	
 	engine->window.flags = 0;
 
 	engine->window.flags |= WindowFlag_Resizable;
+
+	// TODO: game crashes when we do full screen
 	//engine->window.flags |= WindowFlag_Fullscreen;
 
 
 
 	if (engine->renderer.type == BackenedRenderer_OpenGL) {
 		engine->window.flags |= WindowFlag_OpenGL;
-		sdl_flags |= SDL_WINDOW_OPENGL;
 	}
 	
-	if (engine->window.flags & WindowFlag_Resizable) {
-		sdl_flags |= SDL_WINDOW_RESIZABLE;
-	}
-	if (engine->window.flags & WindowFlag_Fullscreen) {
-		sdl_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-	}
+	
+	
 
 
 
-
+	SDL_WindowFlags sdl_flags = cast(SDL_WindowFlags) engine->window.flags;
 
 
 	SDL_Window* sdl_window;
@@ -377,8 +374,9 @@ static bool init_window(Engine* engine) {
 	}
 
 	engine->window.title = title;
-	engine->window.pos = (Vec2i) { x, y };
-	engine->window.size = (Vec2i) { w, h };
+	
+	engine->window.pos = make_vec2i(x, y);
+	engine->window.size = make_vec2i(w, h);
 	engine->window.sdl_window = sdl_window;
 	engine->window.sdl_window_flags = sdl_flags;
 
@@ -413,8 +411,8 @@ static bool init_renderer(Engine* engine) {
 
 static bool init_keys(Engine* engine) {
 	// TODO: this is a temp fix. we need to manually warp the mouse
-	SDL_SetRelativeMouseMode(true);
-	SDL_CaptureMouse(true);
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_CaptureMouse(SDL_TRUE);
 	// Init mouse buttons
 	reset_button_state(&engine->input.mouse.mouse_button_left);
 	reset_button_state(&engine->input.mouse.mouse_button_middle);
@@ -508,8 +506,8 @@ static void process_inputs(Engine* engine) {
 
 		Event event;
 		event.kind = EventKind_Mouse_Move;
-		event.event.mouse_move_event.pos = (Vec2i) { x, y };
-		event.event.mouse_move_event.delta_pos  = cast(Vec2i) { x - engine->input.mouse.pos.x, y - engine->input.mouse.pos.y };
+		event.event.mouse_move_event.pos = make_vec2i(x, y);
+		event.event.mouse_move_event.delta_pos  = make_vec2i(x - engine->input.mouse.pos.x, y - engine->input.mouse.pos.y);
 
 		
 		// if last delta == 0 && new delta  == 0, skip. dont send events if the mouse hasnt moved since last time we polled
@@ -557,7 +555,7 @@ static void process_inputs(Engine* engine) {
 					Event event;
 					event.kind = sdl_event.type == SDL_MOUSEBUTTONDOWN ? EventKind_Mouse_Button_Down : EventKind_Mouse_Button_Up;
 					event.event.mouse_button_event.button = button;
-					event.event.mouse_button_event.pos = (Vec2i) { .x = sdl_event.button.x, .y = sdl_event.button.y };
+					event.event.mouse_button_event.pos = make_vec2i(sdl_event.button.x, sdl_event.button.y);
 					push_to_event_queue(engine, event);
 				}
 
@@ -760,7 +758,7 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	
 
 	// Game specific update
-	game_update(engine->loaded_game, &engine->input, &engine->game_loop);
+	game_update(engine->loaded_game);
 
 	
 }

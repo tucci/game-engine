@@ -10,9 +10,9 @@
 // NOTE: the passed in aligned size should be aligned by the caller
 void linear_init(LinearAllocator* arena, void* start, size_t aligned_size) {
 	//assert(start != NULL);
-	arena->start = start;
+	arena->start = cast(char*) start;
 	arena->end = arena->start + aligned_size;
-	arena->current = start;
+	arena->current = cast(char*) start;
 }
 
 void* linear_alloc(LinearAllocator* arena, size_t size, size_t alignment) {

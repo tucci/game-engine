@@ -267,16 +267,16 @@ void make_uv_sphere(StaticMesh* mesh, int lats, int longs, LinearAllocator* memo
 			float phi1 = (cast(float)p / longs) * 2 * PI;
 			float phi2 = (cast(float)(p + 1) / longs) * 2 * PI;
 			
-			float sin_theta1 = sinf(theta1);
-			float cos_theta1 = cosf(theta1);
-			float sin_phi1 = sinf(phi1);
-			float cos_phi1  = cosf(phi1);
+			float sin_theta1 = sinf_(theta1);
+			float cos_theta1 = cosf_(theta1);
+			float sin_phi1 = sinf_(phi1);
+			float cos_phi1  = cosf_(phi1);
 
 
-			float sin_theta2 = sinf(theta2);
-			float cos_theta2 = cosf(theta2);
-			float sin_phi2 = sinf(phi2);
-			float cos_phi2 = cosf(phi2);
+			float sin_theta2 = sinf_(theta2);
+			float cos_theta2 = cosf_(theta2);
+			float sin_phi2 = sinf_(phi2);
+			float cos_phi2 = cosf_(phi2);
 			
 
 			// Flip y, and z coordinates
@@ -308,10 +308,10 @@ void make_uv_sphere(StaticMesh* mesh, int lats, int longs, LinearAllocator* memo
 			mesh->normal[vertex_index4] = v4;
 			
 
-			v1 = v3_normalize(v1);
-			v2 = v3_normalize(v2);
-			v3 = v3_normalize(v3);
-			v4 = v3_normalize(v4);
+			v1 = normalize(v1);
+			v2 = normalize(v2);
+			v3 = normalize(v3);
+			v4 = normalize(v4);
 
 			// TODO: this is a hack to fix the uv wrapping
 			// Fix the division to work depedning if the longs are even or odd
@@ -324,21 +324,21 @@ void make_uv_sphere(StaticMesh* mesh, int lats, int longs, LinearAllocator* memo
 				// This is because the texture tries to lerp between 0.9 and 0
 				// Or look into cube mapped sphere
 				//https://stackoverflow.com/questions/9511499/seam-issue-when-mapping-a-texture-to-a-sphere-in-opengl
-				Vec2f t1 = make_vec2f(1, 0.5f - (asinf(v1.y) / PI));
+				Vec2f t1 = make_vec2f(1, 0.5f - (asinf_(v1.y) / PI));
 				// t2 uses v1. it's ugly, and weird, and shouldnt work. but it does
-				Vec2f t2 = make_vec2f(0.5f + (atan2f(v1.z, v1.x) / (2 * PI)), 0.5f - (asinf(v2.y) / PI));
-				Vec2f t3 = make_vec2f(1, 0.5f - (asinf(v3.y) / PI));
-				Vec2f t4 = make_vec2f(0.5f + (atan2f(v4.z, v4.x) / (2 * PI)), 0.5f - (asinf(v4.y) / PI));
+				Vec2f t2 = make_vec2f(0.5f + (atan2f_(v1.z, v1.x) / (2 * PI)), 0.5f - (asinf_(v2.y) / PI));
+				Vec2f t3 = make_vec2f(1, 0.5f - (asinf_(v3.y) / PI));
+				Vec2f t4 = make_vec2f(0.5f + (atan2f_(v4.z, v4.x) / (2 * PI)), 0.5f - (asinf_(v4.y) / PI));
 
 				mesh->texcoords[vertex_index2] = t1;
 				mesh->texcoords[vertex_index1] = t2;
 				mesh->texcoords[vertex_index3] = t3;
 				mesh->texcoords[vertex_index4] = t4;
 			} else {
-				mesh->texcoords[vertex_index2] = make_vec2f(0.5f + (atan2f(v2.z, v2.x) / (2 * PI)), 0.5f - (asinf(v2.y) / PI));
-				mesh->texcoords[vertex_index1] = make_vec2f(0.5f + (atan2f(v1.z, v1.x) / (2 * PI)), 0.5f - (asinf(v1.y) / PI));
-				mesh->texcoords[vertex_index3] = make_vec2f(0.5f + (atan2f(v3.z, v3.x) / (2 * PI)), 0.5f - (asinf(v3.y) / PI));
-				mesh->texcoords[vertex_index4] = make_vec2f(0.5f + (atan2f(v4.z, v4.x) / (2 * PI)), 0.5f - (asinf(v4.y) / PI));
+				mesh->texcoords[vertex_index2] = make_vec2f(0.5f + (atan2f_(v2.z, v2.x) / (2 * PI)), 0.5f - (asinf_(v2.y) / PI));
+				mesh->texcoords[vertex_index1] = make_vec2f(0.5f + (atan2f_(v1.z, v1.x) / (2 * PI)), 0.5f - (asinf_(v1.y) / PI));
+				mesh->texcoords[vertex_index3] = make_vec2f(0.5f + (atan2f_(v3.z, v3.x) / (2 * PI)), 0.5f - (asinf_(v3.y) / PI));
+				mesh->texcoords[vertex_index4] = make_vec2f(0.5f + (atan2f_(v4.z, v4.x) / (2 * PI)), 0.5f - (asinf_(v4.y) / PI));
 			}
 			
 
