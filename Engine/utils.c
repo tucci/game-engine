@@ -4,9 +4,9 @@
 #include <stdbool.h>
 
 
-#include "Common/LinearAllocator.h"
+#include "Common/StackAllocator.h"
 
-inline char* file_to_str(const char* filename, LinearAllocator* mem) {
+inline char* file_to_str(const char* filename, StackAllocator* mem) {
 	char * buffer = 0;
 	long length;
 
@@ -14,27 +14,30 @@ inline char* file_to_str(const char* filename, LinearAllocator* mem) {
 	FILE* file;
 	errno_t err;
 
-	err = fopen_s(&file, filename, "r");
+	err = fopen_s(&file, filename, "rb");
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
 		debug_print("The file was opened\n");
 	} else {
-		return NULL;
 		debug_print("The file was not opened\n");
+		return NULL;
 	}
 
 	
-	
+	//problem is that ftell is couting number of \n
 	
 	if (file) {
 		fseek(file, 0, SEEK_END);
 		length = ftell(file);
 		fseek(file, 0, SEEK_SET);
-		buffer = linear_alloc(mem, length, 1);
+		// + 1 for the \0 terminator
+		buffer = stack_alloc(mem, length + 1, 1);
 		if (buffer) {
 			fread(buffer, 1, length, file);
 		}
+		// Terminate the string
+		buffer[length] = '\0';
 		fclose(file);
 	}
 

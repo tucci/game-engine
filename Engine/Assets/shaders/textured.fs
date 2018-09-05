@@ -163,7 +163,7 @@ void main(){
     float metallic  = texture(metallic_map, frag_uv).r;
     float roughness = texture(roughness_map, frag_uv).r;
 	float ao        = texture(ao_map, frag_uv).r;
-	vec3 N = getNormalFromMap();
+	vec3 N			= getNormalFromMap();
 
 	// Vector from point to camera
     vec3 V = normalize(camera_pos - frag_pos);
@@ -265,7 +265,7 @@ void main(){
 
 
 	
-	//frag_color =  vec4(normalize(frag_normal), 1.0f).rgba;
+	//frag_color =  vec4(normalize(frag_normal), 1.0f).rgba; 
 	//frag_color =  vec4(N, 1.0f).rgba;
 	
 	//frag_color =  texture(metallic_map, frag_uv).rgba;

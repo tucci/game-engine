@@ -11,9 +11,11 @@
 
 #include "debug_macros.h"
 
-#define LINE_SIZE 256
 
-static float parse_float(char** stream) {
+// NOTE: these are deprecated, use obj_to_static_mesh in static mesh to load into our arenas
+// This is used just for the legacy software renderer
+
+static float parse_float2(char** stream) {
 	const char* start = *stream;
 	if (**stream == '-') {
 		(*stream)++;
@@ -33,7 +35,7 @@ static float parse_float(char** stream) {
 	return f;
 }
 
-static int parse_int(char** stream) {
+static int parse_int2(char** stream) {
 	const char* start = *stream;
 	if (**stream == '-') {
 		(*stream)++;
@@ -80,7 +82,7 @@ void load_obj(const char* filename, ObjModel* model) {
 
 
 
-	char line[LINE_SIZE];
+	char line[256];
 
 	while (fgets(line, sizeof(line), file)) {
 		char* stream = line;
@@ -98,32 +100,32 @@ void load_obj(const char* filename, ObjModel* model) {
 				switch (*stream) {
 					case ' ': // Positions
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.x = parse_float(&stream);
+						v.x = parse_float2(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.y = parse_float(&stream);
+						v.y = parse_float2(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.z = parse_float(&stream);
+						v.z = parse_float2(&stream);
 						v.w = 1;
 						stb_sb_push(model->verts, v);
 						break;
 					case 't': // Textures
 						stream++;
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.x = parse_float(&stream);
+						v.x = parse_float2(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.y = parse_float(&stream);
+						v.y = parse_float2(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.z = parse_float(&stream);
+						v.z = parse_float2(&stream);
 						stb_sb_push(model->texcoords, v.xyz.xy);
 						break;
 					case 'n': // Normals
 						stream++;
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.x = parse_float(&stream);
+						v.x = parse_float2(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.y = parse_float(&stream);
+						v.y = parse_float2(&stream);
 						while (*stream == ' ') { stream++; }// skip spaces
-						v.z = parse_float(&stream);
+						v.z = parse_float2(&stream);
 						stb_sb_push(model->normals, v.xyz);
 						break;
 					default:
@@ -135,16 +137,16 @@ void load_obj(const char* filename, ObjModel* model) {
 				stream++;
 				for (int i = 0; i < 3; i++) {
 					while (*stream == ' ') { stream++; }// skip spaces
-					v_id.data[i] = parse_int(&stream) - 1;
+					v_id.data[i] = parse_int2(&stream) - 1;
 					if (*stream == '/') {
 						has_vts = true;
 						stream++;
-						vt_id.data[i] = parse_int(&stream) - 1;
+						vt_id.data[i] = parse_int2(&stream) - 1;
 					}
 					if (*stream == '/') {
 						has_vns = true;
 						stream++;
-						vn_id.data[i] = parse_int(&stream) - 1;
+						vn_id.data[i] = parse_int2(&stream) - 1;
 					}
 				}
 

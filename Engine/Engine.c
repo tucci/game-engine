@@ -412,7 +412,7 @@ static bool init_renderer(Engine* engine) {
 
 
 static bool init_keys(Engine* engine) {
-	// TODO: we should expose these to the game, to see if they want to toggle these
+	// TODO: this is a temp fix. we need to manually warp the mouse
 	SDL_SetRelativeMouseMode(true);
 	SDL_CaptureMouse(true);
 	// Init mouse buttons

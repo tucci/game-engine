@@ -64,9 +64,9 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 	
 	
 
@@ -85,17 +85,17 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/rust_iron/rustediron2_roughness.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/rust_iron/rustediron2_ao.png", &scene->ao_map, &game->game_memory, false);
 
-	load_texture("Assets/textures/granite_smooth/granitesmooth1-albedo.png", &scene->albedo_map, &game->game_memory, false);
-	load_texture("Assets/textures/granite_smooth/granitesmooth1-normal2.png", &scene->normal_map, &game->game_memory, false);
-	load_texture("Assets/textures/granite_smooth/granitesmooth1-metalness.png", &scene->metallic_map, &game->game_memory, false);
-	load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
-	load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-normal2.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-albedo.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-metalness.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
 
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 
@@ -130,14 +130,14 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	//ObjModel model;
-	//load_obj("Assets/obj/african_head.obj", &model);
-	////load_obj("Assets/obj/diablo3_pose.obj", &model);
-	//obj_to_static_mesh(&model, &scene->mesh_test, &game->game_memory);
-	//free_obj(&model);
+	
+	
+	//load_obj("Assets/obj/diablo3_pose.obj", &model);
+	obj_to_static_mesh("Assets/obj/african_head.obj", &scene->mesh_test, &game->game_memory);
+	
 
 
-	make_uv_sphere(&scene->mesh_test, 16, 32, &game->game_memory);
+	//make_cube(&scene->mesh_test, &game->game_memory);
 
 	init_transform(&scene->mesh_test.transform);
 	scene->mesh_test.transform.position = make_vec3f(0, 0, -5);
@@ -275,11 +275,9 @@ void game_update(Game* game) {
 	camera->transform.right = v3_cross(camera->transform.forward, camera->transform.up);
 	camera->view_mat = posrot;
 
+	
 	// TODO: we also need to update the up vector since it could change when we change the x angle >
 
-	//debug_print("orientation %f, %f, %f, forward, %f, %f, %f \n",
-	//	camera->transform.euler_angles.x, camera->transform.euler_angles.y, camera->transform.euler_angles.z,
-	//	camera->transform.forward.x, camera->transform.forward.y, camera->transform.forward.z);
 
 }
 

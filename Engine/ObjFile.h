@@ -21,6 +21,7 @@ typedef struct ObjModel {
 } ObjModel;
 
 
-
+// NOTE: these are deprecated, use obj_to_static_mesh in static mesh to load into our arenas
+// This is used just for the legacy software renderer
 void load_obj(const char* filename, ObjModel* model);
 void free_obj(ObjModel* model);

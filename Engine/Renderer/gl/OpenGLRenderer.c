@@ -60,33 +60,47 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 
 	//// Load skymap to equirectangular shader 
-	const char* vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
-	const char* fragment_shader = file_to_str("Assets/shaders/hdr_skymap.fs", &opengl->renderer_allocator);
+	const char* vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->stack_allocator);
+	const char* fragment_shader = file_to_str("Assets/shaders/hdr_skymap.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->equi_rect_shader, &vertex_shader, &fragment_shader);
-	//// TODO: pop off stack allocator
+	// Pop fragment shader
+	// we want to keep the vertax shader in the next shader
+	stack_pop(&opengl->stack_allocator);
+	
 
 	
 	//vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
-	fragment_shader = file_to_str("Assets/shaders/irradiance_conv.fs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/irradiance_conv.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->irradiance_conv_shader, &vertex_shader, &fragment_shader);
-	//// TODO: pop off stack allocator
+	// Pop fragment shader
+	// we want to keep the vertax shader in the next shader
+	stack_pop(&opengl->stack_allocator);
 
 	//vertex_shader = file_to_str("Assets/shaders/hdr_skymap.vs", &opengl->renderer_allocator);
-	fragment_shader = file_to_str("Assets/shaders/prefilter.fs", &opengl->renderer_allocator);
+	fragment_shader = file_to_str("Assets/shaders/prefilter.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->prefilter_shader, &vertex_shader, &fragment_shader);
-	//// TODO: pop off stack allocator
+	// Pop fragment shader
+	// we want to keep the vertax shader in the next shader
+	stack_pop(&opengl->stack_allocator);
 
-	vertex_shader = file_to_str("Assets/shaders/brdf.vs", &opengl->renderer_allocator);
-	fragment_shader = file_to_str("Assets/shaders/brdf.fs", &opengl->renderer_allocator);
+	vertex_shader = file_to_str("Assets/shaders/brdf.vs", &opengl->stack_allocator);
+	fragment_shader = file_to_str("Assets/shaders/brdf.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->brdf_shader, &vertex_shader, &fragment_shader);
-	//// TODO: pop off stack allocator
-
+	
+	// Pop brdf vs/fs
+	stack_pop(&opengl->stack_allocator);
+	stack_pop(&opengl->stack_allocator);
 
 	//// Load skybox shader
-	vertex_shader = file_to_str("Assets/shaders/skybox.vs", &opengl->renderer_allocator);
-	fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->renderer_allocator);
+	vertex_shader = file_to_str("Assets/shaders/skybox.vs", &opengl->stack_allocator);
+	fragment_shader = file_to_str("Assets/shaders/skybox.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->skybox_shader, &vertex_shader, &fragment_shader);
-	//// TODO: pop off stack allocator
+	// Pop skybox vs/fs
+	stack_pop(&opengl->stack_allocator);
+	stack_pop(&opengl->stack_allocator);
+
+	// Pop original hdr_skymap vertex shader
+	stack_pop(&opengl->stack_allocator);
 	
 
 	
@@ -152,11 +166,11 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-			opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
-			opengl->render_scene->hdr_skymap.cube.indices,
+			scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+			scene->hdr_skymap.cube.indices,
 			GL_STATIC_DRAW);
 
-		glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 3 * scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
 	}
 	glFrontFace(GL_CCW);
 	glDepthFunc(GL_LESS); // set depth function back to default
@@ -220,11 +234,11 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-			opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
-			opengl->render_scene->hdr_skymap.cube.indices,
+			scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+			scene->hdr_skymap.cube.indices,
 			GL_STATIC_DRAW);
 
-		glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 3 * scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
 	}
 	glFrontFace(GL_CCW);
 	glDepthFunc(GL_LESS); // set depth function back to default
@@ -280,8 +294,8 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	unsigned int maxMipLevels = 5;
 	for (unsigned int mip = 0; mip < maxMipLevels; ++mip) {
 		// reisze framebuffer according to mip-level size.
-		unsigned int mipWidth = 128 * powf(0.5, mip);
-		unsigned int mipHeight = 128 * powf(0.5, mip);
+		unsigned int mipWidth = (unsigned int) 128 * powf(0.5, mip);
+		unsigned int mipHeight =(unsigned int)  128 * powf(0.5, mip);
 		glBindRenderbuffer(GL_RENDERBUFFER, opengl->capture_RBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
@@ -299,11 +313,11 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 			
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
-				opengl->render_scene->hdr_skymap.cube.indices,
+				scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+				scene->hdr_skymap.cube.indices,
 				GL_STATIC_DRAW);
 
-			glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_TRIANGLES, 3 * scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
 			
 		}
 	}
@@ -509,20 +523,23 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 static void load_shaders(OpenGLRenderer* opengl) {
 
 	// TODO: move shader up to scene, also the scene shader has to be graphics backended independant, ex gl/ d3d
-	// TODO: load shaders using stack allocator
 
 	// Alloc on stack
-	const char* vertex_shader   = file_to_str("Assets/shaders/textured.vs", &opengl->renderer_allocator);
-	const char* fragment_shader = file_to_str("Assets/shaders/textured.fs", &opengl->renderer_allocator);
+	const char* vertex_shader   = file_to_str("Assets/shaders/textured.vs", &opengl->stack_allocator);
+	const char* fragment_shader = file_to_str("Assets/shaders/textured.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->main_shader, &vertex_shader, &fragment_shader);
 	// Free stack
+	stack_pop(&opengl->stack_allocator);
+	stack_pop(&opengl->stack_allocator);
 
 
 	// Alloc on stack
-	vertex_shader = file_to_str("Assets/shaders/shadows.vs", &opengl->renderer_allocator);
-	fragment_shader = file_to_str("Assets/shaders/shadows.fs", &opengl->renderer_allocator);
+	vertex_shader = file_to_str("Assets/shaders/shadows.vs", &opengl->stack_allocator);
+	fragment_shader = file_to_str("Assets/shaders/shadows.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->shadowmap_shader, &vertex_shader, &fragment_shader);
 	// Free stack
+	stack_pop(&opengl->stack_allocator);
+	stack_pop(&opengl->stack_allocator);
 
 }
 
@@ -533,11 +550,13 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 	opengl->draw_lines = false;
 	
 
-	const char* debug_vertex_shader = file_to_str("Assets/shaders/debug.vs", &opengl->renderer_allocator);
-	const char* debug_fragment_shader = file_to_str("Assets/shaders/debug.fs", &opengl->renderer_allocator);
+	const char* debug_vertex_shader = file_to_str("Assets/shaders/debug.vs", &opengl->stack_allocator);
+	const char* debug_fragment_shader = file_to_str("Assets/shaders/debug.fs", &opengl->stack_allocator);
 	load_gl_shader(&opengl->debug_shader, &debug_vertex_shader, &debug_fragment_shader);
 
-
+	// pop vs/fs
+	stack_pop(&opengl->stack_allocator);
+	stack_pop(&opengl->stack_allocator);
 	
 
 
@@ -558,9 +577,9 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 
 	int axis_vertex_count = 6;
 	opengl->grid_mesh.vertex_count = (grid_size + 1) * 4 + axis_vertex_count;
-	opengl->grid_mesh.pos = cast(Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
+	opengl->grid_mesh.pos = cast(Vec3f*)stack_alloc(&opengl->stack_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
 
-	opengl->grid_mesh.color = cast(Vec3f*)linear_alloc(&opengl->renderer_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
+	opengl->grid_mesh.color = cast(Vec3f*)stack_alloc(&opengl->stack_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
 	
 
 	
@@ -651,7 +670,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, void* pari
 
 	opengl->renderer_memory = parition_start;
 	opengl->renderer_memory_size = partition_size;
-	linear_init(&opengl->renderer_allocator, opengl->renderer_memory, opengl->renderer_memory_size);
+	stack_alloc_init(&opengl->stack_allocator, opengl->renderer_memory, opengl->renderer_memory_size);
 
 	init_gl_extensions(opengl);	
 
@@ -696,7 +715,8 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	
 
 	destroy_gl_debug(opengl);
-	linear_reset(&opengl->renderer_allocator);
+	
+	// TODO: need to reset stack allocator back 
 	return true;
 }
 
@@ -812,6 +832,8 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, bool light_pass) {
 	Camera camera = opengl->render_scene->main_camera;
+	Scene* scene = opengl->render_scene;
+
 
 	int draw_type = GL_TRIANGLES;
 	if (opengl->draw_lines) {
@@ -820,15 +842,15 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		draw_type = GL_TRIANGLES;
 	}
 
-
+	
 
 	Mat4x4f view_mat = camera.view_mat;
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f pv_mat;
-	// TODO: hoist up the scene var
+	
 	if (light_pass) {
 		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
-		view_mat = look_at(opengl->render_scene->test_light.direction, make_vec3f(0, 0, 0), Vec3f_Up);
+		view_mat = look_at(scene->test_light.direction, make_vec3f(0, 0, 0), Vec3f_Up);
 		projection_mat = ortho(-camera.far, camera.far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = mat4x4_mul(&projection_mat, &view_mat);
 	
@@ -842,9 +864,9 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 	// TODO: need a better way to handle these as the scene complexity goes us
-	Mat4x4f test_mesh_model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test.transform);
-	Mat4x4f test_mesh2_model_mat = trs_mat_from_transform(&opengl->render_scene->mesh_test2.transform);
-	Mat4x4f plane_mesh_model_mat = trs_mat_from_transform(&opengl->render_scene->flat_plane.transform);
+	Mat4x4f test_mesh_model_mat = trs_mat_from_transform(&scene->mesh_test.transform);
+	Mat4x4f test_mesh2_model_mat = trs_mat_from_transform(&scene->mesh_test2.transform);
+	Mat4x4f plane_mesh_model_mat = trs_mat_from_transform(&scene->flat_plane.transform);
 
 
 	
@@ -921,28 +943,28 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f)
-		+ opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
+		scene->mesh_test.vertex_count * sizeof(Vec3f)
+		+ scene->mesh_test.vertex_count * sizeof(Vec2f)
+		+ scene->mesh_test.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->mesh_test.pos);
+		scene->mesh_test.vertex_count * sizeof(Vec3f),
+		scene->mesh_test.pos);
 
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->mesh_test.texcoords);
+		scene->mesh_test.vertex_count * sizeof(Vec3f),
+		scene->mesh_test.vertex_count * sizeof(Vec2f),
+		scene->mesh_test.texcoords);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)
-		 + opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->mesh_test.normal);
+		scene->mesh_test.vertex_count * sizeof(Vec3f)
+		 + scene->mesh_test.vertex_count * sizeof(Vec2f),
+		scene->mesh_test.vertex_count * sizeof(Vec3f),
+		scene->mesh_test.normal);
 
 
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
@@ -955,25 +977,25 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glEnableVertexAttribArray(0);
 
 	// Texcoords
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(scene->mesh_test.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 	// Normals
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f),
-		cast(GLvoid*)(opengl->render_scene->mesh_test.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test.vertex_count * sizeof(Vec2f)));
+		cast(GLvoid*)(scene->mesh_test.vertex_count * sizeof(Vec3f) + scene->mesh_test.vertex_count * sizeof(Vec2f)));
 	glEnableVertexAttribArray(2);
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test.index_count * sizeof(Vec3i),
-		opengl->render_scene->mesh_test.indices,
+		scene->mesh_test.index_count * sizeof(Vec3i),
+		scene->mesh_test.indices,
 		GL_STATIC_DRAW);
 
 
 
-	glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(draw_type, 3 * scene->mesh_test.index_count, GL_UNSIGNED_INT, 0);
 
 
 
@@ -981,28 +1003,28 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, test_mesh2_model_mat.mat1d);
 
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f)
-		+ opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		  scene->mesh_test2.vertex_count * sizeof(Vec3f)
+		+ scene->mesh_test2.vertex_count * sizeof(Vec2f)
+		+ scene->mesh_test2.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->mesh_test2.pos);
+		scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		scene->mesh_test2.pos);
 
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->mesh_test2.texcoords);
+		scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		scene->mesh_test2.vertex_count * sizeof(Vec2f),
+		scene->mesh_test2.texcoords);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->mesh_test2.normal);
+		  scene->mesh_test2.vertex_count * sizeof(Vec3f)
+		+ scene->mesh_test2.vertex_count * sizeof(Vec2f),
+		scene->mesh_test2.vertex_count * sizeof(Vec3f),
+		scene->mesh_test2.normal);
 
 
 	// TODO:  https://www.khronos.org/opengl/wiki/Vertex_Specification_Best_Practices
@@ -1020,20 +1042,20 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	// Normals
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f),
-		cast(GLvoid*)(opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec3f) + opengl->render_scene->mesh_test2.vertex_count * sizeof(Vec2f)));
+		cast(GLvoid*)(scene->mesh_test2.vertex_count * sizeof(Vec3f) + scene->mesh_test2.vertex_count * sizeof(Vec2f)));
 	glEnableVertexAttribArray(2);
 
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		opengl->render_scene->mesh_test2.index_count * sizeof(Vec3i),
-		opengl->render_scene->mesh_test2.indices,
+		scene->mesh_test2.index_count * sizeof(Vec3i),
+		scene->mesh_test2.indices,
 		GL_STATIC_DRAW);
 
 
 
-	glDrawElements(draw_type, 3 * opengl->render_scene->mesh_test2.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(draw_type, 3 * scene->mesh_test2.index_count, GL_UNSIGNED_INT, 0);
 
 
 
@@ -1045,10 +1067,10 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 
 	//debug_print("camera pos %f, %f, %f\n", camera.transform.position.x, camera.transform.position.y, camera.transform.position.z);
-	//debug_print("light pos %f, %f, %f\n", opengl->render_scene->test_light.direction.x, opengl->render_scene->test_light.direction.y, opengl->render_scene->test_light.direction.z);
+	//debug_print("light pos %f, %f, %f\n", scene->test_light.direction.x, scene->test_light.direction.y, scene->test_light.direction.z);
 
 	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), camera.transform.position.x, camera.transform.position.y, camera.transform.position.z);
-	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), opengl->render_scene->test_light.direction.x, opengl->render_scene->test_light.direction.y, opengl->render_scene->test_light.direction.z);
+	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), scene->test_light.direction.x, scene->test_light.direction.y, scene->test_light.direction.z);
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, plane_mesh_model_mat.mat1d);
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "projection_view"), 1, GL_FALSE, pv_mat.mat1d);
 
@@ -1057,47 +1079,47 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	// Draw primative test
 
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f)
-		+ opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f)
-		+ opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
+		scene->flat_plane.vertex_count * sizeof(Vec3f)
+		+ scene->flat_plane.vertex_count * sizeof(Vec2f)
+		+ scene->flat_plane.vertex_count * sizeof(Vec3f),
 		NULL,
 		GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
 		0,
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->flat_plane.pos);
+		scene->flat_plane.vertex_count * sizeof(Vec3f),
+		scene->flat_plane.pos);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->flat_plane.texcoords);
+		scene->flat_plane.vertex_count * sizeof(Vec3f),
+		scene->flat_plane.vertex_count * sizeof(Vec2f),
+		scene->flat_plane.texcoords);
 
 	glBufferSubData(GL_ARRAY_BUFFER,
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f) +
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f),
-		opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->flat_plane.normal);
+		scene->flat_plane.vertex_count * sizeof(Vec3f) +
+		scene->flat_plane.vertex_count * sizeof(Vec2f),
+		scene->flat_plane.vertex_count * sizeof(Vec3f),
+		scene->flat_plane.normal);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		opengl->render_scene->flat_plane.index_count * sizeof(Vec3i),
-		opengl->render_scene->flat_plane.indices,
+		scene->flat_plane.index_count * sizeof(Vec3i),
+		scene->flat_plane.indices,
 		GL_STATIC_DRAW);
 
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(scene->flat_plane.vertex_count * sizeof(Vec3f)));
 	glEnableVertexAttribArray(1);
 
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f),
-		cast(GLvoid*)(opengl->render_scene->flat_plane.vertex_count * sizeof(Vec3f) + opengl->render_scene->flat_plane.vertex_count * sizeof(Vec2f)));
+		cast(GLvoid*)(scene->flat_plane.vertex_count * sizeof(Vec3f) + scene->flat_plane.vertex_count * sizeof(Vec2f)));
 	glEnableVertexAttribArray(2);
 
-	glDrawElements(draw_type, 3 * opengl->render_scene->flat_plane.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(draw_type, 3 * scene->flat_plane.index_count, GL_UNSIGNED_INT, 0);
 
 
 	// Skip skybox drawing if a light pass
@@ -1119,8 +1141,8 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	glBindBuffer(GL_ARRAY_BUFFER, opengl->skybox_VBO);
 	glBufferData(GL_ARRAY_BUFFER,
-		opengl->render_scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f),
-		opengl->render_scene->hdr_skymap.cube.pos,
+		scene->hdr_skymap.cube.vertex_count * sizeof(Vec3f),
+		scene->hdr_skymap.cube.pos,
 		GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), (void*)0);
@@ -1130,8 +1152,8 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->skybox_EBO);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		opengl->render_scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
-		opengl->render_scene->hdr_skymap.cube.indices,
+		scene->hdr_skymap.cube.index_count * sizeof(Vec3i),
+		scene->hdr_skymap.cube.indices,
 		GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
@@ -1139,7 +1161,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	glFrontFace(GL_CW);
 
-	glDrawElements(GL_TRIANGLES, 3 * opengl->render_scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 3 * scene->hdr_skymap.cube.index_count, GL_UNSIGNED_INT, 0);
 
 
 	glFrontFace(GL_CCW);

@@ -12,7 +12,7 @@
 
 
 
-#include "../../Common/LinearAllocator.h"
+#include "../../Common/StackAllocator.h"
 
 #include "../../Core/Scene.h"
 #include "../../Core/StaticMesh.h"
@@ -45,7 +45,7 @@ typedef struct OpenGLRenderer {
 
 	void* renderer_memory;
 	size_t renderer_memory_size;
-	LinearAllocator renderer_allocator;
+	StackAllocator stack_allocator;
 
 
 

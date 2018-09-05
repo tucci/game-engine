@@ -75,6 +75,7 @@ bool load_hdr_texture(const char* filename, HDRTexture* texture, LinearAllocator
 	
 	if (data == NULL) {
 		SDL_Log("Loading hdr image failed: %s", stbi_failure_reason());
+		return false;
 	}
 	
 
@@ -82,7 +83,7 @@ bool load_hdr_texture(const char* filename, HDRTexture* texture, LinearAllocator
 	memcpy(texture->data, data, image_size);
 	// Free the original data, we have the image in our own memory
 	stbi_image_free(data);
-
+	return true;
 }
 
 
