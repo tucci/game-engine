@@ -375,8 +375,8 @@ static bool init_window(Engine* engine) {
 
 	engine->window.title = title;
 	
-	engine->window.pos = make_vec2i(x, y);
-	engine->window.size = make_vec2i(w, h);
+	engine->window.pos = Vec2i(x, y);
+	engine->window.size = Vec2i(w, h);
 	engine->window.sdl_window = sdl_window;
 	engine->window.sdl_window_flags = sdl_flags;
 
@@ -506,8 +506,8 @@ static void process_inputs(Engine* engine) {
 
 		Event event;
 		event.kind = EventKind_Mouse_Move;
-		event.event.mouse_move_event.pos = make_vec2i(x, y);
-		event.event.mouse_move_event.delta_pos  = make_vec2i(x - engine->input.mouse.pos.x, y - engine->input.mouse.pos.y);
+		event.event.mouse_move_event.pos = Vec2i(x, y);
+		event.event.mouse_move_event.delta_pos  = Vec2i(x - engine->input.mouse.pos.x, y - engine->input.mouse.pos.y);
 
 		
 		// if last delta == 0 && new delta  == 0, skip. dont send events if the mouse hasnt moved since last time we polled
@@ -555,7 +555,7 @@ static void process_inputs(Engine* engine) {
 					Event event;
 					event.kind = sdl_event.type == SDL_MOUSEBUTTONDOWN ? EventKind_Mouse_Button_Down : EventKind_Mouse_Button_Up;
 					event.event.mouse_button_event.button = button;
-					event.event.mouse_button_event.pos = make_vec2i(sdl_event.button.x, sdl_event.button.y);
+					event.event.mouse_button_event.pos = Vec2i(sdl_event.button.x, sdl_event.button.y);
 					push_to_event_queue(engine, event);
 				}
 

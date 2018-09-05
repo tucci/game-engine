@@ -1,14 +1,11 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdbool.h>
-
+#include "Utils.h"
 
 #include "debug_macros.h"
 #include "Common/common_macros.h"
-#include "Common/StackAllocator.h"
 
-inline char* file_to_str(const char* filename, StackAllocator* mem) {
+char* file_to_str(const char* filename, StackAllocator* mem) {
 	char * buffer = 0;
 	long length;
 
@@ -26,9 +23,9 @@ inline char* file_to_str(const char* filename, StackAllocator* mem) {
 		return NULL;
 	}
 
-	
+
 	//problem is that ftell is couting number of \n
-	
+
 	if (file) {
 		fseek(file, 0, SEEK_END);
 		length = ftell(file);

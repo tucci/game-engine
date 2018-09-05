@@ -110,8 +110,8 @@ void inline test_stack_alloc(void) {
 #define assert_vec(v1, v2, eps) assert(F_EQUAL_ABS(v1.x, v2.x, eps) == 1 && F_EQUAL_ABS(v1.y, v2.y, eps) == 1 && F_EQUAL_ABS(v1.z, v2.z, eps) == 1 && F_EQUAL_ABS(v1.w, v2.w, eps) == 1)
 
 void inline test_simd_vec(void) {
-	Vec4f v1 = make_vec4f(1, 2, 3, 4);
-	Vec4f v2 = make_vec4f(5, 6, 7, 8);
+	Vec4f v1 = Vec4f(1, 2, 3, 4);
+	Vec4f v2 = Vec4f(5, 6, 7, 8);
 
 	Vec4f result = v1 + v2;
 	//assert_vec(v1, ToVec4f(6.0f, 8.0f, 10.0f, 12.0f), 0.1f);
@@ -127,24 +127,24 @@ void inline test_simd_vec(void) {
 
 void inline test_quats(void) {
 	Quat a;
-	a = quat_from_axis_angle(make_vec3f(1, 0, 0), 0);
-	a = quat_from_axis_angle(make_vec3f(1, 0, 0), 90);
-	a = quat_from_axis_angle(make_vec3f(1, 0, 0), 180);
+	a = quat_from_axis_angle(Vec3f(1, 0, 0), 0);
+	a = quat_from_axis_angle(Vec3f(1, 0, 0), 90);
+	a = quat_from_axis_angle(Vec3f(1, 0, 0), 180);
 
-	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 0);
-	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 90);
-	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 180);
-
-
-
-	a = quat_from_axis_angle(make_vec3f(0, 0, 1), 0);
-	a = quat_from_axis_angle(make_vec3f(0, 0, 1), 90);
-	a = quat_from_axis_angle(make_vec3f(0, 0, 1), 180);
+	a = quat_from_axis_angle(Vec3f(0, 1, 0), 0);
+	a = quat_from_axis_angle(Vec3f(0, 1, 0), 90);
+	a = quat_from_axis_angle(Vec3f(0, 1, 0), 180);
 
 
-	a = quat_from_axis_angle(make_vec3f(0, 1, 0), 270);
 
-	Vec3f pt = make_vec3f(1, 0, 0);
+	a = quat_from_axis_angle(Vec3f(0, 0, 1), 0);
+	a = quat_from_axis_angle(Vec3f(0, 0, 1), 90);
+	a = quat_from_axis_angle(Vec3f(0, 0, 1), 180);
+
+
+	a = quat_from_axis_angle(Vec3f(0, 1, 0), 270);
+
+	Vec3f pt = Vec3f(1, 0, 0);
 	Vec3f result = a * pt;
 
 }
@@ -157,8 +157,8 @@ void inline test_transforms(void) {
 	Mat4x4f m = trs_mat_from_transform(&t);
 
 
-	//t.scale = make_vec3f(5, 2, 4);
-	t.position = make_vec3f(10, 2, 3);
+	//t.scale = Vec3f(5, 2, 4);
+	t.position = Vec3f(10, 2, 3);
 
 	t.euler_angles.x = 90.0f;
 	t.euler_angles.y = 45.0f;
@@ -169,12 +169,21 @@ void inline test_transforms(void) {
 
 }
 
+
+void inline test_matrix(void) {
+	Mat4x4f id;
+	Mat4x4f zero = Mat4x4f(0);
+	Mat4x4f one = Mat4x4f(1);
+
+}
+
 void inline main_test(void) {
 	
 
-	/*test_linear_alloc();
+	test_linear_alloc();
 	test_stack_alloc();
 	test_simd_vec();
-	test_quats();*/
+	test_quats();
 	test_transforms();
+	test_matrix();
 }

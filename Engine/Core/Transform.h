@@ -7,35 +7,31 @@
 
 typedef struct Transform {
 	
-	Vec3f scale;// = Vec3f_One;
-	Vec3f euler_angles;// = Vec3f_Zero;
+	Vec3f scale;
+	Vec3f euler_angles;
 
-	Vec3f forward;// = Vec3f_Forward;
-	Vec3f up;// = Vec3f_Up;
-	Vec3f right;// = Vec3f_Right;
+	Vec3f forward;
+	Vec3f up;
+	Vec3f right;
 
-	Quat rotation;// = quat_identity();
-	Vec3f position;// = Vec3f_Zero;
+	Quat rotation;
+	Vec3f position;
+
+	Transform() {
+		this->position = Vec3f_Zero;
+		this->scale = Vec3f_One;
+		this->euler_angles = Vec3f_Zero;
+		this->forward = Vec3f_Forward;
+		this->up = Vec3f_Up;
+		this->right = Vec3f_Right;
+		this->rotation = Quat();
+	}
 } Transform;
 
 
-// TODO: move this to a default constructor
-void inline default_transform(Transform* transform) {
-	transform->position = Vec3f_Zero;
-	transform->scale = Vec3f_One;
-	transform->euler_angles = Vec3f_Zero;
 
-	transform->forward = Vec3f_Forward;
-	transform->up = Vec3f_Up;
-	transform->right = Vec3f_Right;
-
-	transform->rotation = quat_identity();
-
-}
-
-
-Mat4x4f inline scale(Vec3f vec) {
-	Mat4x4f mat = mat4x4f_identity();
+Mat4x4f inline scale(const Vec3f& vec) {
+	Mat4x4f mat;
 	mat.m00 = vec.x;
 	mat.m11 = vec.y;
 	mat.m22 = vec.z;
@@ -46,16 +42,16 @@ Mat4x4f inline scale(Vec3f vec) {
 
 // TODO: figure out why we need to transpose everything
 // I think some thinks are column major, and some things are row major
-Mat4x4f inline translate(Vec3f vec) {
-	Mat4x4f mat = mat4x4f_identity();
+Mat4x4f inline translate(const Vec3f& vec) {
+	Mat4x4f mat;
 	mat.m03 = vec.x;
 	mat.m13 = vec.y;
 	mat.m23 = vec.z;
 	return mat;
 }
 
-Mat4x4f inline rotate_with_mat(Mat4x4f m, float rads, Vec3f axis) {
-
+Mat4x4f inline rotate(float rads, const Vec3f& axis) {
+	Mat4x4f result;
 
 	float cos_angle = cosf_(rads);
 	float sin_angle = sinf_(rads);
@@ -66,30 +62,25 @@ Mat4x4f inline rotate_with_mat(Mat4x4f m, float rads, Vec3f axis) {
 	float yz = axis.y * axis.z;
 	float xz = axis.x * axis.z;
 
-	m.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
-	m.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
-	m.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
+	result.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
+	result.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
+	result.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
 
-	m.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
-	m.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
-	m.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
+	result.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
+	result.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
+	result.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
 
-	m.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
-	m.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
-	m.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
+	result.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
+	result.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
+	result.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
 
-	//rot = transpose(&rot);
-	return m;
-}
 
-Mat4x4f inline rotate(float rads, Vec3f axis) {
-	Mat4x4f rot = mat4x4f_identity();
-	return rotate_with_mat(rot, rads, axis);
+	return result;
 }
 
 
 Mat4x4f inline trs_mat_from_transform(Transform* transform) {
-	Mat4x4f result = mat4x4f_identity();
+	Mat4x4f result;
 
 	// Scale matrix
 	Mat4x4f s = scale(transform->scale);
@@ -106,7 +97,7 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 
 	// Build the translate matrix
 	Mat4x4f t = translate(transform->position);
-	t = transpose(&t);
+	t = transpose(t);
 
 
 	// Scale first

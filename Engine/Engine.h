@@ -88,11 +88,13 @@ typedef union EventData {
 	MouseButtonEvent mouse_button_event;
 	MouseMoveEvent mouse_move_event;
 	WindowEvent window_event;
+	EventData() {};
 } EventData;
 
 typedef struct Event {
 	EventKind kind;
 	EventData event;
+	
 } Event;
 
 typedef struct Clock {
@@ -127,6 +129,7 @@ typedef struct Renderer {
 		SoftwareRenderer software_renderer;
 		OpenGLRenderer opengl;
 	};
+	Renderer() {};
 	
 } Renderer;
 
@@ -170,6 +173,7 @@ typedef struct Engine {
 	
 	Game* loaded_game;	
 	
+	Engine() {};
 } Engine;
 
 

@@ -57,13 +57,22 @@
     <ClCompile Include="Core\Scene.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Engine.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\Entities\Skybox.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Vec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Mat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Math\Quaternion.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,6 +161,9 @@
     <ClInclude Include="Core\Entities\Lights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
@@ -173,10 +185,5 @@
     <None Include="Assets\shaders\prefilter.fs" />
     <None Include="Assets\shaders\brdf.vs" />
     <None Include="Assets\shaders\brdf.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\..\Downloads\rustediron2_normal.png">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
 </Project>

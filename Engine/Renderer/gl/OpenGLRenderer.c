@@ -4,8 +4,8 @@
 #include "OpenGLRenderer.h"
 #include "../../debug_macros.h"
 #include "../../Common/common_macros.h"
-
-#include "../../utils.c"
+#include "../../Math/Math.h"
+#include "../../Utils.h"
 
 
 
@@ -109,15 +109,15 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 
 	Mat4x4f captureProjection = perspective(0.1f, 10.0f, 90.0f, 1.0f);
 	
-	Vec3f center = make_vec3f(0, 0, 0);
+	Vec3f center = Vec3f(0, 0, 0);
 	Mat4x4f captureViews[] =
 	{
-		look_at(center, make_vec3f(1.0f,  0.0f,  0.0f), make_vec3f(0.0f, -1.0f,  0.0f)),
-		look_at(center, make_vec3f(-1.0f,  0.0f,  0.0f),make_vec3f(0.0f, -1.0f,  0.0f)),
-		look_at(center, make_vec3f(0.0f,  1.0f,  0.0f), make_vec3f(0.0f,  0.0f,  1.0f)),
-		look_at(center, make_vec3f(0.0f, -1.0f,  0.0f), make_vec3f(0.0f,  0.0f, -1.0f)),
-		look_at(center, make_vec3f(0.0f,  0.0f,  1.0f), make_vec3f(0.0f, -1.0f,  0.0f)),
-		look_at(center, make_vec3f(0.0f,  0.0f, -1.0f), make_vec3f(0.0f, -1.0f,  0.0f))
+		look_at(center, Vec3f(1.0f,  0.0f,  0.0f), Vec3f(0.0f, -1.0f,  0.0f)),
+		look_at(center, Vec3f(-1.0f,  0.0f,  0.0f),Vec3f(0.0f, -1.0f,  0.0f)),
+		look_at(center, Vec3f(0.0f,  1.0f,  0.0f), Vec3f(0.0f,  0.0f,  1.0f)),
+		look_at(center, Vec3f(0.0f, -1.0f,  0.0f), Vec3f(0.0f,  0.0f, -1.0f)),
+		look_at(center, Vec3f(0.0f,  0.0f,  1.0f), Vec3f(0.0f, -1.0f,  0.0f)),
+		look_at(center, Vec3f(0.0f,  0.0f, -1.0f), Vec3f(0.0f, -1.0f,  0.0f))
 	};
 
 
@@ -291,11 +291,16 @@ static void init_hdr_map(OpenGLRenderer* opengl, Scene* scene) {
 	glFrontFace(GL_CW);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, opengl->capture_FBO);
+	// Note maxmip must be at most 5, or else our mipwidth/height, shifting breaks down
 	unsigned int maxMipLevels = 5;
+	
 	for (unsigned int mip = 0; mip < maxMipLevels; ++mip) {
 		// reisze framebuffer according to mip-level size.
-		unsigned int mipWidth = (unsigned int) 128 * powf(0.5, mip);
-		unsigned int mipHeight =(unsigned int)  128 * powf(0.5, mip);
+
+		//unsigned int mipWidth = (unsigned int) 128 * powf_(0.5, mip);
+		//unsigned int mipHeight = (unsigned int)  128 * powf_(0.5, mip);
+		unsigned int mipWidth = 2 << ((maxMipLevels + 1) - mip);
+		unsigned int mipHeight = 2 << ((maxMipLevels + 1) - mip);
 		glBindRenderbuffer(GL_RENDERBUFFER, opengl->capture_RBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
@@ -597,8 +602,8 @@ void init_gl_debug(OpenGLRenderer* opengl) {
 		opengl->grid_mesh.pos[index + 1] = pt2;
 
 
-		pt =  make_vec3f( i_f, 0, -size_f);
-		pt2 = make_vec3f( i_f, 0, size_f);
+		pt =  Vec3f( i_f, 0, -size_f);
+		pt2 = Vec3f( i_f, 0, size_f);
 
 		opengl->grid_mesh.pos[index + 2] = pt;
 		opengl->grid_mesh.pos[index + 3] = pt2;
@@ -726,8 +731,8 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 	Camera camera = opengl->render_scene->main_camera;
-	Mat4x4f model_mat = mat4x4f_identity();
-	Mat4x4f view_mat = camera.view_mat;//look_at(camera.pos, v3_add(camera.pos, camera.forward), Vec3f_Up);
+	Mat4x4f model_mat;
+	Mat4x4f view_mat = camera.view_mat;
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	
 	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
@@ -791,11 +796,11 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	Vec3f dir_light_color[2];
 
 	dir_light_line[1]  = opengl->render_scene->test_light.direction;
-	dir_light_line[0] = make_vec3f(0, 0, 0);
+	dir_light_line[0] = Vec3f(0, 0, 0);
 	
 
-	dir_light_color[0] = make_vec3f(1, 1, 1);
-	dir_light_color[1] = make_vec3f(1, 1, 1);
+	dir_light_color[0] = Vec3f(1, 1, 1);
+	dir_light_color[1] = Vec3f(1, 1, 1);
 	glBufferData(GL_ARRAY_BUFFER,
 		4 * sizeof(Vec3f),
 		NULL,
@@ -849,7 +854,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 	if (light_pass) {
 		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
-		view_mat = look_at(scene->test_light.direction, make_vec3f(0, 0, 0), Vec3f_Up);
+		view_mat = look_at(scene->test_light.direction, Vec3f(0, 0, 0), Vec3f_Up);
 		projection_mat = ortho(-camera.far, camera.far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = projection_mat * view_mat;
 	

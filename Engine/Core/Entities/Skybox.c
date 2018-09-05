@@ -30,47 +30,47 @@ void load_skybox(Skybox* skybox, LinearAllocator* mem,
 	const float box_size = 10.0f;
 
 	skybox->cube.pos = cast(Vec3f*)linear_alloc(mem, skybox->cube.vertex_count * sizeof(Vec3f), 1);
-	skybox->cube.pos[0]  = make_vec3f(-box_size,  box_size, -box_size);
-	skybox->cube.pos[1]  = make_vec3f(-box_size, -box_size, -box_size);
-	skybox->cube.pos[2]  = make_vec3f( box_size, -box_size, -box_size);
-	skybox->cube.pos[3]  = make_vec3f( box_size, -box_size, -box_size);
-	skybox->cube.pos[4]  = make_vec3f( box_size,  box_size, -box_size);
-	skybox->cube.pos[5]  = make_vec3f(-box_size,  box_size, -box_size);
+	skybox->cube.pos[0]  = Vec3f(-box_size,  box_size, -box_size);
+	skybox->cube.pos[1]  = Vec3f(-box_size, -box_size, -box_size);
+	skybox->cube.pos[2]  = Vec3f( box_size, -box_size, -box_size);
+	skybox->cube.pos[3]  = Vec3f( box_size, -box_size, -box_size);
+	skybox->cube.pos[4]  = Vec3f( box_size,  box_size, -box_size);
+	skybox->cube.pos[5]  = Vec3f(-box_size,  box_size, -box_size);
 
-	skybox->cube.pos[6]  = make_vec3f(-box_size, -box_size,  box_size);
-	skybox->cube.pos[7]  = make_vec3f(-box_size, -box_size, -box_size);
-	skybox->cube.pos[8]  = make_vec3f(-box_size,  box_size, -box_size);
-	skybox->cube.pos[9]  = make_vec3f(-box_size,  box_size, -box_size);
-	skybox->cube.pos[10] = make_vec3f(-box_size,  box_size,  box_size);
-	skybox->cube.pos[11] = make_vec3f(-box_size, -box_size,  box_size);
+	skybox->cube.pos[6]  = Vec3f(-box_size, -box_size,  box_size);
+	skybox->cube.pos[7]  = Vec3f(-box_size, -box_size, -box_size);
+	skybox->cube.pos[8]  = Vec3f(-box_size,  box_size, -box_size);
+	skybox->cube.pos[9]  = Vec3f(-box_size,  box_size, -box_size);
+	skybox->cube.pos[10] = Vec3f(-box_size,  box_size,  box_size);
+	skybox->cube.pos[11] = Vec3f(-box_size, -box_size,  box_size);
 
-	skybox->cube.pos[12] = make_vec3f( box_size, -box_size, -box_size);
-	skybox->cube.pos[13] = make_vec3f( box_size, -box_size,  box_size);
-	skybox->cube.pos[14] = make_vec3f( box_size,  box_size,  box_size);
-	skybox->cube.pos[15] = make_vec3f( box_size,  box_size,  box_size);
-	skybox->cube.pos[16] = make_vec3f( box_size,  box_size, -box_size);
-	skybox->cube.pos[17] = make_vec3f( box_size, -box_size, -box_size);
+	skybox->cube.pos[12] = Vec3f( box_size, -box_size, -box_size);
+	skybox->cube.pos[13] = Vec3f( box_size, -box_size,  box_size);
+	skybox->cube.pos[14] = Vec3f( box_size,  box_size,  box_size);
+	skybox->cube.pos[15] = Vec3f( box_size,  box_size,  box_size);
+	skybox->cube.pos[16] = Vec3f( box_size,  box_size, -box_size);
+	skybox->cube.pos[17] = Vec3f( box_size, -box_size, -box_size);
 
-	skybox->cube.pos[18] = make_vec3f(-box_size, -box_size,  box_size);
-	skybox->cube.pos[19] = make_vec3f(-box_size,  box_size,  box_size);
-	skybox->cube.pos[20] = make_vec3f( box_size,  box_size,  box_size);
-	skybox->cube.pos[21] = make_vec3f( box_size,  box_size,  box_size);
-	skybox->cube.pos[22] = make_vec3f( box_size, -box_size,  box_size);
-	skybox->cube.pos[23] = make_vec3f(-box_size, -box_size,  box_size);
+	skybox->cube.pos[18] = Vec3f(-box_size, -box_size,  box_size);
+	skybox->cube.pos[19] = Vec3f(-box_size,  box_size,  box_size);
+	skybox->cube.pos[20] = Vec3f( box_size,  box_size,  box_size);
+	skybox->cube.pos[21] = Vec3f( box_size,  box_size,  box_size);
+	skybox->cube.pos[22] = Vec3f( box_size, -box_size,  box_size);
+	skybox->cube.pos[23] = Vec3f(-box_size, -box_size,  box_size);
 
-	skybox->cube.pos[24] = make_vec3f(-box_size,  box_size, -box_size);
-	skybox->cube.pos[25] = make_vec3f( box_size,  box_size, -box_size);
-	skybox->cube.pos[26] = make_vec3f( box_size,  box_size,  box_size);
-	skybox->cube.pos[27] = make_vec3f( box_size,  box_size,  box_size);
-	skybox->cube.pos[28] = make_vec3f(-box_size,  box_size,  box_size);
-	skybox->cube.pos[29] = make_vec3f(-box_size,  box_size, -box_size);
+	skybox->cube.pos[24] = Vec3f(-box_size,  box_size, -box_size);
+	skybox->cube.pos[25] = Vec3f( box_size,  box_size, -box_size);
+	skybox->cube.pos[26] = Vec3f( box_size,  box_size,  box_size);
+	skybox->cube.pos[27] = Vec3f( box_size,  box_size,  box_size);
+	skybox->cube.pos[28] = Vec3f(-box_size,  box_size,  box_size);
+	skybox->cube.pos[29] = Vec3f(-box_size,  box_size, -box_size);
 
-	skybox->cube.pos[30] = make_vec3f(-box_size, -box_size, -box_size);
-	skybox->cube.pos[31] = make_vec3f(-box_size, -box_size,  box_size);
-	skybox->cube.pos[32] = make_vec3f( box_size, -box_size, -box_size);
-	skybox->cube.pos[33] = make_vec3f( box_size, -box_size, -box_size);
-	skybox->cube.pos[34] = make_vec3f(-box_size, -box_size,  box_size);
-	skybox->cube.pos[35] = make_vec3f( box_size, -box_size,  box_size);*/
+	skybox->cube.pos[30] = Vec3f(-box_size, -box_size, -box_size);
+	skybox->cube.pos[31] = Vec3f(-box_size, -box_size,  box_size);
+	skybox->cube.pos[32] = Vec3f( box_size, -box_size, -box_size);
+	skybox->cube.pos[33] = Vec3f( box_size, -box_size, -box_size);
+	skybox->cube.pos[34] = Vec3f(-box_size, -box_size,  box_size);
+	skybox->cube.pos[35] = Vec3f( box_size, -box_size,  box_size);*/
 	
 
 	

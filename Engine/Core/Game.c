@@ -50,13 +50,13 @@ void load_scene(Game* game, int scene_id) {
 
 
 	// Init lights
-	scene->test_light.direction = make_vec3f(1, 1, 0);
-	scene->test_light2.direction = make_vec3f(0, 1, 1);
+	scene->test_light.direction = Vec3f(1, 1, 0);
+	scene->test_light2.direction = Vec3f(0, 1, 1);
 	
 
 	// Camera loading
 	init_camera_default(&scene->main_camera);
-	set_camera_pos(&scene->main_camera, make_vec3f(0, 0, 0));
+	set_camera_pos(&scene->main_camera, Vec3f(0, 0, 0));
 	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
 	scene->main_camera.transform.euler_angles = Vec3f_Zero;
 
@@ -139,8 +139,8 @@ void load_scene(Game* game, int scene_id) {
 
 	//make_cube(&scene->mesh_test, &game->game_memory);
 
-	default_transform(&scene->mesh_test.transform);
-	scene->mesh_test.transform.position = make_vec3f(0, 0, -5);
+	scene->mesh_test.transform = Transform();
+	scene->mesh_test.transform.position = Vec3f(0, 0, -5);
 
 
 
@@ -148,15 +148,15 @@ void load_scene(Game* game, int scene_id) {
 
 
 	make_uv_sphere(&scene->mesh_test2, 16, 32, &game->game_memory);
-	default_transform(&scene->mesh_test2.transform);
-	scene->mesh_test2.transform.position = make_vec3f(5, 0, 1);
+	scene->mesh_test2.transform = Transform();
+	scene->mesh_test2.transform.position = Vec3f(5, 0, 1);
 	
 
 
 	make_plane(&scene->flat_plane, &game->game_memory);
-	default_transform(&scene->flat_plane.transform);
-	scene->flat_plane.transform.position = make_vec3f(0, -5, 0);
-	scene->flat_plane.transform.scale = make_vec3f(100, 100, 100);
+	scene->flat_plane.transform = Transform();
+	scene->flat_plane.transform.position = Vec3f(0, -5, 0);
+	scene->flat_plane.transform.scale = Vec3f(100, 100, 100);
 	
 
 
@@ -255,7 +255,7 @@ void game_update(Game* game) {
 		
 
 	Mat4x4f t = translate(-1 * camera->transform.position);
-	t = transpose(&t);
+	t = transpose(t);
 	
 
 	Quat q = quat_from_axis_angle(Vec3f_Up, camera->transform.euler_angles.y);

@@ -159,7 +159,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\Entities\Skybox.c" />
-    <ClCompile Include="utils.c" />
+    <ClCompile Include="Math\Mat.cpp" />
+    <ClCompile Include="Math\Quaternion.cpp" />
+    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Math\Vec.cpp" />
     <ClCompile Include="Common\LinearAllocator.c" />
     <ClCompile Include="Common\StackAllocator.c" />
     <ClCompile Include="Core\Entities\Primitives.c" />
@@ -205,6 +208,7 @@
     <ClInclude Include="Renderer\gl\OpenGLRenderer.h" />
     <ClInclude Include="Renderer\software_renderer\SoftwareRenderer.h" />
     <ClInclude Include="Math\Vec.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
@@ -226,9 +230,6 @@
     <None Include="Assets\shaders\skybox.vs" />
     <None Include="Assets\shaders\textured.fs" />
     <None Include="Assets\shaders\textured.vs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\..\Downloads\rustediron2_normal.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -27,10 +27,10 @@ void init_camera(Camera* camera,
 
 void init_camera_default(Camera* camera) {
 	
-	camera->transform.position = make_vec3f( 0, 0, 0);
+	camera->transform.position = Vec3f( 0, 0, 0);
 
-	camera->transform.forward = make_vec3f( 0, 0, -1);
-	camera->transform.up = make_vec3f(0, 1, 0);
+	camera->transform.forward = Vec3f( 0, 0, -1);
+	camera->transform.up = Vec3f(0, 1, 0);
 	camera->transform.right = cross(camera->transform.forward, camera->transform.up);
 	
 	

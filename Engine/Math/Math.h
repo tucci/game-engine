@@ -76,6 +76,10 @@ float inline sqrtf_(float x) {
 	return sqrtf(x);
 }
 
+float inline powf_(float base, float exponent) {
+	return powf(base, exponent);
+}
+
 float inline fmodf_(float number, float denom) {
 	return fmodf(number, denom);
 }

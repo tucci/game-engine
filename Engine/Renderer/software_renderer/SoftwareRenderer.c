@@ -160,12 +160,12 @@ void software_render(SoftwareRenderer* r) {
 
 
 	
-	Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f model_mat;
 	
 	
 
 	Mat4x4f view_mat = camera.view_mat;
-	view_mat = transpose(&view_mat);
+	view_mat = transpose(view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = model_mat * view_mat * projection_mat;
 
@@ -276,12 +276,12 @@ void software_debug_render(SoftwareRenderer* r) {
 
 
 	
-	Mat4x4f model_mat = mat4x4f_identity();
+	Mat4x4f model_mat;
 	
 	
 
 	Mat4x4f view_mat = camera.view_mat;
-	view_mat = transpose(&view_mat);
+	view_mat = transpose(view_mat);
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	// TODO: this is in the wrong order
 	Mat4x4f mvp_mat = model_mat * view_mat * projection_mat;
@@ -300,26 +300,26 @@ void software_debug_render(SoftwareRenderer* r) {
 
 	Vec4f originf = { 0, 0, 0, 1 };
 	originf = mat * originf;
-	Vec4i origin = vec4f_to_vec4i(originf);
+	Vec4i origin = Vec4i(originf);
 
 	
 	Vec4i axis_pt;
 
 	// Draw x axis
 	SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-	axis_pt = vec4f_to_vec4i(mat * x_axis);
+	axis_pt = Vec4i(mat * x_axis);
 	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y) , axis_pt.x, flip_y(height, axis_pt.y));
 
 
 	// Draw y axis
 	SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
-	axis_pt = vec4f_to_vec4i(mat * y_axis);
+	axis_pt = Vec4i(mat * y_axis);
 	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y), axis_pt.x, flip_y(height, axis_pt.y));
 
 
 	// Draw z axis
 	SDL_SetRenderDrawColor(renderer, 0, 0, 255, SDL_ALPHA_OPAQUE);
-	axis_pt = vec4f_to_vec4i(mat * z_axis);
+	axis_pt = Vec4i(mat * z_axis);
 	SDL_RenderDrawLine(renderer, origin.x, flip_y(height, origin.y), axis_pt.x, flip_y(height, axis_pt.y));
 
 
@@ -339,17 +339,17 @@ void software_debug_render(SoftwareRenderer* r) {
 		Vec4i pt;
 		Vec4i pt2;
 
-		pt = vec4f_to_vec4i(mat * ptf);
-		pt2 = vec4f_to_vec4i(mat * pt2f);
+		pt = Vec4i(mat * ptf);
+		pt2 = Vec4i(mat * pt2f);
 
 		SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 
-		ptf = make_vec4f( i_f, 0, -size_f, 1 );
-		pt2f = make_vec4f( i_f, 0, size_f, 1 );
+		ptf =  Vec4f( i_f, 0, -size_f, 1 );
+		pt2f = Vec4f( i_f, 0, size_f, 1 );
 
-		pt = vec4f_to_vec4i((mat * ptf));
-		pt2 = vec4f_to_vec4i(mat * pt2f);
+		pt = Vec4i((mat * ptf));
+		pt2 = Vec4i(mat * pt2f);
 		SDL_RenderDrawLine(renderer, pt.x, flip_y(height, pt.y), pt2.x, flip_y(height, pt2.y));
 
 	}
