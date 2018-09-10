@@ -120,7 +120,6 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 void init_gl_debug(OpenGLRenderer* opengl);
 void destroy_gl_debug(OpenGLRenderer* opengl);
 
-static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, bool light_pass);
 void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debug);
 void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size);
 void opengl_swap_buffer(OpenGLRenderer* opengl);

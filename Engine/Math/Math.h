@@ -9,21 +9,21 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define ABS(x) (((x)<0) ? -(x) : (x))
-
-#define deg_to_rad(deg) ((deg) * PI / 180.0f)
+// Converts degrees to radians
+#define DEG2RAD(deg) ((deg) * PI / 180.0f)
 
 // Converts radians to degrees.
-#define rad_to_deg(rad) ((rad) * 180.0f / PI)
+#define RAD2DEG(rad) ((rad) * 180.0f / PI)
 
 
 // Good for small floating pts, bad for large pts
-#define F_EQUAL_ABS(x, y, EPSILON) (int)(ABS(x - y) <= EPSILON)
+#define F_EQUAL_ABS(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON)
 // Bad for small floating pts, Good for large pts
-#define F_EQUAL_REL(x, y, EPSILON) (int)(ABS(x - y) <= EPSILON * MAX(ABS(x), ABS(y)) 
+#define F_EQUAL_REL(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON * MAX(ABS(x), ABS(y)) 
 // A basic balance between relative and absolute comparision
-#define F_EQUAL_BALANCE(x, y, EPSILON) (int)(ABS(x - y) <= EPSILON * MAX(1.0f, ABS(x), ABS(y))
+#define F_EQUAL_BALANCE(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON * MAX(1.0f, ABS(x), ABS(y))
 // A more controlled floating pt equal with control for relative and absolute
-#define F_EQUAL_CONTROL(x, y, relTol, absTol) (int)(ABS(x - y) <= MAX(absTol, relTol * MAX(ABS(x), ABS(y))))
+#define F_EQUAL_CONTROL(x, y, relTol, absTol) (int)(ABS((x) - (y)) <= MAX(absTol, relTol * MAX(ABS(x), ABS(y))))
 
 
 
@@ -82,6 +82,10 @@ float inline powf_(float base, float exponent) {
 
 float inline fmodf_(float number, float denom) {
 	return fmodf(number, denom);
+}
+
+float inline copysign_(float x, float y) {
+	return copysign(x, y);
 }
 
 // TODO: implement lerp

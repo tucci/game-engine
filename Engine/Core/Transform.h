@@ -8,7 +8,7 @@
 typedef struct Transform {
 	
 	Vec3f scale;
-	Vec3f euler_angles;
+	//Vec3f euler_angles;
 
 	Vec3f forward;
 	Vec3f up;
@@ -20,7 +20,6 @@ typedef struct Transform {
 	Transform() {
 		this->position = Vec3f_Zero;
 		this->scale = Vec3f_One;
-		this->euler_angles = Vec3f_Zero;
 		this->forward = Vec3f_Forward;
 		this->up = Vec3f_Up;
 		this->right = Vec3f_Right;
@@ -87,10 +86,11 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 
 
 	// Build quat from our euler angles
-	Quat q;
-	q =				 quat_from_axis_angle(Vec3f_Up, transform->euler_angles.y);
-	q = (q * quat_from_axis_angle(Vec3f_Right, transform->euler_angles.x));
-	q = (q * quat_from_axis_angle(Vec3f_Forward, transform->euler_angles.z));
+
+	Quat q = transform->rotation;
+	//q =	     quat_from_axis_angle(Vec3f_Up, transform->euler_angles.y);
+	//q = (q * quat_from_axis_angle(Vec3f_Right, transform->euler_angles.x));
+	//q = (q * quat_from_axis_angle(Vec3f_Forward, transform->euler_angles.z));*/
 
 	// Build the rotation matrix from our quat
 	Mat4x4f r = quat_to_rotation_matrix(q);

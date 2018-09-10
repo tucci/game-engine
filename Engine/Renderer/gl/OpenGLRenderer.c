@@ -852,9 +852,10 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
 	Mat4x4f pv_mat;
 	
+	
 	if (light_pass) {
 		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
-		view_mat = look_at(scene->test_light.direction, Vec3f(0, 0, 0), Vec3f_Up);
+		view_mat = look_at(Vec3f(0, 0, 0), scene->test_light.direction, Vec3f_Up);
 		projection_mat = ortho(-camera.far, camera.far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = projection_mat * view_mat;
 	

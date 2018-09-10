@@ -182,6 +182,8 @@ void main(){
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, albedo, metallic);
 
+	float shadow = calc_shadow(frag_pos_light_space);  
+
     // reflectance equation
     vec3 Lo = vec3(0.0);
     //for(int i = 0; i < 4; ++i) 
@@ -198,7 +200,6 @@ void main(){
 
         vec3 radiance = vec3(10, 10, 10);
 
-		//vec3 radiance = texture(env_map, frag_pos).rgb;
 
         // Cook-Torrance BRDF
         float NDF = DistributionGGX(N, H, roughness);   
@@ -225,7 +226,7 @@ void main(){
         float NdotL = max(dot(N, L), 0.0);        
 
         // add to outgoing radiance Lo
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
+        Lo +=  (kD * albedo / PI + specular) * radiance* NdotL;  // note that we already multiplied the BRDF by the Fresnel (kS) so we won't multiply by kS again
     }   
     
 	vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
@@ -257,10 +258,10 @@ void main(){
 	
 
     // gamma 
-    color = pow(color, vec3(1.0/2.2)); 
+    color = (1 - shadow) * pow(color, vec3(1.0/2.2)); 
 
-	float shadow = calc_shadow(frag_pos_light_space);  
-    frag_color  = (1 - shadow) * vec4(color, 1.0);
+	
+    frag_color  = vec4(color, 1.0);
 
 
 

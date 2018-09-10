@@ -53,7 +53,7 @@ typedef struct Scene {
 	// LinearAllocator* scene_mem;
 
 	DirectionalLight test_light;
-	DirectionalLight test_light2;
+
 
 	Camera main_camera;
 	

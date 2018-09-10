@@ -136,7 +136,6 @@ float magnitude(const Vec4f& vec) {
 // Since rsqrt is an approximate it is faster, but less precise. in the future if u need a more precise normalize
 // create a funcition with sqrt
 Vec4f normalize(const Vec4f& vec) {
-
 #ifdef _INCLUDED_SMM 
 	__m128 m1 = _mm_load_ps(vec.data);
 	__m128 inverse_norm = _mm_rsqrt_ps(_mm_dp_ps(m1, m1, 0xFF));
@@ -257,9 +256,9 @@ Vec3f angle_axis_rotate(const Vec3f& v, const Vec3f& n, float rads) {
 Vec3f euler_to_vector(const Vec3f& euler_angles) {
 	Vec3f result;
 	// Since our x,z axis are flipped, we also flip the calculation
-	result.x = sinf_(deg_to_rad(euler_angles.y)) * cosf_(deg_to_rad(euler_angles.x));
-	result.y = sinf_(deg_to_rad(euler_angles.x));
-	result.z = cosf_(deg_to_rad(euler_angles.y)) * cosf_(deg_to_rad(euler_angles.x));
+	result.x = sinf_(DEG2RAD(euler_angles.y)) * cosf_(DEG2RAD(euler_angles.x));
+	result.y = sinf_(DEG2RAD(euler_angles.x));
+	result.z = cosf_(DEG2RAD(euler_angles.y)) * cosf_(DEG2RAD(euler_angles.x));
 	return result;
 }
 

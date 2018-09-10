@@ -50,23 +50,23 @@ void load_scene(Game* game, int scene_id) {
 
 
 	// Init lights
-	scene->test_light.direction = Vec3f(1, 1, 0);
-	scene->test_light2.direction = Vec3f(0, 1, 1);
+	scene->test_light.direction = Vec3f(0.00000000001, -1, 0);
 	
 
 	// Camera loading
 	init_camera_default(&scene->main_camera);
 	set_camera_pos(&scene->main_camera, Vec3f(0, 0, 0));
 	scene->main_camera.aspect_ratio = api->window->size.x / cast(float) api->window->size.y;
-	scene->main_camera.transform.euler_angles = Vec3f_Zero;
+	scene->main_camera.transform.rotation = Quat();
+	
+	
 
 	
 
 
-
-	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 	
 	
 
@@ -91,11 +91,11 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
 
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 
@@ -108,11 +108,11 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->game_memory, false);
 
 
-	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
 
 	//load_texture("Assets/textures/mahogfloor/mahogfloor_basecolor.png", &scene->albedo_map, &game->game_memory, false);
 	//load_texture("Assets/textures/mahogfloor/mahogfloor_normal.png", &scene->normal_map, &game->game_memory, false);
@@ -133,11 +133,11 @@ void load_scene(Game* game, int scene_id) {
 	
 	
 	//load_obj("Assets/obj/diablo3_pose.obj", &model);
-	obj_to_static_mesh("Assets/obj/african_head.obj", &scene->mesh_test, &game->game_memory);
+	//obj_to_static_mesh("Assets/obj/african_head.obj", &scene->mesh_test, &game->game_memory);
 	
 
 
-	//make_cube(&scene->mesh_test, &game->game_memory);
+	make_cube(&scene->mesh_test, &game->game_memory);
 
 	scene->mesh_test.transform = Transform();
 	scene->mesh_test.transform.position = Vec3f(0, 0, -5);
@@ -155,7 +155,7 @@ void load_scene(Game* game, int scene_id) {
 
 	make_plane(&scene->flat_plane, &game->game_memory);
 	scene->flat_plane.transform = Transform();
-	scene->flat_plane.transform.position = Vec3f(0, -5, 0);
+	scene->flat_plane.transform.position = Vec3f(0, -2, 0);
 	scene->flat_plane.transform.scale = Vec3f(100, 100, 100);
 	
 
@@ -185,12 +185,16 @@ void game_update(Game* game) {
 	float delta_time = timer->delta_time;
 
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
-	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
+	// TODO: figure out why everything is inverted
+	// i think it has to do with the -1 * position, and transpose 
 	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, -camera->transform.forward, delta_time); }
-	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, -camera->transform.right, delta_time); }
+	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
 	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, -camera->transform.up, delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, -camera->transform.right, delta_time); }
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, Vec3f_Up, delta_time); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, -Vec3f_Up, delta_time); }
+
+
 
 
 
@@ -208,32 +212,32 @@ void game_update(Game* game) {
 	}
 
 	if (input->mouse.mouse_button_left.down) {
-		test->transform.euler_angles.y -= 1.0f;
+		test->transform.rotation = test->transform.rotation * quat_from_axis_angle(Vec3f_Up, -5);
 	}
 
 	if (input->mouse.mouse_button_right.down) {
-		test->transform.euler_angles.y += 1.0f;
+		test->transform.rotation = test->transform.rotation * quat_from_axis_angle(Vec3f_Right, 5);
 	}
 
 
 
 	
 	if (input->keys[SDL_SCANCODE_LEFT].down) {
-		test_light->direction.z -= delta_time * 10.0f;
+		test_light->direction.z -= delta_time * 0.5f;
 		
 	}
 
 	if (input->keys[SDL_SCANCODE_RIGHT].down) {
-		test_light->direction.z += delta_time * 10.0f;
+		test_light->direction.z += delta_time * 0.5f;
 	}
 
 
 	if (input->keys[SDL_SCANCODE_UP].down) {
-		test_light->direction.x += delta_time * 10.0f;;
+		test_light->direction.x += delta_time * 0.5f;
 	}
 
 	if (input->keys[SDL_SCANCODE_DOWN].down) {
-		test_light->direction.x -= delta_time * 10.0f;
+		test_light->direction.x -= delta_time * 0.5f;
 	}
 
 
@@ -245,38 +249,43 @@ void game_update(Game* game) {
 
 	
 	Vec2i delta_pos = input->mouse.delta_pos;
+	
+	
+	// See world/local rotation
+	// Rotate camera around world first
+	camera->transform.rotation = quat_from_axis_angle(Vec3f_Up, -delta_pos.x * 0.25f) * camera->transform.rotation;
 
 
-	camera->transform.euler_angles.y += (-delta_pos.x * 0.25f);
-	camera->transform.euler_angles.x += (-delta_pos.y * 0.25f);
+	Quat cam_rot = camera->transform.rotation * quat_from_axis_angle(Vec3f_Right, -delta_pos.y * 0.25f);
+	// Get the euler angle so we can see if we want to clamp the rotation
+	Vec3f euler = quat_to_euler(cam_rot);
+	//debug_print("euler %f, %f, %f\n", rad_to_deg(euler.x), rad_to_deg(euler.y), rad_to_deg(euler.z);
+	// hard coded clamp between -89 and 89 degrees in radians
 
-	camera->transform.euler_angles.x = clamp(camera->transform.euler_angles.x, -89, 89);
-	camera->transform.euler_angles.y = fmodf_(camera->transform.euler_angles.y, 360.0f);
+	if (euler.x > DEG2RAD(-89) && euler.x <  DEG2RAD(89)) {
+		camera->transform.rotation = cam_rot;
+	}
+
+	// then Rotate camera around local first
+	//camera->transform.rotation *= quat_from_axis_angle(Vec3f_Right, -delta_pos.y * 0.25f);
+	
+
 		
-
-	Mat4x4f t = translate(-1 * camera->transform.position);
+	// We need this minus, because we need to local rotate, also it seems to break the lighting calcs
+	Mat4x4f t = translate(-camera->transform.position);
 	t = transpose(t);
 	
+	camera->view_mat = quat_to_rotation_matrix(camera->transform.rotation) * t;
 
-	Quat q = quat_from_axis_angle(Vec3f_Up, camera->transform.euler_angles.y);
-	q = q * quat_from_axis_angle(Vec3f_Right, camera->transform.euler_angles.x);
-
-
-	Mat4x4f rot_xy = quat_to_rotation_matrix(q);
-	Mat4x4f posrot = rot_xy * t;
-
-	
-	// Convert euler angles (yaw,pitch) to our forward vector
-	camera->transform.forward = euler_to_vector(camera->transform.euler_angles);
-	camera->transform.forward.y *= -1; // flip y axis
-	
-	
-				
+	camera->transform.forward = camera->transform.rotation * Vec3f_Forward;
+	camera->transform.up = camera->transform.rotation * Vec3f_Up;
 	camera->transform.right = cross(camera->transform.forward, camera->transform.up);
-	camera->view_mat = posrot;
-
 	
-	// TODO: we also need to update the up vector since it could change when we change the x angle >
+	
+	
+	
+	
+
 
 
 }

@@ -160,10 +160,10 @@ void inline test_transforms(void) {
 	//t.scale = Vec3f(5, 2, 4);
 	t.position = Vec3f(10, 2, 3);
 
-	t.euler_angles.x = 90.0f;
-	t.euler_angles.y = 45.0f;
-	t.euler_angles.z = 180.0f;
-	m = trs_mat_from_transform(&t);
+	//t.euler_angles.x = 90.0f;
+	//t.euler_angles.y = 45.0f;
+	//t.euler_angles.z = 180.0f;
+	//m = trs_mat_from_transform(&t);
 
 
 

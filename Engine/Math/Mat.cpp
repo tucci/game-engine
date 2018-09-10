@@ -273,6 +273,7 @@ Mat4x4f ortho(float near, float far, float top, float bottom, float right, float
 
 Mat4x4f look_at(const Vec3f& eye, const Vec3f& to, const Vec3f& up) {
 	Vec3f forward = normalize(eye - to);
+	//shadows break here goes to nan
 	Vec3f right = normalize(cross(up, forward));
 	Vec3f up2 = normalize(cross(forward, right));
 
