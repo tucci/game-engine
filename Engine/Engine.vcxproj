@@ -90,6 +90,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -102,13 +103,14 @@
       <WarningLevel>EnableAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\lib\glew210\include\GL;$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <MinimalRebuild>false</MinimalRebuild>
       <FunctionLevelLinking>false</FunctionLevelLinking>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -127,6 +129,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -143,10 +146,11 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)\lib\glew210\include\GL;$(ProjectDir)\lib\sdl\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -158,57 +162,154 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Core\Entities\Skybox.c" />
-    <ClCompile Include="Math\Mat.cpp" />
-    <ClCompile Include="Math\Quaternion.cpp" />
-    <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="Math\Vec.cpp" />
-    <ClCompile Include="Common\LinearAllocator.c" />
-    <ClCompile Include="Common\StackAllocator.c" />
-    <ClCompile Include="Core\Entities\Primitives.c" />
-    <ClCompile Include="Core\Game.c" />
-    <ClCompile Include="Core\Scene.c" />
-    <ClCompile Include="test.c" />
-    <ClCompile Include="Core\Entities\Camera.c" />
-    <ClCompile Include="Core\StaticMesh.c" />
-    <ClCompile Include="Renderer\gl\GLShader.c" />
-    <ClCompile Include="Core\TextureData.c" />
-    <ClCompile Include="Main.c" />
-    <ClCompile Include="ObjFile.c" />
-    <ClCompile Include="Renderer\gl\OpenGLRenderer.c" />
-    <ClCompile Include="Engine.c" />
-    <ClCompile Include="Renderer\software_renderer\SoftwareRenderer.c" />
+    <ClCompile Include="Core\src\Common\LinearAllocator.c" />
+    <ClCompile Include="Core\src\Common\StackAllocator.c" />
+    <ClCompile Include="Core\src\Core\Entities\Camera.c" />
+    <ClCompile Include="Core\src\Core\Entities\Primitives.c" />
+    <ClCompile Include="Core\src\Core\Entities\Skybox.c" />
+    <ClCompile Include="Core\src\Core\Game.c" />
+    <ClCompile Include="Core\src\Core\Scene.c" />
+    <ClCompile Include="Core\src\Core\StaticMesh.c" />
+    <ClCompile Include="Core\src\Core\TextureData.c" />
+    <ClCompile Include="Core\src\Core\Engine.c" />
+    <ClCompile Include="Core\src\Main.c" />
+    <ClCompile Include="Core\src\Math\Mat.cpp" />
+    <ClCompile Include="Core\src\Math\Quaternion.cpp" />
+    <ClCompile Include="Core\src\Math\Vec.cpp" />
+    <ClCompile Include="Core\src\ObjFile.c" />
+    <ClCompile Include="Core\src\Renderer\gl\GLShader.c" />
+    <ClCompile Include="Core\src\Renderer\gl\OpenGLRenderer.c" />
+    <ClCompile Include="Core\src\Renderer\software_renderer\SoftwareRenderer.c" />
+    <ClCompile Include="Core\src\test.c" />
+    <ClCompile Include="Core\src\Util\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common\LinearAllocator.h" />
-    <ClInclude Include="Common\common_macros.h" />
     <ClInclude Include="Common\StackAllocator.h" />
-    <ClInclude Include="Core\Display.h" />
-    <ClInclude Include="Core\EngineAPI.h" />
-    <ClInclude Include="Core\Entities\Camera.h" />
-    <ClInclude Include="Core\Entities\Lights.h" />
-    <ClInclude Include="Core\Entities\Primitives.h" />
     <ClInclude Include="Core\Entities\Skybox.h" />
-    <ClInclude Include="Core\Game.h" />
-    <ClInclude Include="Core\GameTimer.h" />
-    <ClInclude Include="Core\Input.h" />
     <ClInclude Include="Core\Window.h" />
-    <ClInclude Include="debug_macros.h" />
-    <ClInclude Include="Core\Scene.h" />
-    <ClInclude Include="Math\Quaternion.h" />
+    <ClInclude Include="Core\include\Common\common_macros.h" />
+    <ClInclude Include="Core\include\Common\LinearAllocator.h" />
+    <ClInclude Include="Core\include\Common\StackAllocator.h" />
+    <ClInclude Include="Core\include\Common\stb_image.h" />
+    <ClInclude Include="Core\include\Common\stretchy_buffer.h" />
+    <ClInclude Include="Core\include\Core\Display.h" />
+    <ClInclude Include="Core\include\Core\EngineAPI.h" />
+    <ClInclude Include="Core\include\Core\Entities\Camera.h" />
+    <ClInclude Include="Core\include\Core\Entities\Lights.h" />
+    <ClInclude Include="Core\include\Core\Entities\Primitives.h" />
+    <ClInclude Include="Core\include\Core\Entities\Skybox.h" />
+    <ClInclude Include="Core\include\Core\Game.h" />
+    <ClInclude Include="Core\include\Core\GameTimer.h" />
+    <ClInclude Include="Core\include\Core\Input.h" />
+    <ClInclude Include="Core\include\Core\Scene.h" />
+    <ClInclude Include="Core\include\Core\StaticMesh.h" />
+    <ClInclude Include="Core\include\Core\TextureData.h" />
+    <ClInclude Include="Core\include\Core\Transform.h" />
+    <ClInclude Include="Core\include\Core\Window.h" />
+    <ClInclude Include="Core\include\debug_macros.h" />
+    <ClInclude Include="Core\include\Core\Engine.h" />
+    <ClInclude Include="Core\include\Math\Mat.h" />
+    <ClInclude Include="Core\include\Math\Math.h" />
+    <ClInclude Include="Core\include\Math\Quaternion.h" />
+    <ClInclude Include="Core\include\Math\Vec.h" />
+    <ClInclude Include="Core\include\ObjFile.h" />
+    <ClInclude Include="Core\include\Renderer\gl\GLShader.h" />
+    <ClInclude Include="Core\include\Renderer\gl\OpenGLRenderer.h" />
+    <ClInclude Include="Core\include\Renderer\software_renderer\SoftwareRenderer.h" />
+    <ClInclude Include="Core\include\Renderer\software_renderer\SoftwareRendererShader.h" />
+    <ClInclude Include="Core\include\Util\Utils.h" />
+    <ClInclude Include="lib\glew210\include\GL\eglew.h" />
+    <ClInclude Include="lib\glew210\include\GL\glew.h" />
+    <ClInclude Include="lib\glew210\include\GL\glxew.h" />
+    <ClInclude Include="lib\glew210\include\GL\wglew.h" />
+    <ClInclude Include="lib\sdl\include\begin_code.h" />
+    <ClInclude Include="lib\sdl\include\close_code.h" />
+    <ClInclude Include="lib\sdl\include\SDL.h" />
+    <ClInclude Include="lib\sdl\include\SDL_assert.h" />
+    <ClInclude Include="lib\sdl\include\SDL_atomic.h" />
+    <ClInclude Include="lib\sdl\include\SDL_audio.h" />
+    <ClInclude Include="lib\sdl\include\SDL_bits.h" />
+    <ClInclude Include="lib\sdl\include\SDL_blendmode.h" />
+    <ClInclude Include="lib\sdl\include\SDL_clipboard.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_android.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_iphoneos.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_macosx.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_minimal.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_pandora.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_psp.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_windows.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_winrt.h" />
+    <ClInclude Include="lib\sdl\include\SDL_config_wiz.h" />
+    <ClInclude Include="lib\sdl\include\SDL_copying.h" />
+    <ClInclude Include="lib\sdl\include\SDL_cpuinfo.h" />
+    <ClInclude Include="lib\sdl\include\SDL_egl.h" />
+    <ClInclude Include="lib\sdl\include\SDL_endian.h" />
+    <ClInclude Include="lib\sdl\include\SDL_error.h" />
+    <ClInclude Include="lib\sdl\include\SDL_events.h" />
+    <ClInclude Include="lib\sdl\include\SDL_filesystem.h" />
+    <ClInclude Include="lib\sdl\include\SDL_gamecontroller.h" />
+    <ClInclude Include="lib\sdl\include\SDL_gesture.h" />
+    <ClInclude Include="lib\sdl\include\SDL_haptic.h" />
+    <ClInclude Include="lib\sdl\include\SDL_hints.h" />
+    <ClInclude Include="lib\sdl\include\SDL_joystick.h" />
+    <ClInclude Include="lib\sdl\include\SDL_keyboard.h" />
+    <ClInclude Include="lib\sdl\include\SDL_keycode.h" />
+    <ClInclude Include="lib\sdl\include\SDL_loadso.h" />
+    <ClInclude Include="lib\sdl\include\SDL_log.h" />
+    <ClInclude Include="lib\sdl\include\SDL_main.h" />
+    <ClInclude Include="lib\sdl\include\SDL_messagebox.h" />
+    <ClInclude Include="lib\sdl\include\SDL_mouse.h" />
+    <ClInclude Include="lib\sdl\include\SDL_mutex.h" />
+    <ClInclude Include="lib\sdl\include\SDL_name.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengl.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengles.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengles2.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengles2_gl2.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengles2_gl2ext.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengles2_gl2platform.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="lib\sdl\include\SDL_opengl_glext.h" />
+    <ClInclude Include="lib\sdl\include\SDL_pixels.h" />
+    <ClInclude Include="lib\sdl\include\SDL_platform.h" />
+    <ClInclude Include="lib\sdl\include\SDL_power.h" />
+    <ClInclude Include="lib\sdl\include\SDL_quit.h" />
+    <ClInclude Include="lib\sdl\include\SDL_rect.h" />
+    <ClInclude Include="lib\sdl\include\SDL_render.h" />
+    <ClInclude Include="lib\sdl\include\SDL_revision.h" />
+    <ClInclude Include="lib\sdl\include\SDL_rwops.h" />
+    <ClInclude Include="lib\sdl\include\SDL_scancode.h" />
+    <ClInclude Include="lib\sdl\include\SDL_shape.h" />
+    <ClInclude Include="lib\sdl\include\SDL_stdinc.h" />
+    <ClInclude Include="lib\sdl\include\SDL_surface.h" />
+    <ClInclude Include="lib\sdl\include\SDL_system.h" />
+    <ClInclude Include="lib\sdl\include\SDL_syswm.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_assert.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_common.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_compare.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_crc32.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_font.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_fuzzer.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_harness.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_images.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_log.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_md5.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_memory.h" />
+    <ClInclude Include="lib\sdl\include\SDL_test_random.h" />
+    <ClInclude Include="lib\sdl\include\SDL_thread.h" />
+    <ClInclude Include="lib\sdl\include\SDL_timer.h" />
+    <ClInclude Include="lib\sdl\include\SDL_touch.h" />
+    <ClInclude Include="lib\sdl\include\SDL_types.h" />
+    <ClInclude Include="lib\sdl\include\SDL_version.h" />
+    <ClInclude Include="lib\sdl\include\SDL_video.h" />
+    <ClInclude Include="lib\sdl\include\SDL_vulkan.h" />
     <ClInclude Include="Core\Transform.h" />
-    <ClInclude Include="Renderer\gl\GLShader.h" />
     <ClInclude Include="Renderer\software_renderer\SoftwareRendererShader.h" />
     <ClInclude Include="Core\TextureData.h" />
     <ClInclude Include="Core\StaticMesh.h" />
-    <ClInclude Include="Math\Mat.h" />
-    <ClInclude Include="Math\Math.h" />
-    <ClInclude Include="ObjFile.h" />
-    <ClInclude Include="Engine.h" />
-    <ClInclude Include="Renderer\gl\OpenGLRenderer.h" />
-    <ClInclude Include="Renderer\software_renderer\SoftwareRenderer.h" />
     <ClInclude Include="Math\Vec.h" />
-    <ClInclude Include="Utils.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
@@ -230,6 +331,19 @@
     <None Include="Assets\shaders\skybox.vs" />
     <None Include="Assets\shaders\textured.fs" />
     <None Include="Assets\shaders\textured.vs" />
+    <None Include="lib\glew210\doc\advanced.html" />
+    <None Include="lib\glew210\doc\basic.html" />
+    <None Include="lib\glew210\doc\build.html" />
+    <None Include="lib\glew210\doc\credits.html" />
+    <None Include="lib\glew210\doc\glew.html" />
+    <None Include="lib\glew210\doc\glxew.html" />
+    <None Include="lib\glew210\doc\index.html" />
+    <None Include="lib\glew210\doc\install.html" />
+    <None Include="lib\glew210\doc\log.html" />
+    <None Include="lib\glew210\doc\wglew.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Engine.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
