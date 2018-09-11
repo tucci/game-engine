@@ -191,10 +191,15 @@ void main(){
         // calculate per-light radiance
 
 		// Incoming light vector
-        vec3 L = normalize(light_pos - frag_pos);
+
+		// Positional light
+        //vec3 L = normalize(light_pos - frag_pos);
+
+		// Directional light
+        vec3 L = -normalize(light_pos);
 		// Half way vector
         vec3 H = normalize(V + L);
-		// Calculate attention based on how far the light is
+		// Calculate attenuation based on how far the light is
         float distance = length(light_pos - frag_pos);
         float attenuation = 1.0 / (distance * distance);
 
@@ -249,25 +254,19 @@ void main(){
     vec3 color = ambient + Lo;
 
 
-	float exposure = 1f;
-	color *= exposure;
+	// TODO: look into exposure
+	//float exposure = 1f;
+	//color *= exposure;
 
     // Reinhard HDR tonemapping
     color = color / (color + vec3(1.0));
 
 	
 
-    // gamma 
+    // gamma correct
     color = (1 - shadow) * pow(color, vec3(1.0/2.2)); 
 
 	
     frag_color  = vec4(color, 1.0);
 
-
-
-	
-	//frag_color =  vec4(normalize(frag_normal), 1.0f).rgba; 
-	//frag_color =  vec4(N, 1.0f).rgba;
-	
-	//frag_color =  texture(metallic_map, frag_uv).rgba;
 }

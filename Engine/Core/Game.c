@@ -2,6 +2,7 @@
 
 #include "Game.h"
 
+
 #include "../Math/Mat.h"
 #include "../Math/Quaternion.h"
 
@@ -189,10 +190,10 @@ void game_update(Game* game) {
 	// i think it has to do with the -1 * position, and transpose 
 	if (input->keys[SDL_SCANCODE_W].down) { move_camera_in_direction(camera, -camera->transform.forward, delta_time); }
 	if (input->keys[SDL_SCANCODE_S].down) { move_camera_in_direction(camera, camera->transform.forward, delta_time); }
-	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
-	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, -camera->transform.right, delta_time); }
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, Vec3f_Up, delta_time); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, -Vec3f_Up, delta_time); }
+	if (input->keys[SDL_SCANCODE_A].down) { move_camera_in_direction(camera, -camera->transform.right, delta_time); }
+	if (input->keys[SDL_SCANCODE_D].down) { move_camera_in_direction(camera, camera->transform.right, delta_time); }
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { move_camera_in_direction(camera, camera->transform.up, delta_time); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { move_camera_in_direction(camera, -camera->transform.up, delta_time); }
 
 
 
@@ -241,11 +242,6 @@ void game_update(Game* game) {
 	}
 
 
-	
-
-	
-	
-		
 
 	
 	Vec2i delta_pos = input->mouse.delta_pos;
@@ -277,9 +273,11 @@ void game_update(Game* game) {
 	
 	camera->view_mat = quat_to_rotation_matrix(camera->transform.rotation) * t;
 
-	camera->transform.forward = camera->transform.rotation * Vec3f_Forward;
-	camera->transform.up = camera->transform.rotation * Vec3f_Up;
-	camera->transform.right = cross(camera->transform.forward, camera->transform.up);
+
+	update_direction_vectors_for_transform(camera->transform);
+	//camera->transform.forward = camera->transform.rotation * Vec3f_Forward;
+	//camera->transform.up = camera->transform.rotation * Vec3f_Up;
+	//camera->transform.right = cross(camera->transform.forward, camera->transform.up);
 	
 	
 	

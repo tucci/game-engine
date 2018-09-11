@@ -8,9 +8,10 @@
 
 int main(int argc, char* argv[]) {
 
+
 	main_test();
 	
-
+	
 	
 	Engine engine;
 	
@@ -24,7 +25,7 @@ int main(int argc, char* argv[]) {
 		game_loop(&engine);
 		destroy_engine(&engine);
 	}
-	//
+	
     return 0;
 }
 

@@ -91,6 +91,8 @@ static void process_event_queue(Engine* engine) {
 					case MouseButton_Middle:
 						update_button_state(&engine->input.mouse.mouse_button_middle, true);
 						break;
+					case MouseButton_None:
+						break;
 					default:
 						break;
 				}
@@ -239,6 +241,9 @@ static void process_event_queue(Engine* engine) {
 				);
 				engine->window.window_id = event.event.window_event.data.window_id;
 				engine->window.flags &= ~WindowFlag_Has_Keyboard_Focus;
+				break;
+			}
+			case EventKind_None: {
 				break;
 			}
 			default:

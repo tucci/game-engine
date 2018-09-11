@@ -28,7 +28,6 @@
 
 
 
-// TODO: implement our own sinf/cosf
 
 
 

@@ -65,8 +65,6 @@ Vec3f operator*(const Quat& q, const Vec3f& pt) {
 	return result;
 }
 
-// TODO: implement slerp
-
 
 Mat4x4f quat_to_rotation_matrix(const Quat& q) {
 	Mat4x4f result;

@@ -7,15 +7,18 @@
 
 typedef struct Transform {
 	
-	Vec3f scale;
-	//Vec3f euler_angles;
 
+	Vec3f position;
+	Vec3f scale;
+	Quat rotation;
+
+	
+	// These may or may not be linked to the rotation. depends on the user
 	Vec3f forward;
 	Vec3f up;
 	Vec3f right;
 
-	Quat rotation;
-	Vec3f position;
+	
 
 	Transform() {
 		this->position = Vec3f_Zero;
@@ -27,6 +30,11 @@ typedef struct Transform {
 	}
 } Transform;
 
+void inline update_direction_vectors_for_transform(Transform& transform) {
+	transform.forward = transform.rotation * Vec3f_Forward;
+	transform.up = transform.rotation * Vec3f_Up;
+	transform.right = transform.rotation * Vec3f_Right;
+}
 
 
 Mat4x4f inline scale(const Vec3f& vec) {

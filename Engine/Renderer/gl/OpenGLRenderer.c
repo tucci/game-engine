@@ -527,8 +527,6 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 
 static void load_shaders(OpenGLRenderer* opengl) {
 
-	// TODO: move shader up to scene, also the scene shader has to be graphics backended independant, ex gl/ d3d
-
 	// Alloc on stack
 	const char* vertex_shader   = file_to_str("Assets/shaders/textured.vs", &opengl->stack_allocator);
 	const char* fragment_shader = file_to_str("Assets/shaders/textured.fs", &opengl->stack_allocator);
