@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "Renderer/software_renderer/SoftwareRenderer.h"
+#include "Core/Renderer/software_renderer/SoftwareRenderer.h"
 #include "Common/common_macros.h"
 
 
@@ -147,7 +147,8 @@ void software_render(SoftwareRenderer* r) {
 	
 
 	SDL_Renderer* renderer = r->renderer;
-	Camera camera = r->render_scene->main_camera;
+	
+	Camera camera = *r->render_scene->main_camera;
 
 
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -259,7 +260,7 @@ void software_render(SoftwareRenderer* r) {
 
 void software_debug_render(SoftwareRenderer* r) {
 	SDL_Renderer* renderer = r->renderer;
-	Camera camera = r->render_scene->main_camera;
+	Camera camera = *r->render_scene->main_camera;
 
 	
 	/*SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);

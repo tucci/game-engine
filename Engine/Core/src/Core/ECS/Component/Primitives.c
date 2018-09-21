@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Entities/Primitives.h"
+#include "Core/ECS/Component/Primitives.h"
 #include "debug_macros.h"
 
 

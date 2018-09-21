@@ -4,7 +4,7 @@
 
 #include "debug_macros.h"
 
-#include "Core/Transform.h"
+#include "Core/ECS/Component/Transform.h"
 
 
 #include "Common/LinearAllocator.h"
@@ -16,6 +16,7 @@
 #include "Math/Quaternion.h"
 
 
+#include "Core/ECS/EntityManager.h"
 
 
 
@@ -177,13 +178,24 @@ void inline test_matrix(void) {
 
 }
 
+
+void inline test_ecs(void) {
+	EntityManager manager;
+
+	Entity* e1 = create_entity(&manager);
+	Entity* e2 = create_entity(&manager);
+	Entity* e3 = create_entity(&manager);
+	Entity* e4 = create_entity(&manager);
+}
+
 void inline main_test(void) {
 	
 
-	test_linear_alloc();
-	test_stack_alloc();
-	test_simd_vec();
-	test_quats();
-	test_transforms();
-	test_matrix();
+	//test_linear_alloc();
+	//test_stack_alloc();
+	//test_simd_vec();
+	//test_quats();
+	//test_transforms();
+	//test_matrix();
+	test_ecs();
 }

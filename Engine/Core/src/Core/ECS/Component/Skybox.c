@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Entities/Skybox.h"
-#include "Core/Entities/Primitives.h"
+#include "Core/ECS/Component/Skybox.h"
+#include "Core/ECS/Component/Primitives.h"
 #include "Common/common_macros.h"
 
 

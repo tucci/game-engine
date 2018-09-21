@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "Core/StaticMesh.h"
+#include "Core/ECS/Component/StaticMesh.h"
 #include "Common/common_macros.h"
 
 

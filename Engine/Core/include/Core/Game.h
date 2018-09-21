@@ -18,8 +18,10 @@ typedef struct Game {
 	EngineAPI engineAPI;
 
 
+	// TODO: move this to a stack allocator
 	LinearAllocator game_memory;
 	Scene* loaded_scene;
+	
 } Game;
 
 

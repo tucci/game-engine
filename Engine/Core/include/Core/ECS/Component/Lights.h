@@ -1,11 +1,15 @@
 #pragma once
 
-#include "Core/Transform.h"
+
+#include "Math/Vec.h"
 
 typedef struct DirectionalLight {
 	Vec3f direction;
+	Vec3f color;
 } DirectionalLight;
 
 typedef struct PointLight {
-	Transform transform;
+	Vec3f position;
+	Vec3f color;
 } PointLight;
+

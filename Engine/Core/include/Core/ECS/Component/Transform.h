@@ -94,13 +94,8 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 
 
 	// Build quat from our euler angles
-
-	Quat q = transform->rotation;
-	//q =	     quat_from_axis_angle(Vec3f_Up, transform->euler_angles.y);
-	//q = (q * quat_from_axis_angle(Vec3f_Right, transform->euler_angles.x));
-	//q = (q * quat_from_axis_angle(Vec3f_Forward, transform->euler_angles.z));*/
-
 	// Build the rotation matrix from our quat
+	Quat q = transform->rotation;
 	Mat4x4f r = quat_to_rotation_matrix(q);
 
 	// Build the translate matrix
@@ -119,3 +114,17 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 	return result;
 
 }
+
+
+typedef struct TransformManager {
+	Vec3f* positions;
+	Vec3f* scales;
+	Vec3f* forwards;
+	Vec3f* ups;
+	Vec3f* rights;
+	Quat* rotations;
+
+	Mat4x4f* model_mats;
+	int count;
+};
+

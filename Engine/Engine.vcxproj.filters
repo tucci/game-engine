@@ -21,15 +21,6 @@
     <ClCompile Include="Core\src\Common\StackAllocator.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\Entities\Camera.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Entities\Primitives.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Entities\Skybox.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\src\Core\Engine.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,9 +28,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\src\Core\Scene.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\StaticMesh.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\src\Core\TextureData.c">
@@ -54,15 +42,6 @@
     <ClCompile Include="Core\src\Math\Vec.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Renderer\gl\GLShader.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Renderer\gl\OpenGLRenderer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Renderer\software_renderer\SoftwareRenderer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\src\Util\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -73,6 +52,39 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Core\src\ObjFile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\Component\Camera.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\Component\Primitives.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\Component\Skybox.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\Component\StaticMesh.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Common\Map.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\EntityManager.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\TransformSystem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\gl\GLShader.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\gl\OpenGLRenderer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\software_renderer\SoftwareRenderer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\Renderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -377,18 +389,6 @@
     <ClInclude Include="Core\include\Common\stretchy_buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\include\Core\Entities\Camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Core\Entities\Lights.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Core\Entities\Primitives.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Core\Entities\Skybox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\include\Core\Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -410,13 +410,7 @@
     <ClInclude Include="Core\include\Core\Scene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\include\Core\StaticMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\include\Core\TextureData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Core\Transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\include\Core\Window.h">
@@ -434,18 +428,6 @@
     <ClInclude Include="Core\include\Math\Vec.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Core\include\Renderer\gl\GLShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Renderer\gl\OpenGLRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Renderer\software_renderer\SoftwareRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\include\Renderer\software_renderer\SoftwareRendererShader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Core\include\Util\Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -453,6 +435,54 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\include\ObjFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\Camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\Lights.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\Primitives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\Skybox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\StaticMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Common\Map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\EntityManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\JobSystem\TransformSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\RenderComponent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\Renderer\gl\GLShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\Renderer\gl\OpenGLRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\Renderer\software_renderer\SoftwareRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\Renderer\software_renderer\SoftwareRendererShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\Renderer\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\Renderer\RenderInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,10 +11,10 @@
 
 #include "ObjFile.h"
 #include "Core/TextureData.h"
-#include "Core/Entities/Camera.h"
+#include "Core/ECS/Component/Camera.h"
 #include "Common/LinearAllocator.h"
 
-#include "Renderer/software_renderer/SoftwareRendererShader.h"
+#include "Core/Renderer/software_renderer/SoftwareRendererShader.h"
 
 // TODO: move this to it's own place
 typedef struct BoundingBox2i {

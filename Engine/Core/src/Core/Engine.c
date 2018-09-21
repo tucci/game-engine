@@ -400,7 +400,7 @@ static bool init_renderer(Engine* engine) {
 
 		case BackenedRenderer_OpenGL: {
 			MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
-			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, parition_start.start_ptr, parition_start.partition_size);
+			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, &engine->renderer.render_world, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
 		default:
@@ -471,6 +471,12 @@ static bool init_game_loop(Engine* engine) {
 }
 
 static bool init_debug(Engine* engine) {
+	return true;
+}
+
+static bool init_ecs(Engine* engine) {
+	MemoryEnginePartition parition_start = give_memory_partition(engine, ECS_MEMORY);
+	init_entity_manager(&engine->entity_manager, parition_start.start_ptr, parition_start.partition_size);
 	return true;
 }
 
@@ -644,29 +650,15 @@ static bool load_game(Engine* engine, const char* game_file) {
 		&engine->window,
 		&engine->input,
 		&engine->game_loop,
+		&engine->entity_manager,
+		&engine->renderer
 	};
 
 	attach_engine_subsytems(engine->loaded_game, api);
 
 	// load all resources, static meshes from files
 	debug_print("Loading scene objects\n");
-	load_scene(engine->loaded_game, 1);
-
-	switch (engine->renderer.type) {
-
-		case BackenedRenderer_OpenGL: 
-			set_scene_for_opengl_renderer(&engine->renderer.opengl, engine->loaded_game->loaded_scene);
-			break;
-
-		case BackenedRenderer_Software:
-			set_scene_for_software_renderer(&engine->renderer.software_renderer, engine->loaded_game->loaded_scene);
-			break;
-		default:
-			break;
-	}
-	
-
-	
+	load_scene(engine->loaded_game, 1);	
 
 
 	debug_print("Starting Game\n");
@@ -675,6 +667,7 @@ static bool load_game(Engine* engine, const char* game_file) {
 
 	return true;
 }
+
 
 bool init_engine(Engine* engine) {
 
@@ -697,12 +690,13 @@ bool init_engine(Engine* engine) {
 	engine->platform = SDL_GetPlatform();
 	if (!init_display(engine)) { return false; }
 	if (!init_window(engine)) { return false; }
-	if (!init_renderer(engine)) { return false; }
 	if (!init_keys(engine)) { return false; }
 	if (!init_event_queue(engine)) { return false; }
 	if (!init_clock(engine)) { return false; }
+	if (!init_ecs(engine)) { return false; }
+	if (!init_renderer(engine)) { return false; }
 	if (!init_game_loop(engine)) { return false; }
-
+	// TODO: Load game file here
 	if (!load_game(engine, "mygame.gamefile")) { return false; }
 	
 

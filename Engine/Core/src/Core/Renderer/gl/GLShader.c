@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/gl/GLShader.h"
+#include "Core/Renderer/gl/GLShader.h"
 #include <stdio.h>
 #include  "SDL_opengl.h"
 #include "debug_macros.h"

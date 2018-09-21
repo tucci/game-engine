@@ -3,7 +3,7 @@
 
 #include "Core/TextureData.h"
 #include "Common/LinearAllocator.h"
-#include "Core/StaticMesh.h"
+#include "Core/ECS/Component/StaticMesh.h"
 
 typedef struct Skybox {
 	SimpleTexture front;

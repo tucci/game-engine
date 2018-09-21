@@ -4,6 +4,8 @@
 #include "Core/Window.h"
 #include "Core/Input.h"
 #include "Core/GameTimer.h"
+#include "Core/ECS/EntityManager.h"
+#include "Core/Renderer/Renderer.h"
 
 // The API we expose to the underlying game
 // NOTE: the api should be all ptrs to the underlying engine
@@ -14,4 +16,7 @@ typedef struct EngineAPI {
 	Window* window;
 	Input* input;
 	GameTimer* game_loop;
+	EntityManager* entity_manager;
+	Renderer* renderer;
 } EngineAPI;
+

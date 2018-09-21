@@ -163,13 +163,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Core\src\Common\LinearAllocator.c" />
+    <ClCompile Include="Core\src\Common\Map.c" />
     <ClCompile Include="Core\src\Common\StackAllocator.c" />
-    <ClCompile Include="Core\src\Core\Entities\Camera.c" />
-    <ClCompile Include="Core\src\Core\Entities\Primitives.c" />
-    <ClCompile Include="Core\src\Core\Entities\Skybox.c" />
+    <ClCompile Include="Core\src\Core\ECS\EntityManager.c" />
+    <ClCompile Include="Core\src\Core\ECS\Component\Camera.c" />
+    <ClCompile Include="Core\src\Core\ECS\Component\Primitives.c" />
+    <ClCompile Include="Core\src\Core\ECS\Component\Skybox.c" />
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\TransformSystem.c" />
     <ClCompile Include="Core\src\Core\Game.c" />
+    <ClCompile Include="Core\src\Core\Renderer\Renderer.c" />
     <ClCompile Include="Core\src\Core\Scene.c" />
-    <ClCompile Include="Core\src\Core\StaticMesh.c" />
+    <ClCompile Include="Core\src\Core\ECS\Component\StaticMesh.c" />
     <ClCompile Include="Core\src\Core\TextureData.c" />
     <ClCompile Include="Core\src\Core\Engine.c" />
     <ClCompile Include="Core\src\Main.c" />
@@ -177,15 +181,21 @@
     <ClCompile Include="Core\src\Math\Quaternion.cpp" />
     <ClCompile Include="Core\src\Math\Vec.cpp" />
     <ClCompile Include="Core\src\ObjFile.c" />
-    <ClCompile Include="Core\src\Renderer\gl\GLShader.c" />
-    <ClCompile Include="Core\src\Renderer\gl\OpenGLRenderer.c" />
-    <ClCompile Include="Core\src\Renderer\software_renderer\SoftwareRenderer.c" />
+    <ClCompile Include="Core\src\Core\Renderer\gl\GLShader.c" />
+    <ClCompile Include="Core\src\Core\Renderer\gl\OpenGLRenderer.c" />
+    <ClCompile Include="Core\src\Core\Renderer\software_renderer\SoftwareRenderer.c" />
     <ClCompile Include="Core\src\test.c" />
     <ClCompile Include="Core\src\Util\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\StackAllocator.h" />
     <ClInclude Include="Core\Entities\Skybox.h" />
+    <ClInclude Include="Core\include\Common\Map.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\RenderComponent.h" />
+    <ClInclude Include="Core\include\Core\ECS\EntityManager.h" />
+    <ClInclude Include="Core\include\Core\ECS\JobSystem\TransformSystem.h" />
+    <ClInclude Include="Core\include\Core\Renderer\Renderer.h" />
+    <ClInclude Include="Core\include\Core\Renderer\RenderInterface.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="Core\include\Common\common_macros.h" />
     <ClInclude Include="Core\include\Common\LinearAllocator.h" />
@@ -194,17 +204,17 @@
     <ClInclude Include="Core\include\Common\stretchy_buffer.h" />
     <ClInclude Include="Core\include\Core\Display.h" />
     <ClInclude Include="Core\include\Core\EngineAPI.h" />
-    <ClInclude Include="Core\include\Core\Entities\Camera.h" />
-    <ClInclude Include="Core\include\Core\Entities\Lights.h" />
-    <ClInclude Include="Core\include\Core\Entities\Primitives.h" />
-    <ClInclude Include="Core\include\Core\Entities\Skybox.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\Camera.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\Lights.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\Primitives.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\Skybox.h" />
     <ClInclude Include="Core\include\Core\Game.h" />
     <ClInclude Include="Core\include\Core\GameTimer.h" />
     <ClInclude Include="Core\include\Core\Input.h" />
     <ClInclude Include="Core\include\Core\Scene.h" />
-    <ClInclude Include="Core\include\Core\StaticMesh.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\StaticMesh.h" />
     <ClInclude Include="Core\include\Core\TextureData.h" />
-    <ClInclude Include="Core\include\Core\Transform.h" />
+    <ClInclude Include="Core\include\Core\ECS\Component\Transform.h" />
     <ClInclude Include="Core\include\Core\Window.h" />
     <ClInclude Include="Core\include\debug_macros.h" />
     <ClInclude Include="Core\include\Core\Engine.h" />
@@ -213,10 +223,10 @@
     <ClInclude Include="Core\include\Math\Quaternion.h" />
     <ClInclude Include="Core\include\Math\Vec.h" />
     <ClInclude Include="Core\include\ObjFile.h" />
-    <ClInclude Include="Core\include\Renderer\gl\GLShader.h" />
-    <ClInclude Include="Core\include\Renderer\gl\OpenGLRenderer.h" />
-    <ClInclude Include="Core\include\Renderer\software_renderer\SoftwareRenderer.h" />
-    <ClInclude Include="Core\include\Renderer\software_renderer\SoftwareRendererShader.h" />
+    <ClInclude Include="Core\include\Core\Renderer\gl\GLShader.h" />
+    <ClInclude Include="Core\include\Core\Renderer\gl\OpenGLRenderer.h" />
+    <ClInclude Include="Core\include\Core\Renderer\software_renderer\SoftwareRenderer.h" />
+    <ClInclude Include="Core\include\Core\Renderer\software_renderer\SoftwareRendererShader.h" />
     <ClInclude Include="Core\include\Util\Utils.h" />
     <ClInclude Include="lib\glew210\include\GL\eglew.h" />
     <ClInclude Include="lib\glew210\include\GL\glew.h" />

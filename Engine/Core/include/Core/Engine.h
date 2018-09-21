@@ -10,11 +10,13 @@
 #include "Core/Window.h"
 #include "Core/Input.h"
 #include "Core/GameTimer.h"
+#include "Core/Renderer/Renderer.h"
+
+#include "Core/ECS/EntityManager.h"
 
 
 
-#include "Renderer/software_renderer/SoftwareRenderer.h"
-#include "Renderer/gl/OpenGLRenderer.h"
+
 
 #include "debug_macros.h"
 
@@ -26,9 +28,13 @@
 #define WINDOW_RESIZEABlE true
 #define MAX_EVENTS 32
 
+// TODO: should ecs and game memory be the same?
+// TODO: eventually we should move this to a general purpose allocator
 #define ENGINE_MEMORY MEGABYTES(200)
-#define GAME_MEMORY MEGABYTES(190)
+#define GAME_MEMORY MEGABYTES(150)
+#define ECS_MEMORY MEGABYTES(40)
 #define RENDERER_MEMORY MEGABYTES(10)
+
 
 
 
@@ -116,22 +122,6 @@ typedef struct Clock {
 
 
 
-typedef enum BackenedRendererType {
-	BackenedRenderer_Software,
-	BackenedRenderer_OpenGL
-} BackenedRendererType;
-
-
-
-typedef struct Renderer {
-	BackenedRendererType type;
-	union {
-		SoftwareRenderer software_renderer;
-		OpenGLRenderer opengl;
-	};
-	Renderer() {};
-	
-} Renderer;
 
 
 typedef struct MemoryEnginePartition {
@@ -152,11 +142,14 @@ typedef struct Engine {
 	Input input;
 	Clock clock;
 	GameTimer game_loop;
+	EntityManager entity_manager;
+	Renderer renderer;
+	
 	
 
 
 	// Internal subsystems
-	Renderer renderer;
+	
 	Event event_queue[MAX_EVENTS];
 	int event_count;
 
@@ -193,6 +186,7 @@ static bool init_event_queue(Engine* engine);
 static bool init_clock(Engine* engine);
 static bool init_game_loop(Engine* engine);
 static bool init_debug(Engine* engine);
+static bool init_ecs(Engine* engine);
 static void update_clock(Engine* engine);
 
 static void process_inputs(Engine* engine);

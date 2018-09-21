@@ -21,6 +21,7 @@ typedef struct HDRTexture {
 	int height;
 	int channels;
 	int depth;
+
 } HDRTexture;
 
 

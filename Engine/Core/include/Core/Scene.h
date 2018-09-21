@@ -1,11 +1,15 @@
 #pragma once
 
-#include "Core/Entities/Camera.h"
-#include "Core/Entities/Skybox.h"
-#include "Core/Entities/Lights.h"
+//#include "Core/ECS/Component/Camera.h"
+//#include "Core/ECS/Component/StaticMesh.h"
+#include "Core/ECS/Component/Lights.h"
 
-#include "Core/StaticMesh.h"
+#include "Core/ECS/Component/Skybox.h"
 #include "Core/TextureData.h"
+
+#include "Core/ECS/EntityManager.h"
+
+
 
 
 
@@ -52,25 +56,27 @@ typedef struct Scene {
 	//SceneNode root;
 	// LinearAllocator* scene_mem;
 
-	DirectionalLight test_light;
-
-
-	Camera main_camera;
 	
 
 
+	Entity* entity_main_camera;
+	Entity* entity_mesh_test;
+	Entity* entity_mesh_test2;
+	Entity* entity_mesh_test3;
+
+	Camera* main_camera;
+	DirectionalLight test_light;
 	HDR_SkyMap hdr_skymap;
-
-	StaticMesh mesh_test;
-	StaticMesh mesh_test2;
-
 	SimpleTexture albedo_map;
 	SimpleTexture normal_map;
 	SimpleTexture metallic_map;
 	SimpleTexture roughness_map;
 	SimpleTexture ao_map;
 	
-	StaticMesh flat_plane;
+	
+
+
+	
 } Scene;
 
 

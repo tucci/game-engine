@@ -4,12 +4,12 @@
 #include "ObjFile.h"
 #include "Common/LinearAllocator.h"
 
-#include "Core/Transform.h"
+#include "Core/ECS/Component/Transform.h"
 
 
 typedef struct StaticMesh {
 	// TODO: move this to the entity stuff. transform shoudldnt be in the static mesh
-	Transform transform;
+	//Transform transform;
 
 	int vertex_count;
 	int index_count;
@@ -22,3 +22,9 @@ typedef struct StaticMesh {
 
 
 void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, LinearAllocator* memory);
+
+
+typedef struct StaticMeshManager {
+	StaticMesh* meshes;
+	int count;
+} StaticMeshManager;
