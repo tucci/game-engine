@@ -29,7 +29,7 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 
 
 	opengl->render_world->hdr_skymap_res = gl_create_hdr_texture(opengl, &skymap->map, GL_RGB, GL_RGB16F);
-	opengl->render_world->env_cubemap_res = gl_create_cubemap(opengl, skymap_buffer_width, skymap_buffer_height);
+	opengl->render_world->env_cubemap_res = gl_create_cubemap(opengl, skymap_buffer_width, skymap_buffer_height, false);
 
 	// Load skymap to equirectangular shader 
 	opengl->render_world->equirectangular_shader_res = gl_create_shader(opengl, "Assets/shaders/hdr_skymap.vs", "Assets/shaders/hdr_skymap.fs");
@@ -131,11 +131,11 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	int conv_width = 32;
 	int conv_height = 32;
 
-	opengl->render_world->irradiance_map_res = gl_create_cubemap(opengl, conv_width, conv_width);
+	opengl->render_world->irradiance_map_res = gl_create_cubemap(opengl, conv_width, conv_width, false);
 
 
 
-	glBindFramebuffer(GL_FRAMEBUFFER, opengl->ebos[opengl->render_world->capture_fbo_res.handle]);
+	glBindFramebuffer(GL_FRAMEBUFFER, opengl->fbos[opengl->render_world->capture_fbo_res.handle]);
 	glBindRenderbuffer(GL_RENDERBUFFER, opengl->rbos[opengl->render_world->capture_rbo_res.handle]);
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, conv_width, conv_height);
 
@@ -194,7 +194,8 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 
 	// pbr: create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale.
-	opengl->render_world->prefiler_map_res = gl_create_cubemap(opengl, 128, 128);
+	opengl->render_world->prefiler_map_res = gl_create_cubemap(opengl, 128, 128, true);
+	
 	
 	GLShader prefilter_shader = opengl->shaders[opengl->render_world->prefilter_shader_res.handle];
 	
@@ -290,9 +291,7 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 
 	
 
-	// Render quad
-	unsigned int quadVAO = 0;
-	unsigned int quadVBO;
+	
 
 	float quadVertices[] = {
 		// positions        // texture Coords
@@ -301,25 +300,25 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 		1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
 		1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
 	};
-	// setup plane VAO
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+
+	RenderResource quad_vao_res = gl_create_vao(opengl);
+	RenderResource quad_vbo_res = gl_create_vbo(opengl);
+	
+	glBindVertexArray(opengl->vaos[quad_vao_res.handle]);
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->vbos[quad_vbo_res.handle]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	
-	glBindVertexArray(quadVAO);
+	glBindVertexArray(opengl->vaos[quad_vao_res.handle]);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	//glDeleteVertexArrays(1, &quadVAO);
-	//glDeleteBuffers(1, &quadVBO);
+	
 
 
 }
@@ -346,7 +345,7 @@ static void gl_add_resource_to_lookup(OpenGLRenderer* opengl, RenderResource han
 	// TODO: implement hashmap based of the handle type and handle index
 }
 
-RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture) {
+RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture, bool mipmap) {
 	RenderResource handle;
 	handle.type = RenderResourceType_TEXTURE;
 
@@ -354,11 +353,11 @@ RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture)
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
-	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	if (mipmap) glGenerateMipmap(GL_TEXTURE_2D);
 
 	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
 	// you will need to set the lower 24 bit index in the handle to correspond to this index
@@ -431,7 +430,7 @@ RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_tex
 	return handle;
 }
 
-RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, unsigned int height) {
+RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, unsigned int height, bool mipmap) {
 	RenderResource  handle;
 	handle.type = RenderResourceType_TEXTURE;
 
@@ -446,9 +445,11 @@ RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, uns
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR: GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	if (mipmap) glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+
 	int next_texture_index = opengl->texture_count;
 	handle.handle = next_texture_index;
 	opengl->textures[opengl->texture_count] = texture_id;

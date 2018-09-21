@@ -92,12 +92,12 @@ RenderResource create_index_buffer(Renderer* renderer) {
 	return handle;
 }
 
-RenderResource create_texture(Renderer* renderer, SimpleTexture* texture) {
+RenderResource create_texture(Renderer* renderer, SimpleTexture* texture, bool mipmap) {
 	RenderResource handle;
 	
 	switch (renderer->type) {
 		case BackenedRenderer_OpenGL:
-			handle = gl_create_texture(&renderer->opengl, texture);
+			handle = gl_create_texture(&renderer->opengl, texture, mipmap);
 			break;
 	}
 	

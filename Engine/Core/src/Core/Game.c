@@ -131,11 +131,11 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
 
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 
@@ -146,11 +146,11 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->game_memory, false);
 
 
-	load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->game_memory, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->game_memory, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 
@@ -168,11 +168,11 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-roughness.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-ao.png", &scene->ao_map, &game->game_memory, false);
 
-	api->renderer->render_world.albedo_map_res = create_texture(api->renderer, &scene->albedo_map);
-	api->renderer->render_world.normal_map_res = create_texture(api->renderer, &scene->normal_map);
-	api->renderer->render_world.metallic_map_res = create_texture(api->renderer, &scene->metallic_map);
-	api->renderer->render_world.roughness_map_res = create_texture(api->renderer, &scene->roughness_map);
-	api->renderer->render_world.ao_map_res = create_texture(api->renderer, &scene->ao_map);
+	api->renderer->render_world.albedo_map_res = create_texture(api->renderer, &scene->albedo_map, true);
+	api->renderer->render_world.normal_map_res = create_texture(api->renderer, &scene->normal_map, true);
+	api->renderer->render_world.metallic_map_res = create_texture(api->renderer, &scene->metallic_map, true);
+	api->renderer->render_world.roughness_map_res = create_texture(api->renderer, &scene->roughness_map, true);
+	api->renderer->render_world.ao_map_res = create_texture(api->renderer, &scene->ao_map, true);
 	// TODO: once the textures are added on the gpu, we can free them here
 	
 		
