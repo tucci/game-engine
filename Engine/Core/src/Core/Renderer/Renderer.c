@@ -8,7 +8,7 @@ void push_render_object(Renderer* renderer, RenderMesh desc) {
 	renderer->render_world.render_mesh_count++;
 }
 
-void push_skymap(Renderer* renderer, HDR_SkyMap* skymap) {
+void create_skymap(Renderer* renderer, HDR_SkyMap* skymap) {
 	renderer->render_world.skymap = skymap;
 	gl_init_hdr_map(&renderer->opengl, skymap);
 }

@@ -28,7 +28,7 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, opengl->rbos[opengl->render_world->capture_rbo_res.handle]);
 
 
-	opengl->render_world->hdr_skymap_res = gl_create_hdr_texture(opengl, &skymap->map);
+	opengl->render_world->hdr_skymap_res = gl_create_hdr_texture(opengl, &skymap->map, GL_RGB, GL_RGB16F);
 	opengl->render_world->env_cubemap_res = gl_create_cubemap(opengl, skymap_buffer_width, skymap_buffer_height);
 
 	// Load skymap to equirectangular shader 
@@ -274,8 +274,8 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	HDRTexture null_map;
 	null_map.width = 512;
 	null_map.height = 512;
-	null_map.data = NULL;
-	opengl->render_world->brdf_lut_res = gl_create_hdr_texture(opengl, &null_map);
+	null_map.data = 0;
+	opengl->render_world->brdf_lut_res = gl_create_hdr_texture(opengl, &null_map, GL_RG, GL_RG16F);
 		
 	
 	// then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
@@ -285,7 +285,7 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, opengl->textures[opengl->render_world->brdf_lut_res.handle], 0);
 
 	glViewport(0, 0, 512, 512);
-	glUseProgram(opengl->shaders[opengl->render_world->brdf_lut_res.handle].program);
+	glUseProgram(opengl->shaders[opengl->render_world->brdf_shader_res.handle].program);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	
@@ -400,7 +400,9 @@ RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, 
 	return handle;
 }
 
-RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_texture) {
+RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_texture, GLenum format, GLint internalformat) {
+
+
 	RenderResource handle;
 	handle.type = RenderResourceType_TEXTURE;
 
@@ -411,9 +413,9 @@ RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_tex
 
 	int width = hdr_texture->width;
 	int height = hdr_texture->height;
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, hdr_texture->data);
-
+	
+	glTexImage2D(GL_TEXTURE_2D, 0, internalformat, width, height, 0, format, GL_FLOAT, hdr_texture->data);
+	//glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -633,6 +635,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	init_gl_extensions(opengl);	
 	init_gl_resource_arrays(opengl);
 
+	
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
@@ -658,7 +661,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	opengl->render_world->debug_grid_vbo_res = gl_create_vbo(opengl);
 
 
-
+	
 
 
 	int grid_size = DEBUG_GRID_SIZE;
@@ -917,8 +920,6 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		pv_mat = projection_mat * view_mat;
 		opengl->render_world->light_space_mat = pv_mat;
 	} else {
-		
-		
 		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
 		pv_mat = projection_mat * view_mat;
 	}
@@ -1150,7 +1151,7 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debu
 	glViewport(0, 0, SHADOW_WIDTH_RES, SHADOW_HEIGHT_RES);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	opengl_render_scene(opengl, viewport_size, true);
-	////glCullFace(GL_BACK); // don't forget to reset original culling face
+	//glCullFace(GL_BACK); // don't forget to reset original culling face
 	
 
 	// Normal lighting pass

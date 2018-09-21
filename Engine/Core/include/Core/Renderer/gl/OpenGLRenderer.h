@@ -102,7 +102,7 @@ static void gl_add_resource_to_lookup(OpenGLRenderer* opengl, RenderResource han
 // gl_create_texture, with a paramter that specifcies what type it is
 RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture);
 RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, unsigned int height);
-RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_texture);
+RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_texture, GLenum format, GLint internalformat);
 RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, unsigned int height);
 RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file, const char* fragment_file);
 RenderResource gl_create_vbo(OpenGLRenderer* opengl);

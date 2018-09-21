@@ -32,7 +32,7 @@ typedef struct Renderer {
 void push_render_object(Renderer* renderer, RenderMesh desc);
 // TODO: these are just tests, anc should be removed once we have a better api
 void create_shadowmap(Renderer* renderer);
-void push_skymap(Renderer* renderer, HDR_SkyMap* skymap);
+void create_skymap(Renderer* renderer, HDR_SkyMap* skymap);
 void push_camera(Renderer* renderer, Camera* camera, Vec3f pos);
 void push_light(Renderer* renderer, DirectionalLight* light);
 

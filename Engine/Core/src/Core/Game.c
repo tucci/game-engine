@@ -109,11 +109,13 @@ void load_scene(Game* game, int scene_id) {
 
 	
 
-
+	
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
 	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
-	push_skymap(api->renderer, &scene->hdr_skymap);
+	create_skymap(api->renderer, &scene->hdr_skymap);
+	create_shadowmap(api->renderer);
+	
 	
 	
 	
@@ -345,7 +347,7 @@ void game_update(Game* game) {
 
 	push_camera(game->engineAPI.renderer, camera, cam_pos);
 	push_light(game->engineAPI.renderer, test_light);
-	//push_skymap(game->engineAPI.renderer, &game->loaded_scene->hdr_skymap);
+	
 
 
 	
