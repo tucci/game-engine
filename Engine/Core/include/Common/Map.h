@@ -2,9 +2,10 @@
 
 #include <stdint.h.>
 
+
 typedef struct Map {
-	uint64_t *keys;
-	uint64_t *vals;
+	uint64_t* key;
+	uint64_t* value;
 	size_t len;
 	size_t cap;
 } Map;

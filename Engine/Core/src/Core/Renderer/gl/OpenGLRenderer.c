@@ -1006,8 +1006,8 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		RenderMesh render_mesh = opengl->render_world->render_mesh_list[i];
 
 		StaticMesh* mesh = render_mesh.mesh;
-		Mat4x4f* model_mat = render_mesh.model_mat;
-		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, model_mat->mat1d);
+		Mat4x4f* world_mat = render_mesh.world;
+		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);
 
 
 		glBufferData(GL_ARRAY_BUFFER,

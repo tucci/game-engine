@@ -33,6 +33,30 @@ void job_default_transforms(TransformManager* manager) {
 	for (int i = 0; i < manager->count; i++) {
 		manager->rotations[i] = identity;
 	}
+
+	for (int i = 0; i < manager->count; i++) {
+		manager->parent[i] = NO_ENTITY_ID;
+	}
+
+	for (int i = 0; i < manager->count; i++) {
+		manager->first_child[i] = NO_ENTITY_ID;
+	}
+
+	for (int i = 0; i < manager->count; i++) {
+		manager->next_sibling[i] = NO_ENTITY_ID;
+	}
+
+	for (int i = 0; i < manager->count; i++) {
+		manager->prev_sibling[i] = NO_ENTITY_ID;
+	}
+
+	for (int i = 0; i < manager->count; i++) {
+		manager->local[i] = Mat4x4f();
+	}
+
+	for (int i = 0; i < manager->count; i++) {
+		manager->world[i] = Mat4x4f();
+	}
 }
 
 void job_update_basis_vectors(TransformManager* manager) {
@@ -52,18 +76,25 @@ void job_update_basis_vectors(TransformManager* manager) {
 
 }
 
-void job_compute_trs_matrices(TransformManager* manager) {
+
+
+
+
+void job_compute_world_matrices(TransformManager* manager) {
+
+
+	
 
 	// Scale first
 	for (int i = 0; i < manager->count; i++) {
-		manager->model_mats[i] = scale(manager->scales[i]);
+		manager->local[i] = scale(manager->scales[i]);
 	}
 
 	// Then rotate
 	for (int i = 0; i < manager->count; i++) {
 		// Build the rotation matrix from our quat
 		Mat4x4f r = quat_to_rotation_matrix(manager->rotations[i]);
-		manager->model_mats[i] = r * manager->model_mats[i];
+		manager->local[i] = r * manager->local[i];
 	}
 
 	// Then translate
@@ -71,6 +102,32 @@ void job_compute_trs_matrices(TransformManager* manager) {
 		
 		Mat4x4f t = translate(manager->positions[i]);
 		t = transpose(t);
-		manager->model_mats[i] = t * manager->model_mats[i];
+		manager->local[i] = t * manager->local[i];
 	}
+
+
+	for (int i = 0; i < manager->count; i++) {
+
+		int parent_id = manager->parent[i];
+		if (parent_id == NO_ENTITY_ID) {
+			manager->world[i] = manager->local[i];
+		} else {
+			Mat4x4f parent_transform = manager->world[parent_id];
+			
+
+			for (;;) {// keep transforming until we have no more children
+				manager->world[i] = parent_transform * manager->local[i];
+				int child = manager->first_child[i];
+				while (child != NO_ENTITY_ID) {
+					child = manager->next_sibling[child];
+				}
+				break;
+			}
+			
+		}
+		
+	}	
+	
+
+
 }

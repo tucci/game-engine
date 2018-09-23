@@ -4,6 +4,8 @@
 #include "Math/Mat.h"
 #include "Math/Quaternion.h"
 
+#define NO_ENTITY_ID -1
+
 
 typedef struct Transform {
 	
@@ -117,6 +119,8 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 
 
 typedef struct TransformManager {
+	int count;
+
 	Vec3f* positions;
 	Vec3f* scales;
 	Vec3f* forwards;
@@ -124,7 +128,14 @@ typedef struct TransformManager {
 	Vec3f* rights;
 	Quat* rotations;
 
-	Mat4x4f* model_mats;
-	int count;
+	Mat4x4f* local;
+	Mat4x4f* world;
+
+	int* parent;
+	int* first_child;
+	int* next_sibling;
+	//int* prev_sibling;
+
+	
 };
 

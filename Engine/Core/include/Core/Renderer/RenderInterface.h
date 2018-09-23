@@ -11,7 +11,7 @@
 typedef struct RenderMesh {
 	int material_id;
 	StaticMesh* mesh;
-	Mat4x4f* model_mat;
+	Mat4x4f* world;
 } RenderMesh;
 
 // Concept take and slightly modifief from the stingray engine blog

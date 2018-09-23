@@ -55,9 +55,9 @@ void load_scene(Game* game, int scene_id) {
 	Camera* cam = get_camera(api->entity_manager, *scene->entity_main_camera);
 	init_camera_params(cam, 0.1, 100, 90, api->window->size.x / cast(float) api->window->size.y);
 	set_position(api->entity_manager, *scene->entity_main_camera, Vec3f(0, 0, 0));
-	
-
 	scene->main_camera = get_camera(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera);
+
+	
 
 
 	// Mesh 1
@@ -68,7 +68,7 @@ void load_scene(Game* game, int scene_id) {
 	obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->game_memory);
 	set_position(api->entity_manager, *scene->entity_mesh_test, Vec3f(0, 0, -5));
 	
-
+	
 
 	// Mesh 2
 	scene->entity_mesh_test2 = create_entity(api->entity_manager);
@@ -90,7 +90,11 @@ void load_scene(Game* game, int scene_id) {
 	set_scale(api->entity_manager, *scene->entity_mesh_test3, Vec3f(100, 100, 100));
 	
 
-
+	attach_child_entity(api->entity_manager, *scene->entity_mesh_test, *scene->entity_mesh_test2);
+	//attach_child_entity(api->entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test3);
+	//attach_child_entity(api->entity_manager, *scene->entity_mesh_test2, *scene->entity_mesh_test3);
+	//attach_child_entity(api->entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test2);
+	//attach_child_entity(api->entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test3);
 	
 	
 
@@ -210,17 +214,28 @@ void game_update(Game* game) {
 	// i think it has to do with the -1 * position, and transpose 
 	Vec3f new_cam_direction;
 	
-	if (input->keys[SDL_SCANCODE_W].down) { new_cam_direction = new_cam_direction + (delta_time * -forward(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction = new_cam_direction + (delta_time * forward(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction = new_cam_direction + (delta_time * -right(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction = new_cam_direction + (delta_time * right(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction = new_cam_direction + (delta_time * up(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction = new_cam_direction + (delta_time * -up(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_W].down) { new_cam_direction = (delta_time * -forward(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction = (delta_time * forward(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction = (delta_time * -right(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction = (delta_time * right(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction = (delta_time * up(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction = (delta_time * -up(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera)); }
 
 	Vec3f cam_pos = position(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera);
 	set_position(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera, cam_pos + new_cam_direction);
 
 
+	Vec3f new_mesh_pos;
+
+	
+	if (input->keys[SDL_SCANCODE_UP].down) { new_mesh_pos = (delta_time * -forward(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2)); }
+	if (input->keys[SDL_SCANCODE_DOWN].down) { new_mesh_pos = (delta_time * forward(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2)); }
+	if (input->keys[SDL_SCANCODE_LEFT].down) { new_mesh_pos = (delta_time * -right(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2)); }
+	if (input->keys[SDL_SCANCODE_RIGHT].down) { new_mesh_pos =  (delta_time * right(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2)); }
+	
+
+	Vec3f mesh_pos = position(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2);
+	set_position(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2, mesh_pos + new_mesh_pos);
 
 
 	Vec3f new_mesh_scale = Vec3f(0, 0, 0);
@@ -321,7 +336,7 @@ void game_update(Game* game) {
 
 
 	job_update_basis_vectors(&game->engineAPI.entity_manager->comp_manager.transform_manager);
-	job_compute_trs_matrices(&game->engineAPI.entity_manager->comp_manager.transform_manager);
+	job_compute_world_matrices(&game->engineAPI.entity_manager->comp_manager.transform_manager);
 		
 	
 	
@@ -329,19 +344,19 @@ void game_update(Game* game) {
 	RenderMesh desc1;
 	desc1.material_id = 0;
 	desc1.mesh = get_static_mesh(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test);
-	desc1.model_mat = get_model_mat(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test);
+	desc1.world= get_world_mat(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test);
 	push_render_object(game->engineAPI.renderer, desc1);
 
 	RenderMesh desc2;
 	desc2.material_id = 0;
 	desc2.mesh = get_static_mesh(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2);
-	desc2.model_mat = get_model_mat(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2);
+	desc2.world = get_world_mat(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test2);
 	push_render_object(game->engineAPI.renderer, desc2);
 
 	RenderMesh desc3;
 	desc3.material_id = 0;
 	desc3.mesh = get_static_mesh(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test3);
-	desc3.model_mat = get_model_mat(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test3);
+	desc3.world = get_world_mat(game->engineAPI.entity_manager, *game->loaded_scene->entity_mesh_test3);
 	push_render_object(game->engineAPI.renderer, desc3);
 
 

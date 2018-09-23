@@ -43,16 +43,18 @@ typedef struct EntityManager {
 	
 } EntityManager;
 
-
+void init_entity_manager(EntityManager* manager, void* parition_start, size_t partition_size);
 Entity* create_entity(EntityManager* manager);
 void add_component(EntityManager* manager, Entity* entity, ComponentType type);
 
 
-void init_entity_manager(EntityManager* manager, void* parition_start, size_t partition_size);
+void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
+
 
 Camera* get_camera(EntityManager* manager, Entity entity);
 StaticMesh* get_static_mesh(EntityManager* manager, Entity entity);
-Mat4x4f* get_model_mat(EntityManager* manager, Entity entity);
+Mat4x4f* get_world_mat(EntityManager* manager, Entity entity);
+Mat4x4f* get_local_mat(EntityManager* manager, Entity entity);
 Vec3f position(EntityManager* manager, Entity entity);
 void set_position(EntityManager* manager, Entity entity, Vec3f pos);
 
