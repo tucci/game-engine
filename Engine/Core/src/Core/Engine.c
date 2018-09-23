@@ -399,8 +399,7 @@ static bool init_renderer(Engine* engine) {
 		}
 
 		case BackenedRenderer_OpenGL: {
-			MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
-			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, &engine->renderer.render_world, parition_start.start_ptr, parition_start.partition_size);
+			return init_opengl_renderer(engine->window.sdl_window, &engine->renderer.opengl, &engine->renderer.render_world);
 			break;
 		}
 		default:
@@ -475,8 +474,7 @@ static bool init_debug(Engine* engine) {
 }
 
 static bool init_ecs(Engine* engine) {
-	MemoryEnginePartition parition_start = give_memory_partition(engine, ECS_MEMORY);
-	init_entity_manager(&engine->entity_manager, parition_start.start_ptr, parition_start.partition_size);
+	init_entity_manager(&engine->entity_manager);
 	return true;
 }
 

@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\src\Common\Arena.c" />
     <ClCompile Include="Core\src\Common\LinearAllocator.c" />
     <ClCompile Include="Core\src\Common\Map.c" />
     <ClCompile Include="Core\src\Common\StackAllocator.c" />
@@ -190,6 +191,7 @@
   <ItemGroup>
     <ClInclude Include="Common\StackAllocator.h" />
     <ClInclude Include="Core\Entities\Skybox.h" />
+    <ClInclude Include="Core\include\Common\Arena.h" />
     <ClInclude Include="Core\include\Common\Map.h" />
     <ClInclude Include="Core\include\Core\ECS\Component\RenderComponent.h" />
     <ClInclude Include="Core\include\Core\ECS\EntityManager.h" />

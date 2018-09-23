@@ -9,6 +9,7 @@
 
 #include "Common/LinearAllocator.h"
 #include "Common/StackAllocator.h"
+#include "Common/Arena.h"
 #include "Common/common_macros.h"
 
 #include "Math/Vec.h"
@@ -17,6 +18,7 @@
 
 
 #include "Core/ECS/EntityManager.h"
+
 
 
 
@@ -188,6 +190,20 @@ void inline test_ecs(void) {
 	Entity* e4 = create_entity(&manager);
 }
 
+
+void inline test_arena(void) {
+	Arena a;
+	arena_init(&a);
+	void* block = arena_alloc(&a, MEGABYTES(2));
+	void* block2 = arena_alloc(&a, KILOBYTES(1));
+	void* block3 = arena_alloc(&a, KILOBYTES(1));
+
+	arena_free(&a);
+		
+		
+
+}
+
 void inline main_test(void) {
 	
 
@@ -198,4 +214,5 @@ void inline main_test(void) {
 	//test_transforms();
 	//test_matrix();
 	test_ecs();
+	test_arena();
 }

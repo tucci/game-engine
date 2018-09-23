@@ -32,8 +32,8 @@
 // TODO: eventually we should move this to a general purpose allocator
 #define ENGINE_MEMORY MEGABYTES(200)
 #define GAME_MEMORY MEGABYTES(150)
-#define ECS_MEMORY MEGABYTES(40)
-#define RENDERER_MEMORY MEGABYTES(10)
+
+
 
 
 

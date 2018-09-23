@@ -47,7 +47,7 @@ void job_default_transforms(TransformManager* manager) {
 	}
 
 	for (int i = 0; i < manager->count; i++) {
-		manager->prev_sibling[i] = NO_ENTITY_ID;
+		//manager->prev_sibling[i] = NO_ENTITY_ID;
 	}
 
 	for (int i = 0; i < manager->count; i++) {

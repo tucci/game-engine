@@ -619,7 +619,7 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 }
 
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world, void* parition_start, size_t partition_size) {
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world) {
 	
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
@@ -628,10 +628,14 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	opengl->sdl_window = window;
 	opengl->render_world = render_world;
 	
+	arena_init(&opengl->arena);
 
-	opengl->renderer_memory = parition_start;
-	opengl->renderer_memory_size = partition_size;
-	stack_alloc_init(&opengl->stack_allocator, opengl->renderer_memory, opengl->renderer_memory_size);
+	size_t renderer_mem_size = RENDERER_MEMORY;
+	void* renderer_mem_block = arena_alloc(&opengl->arena, renderer_mem_size);
+	renderer_mem_size = opengl->arena.end - renderer_mem_block;
+
+	
+	stack_alloc_init(&opengl->stack_allocator, renderer_mem_block, renderer_mem_size);
 
 	init_gl_extensions(opengl);	
 	init_gl_resource_arrays(opengl);
@@ -741,15 +745,17 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 
 bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	SDL_GL_DeleteContext(opengl->gl_context);
+
+	
 	
 	
 	
 
-	// TODO: opengl says it deletes textures automatically, do we need to do this?
-	//for (int i = 0; i < opengl->texture_count; i++) {
-	//	glDeleteTextures(1, &opengl->textures[i]);
-	//}
-	//opengl->texture_count = 0;
+	
+	for (int i = 0; i < opengl->texture_count; i++) {
+		glDeleteTextures(1, &opengl->textures[i]);
+	}
+	opengl->texture_count = 0;
 
 
 	for (int i = 0; i < opengl->shader_count; i++) {
@@ -779,6 +785,8 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 		glDeleteRenderbuffers(1, &opengl->rbos[i]);
 	}
 	opengl->rbo_count = 0;
+
+	arena_free(&opengl->arena);
 
 	
 	// TODO: need to reset stack allocator back 

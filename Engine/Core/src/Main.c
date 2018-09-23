@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
 
 
-	main_test();
+	//main_test();
 	
 	
 	

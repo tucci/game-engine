@@ -12,6 +12,7 @@
 
 #include "Core/Renderer/RenderInterface.h"
 
+#include "Common/Arena.h"
 #include "Common/StackAllocator.h"
 
 #include "Core/Scene.h"
@@ -30,7 +31,7 @@
 #define SHADOW_HEIGHT_RES 1024
 
 
-
+#define RENDERER_MEMORY MEGABYTES(10)
 
 
 typedef struct OpenGLRenderer {
@@ -46,8 +47,7 @@ typedef struct OpenGLRenderer {
 	
 	RenderWorld* render_world;
 
-	void* renderer_memory;
-	size_t renderer_memory_size;
+	Arena arena;
 	StackAllocator stack_allocator;
 
 
@@ -114,7 +114,7 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, uint32_t width, uint32_t he
 
 
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world, void* parition_start, size_t partition_size);
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 
 void init_gl_resource_arrays(OpenGLRenderer* opengl);

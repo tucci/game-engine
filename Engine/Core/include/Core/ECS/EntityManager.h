@@ -1,13 +1,16 @@
 #pragma once
 
 
-
+#include "Common/Arena.h"
+#include "Common/StackAllocator.h"
 
 #include "Core/ECS/Component/Camera.h"
 #include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
 
 
+
+#define ECS_MEMORY MEGABYTES(40)
 
 typedef enum ComponentType {
 	ComponentType_None,
@@ -36,14 +39,16 @@ typedef struct EntityManager {
 	};
 	ComponentManager comp_manager;
 	int last_entity_index = 0;
-	LinearAllocator mem;
+
+	Arena arena;
+	StackAllocator stack_mem;
 
 	// TODO: eventually use something better
 	Entity entity_list[size];
 	
 } EntityManager;
 
-void init_entity_manager(EntityManager* manager, void* parition_start, size_t partition_size);
+void init_entity_manager(EntityManager* manager);
 Entity* create_entity(EntityManager* manager);
 void add_component(EntityManager* manager, Entity* entity, ComponentType type);
 

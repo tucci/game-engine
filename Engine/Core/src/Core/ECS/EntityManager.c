@@ -15,36 +15,41 @@ void add_component(EntityManager* manager, Entity* entity, ComponentType type) {
 
 }
 
-void init_entity_manager(EntityManager* manager, void* parition_start, size_t partition_size) {
+void init_entity_manager(EntityManager* manager) {
+	arena_init(&manager->arena);
 
-	linear_init(&manager->mem, parition_start, partition_size);
+	size_t mem_size = ECS_MEMORY;
+	void* mem_block = arena_alloc(&manager->arena, mem_size);
+	mem_size = manager->arena.end - mem_block;
+	stack_alloc_init(&manager->stack_mem, mem_block, mem_size);
+	
 
 	size_t entity_count = EntityManager::EntityCountList::size;
 	
 	// For now every entity has every component to test
 	manager->comp_manager.transform_manager.count = entity_count;
-	manager->comp_manager.transform_manager.positions = cast(Vec3f*) linear_alloc(&manager->mem, sizeof(Vec3f) * entity_count, 1);
-	manager->comp_manager.transform_manager.scales = cast(Vec3f*) linear_alloc(&manager->mem, sizeof(Vec3f) * entity_count, 1);
-	manager->comp_manager.transform_manager.rotations = cast(Quat*) linear_alloc(&manager->mem, sizeof(Quat) * entity_count, 1);
-	manager->comp_manager.transform_manager.forwards = cast(Vec3f*) linear_alloc(&manager->mem, sizeof(Vec3f) * entity_count, 1);
-	manager->comp_manager.transform_manager.ups = cast(Vec3f*) linear_alloc(&manager->mem, sizeof(Vec3f) * entity_count, 1);
-	manager->comp_manager.transform_manager.rights = cast(Vec3f*) linear_alloc(&manager->mem, sizeof(Vec3f) * entity_count, 1);
+	manager->comp_manager.transform_manager.positions = cast(Vec3f*) stack_alloc(&manager->stack_mem, sizeof(Vec3f) * entity_count, 1);
+	manager->comp_manager.transform_manager.scales = cast(Vec3f*) stack_alloc(&manager->stack_mem, sizeof(Vec3f) * entity_count, 1);
+	manager->comp_manager.transform_manager.rotations = cast(Quat*) stack_alloc(&manager->stack_mem, sizeof(Quat) * entity_count, 1);
+	manager->comp_manager.transform_manager.forwards = cast(Vec3f*) stack_alloc(&manager->stack_mem, sizeof(Vec3f) * entity_count, 1);
+	manager->comp_manager.transform_manager.ups = cast(Vec3f*) stack_alloc(&manager->stack_mem, sizeof(Vec3f) * entity_count, 1);
+	manager->comp_manager.transform_manager.rights = cast(Vec3f*) stack_alloc(&manager->stack_mem, sizeof(Vec3f) * entity_count, 1);
 
-	manager->comp_manager.transform_manager.local = cast(Mat4x4f*) linear_alloc(&manager->mem, sizeof(Mat4x4f) * entity_count, 1);
-	manager->comp_manager.transform_manager.world = cast(Mat4x4f*) linear_alloc(&manager->mem, sizeof(Mat4x4f) * entity_count, 1);
+	manager->comp_manager.transform_manager.local = cast(Mat4x4f*) stack_alloc(&manager->stack_mem, sizeof(Mat4x4f) * entity_count, 1);
+	manager->comp_manager.transform_manager.world = cast(Mat4x4f*) stack_alloc(&manager->stack_mem, sizeof(Mat4x4f) * entity_count, 1);
 
-	manager->comp_manager.transform_manager.parent = cast(int*) linear_alloc(&manager->mem, sizeof(int) * entity_count, 1);
-	manager->comp_manager.transform_manager.first_child = cast(int*) linear_alloc(&manager->mem, sizeof(int) * entity_count, 1);
-	manager->comp_manager.transform_manager.next_sibling = cast(int*) linear_alloc(&manager->mem, sizeof(int) * entity_count, 1);
-	//manager->comp_manager.transform_manager.prev_sibling = cast(int*) linear_alloc(&manager->mem, sizeof(int) * entity_count, 1);
+	manager->comp_manager.transform_manager.parent = cast(int*) stack_alloc(&manager->stack_mem, sizeof(int) * entity_count, 1);
+	manager->comp_manager.transform_manager.first_child = cast(int*) stack_alloc(&manager->stack_mem, sizeof(int) * entity_count, 1);
+	manager->comp_manager.transform_manager.next_sibling = cast(int*) stack_alloc(&manager->stack_mem, sizeof(int) * entity_count, 1);
+	//manager->comp_manager.transform_manager.prev_sibling = cast(int*) stack_alloc(&manager->mem, sizeof(int) * entity_count, 1);
 	
 
 
 	manager->comp_manager.camera_manager.count = entity_count;
-	manager->comp_manager.camera_manager.cameras = cast(Camera*) linear_alloc(&manager->mem, sizeof(Camera) * entity_count, 1);
+	manager->comp_manager.camera_manager.cameras = cast(Camera*) stack_alloc(&manager->stack_mem, sizeof(Camera) * entity_count, 1);
 
 	manager->comp_manager.static_mesh_manager.count = entity_count;
-	manager->comp_manager.static_mesh_manager.meshes = cast(StaticMesh*) linear_alloc(&manager->mem, sizeof(StaticMesh) * entity_count, 1);
+	manager->comp_manager.static_mesh_manager.meshes = cast(StaticMesh*) stack_alloc(&manager->stack_mem, sizeof(StaticMesh) * entity_count, 1);
 
 
 	job_default_transforms(&manager->comp_manager.transform_manager);
