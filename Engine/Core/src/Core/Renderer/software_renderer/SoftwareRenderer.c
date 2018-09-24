@@ -67,7 +67,7 @@ bool init_software_renderer(SDL_Window* window, SoftwareRenderer* renderer, Vec2
 	renderer->renderer_memory = parition_start;
 	renderer->renderer_memory_size = partition_size;
 
-	linear_init(&renderer->renderer_allocator, renderer->renderer_memory, renderer->renderer_memory_size);
+	stack_alloc_init(&renderer->renderer_allocator, renderer->renderer_memory, renderer->renderer_memory_size);
 
 	
 	if (!init_z_buffer(renderer)) { return false; }
@@ -103,7 +103,7 @@ static bool init_z_buffer(SoftwareRenderer* renderer) {
 	int window_size = renderer->window_size.x * renderer->window_size.y;
 	renderer->zbuffer_size = window_size;
 	size_t size = sizeof(float) * window_size;
-	renderer->zbuffer = cast(float*)linear_alloc(&renderer->renderer_allocator, size, 1);
+	renderer->zbuffer = cast(float*)stack_alloc(&renderer->renderer_allocator, size, 1);
 	if (renderer->zbuffer == NULL) {
 		return false;
 	}
@@ -132,7 +132,7 @@ static void init_shader(SoftwareRenderer* renderer) {
 
 bool destroy_software_renderer(SoftwareRenderer* renderer) {
 	free_obj(&renderer->model);
-	linear_reset(&renderer->renderer_allocator);
+	//linear_reset(&renderer->renderer_allocator);
 	SDL_DestroyRenderer(renderer->renderer);
 	return true;
 }

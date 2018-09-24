@@ -14,7 +14,7 @@
 
 
 // Returns 1 if loaded successfully, 0 if failed
-bool load_texture(const char* filename, SimpleTexture* texture, LinearAllocator* mem, bool flip) {
+bool load_texture(const char* filename, SimpleTexture* texture, StackAllocator* mem, bool flip) {
 
 	texture->channels = STBI_rgb_alpha;
 	// Precheck for width and height, so we can tell our allocator how much memory to reserve
@@ -32,7 +32,7 @@ bool load_texture(const char* filename, SimpleTexture* texture, LinearAllocator*
 
 	int image_size = texture->width * texture->height * texture->channels;
 
-	texture->data = cast(unsigned char*) linear_alloc(mem, image_size, 4);
+	texture->data = cast(unsigned char*) stack_alloc(mem, image_size, 4);
 
 	int req_format = texture->channels;
 	int orig_format = 0;
@@ -55,7 +55,7 @@ bool load_texture(const char* filename, SimpleTexture* texture, LinearAllocator*
 	return 1;
 }
 
-bool load_hdr_texture(const char* filename, HDRTexture* texture, LinearAllocator* mem, bool flip) {
+bool load_hdr_texture(const char* filename, HDRTexture* texture, StackAllocator* mem, bool flip) {
 	
 
 	texture->channels = STBI_rgb;
@@ -64,7 +64,7 @@ bool load_hdr_texture(const char* filename, HDRTexture* texture, LinearAllocator
 	size_t image_size = texture->width * texture->height * texture->channels * sizeof(float);
 
 
-	texture->data = cast(float*) linear_alloc(mem, image_size, 4);
+	texture->data = cast(float*) stack_alloc(mem, image_size, 4);
 
 	
 	int n_comp = STBI_rgb;

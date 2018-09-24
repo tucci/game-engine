@@ -2,7 +2,7 @@
 
 #include "Math/Vec.h"
 #include "ObjFile.h"
-#include "Common/LinearAllocator.h"
+#include "Common/StackAllocator.h"
 
 #include "Core/ECS/Component/Transform.h"
 
@@ -21,7 +21,7 @@ typedef struct StaticMesh {
 } StaticMesh;
 
 
-void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, LinearAllocator* memory);
+void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
 
 
 typedef struct StaticMeshManager {

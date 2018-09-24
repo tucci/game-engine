@@ -137,5 +137,5 @@ typedef struct TransformManager {
 	//int* prev_sibling;
 
 	
-};
+} TransformManager;
 

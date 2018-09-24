@@ -638,9 +638,9 @@ static bool load_game(Engine* engine, const char* game_file) {
 	// Bootstrap loading
 	// Load game into it's own memory partition
 	engine->loaded_game = cast(Game*) game_partition.start_ptr;
-	linear_init(&engine->loaded_game->game_memory, game_partition.start_ptr, game_partition.partition_size);
+	stack_alloc_init(&engine->loaded_game->game_memory, game_partition.start_ptr, game_partition.partition_size);
 	// Alloc the game object size so we dont overwrite the loaded game struct
-	linear_alloc(&engine->loaded_game->game_memory, sizeof(Game), 4);
+	stack_alloc(&engine->loaded_game->game_memory, sizeof(Game), 4);
 
 	// Attach and expose our engine subsystems to the game
 	EngineAPI api = {
@@ -802,7 +802,7 @@ void game_loop(Engine* engine) {
 		float alpha = engine->game_loop.accumulator / engine->game_loop.time_step;
 
 
-		// TODO: cull scene geometry here, do any culling and vertex processing here. Eventually thread the renderer
+	
 		
 		switch (engine->renderer.type) {
 			case BackenedRenderer_Software: {

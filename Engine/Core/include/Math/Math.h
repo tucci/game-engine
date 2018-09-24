@@ -83,9 +83,6 @@ float inline fmodf_(float number, float denom) {
 	return fmodf(number, denom);
 }
 
-float inline copysign_(float x, float y) {
-	return copysign(x, y);
-}
 
 // TODO: implement lerp
 

@@ -61,7 +61,7 @@ static void skip_spaces(char** stream) {
 
 
 
-void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, LinearAllocator* memory) {
+void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory) {
 
 	// Load data into obj model first
 	ObjModel model;
@@ -199,19 +199,30 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, LinearAll
 
 
 
+	
 	// Copy and Convert our model into our static mesh
 	int index_count = model.face_count;
 	static_mesh->index_count = index_count;
-	static_mesh->indices = cast(Vec3i*)linear_alloc(memory, index_count * sizeof(Vec3i), 4);
-
-
 	static_mesh->vertex_count = index_count * 3;
-	static_mesh->pos = cast(Vec3f*)linear_alloc(memory, static_mesh->vertex_count * sizeof(Vec3f), 4);
-	static_mesh->texcoords = cast(Vec2f*)linear_alloc(memory, static_mesh->vertex_count * sizeof(Vec2f), 4);
-	static_mesh->normal = cast(Vec3f*)linear_alloc(memory, static_mesh->vertex_count * sizeof(Vec3f), 4);
+
+	void* mem_block = stack_alloc(memory,
+		  static_mesh->index_count * sizeof(Vec3i)  // indices
+		+ static_mesh->vertex_count * sizeof(Vec3f) // pos
+		+ static_mesh->vertex_count * sizeof(Vec3f) // normals
+		+ static_mesh->vertex_count * sizeof(Vec2f) // texcoords
+		, 4);
 
 
+	
+	static_mesh->indices = cast(Vec3i*) mem_block;
+	static_mesh->pos = cast(Vec3f*) (cast(char*)mem_block + (static_mesh->index_count * sizeof(Vec3i))); // + offset of indices block
+	static_mesh->normal = cast(Vec3f*)(cast(char*)static_mesh->pos + (static_mesh->vertex_count * sizeof(Vec3f))); // + offset of pos block
+	static_mesh->texcoords = cast(Vec2f*)(cast(char*)static_mesh->normal + (static_mesh->vertex_count * sizeof(Vec3f))); // + offset of normal block
+	
 
+	
+
+	
 
 
 	for (int i = 0; i < index_count; i++) {

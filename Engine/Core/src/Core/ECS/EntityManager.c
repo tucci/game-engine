@@ -15,16 +15,18 @@ void add_component(EntityManager* manager, Entity* entity, ComponentType type) {
 
 }
 
+
 void init_entity_manager(EntityManager* manager) {
 	arena_init(&manager->arena);
 
 	size_t mem_size = ECS_MEMORY;
 	void* mem_block = arena_alloc(&manager->arena, mem_size);
-	mem_size = manager->arena.end - mem_block;
+	mem_size = manager->arena.end - cast(char*) mem_block;
 	stack_alloc_init(&manager->stack_mem, mem_block, mem_size);
 	
-
-	size_t entity_count = EntityManager::EntityCountList::size;
+	
+	
+	int entity_count = EntityManager::EntityCountList::size;
 	
 	// For now every entity has every component to test
 	manager->comp_manager.transform_manager.count = entity_count;
@@ -81,47 +83,4 @@ Camera* get_camera(EntityManager* manager, Entity entity) {
 
 StaticMesh* get_static_mesh(EntityManager* manager, Entity entity) {
 	return &manager->comp_manager.static_mesh_manager.meshes[entity.entity_id];
-}
-Mat4x4f* get_world_mat(EntityManager* manager, Entity entity) {
-	return &manager->comp_manager.transform_manager.world[entity.entity_id];
-}
-
-Mat4x4f* get_local_mat(EntityManager* manager, Entity entity) {
-	return &manager->comp_manager.transform_manager.local[entity.entity_id];
-}
-
-Vec3f position(EntityManager* manager, Entity entity) {
-	return manager->comp_manager.transform_manager.positions[entity.entity_id];
-}
-
-void set_position(EntityManager* manager, Entity entity, Vec3f pos) {
-	manager->comp_manager.transform_manager.positions[entity.entity_id] = pos;
-}
-
-Vec3f get_scale(EntityManager* manager, Entity entity) {
-	return manager->comp_manager.transform_manager.scales[entity.entity_id];
-}
-
-void set_scale(EntityManager* manager, Entity entity, Vec3f scale) {
-	manager->comp_manager.transform_manager.scales[entity.entity_id] = scale;
-}
-
-Quat rotation(EntityManager* manager, Entity entity) {
-	return manager->comp_manager.transform_manager.rotations[entity.entity_id];
-}
-
-void set_rotation(EntityManager* manager, Entity entity, Quat rotation) {
-	manager->comp_manager.transform_manager.rotations[entity.entity_id] = rotation;
-}
-
-Vec3f forward(EntityManager* manager, Entity entity) {
-	return manager->comp_manager.transform_manager.forwards[entity.entity_id];
-}
-
-Vec3f up(EntityManager* manager, Entity entity) {
-	return manager->comp_manager.transform_manager.ups[entity.entity_id];
-}
-
-Vec3f right(EntityManager* manager, Entity entity) {
-	return manager->comp_manager.transform_manager.rights[entity.entity_id];
 }

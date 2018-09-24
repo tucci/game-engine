@@ -58,7 +58,7 @@ typedef struct SoftwareRenderer {
 
 	void* renderer_memory;
 	size_t renderer_memory_size;
-	LinearAllocator renderer_allocator;
+	StackAllocator renderer_allocator;
 
 	SoftwareRendererShader shader;
 	ObjModel model;

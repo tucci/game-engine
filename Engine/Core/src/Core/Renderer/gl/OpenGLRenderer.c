@@ -557,7 +557,6 @@ RenderResource gl_create_vao(OpenGLRenderer* opengl) {
 RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	RenderResource handle;
 	handle.type = RenderResourceType_FRAME_BUFFER;
-	// TODO: might need to create a framebuffer object to get a refernce to the rbos
 	GLuint fbo_id;
 
 
@@ -632,12 +631,12 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 
 	size_t renderer_mem_size = RENDERER_MEMORY;
 	void* renderer_mem_block = arena_alloc(&opengl->arena, renderer_mem_size);
-	renderer_mem_size = opengl->arena.end - renderer_mem_block;
+	renderer_mem_size = opengl->arena.end - cast(char*) renderer_mem_block;
 
 	
 	stack_alloc_init(&opengl->stack_allocator, renderer_mem_block, renderer_mem_size);
 
-	init_gl_extensions(opengl);	
+	init_gl_extensions(opengl);
 	init_gl_resource_arrays(opengl);
 
 	
@@ -789,7 +788,7 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	arena_free(&opengl->arena);
 
 	
-	// TODO: need to reset stack allocator back 
+ 
 	return true;
 }
 

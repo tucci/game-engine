@@ -6,7 +6,7 @@
 
 
 
-void load_skybox(Skybox* skybox, LinearAllocator* mem,
+void load_skybox(Skybox* skybox, StackAllocator* mem,
 	const char* front,
 	const char* back,
 	const char* left,
@@ -77,7 +77,7 @@ void load_skybox(Skybox* skybox, LinearAllocator* mem,
 	
 }
 
-void load_hdr_skymap(HDR_SkyMap* map, LinearAllocator* mem, const char* filename) {
+void load_hdr_skymap(HDR_SkyMap* map, StackAllocator* mem, const char* filename) {
 	load_hdr_texture(filename, &map->map, mem, true);
 	make_cube(&map->cube, mem);
 }

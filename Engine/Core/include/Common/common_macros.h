@@ -1,11 +1,10 @@
 #pragma once
 
+#include "Math/Math.h"
 
 // Makes casts easier to grep
 #define cast(type) (type)
 
-#define MIN(x, y) ((x) <= (y) ? (x) : (y))
-#define MAX(x, y) ((x) >= (y) ? (x) : (y))
 
 #define KILOBYTES(VALUE) ((VALUE) * 1024)
 #define MEGABYTES(VALUE) (KILOBYTES(VALUE) * 1024)

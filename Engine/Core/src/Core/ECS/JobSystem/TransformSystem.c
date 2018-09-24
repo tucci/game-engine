@@ -82,9 +82,6 @@ void job_update_basis_vectors(TransformManager* manager) {
 
 void job_compute_world_matrices(TransformManager* manager) {
 
-
-	
-
 	// Scale first
 	for (int i = 0; i < manager->count; i++) {
 		manager->local[i] = scale(manager->scales[i]);
@@ -130,4 +127,48 @@ void job_compute_world_matrices(TransformManager* manager) {
 	
 
 
+}
+
+Mat4x4f* get_world_mat(EntityManager* manager, Entity entity) {
+	return &manager->comp_manager.transform_manager.world[entity.entity_id];
+}
+
+Mat4x4f* get_local_mat(EntityManager* manager, Entity entity) {
+	return &manager->comp_manager.transform_manager.local[entity.entity_id];
+}
+
+Vec3f position(EntityManager* manager, Entity entity) {
+	return manager->comp_manager.transform_manager.positions[entity.entity_id];
+}
+
+void set_position(EntityManager* manager, Entity entity, Vec3f pos) {
+	manager->comp_manager.transform_manager.positions[entity.entity_id] = pos;
+}
+
+Vec3f get_scale(EntityManager* manager, Entity entity) {
+	return manager->comp_manager.transform_manager.scales[entity.entity_id];
+}
+
+void set_scale(EntityManager* manager, Entity entity, Vec3f scale) {
+	manager->comp_manager.transform_manager.scales[entity.entity_id] = scale;
+}
+
+Quat rotation(EntityManager* manager, Entity entity) {
+	return manager->comp_manager.transform_manager.rotations[entity.entity_id];
+}
+
+void set_rotation(EntityManager* manager, Entity entity, Quat rotation) {
+	manager->comp_manager.transform_manager.rotations[entity.entity_id] = rotation;
+}
+
+Vec3f forward(EntityManager* manager, Entity entity) {
+	return manager->comp_manager.transform_manager.forwards[entity.entity_id];
+}
+
+Vec3f up(EntityManager* manager, Entity entity) {
+	return manager->comp_manager.transform_manager.ups[entity.entity_id];
+}
+
+Vec3f right(EntityManager* manager, Entity entity) {
+	return manager->comp_manager.transform_manager.rights[entity.entity_id];
 }

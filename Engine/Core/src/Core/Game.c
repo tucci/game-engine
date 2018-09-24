@@ -27,7 +27,7 @@ void attach_engine_subsytems(Game* game, EngineAPI api) {
 void load_scene(Game* game, int scene_id) {
 
 	
-	game->loaded_scene = cast(Scene*) linear_alloc(&game->game_memory, sizeof(Scene), 4);
+	game->loaded_scene = cast(Scene*) stack_alloc(&game->game_memory, sizeof(Scene), 4);
 	
 
 	Scene* scene = game->loaded_scene;
@@ -53,7 +53,7 @@ void load_scene(Game* game, int scene_id) {
 	add_component(api->entity_manager, scene->entity_main_camera, ComponentType_Camera);
 
 	Camera* cam = get_camera(api->entity_manager, *scene->entity_main_camera);
-	init_camera_params(cam, 0.1, 100, 90, api->window->size.x / cast(float) api->window->size.y);
+	init_camera_params(cam, 0.1f, 100.0f, 90.0f, api->window->size.x / cast(float) api->window->size.y);
 	set_position(api->entity_manager, *scene->entity_main_camera, Vec3f(0, 0, 0));
 	scene->main_camera = get_camera(game->engineAPI.entity_manager, *game->loaded_scene->entity_main_camera);
 
@@ -76,6 +76,7 @@ void load_scene(Game* game, int scene_id) {
 
 	StaticMesh* mesh2 = get_static_mesh(api->entity_manager, *scene->entity_mesh_test2);
 	make_uv_sphere(mesh2, 16, 32, &game->game_memory);
+	//make_cube(mesh2, &game->game_memory);
 	set_position(api->entity_manager, *scene->entity_mesh_test2, Vec3f(5, 0, 1));
 	
 
@@ -101,7 +102,7 @@ void load_scene(Game* game, int scene_id) {
 
 
 	// Init lights
-	scene->test_light.direction = Vec3f(0.00000000001, -1, 0);
+	scene->test_light.direction = Vec3f(0.00000000001f, -1.0f, 0.0f);
 	scene->test_light.color = Vec3f(1, 1, 1);
 
 	
@@ -117,6 +118,7 @@ void load_scene(Game* game, int scene_id) {
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
 	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+
 	create_skymap(api->renderer, &scene->hdr_skymap);
 	create_shadowmap(api->renderer);
 	
@@ -135,19 +137,19 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
 
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->game_memory, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->game_memory, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->game_memory, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->game_memory, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->game_memory, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->game_memory, false);
 
 
 	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
@@ -177,15 +179,22 @@ void load_scene(Game* game, int scene_id) {
 	api->renderer->render_world.metallic_map_res = create_texture(api->renderer, &scene->metallic_map, true);
 	api->renderer->render_world.roughness_map_res = create_texture(api->renderer, &scene->roughness_map, true);
 	api->renderer->render_world.ao_map_res = create_texture(api->renderer, &scene->ao_map, true);
-	// TODO: once the textures are added on the gpu, we can free them here
-	
+
+
+	// Pop textures, we already have them on the gpu
+	stack_pop(&game->game_memory);
+	stack_pop(&game->game_memory);
+	stack_pop(&game->game_memory);
+	stack_pop(&game->game_memory);
+	stack_pop(&game->game_memory);
+
 		
 }
 
 
 // TODO: give back partition in the input
 void unload_scene(Game* game, Scene* scene) {
-	linear_reset(&game->game_memory);
+	//linear_reset(&game->game_memory);
 }
 
 

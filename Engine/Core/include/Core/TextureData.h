@@ -4,7 +4,7 @@
 #include "SDL.h"
 #include <stdbool.h>
 
-#include "Common/LinearAllocator.h"
+#include "Common/StackAllocator.h"
 
 typedef struct SimpleTexture {
 	unsigned char* data;
@@ -25,5 +25,5 @@ typedef struct HDRTexture {
 } HDRTexture;
 
 
-bool load_texture(const char* filename, SimpleTexture* texture, LinearAllocator* mem, bool flip);
-bool load_hdr_texture(const char* filename, HDRTexture* texture, LinearAllocator* mem, bool flip);
+bool load_texture(const char* filename, SimpleTexture* texture, StackAllocator* mem, bool flip);
+bool load_hdr_texture(const char* filename, HDRTexture* texture, StackAllocator* mem, bool flip);

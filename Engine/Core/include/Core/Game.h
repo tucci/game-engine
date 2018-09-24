@@ -6,7 +6,7 @@
 
 
 
-#include "Common/LinearAllocator.h"
+#include "Common/StackAllocator.h"
 
 
 
@@ -19,7 +19,7 @@ typedef struct Game {
 
 
 	// TODO: move this to a stack allocator
-	LinearAllocator game_memory;
+	StackAllocator game_memory;
 	Scene* loaded_scene;
 	
 } Game;

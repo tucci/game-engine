@@ -17,7 +17,7 @@ typedef enum ComponentType {
 	ComponentType_Transform,
 	ComponentType_Camera,
 	ComponentType_StaticMesh,
-};
+} ComponentType;
 
 typedef struct ComponentManager {
 	TransformManager transform_manager;
@@ -58,18 +58,3 @@ void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
 
 Camera* get_camera(EntityManager* manager, Entity entity);
 StaticMesh* get_static_mesh(EntityManager* manager, Entity entity);
-Mat4x4f* get_world_mat(EntityManager* manager, Entity entity);
-Mat4x4f* get_local_mat(EntityManager* manager, Entity entity);
-Vec3f position(EntityManager* manager, Entity entity);
-void set_position(EntityManager* manager, Entity entity, Vec3f pos);
-
-Vec3f get_scale(EntityManager* manager, Entity entity);
-void set_scale(EntityManager* manager, Entity entity, Vec3f scale);
-
-Quat rotation(EntityManager* manager, Entity entity);
-void set_rotation(EntityManager* manager, Entity entity, Quat rotation);
-
-
-Vec3f forward(EntityManager* manager, Entity entity);
-Vec3f up(EntityManager* manager, Entity entity);
-Vec3f right(EntityManager* manager, Entity entity);
