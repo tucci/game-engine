@@ -86,9 +86,11 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
-		debug_print("The file was opened\n");
+		
+		debug_print("Opening obj %s,", filename);
+		
 	} else {
-		debug_print("The file was not opened\n");
+		debug_print("Cannot open obj %s\n", filename);
 	}
 
 	enum {
@@ -179,17 +181,19 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 
 	}
 
-	debug_print("Vertex count %d\n", stb_sb_count(model.verts));
-	debug_print("Face count %d\n", stb_sb_count(model.v_id));
+	
 
 	if (file) {
 		err = fclose(file);
 		if (err == 0) {
-			debug_print("The file was closed\n");
+			debug_print("Closed obj %s\n", filename);
 		} else {
-			debug_print("The file was not closed\n");
+			debug_print("Cannot close obj %s\n", filename);
 		}
 	}
+
+	debug_print("Vertex count %d, ", stb_sb_count(model.verts));
+	debug_print("Face count %d\n", stb_sb_count(model.v_id));
 
 	model.vert_count = stb_sb_count(model.verts);
 	model.texcoord_count = stb_sb_count(model.texcoords);

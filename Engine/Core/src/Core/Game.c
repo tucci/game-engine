@@ -23,11 +23,30 @@ void attach_engine_subsytems(Game* game, EngineAPI api) {
 	assert(api.window != NULL);
 }
 
+void on_game_start(Game* game) {
+	arena_init(&game->arena);
+	size_t mem_size = GAME_MEMORY;
+	void* mem_block = arena_alloc(&game->arena, mem_size);
+	mem_size = game->arena.end - cast(char*) mem_block;
+	stack_alloc_init(&game->stack, mem_block, mem_size);
+	game->loaded_scene = cast(Scene*) stack_alloc(&game->stack, sizeof(Scene), 4);
+
+
+	load_scene(game, 1);
+}
+void on_game_quit(Game* game) {
+	
+
+	unload_scene(game, game->loaded_scene);
+
+	arena_free(&game->arena);
+}
+
 
 void load_scene(Game* game, int scene_id) {
 
 	
-	game->loaded_scene = cast(Scene*) stack_alloc(&game->game_memory, sizeof(Scene), 4);
+	
 	
 
 	Scene* scene = game->loaded_scene;
@@ -65,7 +84,7 @@ void load_scene(Game* game, int scene_id) {
 	add_component(api->entity_manager, scene->entity_mesh_test, ComponentType_StaticMesh);
 
 	StaticMesh* mesh1 = get_static_mesh(api->entity_manager, *scene->entity_mesh_test);
-	obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->game_memory);
+	obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
 	set_position(api->entity_manager, *scene->entity_mesh_test, Vec3f(0, 0, -5));
 	
 	
@@ -75,7 +94,7 @@ void load_scene(Game* game, int scene_id) {
 	add_component(api->entity_manager, scene->entity_mesh_test2, ComponentType_StaticMesh);
 
 	StaticMesh* mesh2 = get_static_mesh(api->entity_manager, *scene->entity_mesh_test2);
-	make_uv_sphere(mesh2, 16, 32, &game->game_memory);
+	make_uv_sphere(mesh2, 16, 32, &game->stack);
 	//make_cube(mesh2, &game->game_memory);
 	set_position(api->entity_manager, *scene->entity_mesh_test2, Vec3f(5, 0, 1));
 	
@@ -86,7 +105,7 @@ void load_scene(Game* game, int scene_id) {
 	add_component(api->entity_manager, scene->entity_mesh_test3, ComponentType_StaticMesh);
 
 	StaticMesh* mesh3 = get_static_mesh(api->entity_manager, *scene->entity_mesh_test3);
-	make_plane(mesh3, &game->game_memory);
+	make_plane(mesh3, &game->stack);
 	set_position(api->entity_manager, *scene->entity_mesh_test3, Vec3f(0, -2, 0));
 	set_scale(api->entity_manager, *scene->entity_mesh_test3, Vec3f(100, 100, 100));
 	
@@ -117,7 +136,7 @@ void load_scene(Game* game, int scene_id) {
 	
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-	load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	load_hdr_skymap(&scene->hdr_skymap, &game->stack, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 
 	create_skymap(api->renderer, &scene->hdr_skymap);
 	create_shadowmap(api->renderer);
@@ -145,11 +164,11 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->game_memory, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->game_memory, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->game_memory, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->game_memory, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->game_memory, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
 
 
 	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
@@ -182,11 +201,11 @@ void load_scene(Game* game, int scene_id) {
 
 
 	// Pop textures, we already have them on the gpu
-	stack_pop(&game->game_memory);
-	stack_pop(&game->game_memory);
-	stack_pop(&game->game_memory);
-	stack_pop(&game->game_memory);
-	stack_pop(&game->game_memory);
+	stack_pop(&game->stack);
+	stack_pop(&game->stack);
+	stack_pop(&game->stack);
+	stack_pop(&game->stack);
+	stack_pop(&game->stack);
 
 		
 }

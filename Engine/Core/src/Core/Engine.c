@@ -257,38 +257,38 @@ static void process_event_queue(Engine* engine) {
 
 
 static bool init_engine_memory(Engine* engine) {
-	// 
-	size_t size = ENGINE_MEMORY;
-
-	// Align the memory size to 64 bits
-	// TODO: should this depend on the machine? 32bits vs 64bits
-	int alignment = SDL_GetCPUCacheLineSize();
-	engine->engine_memory_size = ALIGN_UP(size, alignment);
-	engine->engine_memory = malloc(engine->engine_memory_size);
-	// Set initial partition ptr to the start of the memory
-	engine->partition_ptr = engine->engine_memory;
-
-	if (engine->engine_memory == NULL) {
-		// Memory failiure
-		return false;
-	} else {
-		// TODO: do we want to zero out the memory at start
-
+	 
+	//size_t size = ENGINE_MEMORY;
+	//
+	//// Align the memory size to 64 bits
+	//// TODO: should this depend on the machine? 32bits vs 64bits
+	//int alignment = SDL_GetCPUCacheLineSize();
+	//engine->engine_memory_size = ALIGN_UP(size, alignment);
+	//engine->engine_memory = malloc(engine->engine_memory_size);
+	//// Set initial partition ptr to the start of the memory
+	//engine->partition_ptr = engine->engine_memory;
+	//
+	//if (engine->engine_memory == NULL) {
+	//	// Memory failiure
+	//	return false;
+	//} else {
+	//	// TODO: do we want to zero out the memory at start
+	//
 		return true;
-	}
+	//}
 	
 }
 
 // TODO: move to a more general purpose allocator?
-MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
-	MemoryEnginePartition parition;
-	size_t aligned_size = ALIGN_UP(size, 64);
-	parition.partition_size = aligned_size;
-	parition.start_ptr = engine->partition_ptr;
-	// Increment ptr for next partition
-	engine->partition_ptr = (cast(char*)engine->partition_ptr) + aligned_size;
-	return parition;
-}
+//MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
+//	MemoryEnginePartition parition;
+//	size_t aligned_size = ALIGN_UP(size, 64);
+//	parition.partition_size = aligned_size;
+//	parition.start_ptr = engine->partition_ptr;
+//	// Increment ptr for next partition
+//	engine->partition_ptr = (cast(char*)engine->partition_ptr) + aligned_size;
+//	return parition;
+//}
 
 static bool init_display(Engine* engine) {
 	// Grab the dpi from the display
@@ -393,8 +393,9 @@ static bool init_window(Engine* engine) {
 static bool init_renderer(Engine* engine) {
 	switch (engine->renderer.type) {
 		case BackenedRenderer_Software: {
-			MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
-			return init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
+			//MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
+			//return init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
+			return false;
 			break;
 		}
 
@@ -632,15 +633,13 @@ static bool load_game(Engine* engine, const char* game_file) {
 
 	// Init some memory for our game
 	// Load scene, get how much potential memory we would need from the scene
-	MemoryEnginePartition game_partition = give_memory_partition(engine, GAME_MEMORY);
+	//MemoryEnginePartition game_partition = give_memory_partition(engine, GAME_MEMORY);
 
 
 	// Bootstrap loading
 	// Load game into it's own memory partition
-	engine->loaded_game = cast(Game*) game_partition.start_ptr;
-	stack_alloc_init(&engine->loaded_game->game_memory, game_partition.start_ptr, game_partition.partition_size);
-	// Alloc the game object size so we dont overwrite the loaded game struct
-	stack_alloc(&engine->loaded_game->game_memory, sizeof(Game), 4);
+	
+	
 
 	// Attach and expose our engine subsystems to the game
 	EngineAPI api = {
@@ -652,16 +651,8 @@ static bool load_game(Engine* engine, const char* game_file) {
 		&engine->renderer
 	};
 
-	attach_engine_subsytems(engine->loaded_game, api);
-
-	// load all resources, static meshes from files
-	debug_print("Loading scene objects\n");
-	load_scene(engine->loaded_game, 1);	
-
-
-	debug_print("Starting Game\n");
-
-
+	attach_engine_subsytems(&engine->loaded_game, api);
+	on_game_start(&engine->loaded_game);
 
 	return true;
 }
@@ -705,9 +696,10 @@ bool init_engine(Engine* engine) {
 
 bool destroy_engine(Engine* engine) {
 
-	// TODO: this should be somewherer else. example unload game function?
-	unload_scene(engine->loaded_game, engine->loaded_game->loaded_scene);
-	 
+	
+	on_game_quit(&engine->loaded_game);
+	destroy_entity_manager(&engine->entity_manager);
+
 	switch (engine->renderer.type) {
 		case BackenedRenderer_Software:
 			destroy_software_renderer(&engine->renderer.software_renderer);
@@ -725,7 +717,7 @@ bool destroy_engine(Engine* engine) {
 	SDL_Quit();
 
 	// NOTE: this frees the entire game engine memory and all the subsystems
-	free(engine->engine_memory);
+	//free(engine->engine_memory);
 
 	return true;
 }
@@ -755,7 +747,7 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	
 
 	// Game specific update
-	game_update(engine->loaded_game);
+	game_update(&engine->loaded_game);
 
 	
 }

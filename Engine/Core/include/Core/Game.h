@@ -10,7 +10,7 @@
 
 
 
-
+#define GAME_MEMORY MEGABYTES(100)
 
 
 typedef struct Game {
@@ -19,12 +19,14 @@ typedef struct Game {
 
 
 	// TODO: move this to a stack allocator
-	StackAllocator game_memory;
+	Arena arena;
+	StackAllocator stack;
 	Scene* loaded_scene;
 	
 } Game;
 
-
+void on_game_start(Game* game);
+void on_game_quit(Game* game);
 void attach_engine_subsytems(Game* game, EngineAPI api);
 void load_scene(Game* game, int scene_id);
 void unload_scene(Game* game, Scene* scene);

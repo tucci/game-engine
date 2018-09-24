@@ -28,10 +28,7 @@
 #define WINDOW_RESIZEABlE true
 #define MAX_EVENTS 32
 
-// TODO: should ecs and game memory be the same?
-// TODO: eventually we should move this to a general purpose allocator
-#define ENGINE_MEMORY MEGABYTES(200)
-#define GAME_MEMORY MEGABYTES(150)
+
 
 
 
@@ -159,12 +156,12 @@ typedef struct Engine {
 	bool quit;
 
 	// Fixed memory for the entire engine/game
-	void* engine_memory;
-	size_t engine_memory_size;
-	void* partition_ptr;
+	//void* engine_memory;
+	//size_t engine_memory_size;
+	//void* partition_ptr;
 
 	
-	Game* loaded_game;	
+	Game loaded_game;	
 	
 	Engine() {};
 } Engine;
@@ -176,7 +173,7 @@ static bool push_to_event_queue(Engine* engine, Event event);
 static void process_event_queue(Engine* engine);
 
 static bool init_engine_memory(Engine* engine);
-MemoryEnginePartition give_memory_partition(Engine* engine, size_t size);
+//MemoryEnginePartition give_memory_partition(Engine* engine, size_t size);
 
 static bool init_display(Engine* engine);
 static bool init_window(Engine* engine);

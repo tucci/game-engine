@@ -17,9 +17,9 @@ char* file_to_str(const char* filename, StackAllocator* mem) {
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
-		debug_print("The file was opened\n");
+		debug_print("Opening %s,", filename);
 	} else {
-		debug_print("The file was not opened\n");
+		debug_print("Cannot open %s \n", filename);
 		return NULL;
 	}
 
@@ -38,6 +38,7 @@ char* file_to_str(const char* filename, StackAllocator* mem) {
 		// Terminate the string
 		buffer[length] = '\0';
 		fclose(file);
+		debug_print("Closed %s \n", filename);
 	}
 
 	return buffer;

@@ -49,6 +49,7 @@ typedef struct EntityManager {
 } EntityManager;
 
 void init_entity_manager(EntityManager* manager);
+void destroy_entity_manager(EntityManager* manager);
 Entity* create_entity(EntityManager* manager);
 void add_component(EntityManager* manager, Entity* entity, ComponentType type);
 

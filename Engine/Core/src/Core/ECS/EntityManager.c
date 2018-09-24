@@ -58,6 +58,10 @@ void init_entity_manager(EntityManager* manager) {
 
 }
 
+void destroy_entity_manager(EntityManager* manager) {
+	arena_free(&manager->arena);
+}
+
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 	
 	int* first_child = &manager->comp_manager.transform_manager.first_child[entity.entity_id];
