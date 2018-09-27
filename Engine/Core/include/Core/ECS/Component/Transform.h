@@ -13,8 +13,6 @@ typedef struct Transform {
 	Vec3f position;
 	Vec3f scale;
 	Quat rotation;
-
-	
 	// These may or may not be linked to the rotation. depends on the user
 	Vec3f forward;
 	Vec3f up;
@@ -118,13 +116,16 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 }
 
 
+#include <unordered_map>
 typedef struct TransformManager {
 	int count;
+	
+	std::unordered_map<int,int> id_map;
 
 	Vec3f* positions;
 	Vec3f* scales;
-	Vec3f* forwards;
 	Vec3f* ups;
+	Vec3f* forwards;
 	Vec3f* rights;
 	Quat* rotations;
 

@@ -183,11 +183,12 @@ void inline test_matrix(void) {
 
 void inline test_ecs(void) {
 	EntityManager manager;
-
-	Entity* e1 = create_entity(&manager);
-	Entity* e2 = create_entity(&manager);
-	Entity* e3 = create_entity(&manager);
-	Entity* e4 = create_entity(&manager);
+	init_entity_manager(&manager);
+	Entity e1 = create_entity(&manager);
+	Entity e2 = create_entity(&manager);
+	Entity e3 = create_entity(&manager);
+	Entity e4 = create_entity(&manager);
+	destroy_entity_manager(&manager);
 }
 
 

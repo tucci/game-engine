@@ -19,39 +19,33 @@ typedef enum ComponentType {
 	ComponentType_StaticMesh,
 } ComponentType;
 
-typedef struct ComponentManager {
-	TransformManager transform_manager;
-	CameraManager camera_manager;
-	StaticMeshManager static_mesh_manager;
-} ComponentManager;
 
 
 typedef struct Entity {
-	int entity_id;
+	int id;
 } Entity;
 
 
 
+#define ENTITY_DEFAULT_START_SIZE 32
 typedef struct EntityManager {
-	enum EntityCountList {
-		// TODO: the size should not be fixed. for now we are just testing
-		size = 10
-	};
-	ComponentManager comp_manager;
-	int last_entity_index = 0;
+	
+	TransformManager transforms;
+	CameraManager cameras;
+	StaticMeshManager static_meshs;
+	
 
 	Arena arena;
 	StackAllocator stack_mem;
 
-	// TODO: eventually use something better
-	Entity entity_list[size];
+	Entity* entity_list;
 	
 } EntityManager;
 
 void init_entity_manager(EntityManager* manager);
 void destroy_entity_manager(EntityManager* manager);
-Entity* create_entity(EntityManager* manager);
-void add_component(EntityManager* manager, Entity* entity, ComponentType type);
+Entity create_entity(EntityManager* manager);
+void add_component(EntityManager* manager, Entity entity, ComponentType type);
 
 
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
@@ -59,3 +53,4 @@ void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
 
 Camera* get_camera(EntityManager* manager, Entity entity);
 StaticMesh* get_static_mesh(EntityManager* manager, Entity entity);
+void set_static_mesh(EntityManager* manager, Entity entity, StaticMesh* mesh);

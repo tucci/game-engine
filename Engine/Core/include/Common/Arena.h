@@ -24,3 +24,5 @@ void arena_grow(Arena *arena, size_t min_size);
 void *arena_alloc(Arena *arena, size_t size);
 
 void arena_free(Arena *arena);
+
+// TODO: implement realloc, where u delete a chunk ptr, alloc a new bigger chunk and update the pointer blocks

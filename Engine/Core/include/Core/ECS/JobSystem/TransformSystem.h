@@ -2,11 +2,12 @@
 
 #include "Core/ECS/EntityManager.h"
 
-void job_default_transforms(TransformManager* manager);
 
-void job_update_basis_vectors(TransformManager* manager);
 
-void job_compute_world_matrices(TransformManager* manager);
+
+void job_update_basis_vectors(EntityManager* manager);
+
+void job_compute_world_matrices(EntityManager* manager);
 
 Mat4x4f* get_world_mat(EntityManager* manager, Entity entity);
 

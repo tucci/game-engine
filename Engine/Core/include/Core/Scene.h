@@ -59,10 +59,10 @@ typedef struct Scene {
 	
 
 
-	Entity* entity_main_camera;
-	Entity* entity_mesh_test;
-	Entity* entity_mesh_test2;
-	Entity* entity_mesh_test3;
+	Entity entity_main_camera;
+	Entity entity_mesh_test;
+	Entity entity_mesh_test2;
+	Entity entity_mesh_test3;
 
 	Camera* main_camera;
 	DirectionalLight test_light;

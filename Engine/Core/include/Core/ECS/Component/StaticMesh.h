@@ -18,13 +18,24 @@ typedef struct StaticMesh {
 	Vec2f* texcoords;
 	Vec3f* color;
 	Vec3i* indices;
+	StaticMesh() {
+		vertex_count = 0;
+		index_count = 0;
+		pos = NULL;
+		normal = NULL;
+		texcoords = NULL;
+		color = NULL;
+		indices = NULL;
+	}
 } StaticMesh;
 
 
 void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
 
+#include <unordered_map>
 
 typedef struct StaticMeshManager {
+	std::unordered_map<int, int> id_map;
 	StaticMesh* meshes;
 	int count;
 } StaticMeshManager;

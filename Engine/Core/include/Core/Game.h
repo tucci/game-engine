@@ -18,7 +18,6 @@ typedef struct Game {
 	EngineAPI engineAPI;
 
 
-	// TODO: move this to a stack allocator
 	Arena arena;
 	StackAllocator stack;
 	Scene* loaded_scene;

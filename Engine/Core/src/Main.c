@@ -3,17 +3,19 @@
 #include "Core/Engine.h"
 
 #include "test.c"
-
+#include "Common/stretchy_buffer.h"
 
 
 
 int main(int argc, char* argv[]) {
 
 
-	//main_test();
+	main_test();
+
 	
 	
 	
+
 	Engine engine;
 	
 	engine.renderer.type = BackenedRenderer_OpenGL;
