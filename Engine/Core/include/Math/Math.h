@@ -9,6 +9,7 @@
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 #define ABS(x) (((x)<0) ? -(x) : (x))
+#define IS_POW2(x) (((x) != 0) && ((x) & ((x)-1)) == 0)
 // Converts degrees to radians
 #define DEG2RAD(deg) ((deg) * PI / 180.0f)
 

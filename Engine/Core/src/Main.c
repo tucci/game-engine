@@ -10,7 +10,12 @@
 int main(int argc, char* argv[]) {
 
 
+#if 1
+
 	main_test();
+#else
+
+
 
 	
 	
@@ -28,6 +33,7 @@ int main(int argc, char* argv[]) {
 		game_loop(&engine);
 		destroy_engine(&engine);
 	}
+#endif
 	
     return 0;
 }

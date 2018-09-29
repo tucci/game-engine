@@ -11,6 +11,7 @@
 #include "Common/StackAllocator.h"
 #include "Common/Arena.h"
 #include "Common/common_macros.h"
+#include "Common/Map.h"
 
 #include "Math/Vec.h"
 #include "Math/Math.h"
@@ -205,6 +206,51 @@ void inline test_arena(void) {
 
 }
 
+void inline test_map(void) {
+	CompactMap<uint64_t> map;
+	map_init(&map);
+	map_put(&map, 1, (uint64_t)1);
+	map_put(&map, 2, (uint64_t)2);
+	map_put(&map, 3, (uint64_t)3);
+	map_put(&map, 4, (uint64_t)4);
+	map_put(&map, 5, (uint64_t)5);
+	map_put(&map, 6, (uint64_t)6);
+	map_put(&map, 7, (uint64_t)7);
+	map_put(&map, 8, (uint64_t)8);
+	map_put(&map, 9, (uint64_t)9);
+	map_put(&map, 10, (uint64_t)10);
+
+	
+
+	int t1 = map_get(&map, 1);
+	t1 = map_get(&map, 2);
+	t1 = map_get(&map, 3);
+	t1 = map_get(&map, 4);
+	t1 = map_get(&map, 5);
+	t1 = map_get(&map, 6);
+	t1 = map_get(&map, 7);
+	t1 = map_get(&map, 8);
+	t1 = map_get(&map, 9);
+	t1 = map_get(&map, 10);
+	t1 = map_get(&map, 32);
+	
+
+	//map[4] = 3;
+	//map[2] = 4;
+	//map[5] = 5;
+	//map[6] = 6;
+	//map[1] = 7;
+	//
+	//map[3] = 7;
+	//
+	//t1 = map[4];
+	//t2 = map[2];
+	//t3 = map[5];
+	//t4 = map[6];
+	//t4 = map[1];
+	map_destroy(&map);
+}
+
 void inline main_test(void) {
 	
 
@@ -214,6 +260,7 @@ void inline main_test(void) {
 	//test_quats();
 	//test_transforms();
 	//test_matrix();
-	test_ecs();
-	test_arena();
+	//test_ecs();
+	//test_arena();
+	test_map();
 }

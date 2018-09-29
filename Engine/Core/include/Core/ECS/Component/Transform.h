@@ -3,8 +3,12 @@
 #include "Math/Vec.h"
 #include "Math/Mat.h"
 #include "Math/Quaternion.h"
+#include "Common/Map.h"
 
-#define NO_ENTITY_ID -1
+
+struct Entity;
+
+
 
 
 typedef struct Transform {
@@ -116,11 +120,11 @@ Mat4x4f inline trs_mat_from_transform(Transform* transform) {
 }
 
 
-#include <unordered_map>
+
 typedef struct TransformManager {
-	int count;
+	uint64_t count;
+	CompactMap<uint64_t> id_map;
 	
-	std::unordered_map<int,int> id_map;
 
 	Vec3f* positions;
 	Vec3f* scales;
@@ -132,10 +136,10 @@ typedef struct TransformManager {
 	Mat4x4f* local;
 	Mat4x4f* world;
 
-	int* parent;
-	int* first_child;
-	int* next_sibling;
-	//int* prev_sibling;
+	Entity* parent;
+	Entity* first_child;
+	Entity* next_sibling;
+	//Entity* prev_sibling;
 
 	
 } TransformManager;

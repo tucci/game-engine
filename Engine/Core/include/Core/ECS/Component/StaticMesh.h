@@ -5,6 +5,7 @@
 #include "Common/StackAllocator.h"
 
 #include "Core/ECS/Component/Transform.h"
+#include "Common/Map.h"
 
 
 typedef struct StaticMesh {
@@ -32,10 +33,9 @@ typedef struct StaticMesh {
 
 void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
 
-#include <unordered_map>
 
 typedef struct StaticMeshManager {
-	std::unordered_map<int, int> id_map;
+	CompactMap<uint64_t> id_map;
 	StaticMesh* meshes;
-	int count;
+	uint64_t count;
 } StaticMeshManager;

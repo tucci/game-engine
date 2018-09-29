@@ -7,6 +7,8 @@
 #include "Core/ECS/Component/Camera.h"
 #include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
+#include "Common/Map.h"
+
 
 
 
@@ -20,9 +22,13 @@ typedef enum ComponentType {
 } ComponentType;
 
 
+#define NO_ENTITY_ID (uint64_t)0
 
 typedef struct Entity {
-	int id;
+	uint64_t id;
+	Entity() {
+		id = NO_ENTITY_ID;
+	}
 } Entity;
 
 

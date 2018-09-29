@@ -6,11 +6,12 @@
 
 #include "Common/stretchy_buffer.h"
 
+
 Entity create_entity(EntityManager* manager) {
 	
 	int count = stb_sb_count(manager->entity_list);
 	Entity e_temp;
-	e_temp.id = count;
+	e_temp.id = count + 1;
 	stb_sb_push(manager->entity_list, e_temp);
 	Entity entity = stb_sb_last(manager->entity_list);
 	return entity;
@@ -19,7 +20,7 @@ Entity create_entity(EntityManager* manager) {
 void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 	switch (type) {
 		case ComponentType_Transform: {
-			manager->transforms.id_map.emplace(entity.id, manager->transforms.count);
+			map_put(&manager->transforms.id_map, entity.id, manager->transforms.count);
 			manager->transforms.count++;
 			
 
@@ -31,20 +32,20 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 			stb_sb_push(manager->transforms.rotations, Quat());
 			stb_sb_push(manager->transforms.local, Mat4x4f());
 			stb_sb_push(manager->transforms.world, Mat4x4f());
-			stb_sb_push(manager->transforms.parent, NO_ENTITY_ID);
-			stb_sb_push(manager->transforms.first_child, NO_ENTITY_ID);
-			stb_sb_push(manager->transforms.next_sibling, NO_ENTITY_ID);
+			stb_sb_push(manager->transforms.parent, Entity());
+			stb_sb_push(manager->transforms.first_child, Entity());
+			stb_sb_push(manager->transforms.next_sibling, Entity());
 			//stb_sb_push(manager->transforms.prev_sibling, NO_ENTITY_ID);
 			break;
 		}
 		case ComponentType_Camera: {
-			manager->cameras.id_map.emplace(entity.id, manager->cameras.count);
+			map_put(&manager->cameras.id_map, entity.id, manager->cameras.count);
 			manager->cameras.count++;
 			stb_sb_push(manager->cameras.cameras, Camera());
 			break;
 		}
 		case ComponentType_StaticMesh: {
-			manager->static_meshs.id_map.emplace(entity.id, manager->static_meshs.count);
+			map_put(&manager->static_meshs.id_map, entity.id, manager->static_meshs.count);
 			manager->static_meshs.count++;
 			stb_sb_push(manager->static_meshs.meshes, StaticMesh());
 			break;
@@ -63,6 +64,8 @@ void init_entity_manager(EntityManager* manager) {
 	void* mem_block = arena_alloc(&manager->arena, mem_size);
 	mem_size = manager->arena.end - cast(char*) mem_block;
 	stack_alloc_init(&manager->stack_mem, mem_block, mem_size);
+	
+	map_init(&manager->transforms.id_map);
 	manager->transforms.count = 0;
 	manager->transforms.positions = NULL;
 	manager->transforms.scales = NULL;
@@ -94,11 +97,12 @@ void init_entity_manager(EntityManager* manager) {
 	//manager->transforms.next_sibling = cast(int*) stack_alloc(&manager->stack_mem, sizeof(int) * entity_count, 1);
 	//manager->comp_manager.transform_manager.prev_sibling = cast(int*) stack_alloc(&manager->mem, sizeof(int) * entity_count, 1);
 	
-
+	map_init(&manager->cameras.id_map);
 	manager->cameras.count = 0;
 	manager->cameras.cameras = NULL;
 	//manager->cameras.cameras = cast(Camera*) stack_alloc(&manager->stack_mem, sizeof(Camera) * entity_count, 1);
 
+	map_init(&manager->static_meshs.id_map);
 	manager->static_meshs.count = 0;
 	manager->static_meshs.meshes = NULL;
 	//manager->static_meshs.meshes = cast(StaticMesh*) stack_alloc(&manager->stack_mem, sizeof(StaticMesh) * entity_count, 1);
@@ -127,39 +131,48 @@ void destroy_entity_manager(EntityManager* manager) {
 
 	stb_sb_free(manager->cameras.cameras);
 	stb_sb_free(manager->static_meshs.meshes);
+
+	map_destroy(&manager->transforms.id_map);
+	map_destroy(&manager->cameras.id_map);
+	map_destroy(&manager->static_meshs.id_map);
 }
 
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
-	int index = manager->transforms.id_map[entity.id];
-	int* first_child = &manager->transforms.first_child[index];
-	if (*first_child == NO_ENTITY_ID) {
+	
+	
+	uint64_t index = map_get(&manager->transforms.id_map, entity.id);
+
+	Entity* first_child = &manager->transforms.first_child[index];
+	if (first_child->id == NO_ENTITY_ID) {
 		// This entity has no children, so we need to add this child to the first child
-		*first_child = child.id;
+		first_child->id = child.id;
 	} else {
 		// This entity already has a first child so we need to look at the siblings
-		int* next_sibling = &manager->transforms.next_sibling[*first_child];
+		Entity* next_sibling = &manager->transforms.next_sibling[first_child->id];
 
-		while (*next_sibling != NO_ENTITY_ID) {
-			next_sibling = &manager->transforms.next_sibling[*next_sibling];
+		while (next_sibling->id != NO_ENTITY_ID) {
+			next_sibling = &manager->transforms.next_sibling[next_sibling->id];
 		}
-		*next_sibling = child.id;
+		next_sibling->id = child.id;
 		
 	}
-	int child_index = manager->transforms.id_map[child.id];
-	manager->transforms.parent[child_index] = entity.id;
+	// Assign the child, the parent entity
+	uint64_t child_index = map_get(&manager->transforms.id_map, child.id);
+	
+	manager->transforms.parent[child_index] = entity;
 }
 
 Camera* get_camera(EntityManager* manager, Entity entity) {
-	int index = manager->cameras.id_map[entity.id];
+	uint64_t index = map_get(&manager->cameras.id_map, entity.id);
 	return &manager->cameras.cameras[index];
 }
 
 StaticMesh* get_static_mesh(EntityManager* manager, Entity entity) {
-	int index = manager->static_meshs.id_map[entity.id];
+	uint64_t index = map_get(&manager->static_meshs.id_map, entity.id);
 	return &manager->static_meshs.meshes[index];
 }
 
 void set_static_mesh(EntityManager* manager, Entity entity, StaticMesh* mesh) {
-	int index = manager->static_meshs.id_map[entity.id];
+	uint64_t index = map_get(&manager->static_meshs.id_map, entity.id);
 	manager->static_meshs.meshes[index] = *mesh;
 }

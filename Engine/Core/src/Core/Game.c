@@ -101,6 +101,7 @@ void load_scene(Game* game, int scene_id) {
 
 	StaticMesh* mesh2 = get_static_mesh(api->entity_manager, scene->entity_mesh_test2);
 	make_uv_sphere(mesh2, 16, 32, &game->stack);
+	set_static_mesh(api->entity_manager, scene->entity_mesh_test2, mesh2);
 	//make_cube(mesh2, &game->game_memory);
 	set_position(api->entity_manager, scene->entity_mesh_test2, Vec3f(5, 0, 1));
 	
@@ -113,6 +114,7 @@ void load_scene(Game* game, int scene_id) {
 
 	StaticMesh* mesh3 = get_static_mesh(api->entity_manager, scene->entity_mesh_test3);
 	make_plane(mesh3, &game->stack);
+	set_static_mesh(api->entity_manager, scene->entity_mesh_test3, mesh3);
 	set_position(api->entity_manager, scene->entity_mesh_test3, Vec3f(0, -2, 0));
 	set_scale(api->entity_manager, scene->entity_mesh_test3, Vec3f(100, 100, 100));
 	

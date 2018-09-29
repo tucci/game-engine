@@ -5,6 +5,7 @@
 
 
 #include "Core/ECS/Component/Transform.h"
+#include "Common/Map.h"
 
 
 typedef struct Camera {
@@ -28,9 +29,9 @@ typedef struct Camera {
 
 void init_camera_params(Camera* camera, float near, float far, float fov, float aspect_ratio);
 
-#include <unordered_map>
+
 typedef struct CameraManager {
-	std::unordered_map<int, int> id_map;
+	CompactMap<uint64_t> id_map;
 	Camera* cameras;
-	int count;
+	uint64_t count;
 } CameraManager;
