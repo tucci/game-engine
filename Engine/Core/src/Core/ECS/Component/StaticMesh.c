@@ -261,3 +261,20 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 	stb_sb_free(model.vn_id);
 
 }
+
+
+
+void init_static_mesh_manager(StaticMeshManager* manager) {
+	map_init(&manager->id_map);
+	manager->count = 0;
+	manager->meshes = NULL;
+}
+void destroy_static_mesh_manager(StaticMeshManager* manager) {
+	stb_sb_free(manager->meshes);
+	map_destroy(&manager->id_map);
+}
+void entity_add_mesh_component(StaticMeshManager* manager, Entity entity) {
+	map_put(&manager->id_map, entity.id, manager->count);
+	manager->count++;
+	stb_sb_push(manager->meshes, StaticMesh());
+}

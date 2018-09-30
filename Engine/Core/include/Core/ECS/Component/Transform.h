@@ -5,6 +5,8 @@
 #include "Math/Quaternion.h"
 #include "Common/Map.h"
 
+#include "Core/ECS/Entity.h"
+
 
 struct Entity;
 
@@ -144,3 +146,7 @@ typedef struct TransformManager {
 	
 } TransformManager;
 
+
+void init_transform_manager(TransformManager* manager);
+void destroy_transform_manager(TransformManager* manager);
+void entity_add_transform_component(TransformManager* manager, Entity entity);

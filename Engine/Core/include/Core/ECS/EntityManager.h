@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/ECS/Entity.h"
 
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
@@ -7,6 +8,7 @@
 #include "Core/ECS/Component/Camera.h"
 #include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
+#include "Core/ECS/Component/Lights.h"
 #include "Common/Map.h"
 
 
@@ -19,26 +21,20 @@ typedef enum ComponentType {
 	ComponentType_Transform,
 	ComponentType_Camera,
 	ComponentType_StaticMesh,
+	ComponentType_Light,
 } ComponentType;
 
 
-#define NO_ENTITY_ID (uint64_t)0
-
-typedef struct Entity {
-	uint64_t id;
-	Entity() {
-		id = NO_ENTITY_ID;
-	}
-} Entity;
 
 
 
-#define ENTITY_DEFAULT_START_SIZE 32
+
 typedef struct EntityManager {
 	
 	TransformManager transforms;
 	CameraManager cameras;
 	StaticMeshManager static_meshs;
+	LightManager lights;
 	
 
 	Arena arena;
@@ -52,11 +48,8 @@ void init_entity_manager(EntityManager* manager);
 void destroy_entity_manager(EntityManager* manager);
 Entity create_entity(EntityManager* manager);
 void add_component(EntityManager* manager, Entity entity, ComponentType type);
-
-
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
 
 
-Camera* get_camera(EntityManager* manager, Entity entity);
-StaticMesh* get_static_mesh(EntityManager* manager, Entity entity);
-void set_static_mesh(EntityManager* manager, Entity entity, StaticMesh* mesh);
+
+

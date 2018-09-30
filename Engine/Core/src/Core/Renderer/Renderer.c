@@ -19,7 +19,7 @@ void push_camera(Renderer* renderer, Camera* camera, Vec3f pos) {
 	renderer->render_world.cam_pos = pos;
 }
 
-void push_light(Renderer* renderer, DirectionalLight* light) {
+void push_light(Renderer* renderer, Light light) {
 	renderer->render_world.test_light = light;
 }
 

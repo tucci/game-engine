@@ -63,9 +63,10 @@ typedef struct Scene {
 	Entity entity_mesh_test;
 	Entity entity_mesh_test2;
 	Entity entity_mesh_test3;
+	Entity entity_test_light;
 
 	Camera* main_camera;
-	DirectionalLight test_light;
+	
 	HDR_SkyMap hdr_skymap;
 	SimpleTexture albedo_map;
 	SimpleTexture normal_map;
@@ -73,9 +74,6 @@ typedef struct Scene {
 	SimpleTexture roughness_map;
 	SimpleTexture ao_map;
 	
-	
-
-
 	
 } Scene;
 

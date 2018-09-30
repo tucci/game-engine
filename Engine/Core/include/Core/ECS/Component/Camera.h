@@ -4,8 +4,12 @@
 #include "Math/Mat.h"
 
 
-#include "Core/ECS/Component/Transform.h"
+
 #include "Common/Map.h"
+
+#include "Core/ECS/Entity.h"
+
+struct EntityManager;
 
 
 typedef struct Camera {
@@ -35,3 +39,9 @@ typedef struct CameraManager {
 	Camera* cameras;
 	uint64_t count;
 } CameraManager;
+
+
+
+void init_camera_manager(CameraManager* manager);
+void destroy_camera_manager(CameraManager* manager);
+void entity_add_camera_component(CameraManager* manager, Entity entity);

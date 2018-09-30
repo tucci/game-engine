@@ -49,7 +49,7 @@ typedef struct RenderWorld {
 
 	Camera* camera;
 	Vec3f cam_pos;
-	DirectionalLight* test_light;
+	Light test_light;
 	HDR_SkyMap* skymap;
 
 	// Shadow map

@@ -4,7 +4,7 @@
 #include "ObjFile.h"
 #include "Common/StackAllocator.h"
 
-#include "Core/ECS/Component/Transform.h"
+#include "Core/ECS/Entity.h"
 #include "Common/Map.h"
 
 
@@ -39,3 +39,8 @@ typedef struct StaticMeshManager {
 	StaticMesh* meshes;
 	uint64_t count;
 } StaticMeshManager;
+
+
+void init_static_mesh_manager(StaticMeshManager* manager);
+void destroy_static_mesh_manager(StaticMeshManager* manager);
+void entity_add_mesh_component(StaticMeshManager* manager, Entity entity);

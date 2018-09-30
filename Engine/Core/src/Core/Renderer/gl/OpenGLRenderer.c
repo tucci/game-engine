@@ -862,7 +862,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	Vec3f dir_light_line[2];
 	Vec3f dir_light_line_color[2];
 
-	dir_light_line[1] = opengl->render_world->test_light->direction;
+	dir_light_line[1] = opengl->render_world->test_light.dir_light.direction;
 	dir_light_line[0] = Vec3f(0, 0, 0);
 	
 
@@ -903,7 +903,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	Camera* camera = opengl->render_world->camera;
 	Vec3f cam_pos = opengl->render_world->cam_pos;
 
-	DirectionalLight* test_light = opengl->render_world->test_light;
+	DirectionalLight test_light = opengl->render_world->test_light.dir_light;
 
 
 
@@ -923,7 +923,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 	if (light_pass) {
 		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
-		view_mat = look_at(Vec3f(0, 0, 0), test_light->direction, Vec3f_Up);
+		view_mat = look_at(Vec3f(0, 0, 0), test_light.direction, Vec3f_Up);
 		projection_mat = ortho(-camera->far, camera->far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = projection_mat * view_mat;
 		opengl->render_world->light_space_mat = pv_mat;
@@ -950,7 +950,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "projection_view"), 1, GL_FALSE, pv_mat.mat1d);
 	
 	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), uniform3f_pack(cam_pos));
-	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), uniform3f_pack(test_light->direction));
+	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), uniform3f_pack(test_light.direction));
 	if (!light_pass) {
 		glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->render_world->light_space_mat.mat1d);
 

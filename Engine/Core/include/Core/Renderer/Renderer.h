@@ -34,7 +34,7 @@ void push_render_object(Renderer* renderer, RenderMesh desc);
 void create_shadowmap(Renderer* renderer);
 void create_skymap(Renderer* renderer, HDR_SkyMap* skymap);
 void push_camera(Renderer* renderer, Camera* camera, Vec3f pos);
-void push_light(Renderer* renderer, DirectionalLight* light);
+void push_light(Renderer* renderer, Light light);
 
 // NOTE: these create the resources on the gpu
 RenderResource create_frame_buffer(Renderer* renderer);

@@ -10,7 +10,7 @@
 int main(int argc, char* argv[]) {
 
 
-#if 1
+#if 0
 
 	main_test();
 #else
