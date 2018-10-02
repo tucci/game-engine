@@ -14,6 +14,7 @@
 
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
+#include "Common/Map.h"
 
 #include "Core/Scene.h"
 #include "Core/ECS/Component/StaticMesh.h"
@@ -76,11 +77,7 @@ typedef struct OpenGLRenderer {
 
 	int rbo_count;
 	GLuint* rbos;
-
-	// TODO: implement with a map
-	//int resource_count;
-	//RenderResource* resource_lookup;
-
+	
 
 	// Debug
 	StaticMesh grid_mesh;
@@ -97,7 +94,6 @@ typedef struct OpenGLRenderer {
 void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap);
 void gl_init_shadow_maps(OpenGLRenderer* opengl);
 
-static void gl_add_resource_to_lookup(OpenGLRenderer* opengl, RenderResource handle);
 // TODO: shadowmaps, textures, hdr texture, cubemap should all be implemented into one function
 // gl_create_texture, with a paramter that specifcies what type it is
 RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture, bool mipmap);

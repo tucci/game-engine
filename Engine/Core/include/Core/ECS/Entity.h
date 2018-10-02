@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 typedef struct Entity {
+	// TODO: implement generation index
 	uint64_t id;
 	Entity() {
 		id = NO_ENTITY_ID;

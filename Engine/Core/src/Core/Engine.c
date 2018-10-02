@@ -35,15 +35,6 @@ static void post_update_button_state(ButtonState* button_state) {
 }
 
 
-// TODO: create a error buffer, with a dump to file 
-static void log_error(const char* name) {
-	const char* error = SDL_GetError();
-	if (*error) {
-		debug_print("Name %s, SDl_Error %s", name, error);
-	}
-
-}
-
 static bool push_to_event_queue(Engine* engine, Event event) {
 
 	if (engine->event_count > MAX_EVENTS - 1) {
@@ -279,22 +270,13 @@ static bool init_engine_memory(Engine* engine) {
 	
 }
 
-// TODO: move to a more general purpose allocator?
-//MemoryEnginePartition give_memory_partition(Engine* engine, size_t size) {
-//	MemoryEnginePartition parition;
-//	size_t aligned_size = ALIGN_UP(size, 64);
-//	parition.partition_size = aligned_size;
-//	parition.start_ptr = engine->partition_ptr;
-//	// Increment ptr for next partition
-//	engine->partition_ptr = (cast(char*)engine->partition_ptr) + aligned_size;
-//	return parition;
-//}
+
 
 static bool init_display(Engine* engine) {
 	// Grab the dpi from the display
 	float dpi;
 	if (SDL_GetDisplayDPI(0, &dpi, NULL, NULL) != 0) {
-		log_error("SDL_GetDisplayDPI");
+		debug_print("SDL_GetDisplayDPI, SDl_Error %s", SDL_GetError());
 		return false;
 	}
 	assert(dpi > 0);
@@ -303,7 +285,7 @@ static bool init_display(Engine* engine) {
 
 	SDL_DisplayMode mode;
 	if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
-		log_error("SDL_GetCurrentDisplayMode");
+		debug_print("SDL_GetCurrentDisplayMode, SDl_Error %s", SDL_GetError());
 		return false;
 	}
 
@@ -373,7 +355,7 @@ static bool init_window(Engine* engine) {
 
 
 	if (!sdl_window) {
-		log_error("Could not create window");
+		debug_print("Could not create window, SDl_Error %s", SDL_GetError());
 
 		return false;
 	}
@@ -627,7 +609,7 @@ static void process_inputs(Engine* engine) {
 static bool load_game(Engine* engine, const char* game_file) {
 
 
-	// TODO: read game/project file
+	
 	debug_print("Loading Game\n");
 	
 

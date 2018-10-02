@@ -4,7 +4,6 @@
 
 #include <stdbool.h>
 
-// TODO: look up strict aliasing rules
 typedef union Mat4x4f {
 	float mat1d[16];
 

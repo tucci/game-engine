@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Util/Utils.h"
-
+#include <stdio.h>
 #include "debug_macros.h"
 #include "Common/common_macros.h"
 
+// NOTE: The callee should handle case where the file cannot be opened or read
 char* file_to_str(const char* filename, StackAllocator* mem) {
 	char * buffer = 0;
 	long length;
@@ -15,11 +16,11 @@ char* file_to_str(const char* filename, StackAllocator* mem) {
 
 	err = fopen_s(&file, filename, "rb");
 
-	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
 		debug_print("Opening %s,", filename);
 	} else {
 		debug_print("Cannot open %s \n", filename);
+		
 		return NULL;
 	}
 

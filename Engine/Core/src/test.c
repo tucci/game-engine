@@ -254,7 +254,7 @@ void inline test_map(void) {
 void inline main_test(void) {
 	
 
-	//test_linear_alloc();
+	test_linear_alloc();
 	//test_stack_alloc();
 	//test_simd_vec();
 	//test_quats();
@@ -262,5 +262,5 @@ void inline main_test(void) {
 	//test_matrix();
 	//test_ecs();
 	//test_arena();
-	test_map();
+	//test_map();
 }

@@ -121,13 +121,6 @@ typedef struct Clock {
 
 
 
-typedef struct MemoryEnginePartition {
-	void* start_ptr;
-	size_t partition_size;
-} MemoryEnginePartition;
-
-
-
 
 
 
@@ -168,7 +161,7 @@ typedef struct Engine {
 
 
 
-static void log_error(const char* name);
+
 static bool push_to_event_queue(Engine* engine, Event event);
 static void process_event_queue(Engine* engine);
 

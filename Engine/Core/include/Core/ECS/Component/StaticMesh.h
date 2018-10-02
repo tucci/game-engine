@@ -9,9 +9,7 @@
 
 
 typedef struct StaticMesh {
-	// TODO: move this to the entity stuff. transform shoudldnt be in the static mesh
-	//Transform transform;
-
+	
 	int vertex_count;
 	int index_count;
 	Vec3f* pos;
@@ -31,7 +29,7 @@ typedef struct StaticMesh {
 } StaticMesh;
 
 
-void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
+bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
 
 
 typedef struct StaticMeshManager {

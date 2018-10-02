@@ -340,10 +340,7 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 	}
 }
 
-static void gl_add_resource_to_lookup(OpenGLRenderer* opengl, RenderResource handle) {
 
-	// TODO: implement hashmap based of the handle type and handle index
-}
 
 RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture, bool mipmap) {
 	RenderResource handle;
@@ -359,9 +356,6 @@ RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	if (mipmap) glGenerateMipmap(GL_TEXTURE_2D);
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
-	// the handle index is the last inserted texture index into the texture array
 	int next_texture_index = opengl->texture_count;
 	handle.handle = next_texture_index;
 	opengl->textures[opengl->texture_count] = texture_id;
@@ -387,9 +381,7 @@ RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, 
 	float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
-	// the handle index is the last inserted texture index into the texture array
+	
 	int next_texture_index = opengl->texture_count;
 	handle.handle = next_texture_index;
 	opengl->textures[opengl->texture_count] = texture_id;
@@ -467,22 +459,32 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 	// Alloc on stack
 	const char* vertex_shader = file_to_str(vertex_file, &opengl->stack_allocator);
 	const char* fragment_shader = file_to_str(fragment_file, &opengl->stack_allocator);
+	assert(vertex_shader != NULL);
+	assert(fragment_shader != NULL);
 
-	load_gl_shader(&shader, &vertex_shader, &fragment_shader);
-	// Free stack
-	stack_pop(&opengl->stack_allocator);
-	stack_pop(&opengl->stack_allocator);
+	if (vertex_shader && fragment_shader) {
+		load_gl_shader(&shader, &vertex_shader, &fragment_shader);
+		// Free stack
+		stack_pop(&opengl->stack_allocator);
+		stack_pop(&opengl->stack_allocator);
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
-	int next_shader_index = opengl->shader_count;
-	handle.handle = next_shader_index;
-	opengl->shaders[opengl->shader_count] = shader;
-	opengl->shader_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+		int next_shader_index = opengl->shader_count;
+		handle.handle = next_shader_index;
+		opengl->shaders[opengl->shader_count] = shader;
+		opengl->shader_count++;
 
-	return handle;
+		gl_add_resource_to_lookup(opengl, handle);
+
+		return handle;
+	} else {
+		// TODO: handle case when shader could not be loaded
+		debug_print("Shaders %s or %s could not be loaded\n", vertex_file, fragment_file);
+		handle.handle = -1;
+		return handle;
+	}
+
+	
 }
 
 RenderResource gl_create_vbo(OpenGLRenderer* opengl) {
@@ -496,8 +498,7 @@ RenderResource gl_create_vbo(OpenGLRenderer* opengl) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id);
 
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
+	
 	int next_vbo_index = opengl->vbo_count;
 	handle.handle = next_vbo_index;
 	opengl->vbos[opengl->vbo_count] = vbo_id;
@@ -519,8 +520,7 @@ RenderResource gl_create_ebo(OpenGLRenderer* opengl) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_id);
 
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
+	
 	int next_ebo_index = opengl->ebo_count;
 	handle.handle = next_ebo_index;
 	opengl->ebos[opengl->ebo_count] = ebo_id;
@@ -542,8 +542,7 @@ RenderResource gl_create_vao(OpenGLRenderer* opengl) {
 	glBindVertexArray(vao_id);
 
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
+	
 	int next_vao_index = opengl->vao_count;
 	handle.handle = next_vao_index;
 	opengl->vaos[opengl->vao_count] = vao_id;
@@ -572,8 +571,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	
 
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
+	
 	int next_fbo_index = opengl->fbo_count;
 	handle.handle = next_fbo_index;
 	opengl->fbos[opengl->fbo_count] = fbo_id;
@@ -598,8 +596,7 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, uint32_t width, uint32_t he
 
 
 
-	// TODO: if you change the handle to bit 8 bits type, 24 bits index, then this will break
-	// you will need to set the lower 24 bit index in the handle to correspond to this index
+	
 	int next_rbo_index = opengl->rbo_count;
 	handle.handle = next_rbo_index;
 	opengl->rbos[opengl->rbo_count] = rbo_id;
@@ -1016,6 +1013,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		Mat4x4f* world_mat = render_mesh.world;
 		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);
 
+		if (mesh->vertex_count == 0) { continue; }
 
 		glBufferData(GL_ARRAY_BUFFER,
 			mesh->vertex_count * sizeof(Vec3f)
@@ -1127,6 +1125,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 }
 
 void init_gl_resource_arrays(OpenGLRenderer* opengl) {
+	map_init(&opengl->resource_lookup);
 	opengl->obj_capacity = 20;
 
 	opengl->texture_count = 0;

@@ -53,7 +53,7 @@ static int parse_int2(char** stream) {
 
 }
 
-
+// NOTE: deprecated. only used in the software renderer
 void load_obj(const char* filename, ObjModel* model) {
 	model->verts = 0;
 	model->texcoords = 0;
@@ -74,11 +74,11 @@ void load_obj(const char* filename, ObjModel* model) {
 
 	err = fopen_s(&file, filename, "r");
 
-	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
 		debug_print("The file was opened\n");
 	} else {
 		debug_print("The file was not opened\n");
+		return;
 	}
 
 

@@ -94,9 +94,14 @@ void load_scene(Game* game, int scene_id) {
 	add_component(entity_manager, scene->entity_mesh_test, ComponentType_StaticMesh);
 
 	StaticMesh* mesh1 = get_static_mesh(entity_manager, scene->entity_mesh_test);
-	obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
-	set_static_mesh(entity_manager, scene->entity_mesh_test, mesh1);
+	bool loaded = obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
+	if (loaded) {
+		set_static_mesh(entity_manager, scene->entity_mesh_test, mesh1);
+	} else {
+		// Load error mesh?
+	}
 	set_position(entity_manager, scene->entity_mesh_test, Vec3f(0, 0, -5));
+	
 	
 	
 

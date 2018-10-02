@@ -52,12 +52,6 @@ typedef struct SceneNode {
 typedef struct Scene {
 	int scene_id;
 	
-	// TODO: implement proper tree with root and child transforms 
-	//SceneNode root;
-	// LinearAllocator* scene_mem;
-
-	
-
 
 	Entity entity_main_camera;
 	Entity entity_mesh_test;

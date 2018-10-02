@@ -61,7 +61,7 @@ static void skip_spaces(char** stream) {
 
 
 
-void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory) {
+bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory) {
 
 	// Load data into obj model first
 	ObjModel model;
@@ -91,6 +91,7 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 		
 	} else {
 		debug_print("Cannot open obj %s\n", filename);
+		return false;
 	}
 
 	enum {
@@ -216,49 +217,54 @@ void obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 		+ static_mesh->vertex_count * sizeof(Vec2f) // texcoords
 		, 4);
 
-
+	if (mem_block) {
+		static_mesh->indices = cast(Vec3i*) mem_block;
+		static_mesh->pos = cast(Vec3f*) (cast(char*)mem_block + (static_mesh->index_count * sizeof(Vec3i))); // + offset of indices block
+		static_mesh->normal = cast(Vec3f*)(cast(char*)static_mesh->pos + (static_mesh->vertex_count * sizeof(Vec3f))); // + offset of pos block
+		static_mesh->texcoords = cast(Vec2f*)(cast(char*)static_mesh->normal + (static_mesh->vertex_count * sizeof(Vec3f))); // + offset of normal block
 	
-	static_mesh->indices = cast(Vec3i*) mem_block;
-	static_mesh->pos = cast(Vec3f*) (cast(char*)mem_block + (static_mesh->index_count * sizeof(Vec3i))); // + offset of indices block
-	static_mesh->normal = cast(Vec3f*)(cast(char*)static_mesh->pos + (static_mesh->vertex_count * sizeof(Vec3f))); // + offset of pos block
-	static_mesh->texcoords = cast(Vec2f*)(cast(char*)static_mesh->normal + (static_mesh->vertex_count * sizeof(Vec3f))); // + offset of normal block
-	
-
-	
-
-	
-
-
-	for (int i = 0; i < index_count; i++) {
+		for (int i = 0; i < index_count; i++) {
 		
-		static_mesh->indices[i] = Vec3i( 3 * i, 3 * i + 1, 3 * i + 2 );
-		Vec3i uv =     model.vt_id[i];
-		Vec3i face =   model.v_id[i];
-		Vec3i normal = model.vn_id[i];
+			static_mesh->indices[i] = Vec3i( 3 * i, 3 * i + 1, 3 * i + 2 );
+			Vec3i uv =     model.vt_id[i];
+			Vec3i face =   model.v_id[i];
+			Vec3i normal = model.vn_id[i];
 
 
-		static_mesh->pos[3 * i + 0] = model.verts[face.x].xyz;
-		static_mesh->pos[3 * i + 1] = model.verts[face.y].xyz;
-		static_mesh->pos[3 * i + 2] = model.verts[face.z].xyz;
+			static_mesh->pos[3 * i + 0] = model.verts[face.x].xyz;
+			static_mesh->pos[3 * i + 1] = model.verts[face.y].xyz;
+			static_mesh->pos[3 * i + 2] = model.verts[face.z].xyz;
 
-		static_mesh->texcoords[3 * i + 0] = model.texcoords[uv.x];
-		static_mesh->texcoords[3 * i + 1] = model.texcoords[uv.y];
-		static_mesh->texcoords[3 * i + 2] = model.texcoords[uv.z];
+			static_mesh->texcoords[3 * i + 0] = model.texcoords[uv.x];
+			static_mesh->texcoords[3 * i + 1] = model.texcoords[uv.y];
+			static_mesh->texcoords[3 * i + 2] = model.texcoords[uv.z];
 
-		static_mesh->normal[3 * i + 0] = model.normals[normal.x];
-		static_mesh->normal[3 * i + 1] = model.normals[normal.y];
-		static_mesh->normal[3 * i + 2] = model.normals[normal.z];
+			static_mesh->normal[3 * i + 0] = model.normals[normal.x];
+			static_mesh->normal[3 * i + 1] = model.normals[normal.y];
+			static_mesh->normal[3 * i + 2] = model.normals[normal.z];
 
+		}
+		// Free temp obj model
+		stb_sb_free(model.verts);
+		stb_sb_free(model.texcoords);
+		stb_sb_free(model.normals);
+
+		stb_sb_free(model.v_id);
+		stb_sb_free(model.vt_id);
+		stb_sb_free(model.vn_id);
+		return true;
+	} else {
+		// Memory cannot be taken
+		// Free temp obj model
+		stb_sb_free(model.verts);
+		stb_sb_free(model.texcoords);
+		stb_sb_free(model.normals);
+
+		stb_sb_free(model.v_id);
+		stb_sb_free(model.vt_id);
+		stb_sb_free(model.vn_id);
+		return false;
 	}
-
-	// Free temp obj model
-	stb_sb_free(model.verts);
-	stb_sb_free(model.texcoords);
-	stb_sb_free(model.normals);
-
-	stb_sb_free(model.v_id);
-	stb_sb_free(model.vt_id);
-	stb_sb_free(model.vn_id);
 
 }
 
