@@ -150,3 +150,4 @@ typedef struct TransformManager {
 void init_transform_manager(TransformManager* manager);
 void destroy_transform_manager(TransformManager* manager);
 void entity_add_transform_component(TransformManager* manager, Entity entity);
+void entity_remove_transform_component(TransformManager* manager, Entity entity);

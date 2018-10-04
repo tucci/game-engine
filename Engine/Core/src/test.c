@@ -20,6 +20,7 @@
 
 #include "Core/ECS/EntityManager.h"
 
+#include "Core/ECS/JobSystem/CameraSystem.h"
 
 
 
@@ -189,6 +190,60 @@ void inline test_ecs(void) {
 	Entity e2 = create_entity(&manager);
 	Entity e3 = create_entity(&manager);
 	Entity e4 = create_entity(&manager);
+	Entity e5 = create_entity(&manager);
+
+	add_component(&manager, e1, ComponentType_Camera); 
+	add_component(&manager, e2, ComponentType_Camera);
+	add_component(&manager, e3, ComponentType_Camera);
+	
+	Camera* camera = get_camera(&manager, e1);
+
+	camera->fov = 100;
+	camera->near = 1;
+	camera->far = 200;
+	camera->aspect_ratio = 2;
+
+	
+
+
+	remove_component(&manager, e1, ComponentType_Camera);
+	add_component(&manager, e1, ComponentType_Camera);
+
+
+	Entity test = create_entity(&manager);
+	add_component(&manager, test, ComponentType_Camera);
+	add_component(&manager, test, ComponentType_Transform);
+	add_component(&manager, test, ComponentType_StaticMesh);
+	add_component(&manager, test, ComponentType_Light);
+
+	destroy_entity(&manager, test);
+	
+
+	assert(e1.id == 1);
+	assert(e2.id == 2);
+	assert(e3.id == 3);
+	assert(e4.id == 4);
+	assert(e5.id == 5);
+
+	destroy_entity(&manager, e3);
+	Entity e6 = create_entity(&manager);
+
+	destroy_entity(&manager, e5);
+	Entity e7 = create_entity(&manager);
+
+	assert(e6.id == 6);
+
+	destroy_entity(&manager, e1);
+	destroy_entity(&manager, e1);
+
+	destroy_entity(&manager, e2);
+	destroy_entity(&manager, e4);
+	destroy_entity(&manager, e6);
+	destroy_entity(&manager, e7);
+
+	
+
+	Entity e8 = create_entity(&manager);
 	destroy_entity_manager(&manager);
 }
 
@@ -220,9 +275,13 @@ void inline test_map(void) {
 	map_put(&map, 9, (uint64_t)9);
 	map_put(&map, 10, (uint64_t)10);
 
-	
+	map_remove(&map, 2);
+	map_remove(&map, 5);
+	map_remove(&map, 7);
 
-	int t1 = map_get(&map, 1);
+	
+	
+	MapResult<uint64_t> t1 = map_get(&map, 1);
 	t1 = map_get(&map, 2);
 	t1 = map_get(&map, 3);
 	t1 = map_get(&map, 4);
@@ -233,6 +292,40 @@ void inline test_map(void) {
 	t1 = map_get(&map, 9);
 	t1 = map_get(&map, 10);
 	t1 = map_get(&map, 32);
+
+	map_put(&map, 11, (uint64_t)11);
+	map_put(&map, 12, (uint64_t)12);
+	map_put(&map, 13, (uint64_t)13);
+	map_put(&map, 14, (uint64_t)14);
+	map_put(&map, 15, (uint64_t)14);
+	map_put(&map, 16, (uint64_t)14);
+	map_put(&map, 17, (uint64_t)14);
+	map_put(&map, 18, (uint64_t)14);
+	map_put(&map, 19, (uint64_t)14);
+	map_put(&map, 20, (uint64_t)14);
+
+
+	
+	t1 = map_get(&map, 1);
+	t1 = map_get(&map, 2);
+	t1 = map_get(&map, 3);
+	t1 = map_get(&map, 4);
+	t1 = map_get(&map, 5);
+	t1 = map_get(&map, 6);
+	t1 = map_get(&map, 7);
+	t1 = map_get(&map, 8);
+	t1 = map_get(&map, 9);
+	t1 = map_get(&map, 10);
+	t1 = map_get(&map, 11);
+	t1 = map_get(&map, 12);
+	t1 = map_get(&map, 13);
+	t1 = map_get(&map, 14);
+	t1 = map_get(&map, 15);
+	t1 = map_get(&map, 16);
+	t1 = map_get(&map, 17);
+	t1 = map_get(&map, 18);
+	t1 = map_get(&map, 19);
+	t1 = map_get(&map, 20);
 	
 
 	//map[4] = 3;
@@ -254,13 +347,13 @@ void inline test_map(void) {
 void inline main_test(void) {
 	
 
-	test_linear_alloc();
+	//test_linear_alloc();
 	//test_stack_alloc();
 	//test_simd_vec();
 	//test_quats();
 	//test_transforms();
 	//test_matrix();
-	//test_ecs();
+	test_ecs();
 	//test_arena();
 	//test_map();
 }

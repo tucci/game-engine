@@ -42,3 +42,4 @@ typedef struct StaticMeshManager {
 void init_static_mesh_manager(StaticMeshManager* manager);
 void destroy_static_mesh_manager(StaticMeshManager* manager);
 void entity_add_mesh_component(StaticMeshManager* manager, Entity entity);
+void entity_remove_mesh_component(StaticMeshManager* manager, Entity entity);

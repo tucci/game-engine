@@ -57,3 +57,46 @@ void entity_add_transform_component(TransformManager* manager, Entity entity) {
 	stb_sb_push(manager->next_sibling, Entity());
 	//stb_sb_push(manager->prev_sibling, Entity());
 }
+
+void entity_remove_transform_component(TransformManager* manager, Entity entity) {
+	MapResult<uint64_t> result = map_get(&manager->id_map, entity.id);
+	// There is no result, return early and do nothing
+	if (!result.found) return;
+
+	uint64_t index = result.value;
+
+	// Get the last in the list to swap with
+	Vec3f last_pos = manager->positions[manager->count - 1];
+	Vec3f last_scale = manager->scales[manager->count - 1];
+	Vec3f last_up = manager->ups[manager->count - 1];
+	Vec3f last_forward = manager->forwards[manager->count - 1];
+	Vec3f last_right = manager->rights[manager->count - 1];
+	Quat last_rotation = manager->rotations[manager->count - 1];
+
+	Mat4x4f last_local = manager->local[manager->count - 1];
+	Mat4x4f last_world = manager->world[manager->count - 1];
+
+	Entity last_parent = manager->parent[manager->count - 1];
+	Entity last_first_child = manager->first_child[manager->count - 1];
+	Entity last_next_sibling = manager->next_sibling[manager->count - 1];
+
+	// Swap
+	manager->positions[index] = last_pos;
+	manager->scales[index] = last_scale;
+	manager->ups[index] = last_up;
+	manager->forwards[index] = last_forward;
+	manager->rights[index] = last_right;
+	manager->rotations[index] = last_rotation;
+
+	manager->local[index] = last_local;
+	manager->world[index] = last_world;
+
+	manager->parent[index] = last_parent;
+	manager->first_child[index] = last_first_child;
+	manager->next_sibling[index] = last_next_sibling;
+
+
+	manager->count--;
+	// Remove the entity from the index map
+	map_remove(&manager->id_map, entity.id);
+}

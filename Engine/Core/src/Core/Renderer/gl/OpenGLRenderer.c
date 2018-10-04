@@ -361,7 +361,7 @@ RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture,
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 }
 
@@ -387,7 +387,7 @@ RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, 
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 }
 
@@ -417,7 +417,7 @@ RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_tex
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 
 	return handle;
 }
@@ -447,7 +447,7 @@ RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, uns
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 }
 
@@ -474,7 +474,7 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 		opengl->shaders[opengl->shader_count] = shader;
 		opengl->shader_count++;
 
-		gl_add_resource_to_lookup(opengl, handle);
+		
 
 		return handle;
 	} else {
@@ -504,7 +504,7 @@ RenderResource gl_create_vbo(OpenGLRenderer* opengl) {
 	opengl->vbos[opengl->vbo_count] = vbo_id;
 	opengl->vbo_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 
 }
@@ -526,7 +526,7 @@ RenderResource gl_create_ebo(OpenGLRenderer* opengl) {
 	opengl->ebos[opengl->ebo_count] = ebo_id;
 	opengl->ebo_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 
 }
@@ -548,7 +548,7 @@ RenderResource gl_create_vao(OpenGLRenderer* opengl) {
 	opengl->vaos[opengl->vao_count] = vao_id;
 	opengl->vao_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 
 }
@@ -577,7 +577,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	opengl->fbos[opengl->fbo_count] = fbo_id;
 	opengl->fbo_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+	
 	return handle;
 }
 
@@ -602,7 +602,7 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, uint32_t width, uint32_t he
 	opengl->rbos[opengl->rbo_count] = rbo_id;
 	opengl->rbo_count++;
 
-	gl_add_resource_to_lookup(opengl, handle);
+
 	return handle;
 }
 static void init_gl_extensions(OpenGLRenderer* opengl) {
@@ -1125,7 +1125,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 }
 
 void init_gl_resource_arrays(OpenGLRenderer* opengl) {
-	map_init(&opengl->resource_lookup);
+	
 	opengl->obj_capacity = 20;
 
 	opengl->texture_count = 0;

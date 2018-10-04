@@ -18,3 +18,19 @@ void entity_add_light_component(LightManager* manager, Entity entity) {
 	manager->count++;
 	stb_sb_push(manager->lights, Light());
 }
+
+void entity_remove_light_component(LightManager* manager, Entity entity) {
+	
+	MapResult<uint64_t> result = map_get(&manager->id_map, entity.id);
+	// There is no result, return early and do nothing
+	if (!result.found) return;
+
+	uint64_t index = result.value;
+	// Get the last in the list to swap with
+	Light last = manager->lights[manager->count - 1];
+	// swap the last at the current index we are removing from
+	manager->lights[index] = last;
+	manager->count--;
+	// Remove the entity from the index map
+	map_remove(&manager->id_map, entity.id);
+}

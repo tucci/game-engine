@@ -45,3 +45,4 @@ typedef struct CameraManager {
 void init_camera_manager(CameraManager* manager);
 void destroy_camera_manager(CameraManager* manager);
 void entity_add_camera_component(CameraManager* manager, Entity entity);
+void entity_remove_camera_component(CameraManager* manager, Entity entity);

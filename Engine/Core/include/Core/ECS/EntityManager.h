@@ -22,6 +22,8 @@ typedef enum ComponentType {
 	ComponentType_Camera,
 	ComponentType_StaticMesh,
 	ComponentType_Light,
+
+	ComponentType_Count
 } ComponentType;
 
 
@@ -40,14 +42,22 @@ typedef struct EntityManager {
 	Arena arena;
 	StackAllocator stack_mem;
 
+	uint64_t entitys_created;
+	uint64_t entity_count;
 	Entity* entity_list;
+	CompactMap<uint64_t> entity_index_map;
+	
 	
 } EntityManager;
 
 void init_entity_manager(EntityManager* manager);
 void destroy_entity_manager(EntityManager* manager);
 Entity create_entity(EntityManager* manager);
+
+void destroy_entity(EntityManager* manager, Entity entity);
 void add_component(EntityManager* manager, Entity entity, ComponentType type);
+void remove_component(EntityManager* manager, Entity entity, ComponentType type);
+
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
 
 
