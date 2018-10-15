@@ -6,15 +6,25 @@
 #include "Common/stretchy_buffer.h"
 
 
+#include "debug_macros.h"
+
+#define ZLIB_WINAPI
+
 
 
 
 int main(int argc, char* argv[]) {
+
+
+
+
+
+
+
+
+#if 0
 	
-
-
-#if 1
-
+	
 	main_test();
 #else
 					

@@ -129,6 +129,7 @@ void map_put(CompactMap<V>* map, uint64_t key, V val) {
 	if (2 * (map->item_count + map->tomestones) >= map->size) {
 		map_grow(map, 2 * map->size);
 	}
+	
 	assert(IS_POW2(map->size));
 
 	size_t hash_index = MurmurHash3Mixer(key);
@@ -168,7 +169,7 @@ void map_grow(CompactMap<V>* map, size_t new_size) {
 	new_map.tomestones = 0;
 
 	// Copy and rehash all the keys from the old map
-	for (int i = 0; i < new_map.size; i++) {
+	for (int i = 0; i < map->size; i++) {
 		// Dont hash 0 values, and tombstones
 		if (map->map 
 			&& map->map[i].key != 0 

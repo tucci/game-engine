@@ -10,7 +10,7 @@
 
 
 
-#define GAME_MEMORY MEGABYTES(100)
+#define GAME_MEMORY MEGABYTES(200)
 
 
 typedef struct Game {

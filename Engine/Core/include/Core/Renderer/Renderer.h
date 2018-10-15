@@ -20,6 +20,7 @@ typedef struct Renderer {
 	union {
 		SoftwareRenderer software_renderer;
 		OpenGLRenderer opengl;
+		
 	};	
 	
 	RenderWorld render_world;

@@ -66,6 +66,7 @@ void load_scene(Game* game, int scene_id) {
 	assert(scene != NULL);
 	
 	
+	
 	EngineAPI* api = &game->engineAPI;
 	EntityManager* entity_manager = api->entity_manager;
 	Renderer* renderer = api->renderer;
@@ -89,48 +90,68 @@ void load_scene(Game* game, int scene_id) {
 
 
 	// Mesh 1
-	scene->entity_mesh_test = create_entity(entity_manager);
-	add_component(entity_manager, scene->entity_mesh_test, ComponentType_Transform);
-	add_component(entity_manager, scene->entity_mesh_test, ComponentType_StaticMesh);
+	//scene->entity_mesh_test = create_entity(entity_manager);
+	//add_component(entity_manager, scene->entity_mesh_test, ComponentType_Transform);
+	//add_component(entity_manager, scene->entity_mesh_test, ComponentType_StaticMesh);
 
-	StaticMesh* mesh1 = get_static_mesh(entity_manager, scene->entity_mesh_test);
-	bool loaded = obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
-	if (loaded) {
-		set_static_mesh(entity_manager, scene->entity_mesh_test, mesh1);
+	//StaticMesh* mesh1 = get_static_mesh(entity_manager, scene->entity_mesh_test);
+	//bool loaded = obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
+	//bool loaded = obj_to_static_mesh("Assets/AC Cobra/Shelby.obj", mesh1, &game->s tack);
+	//FBX_Import_Data import = import_fbx("Assets/AC Cobra/Shelby.fbx", &game->stack, true);
+	FBX_Import_Data import = import_fbx("Assets/BB8 New/test3.FBX", &game->stack, true);
+	scene->entity_mesh_list_count = import.static_mesh_count;
+	scene->entity_mesh_list = cast(Entity*) stack_alloc(&game->stack, import.static_mesh_count * sizeof(Entity), 1);
+
+	if (import.successfully_imported) {
+		for (int i = 0; i < import.static_mesh_count; i++) {
+			// move meshes into scene
+			scene->entity_mesh_list[i] = create_entity(entity_manager);
+			add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_Transform);
+			set_scale(entity_manager, scene->entity_mesh_list[i], Vec3f(0.001f, 0.001f, 0.001f));
+			add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_StaticMesh);
+			StaticMesh* mesh = get_static_mesh(entity_manager, scene->entity_mesh_list[i]);
+			mesh = import.meshes[i];
+			set_static_mesh(entity_manager, scene->entity_mesh_list[i], mesh);
+		}
 	} else {
 		// Load error mesh?
 	}
-	set_position(entity_manager, scene->entity_mesh_test, Vec3f(0, 0, -5));
 	
+	free_fbx_import(&import);
+
+	// TODO: dont forget to free meshes
+
+	//set_position(entity_manager, scene->entity_mesh_test, Vec3f(0, 0, -5));
+	//
+	//
+	//
+
+	//// Mesh 2
+	//scene->entity_mesh_test2 = create_entity(entity_manager);
+	//add_component(entity_manager, scene->entity_mesh_test2, ComponentType_Transform);
+	//add_component(entity_manager, scene->entity_mesh_test2, ComponentType_StaticMesh);
+
+	//StaticMesh* mesh2 = get_static_mesh(entity_manager, scene->entity_mesh_test2);
+	//make_uv_sphere(mesh2, 16, 32, &game->stack);
+	//set_static_mesh(entity_manager, scene->entity_mesh_test2, mesh2);
+	////make_cube(mesh2, &game->game_memory);
+	//set_position(entity_manager, scene->entity_mesh_test2, Vec3f(5, 0, 1));
+	//
+
+
+	//// Mesh 3
+	//scene->entity_mesh_test3 = create_entity(entity_manager);
+	//add_component(entity_manager, scene->entity_mesh_test3, ComponentType_Transform);
+	//add_component(entity_manager, scene->entity_mesh_test3, ComponentType_StaticMesh);
+
+	//StaticMesh* mesh3 = get_static_mesh(entity_manager, scene->entity_mesh_test3);
+	//make_plane(mesh3, &game->stack);
+	//set_static_mesh(entity_manager, scene->entity_mesh_test3, mesh3);
+	//set_position(entity_manager, scene->entity_mesh_test3, Vec3f(0, -2, 0));
+	//set_scale(entity_manager, scene->entity_mesh_test3, Vec3f(100, 100, 100));
 	
-	
 
-	// Mesh 2
-	scene->entity_mesh_test2 = create_entity(entity_manager);
-	add_component(entity_manager, scene->entity_mesh_test2, ComponentType_Transform);
-	add_component(entity_manager, scene->entity_mesh_test2, ComponentType_StaticMesh);
-
-	StaticMesh* mesh2 = get_static_mesh(entity_manager, scene->entity_mesh_test2);
-	make_uv_sphere(mesh2, 16, 32, &game->stack);
-	set_static_mesh(entity_manager, scene->entity_mesh_test2, mesh2);
-	//make_cube(mesh2, &game->game_memory);
-	set_position(entity_manager, scene->entity_mesh_test2, Vec3f(5, 0, 1));
-	
-
-
-	// Mesh 3
-	scene->entity_mesh_test3 = create_entity(entity_manager);
-	add_component(entity_manager, scene->entity_mesh_test3, ComponentType_Transform);
-	add_component(entity_manager, scene->entity_mesh_test3, ComponentType_StaticMesh);
-
-	StaticMesh* mesh3 = get_static_mesh(entity_manager, scene->entity_mesh_test3);
-	make_plane(mesh3, &game->stack);
-	set_static_mesh(entity_manager, scene->entity_mesh_test3, mesh3);
-	set_position(entity_manager, scene->entity_mesh_test3, Vec3f(0, -2, 0));
-	set_scale(entity_manager, scene->entity_mesh_test3, Vec3f(100, 100, 100));
-	
-
-	attach_child_entity(entity_manager, scene->entity_mesh_test, scene->entity_mesh_test2);
+	//attach_child_entity(entity_manager, scene->entity_mesh_test, scene->entity_mesh_test2);
 	//attach_child_entity(entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test3);
 	//attach_child_entity(entity_manager, scene->entity_mesh_test2, scene->entity_mesh_test3);
 	//attach_child_entity(entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test2);
@@ -174,32 +195,32 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/rust_iron/rustediron2_roughness.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/rust_iron/rustediron2_ao.png", &scene->ao_map, &game->game_memory, false);
 
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-normal2.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-albedo.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-metalness.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->game_memory, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-normal2.png", &scene->normal_map, &game->stack, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-albedo.png", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-metalness.png", &scene->metallic_map, &game->stack, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->stack, false);
+	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->stack, false);
 
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->game_memory, false);
-
-
-
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->stack, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->stack, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->stack, false);
+	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->stack, false);
 
 
-	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->game_memory, false);
+
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
+
+
+	load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->stack, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->stack, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->stack, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->stack, false);
+	load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->stack, false);
 
 
 
@@ -283,14 +304,14 @@ void game_update(Game* game) {
 	Vec3f new_mesh_pos;
 
 	
-	if (input->keys[SDL_SCANCODE_UP].down) { new_mesh_pos = (delta_time * -forward(entity_manager, scene->entity_mesh_test2)); }
-	if (input->keys[SDL_SCANCODE_DOWN].down) { new_mesh_pos = (delta_time * forward(entity_manager, scene->entity_mesh_test2)); }
-	if (input->keys[SDL_SCANCODE_LEFT].down) { new_mesh_pos = (delta_time * -right(entity_manager, scene->entity_mesh_test2)); }
-	if (input->keys[SDL_SCANCODE_RIGHT].down) { new_mesh_pos =  (delta_time * right(entity_manager, scene->entity_mesh_test2)); }
-	
-
-	Vec3f mesh_pos = position(entity_manager, scene->entity_mesh_test2);
-	set_position(entity_manager, scene->entity_mesh_test2, mesh_pos + new_mesh_pos);
+	//if (input->keys[SDL_SCANCODE_UP].down) { new_mesh_pos = (delta_time * -forward(entity_manager, scene->entity_mesh_test2)); }
+	//if (input->keys[SDL_SCANCODE_DOWN].down) { new_mesh_pos = (delta_time * forward(entity_manager, scene->entity_mesh_test2)); }
+	//if (input->keys[SDL_SCANCODE_LEFT].down) { new_mesh_pos = (delta_time * -right(entity_manager, scene->entity_mesh_test2)); }
+	//if (input->keys[SDL_SCANCODE_RIGHT].down) { new_mesh_pos =  (delta_time * right(entity_manager, scene->entity_mesh_test2)); }
+	//
+	//
+	//Vec3f mesh_pos = position(entity_manager, scene->entity_mesh_test2);
+	//set_position(entity_manager, scene->entity_mesh_test2, mesh_pos + new_mesh_pos);
 
 
 	Vec3f new_mesh_scale = Vec3f(0, 0, 0);
@@ -307,8 +328,8 @@ void game_update(Game* game) {
 		new_mesh_scale.z -= delta_time * 10;
 	}
 
-	Vec3f test_scale = get_scale(entity_manager, scene->entity_mesh_test);
-	set_scale(entity_manager, scene->entity_mesh_test, test_scale + new_mesh_scale);
+	//Vec3f test_scale = get_scale(entity_manager, scene->entity_mesh_test);
+	//set_scale(entity_manager, scene->entity_mesh_test, test_scale + new_mesh_scale);
 
 
 
@@ -328,8 +349,8 @@ void game_update(Game* game) {
 		//test->transform.rotation = test->transform.rotation * quat_from_axis_angle(Vec3f_Right, 5);
 	}
 
-	Quat old_test_rot = rotation(entity_manager, scene->entity_mesh_test);
-	set_rotation(entity_manager, scene->entity_mesh_test, old_test_rot * new_test_rot);
+	//Quat old_test_rot = rotation(entity_manager, scene->entity_mesh_test);
+	//set_rotation(entity_manager, scene->entity_mesh_test, old_test_rot * new_test_rot);
 	
 
 
@@ -401,24 +422,36 @@ void game_update(Game* game) {
 		
 	
 	
+	for (int i = 0; i < scene->entity_mesh_list_count; i++) {
+		Entity e = scene->entity_mesh_list[i];
+		RenderMesh rm;
+		rm.material_id = 0;
+		rm.mesh = get_static_mesh(entity_manager, e);
+		rm.world = get_world_mat(entity_manager, e);
+		if (rm.mesh->uv_count > 0) {
+			push_render_object(renderer, rm);
+		}
+		
+
+	}
 	
-	RenderMesh desc1;
-	desc1.material_id = 0;
-	desc1.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test);
-	desc1.world= get_world_mat(entity_manager, scene->entity_mesh_test);
-	push_render_object(renderer, desc1);
-
-	RenderMesh desc2;
-	desc2.material_id = 0;
-	desc2.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test2);
-	desc2.world = get_world_mat(entity_manager, scene->entity_mesh_test2);
-	push_render_object(renderer, desc2);
-
-	RenderMesh desc3;
-	desc3.material_id = 0;
-	desc3.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test3);
-	desc3.world = get_world_mat(entity_manager, scene->entity_mesh_test3);
-	push_render_object(renderer, desc3);
+	//RenderMesh desc1;
+	//desc1.material_id = 0;
+	//desc1.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test);
+	//desc1.world= get_world_mat(entity_manager, scene->entity_mesh_test);
+	//push_render_object(renderer, desc1);
+	//
+	//RenderMesh desc2;
+	//desc2.material_id = 0;
+	//desc2.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test2);
+	//desc2.world = get_world_mat(entity_manager, scene->entity_mesh_test2);
+	//push_render_object(renderer, desc2);
+	//
+	//RenderMesh desc3;
+	//desc3.material_id = 0;
+	//desc3.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test3);
+	//desc3.world = get_world_mat(entity_manager, scene->entity_mesh_test3);
+	//push_render_object(renderer, desc3);
 
 
 	push_camera(renderer, camera, cam_pos);

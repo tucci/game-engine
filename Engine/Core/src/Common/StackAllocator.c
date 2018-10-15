@@ -33,6 +33,7 @@ void stack_pop(StackAllocator* sa) {
 	// If there is nothing on the stack. do nothing
 	if (sa->start == sa->current) return;
 
+	
 	StackHeader* header = cast(StackHeader*)(sa->current - sizeof(StackHeader));
 	sa->current -= header->block_size + sizeof(StackHeader);
 

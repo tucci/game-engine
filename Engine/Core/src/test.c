@@ -118,6 +118,8 @@ void inline test_simd_vec(void) {
 	Vec4f v1 = Vec4f(1, 2, 3, 4);
 	Vec4f v2 = Vec4f(5, 6, 7, 8);
 
+	
+
 	Vec4f result = v1 + v2;
 	//assert_vec(v1, ToVec4f(6.0f, 8.0f, 10.0f, 12.0f), 0.1f);
 	result = -v1;

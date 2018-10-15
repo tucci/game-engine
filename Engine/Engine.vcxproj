@@ -77,12 +77,12 @@
     <LibraryPath>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\Steven\Documents\Visual Studio 2015\Projects\Engine\Engine\lib\sdl\lib\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -103,7 +103,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include;$(ProjectDir)lib\zlib-1.2.11</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -113,12 +113,12 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(ProjectDir)\lib\glew210\lib\Release\x64;$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\lib\glew210\lib\Release\x64;$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath);$(ProjectDir)\lib\zlib-1.2.11\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -146,7 +146,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include;$(ProjectDir)lib\zlib-1.2.11</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -155,10 +155,10 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(ProjectDir)\lib\glew210\lib\Release\x64;$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)\lib\glew210\lib\Release\x64;$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath);$(ProjectDir)\lib\zlib-1.2.11\lib\x64</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -336,6 +336,7 @@
     <Text Include="todo.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\..\Downloads\247_House 15_fbx.FBX" />
     <None Include="Assets\shaders\brdf.fs" />
     <None Include="Assets\shaders\brdf.vs" />
     <None Include="Assets\shaders\debug.fs" />
@@ -365,6 +366,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\zlib-1.2.11\lib\x64\zlibstat.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

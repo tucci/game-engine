@@ -549,10 +549,14 @@
     <None Include="lib\glew210\doc\install.html" />
     <None Include="lib\glew210\doc\log.html" />
     <None Include="lib\glew210\doc\wglew.html" />
+    <None Include="..\..\..\..\..\Downloads\247_House 15_fbx.FBX" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\zlib-1.2.11\lib\x64\zlibstat.lib" />
   </ItemGroup>
 </Project>
