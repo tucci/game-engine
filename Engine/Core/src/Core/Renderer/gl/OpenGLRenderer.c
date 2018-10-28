@@ -1011,7 +1011,6 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		StaticMesh* mesh = render_mesh.mesh;
 		Mat4x4f* world_mat = render_mesh.world;
 		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);
-
 		if (mesh->vertex_count == 0) { continue; }
 
 		glBufferData(GL_ARRAY_BUFFER,
@@ -1026,12 +1025,13 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			mesh->vertex_count * sizeof(Vec3f),
 			mesh->pos);
 
+		//crashes because vertex count is bigger than size of normal / texcoords
 
 		glBufferSubData(GL_ARRAY_BUFFER,
 			mesh->vertex_count * sizeof(Vec3f),
 			mesh->vertex_count * sizeof(Vec2f),
 			mesh->texcoords);
-
+		
 		glBufferSubData(GL_ARRAY_BUFFER,
 			mesh->vertex_count * sizeof(Vec3f) + mesh->vertex_count * sizeof(Vec2f),
 			mesh->vertex_count * sizeof(Vec3f),

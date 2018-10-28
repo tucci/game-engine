@@ -8,6 +8,11 @@
 #include "Math/Mat.h"
 #include "Math/Quaternion.h"
 #include "Common/common_macros.h"
+
+#include "Asset/AssetManager.h"
+#include "Asset/FbxImport.h"
+
+
 #include "Core/ECS/Component/Primitives.h"
 
 #include "Core/ECS/JobSystem/TransformSystem.h"
@@ -16,15 +21,18 @@
 #include "Core/ECS/JobSystem/LightSystem.h"
 
 
+
+
 #include "debug_macros.h"
 
 void attach_engine_subsytems(Game* game, EngineAPI api) {
 	game->engineAPI = api;
-
+	
 	assert(api.input != NULL);
 	assert(api.display != NULL);
 	assert(api.game_loop != NULL);
 	assert(api.window != NULL);
+	
 }
 
 void on_game_start(Game* game) {
@@ -70,6 +78,7 @@ void load_scene(Game* game, int scene_id) {
 	EngineAPI* api = &game->engineAPI;
 	EntityManager* entity_manager = api->entity_manager;
 	Renderer* renderer = api->renderer;
+	AssetManager* asset_manager = api->asset_manager;
 
 	
 
@@ -82,7 +91,7 @@ void load_scene(Game* game, int scene_id) {
 	add_component(entity_manager, scene->entity_main_camera, ComponentType_Camera);
 
 	Camera* cam = get_camera(entity_manager, scene->entity_main_camera);
-	init_camera_params(cam, 0.1f, 100.0f, 90.0f, api->window->size.x / cast(float) api->window->size.y);
+	init_camera_params(cam, 0.0001f, 100.0f, 90.0f, api->window->size.x / cast(float) api->window->size.y);
 	set_position(entity_manager, scene->entity_main_camera, Vec3f(0, 0, 0));
 	scene->main_camera = get_camera(entity_manager, scene->entity_main_camera);
 
@@ -98,26 +107,57 @@ void load_scene(Game* game, int scene_id) {
 	//bool loaded = obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
 	//bool loaded = obj_to_static_mesh("Assets/AC Cobra/Shelby.obj", mesh1, &game->s tack);
 	//FBX_Import_Data import = import_fbx("Assets/AC Cobra/Shelby.fbx", &game->stack, true);
-	FBX_Import_Data import = import_fbx("Assets/BB8 New/test3.FBX", &game->stack, true);
-	scene->entity_mesh_list_count = import.static_mesh_count;
-	scene->entity_mesh_list = cast(Entity*) stack_alloc(&game->stack, import.static_mesh_count * sizeof(Entity), 1);
 
-	if (import.successfully_imported) {
-		for (int i = 0; i < import.static_mesh_count; i++) {
+	AssetImporter importer;
+	init_asset_importer(&importer);
+
+	
+
+
+	//import_fbx(&importer, "Assets/BB8 New/bb8.fbx", false);
+	//import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
+	//import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+	//import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
+	import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
+	
+	
+	scene->entity_mesh_list_count = importer.asset_info_import_count;
+
+	scene->entity_mesh_list = cast(Entity*) stack_alloc(&game->stack, scene->entity_mesh_list_count * sizeof(Entity), 1);
+
+	for (int i = 0; i < importer.asset_info_import_count; i++) {
+		Asset asset = import_asset(asset_manager, importer.assets_infos[i].filename);
+		if (asset.type == AssetType_StaticMesh) {
 			// move meshes into scene
 			scene->entity_mesh_list[i] = create_entity(entity_manager);
 			add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_Transform);
-			set_scale(entity_manager, scene->entity_mesh_list[i], Vec3f(0.001f, 0.001f, 0.001f));
+
+			set_position(entity_manager, scene->entity_mesh_list[i], asset.import_mesh->translation);
+			Vec3f scaled = Vec3f(
+				asset.import_mesh->scale.x * 0.1f,
+				asset.import_mesh->scale.y * 0.1f,
+				asset.import_mesh->scale.z * 0.1f);
+
+			set_scale(entity_manager, scene->entity_mesh_list[i], scaled);
+			
+			set_rotation(entity_manager, scene->entity_mesh_list[i], euler_to_quat(asset.import_mesh->rotation));
+			
+			
 			add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_StaticMesh);
-			StaticMesh* mesh = get_static_mesh(entity_manager, scene->entity_mesh_list[i]);
-			mesh = import.meshes[i];
-			set_static_mesh(entity_manager, scene->entity_mesh_list[i], mesh);
+			set_static_mesh(entity_manager, scene->entity_mesh_list[i], &asset.import_mesh->mesh);
 		}
-	} else {
-		// Load error mesh?
+		
 	}
+
 	
-	free_fbx_import(&import);
+	
+	destroy_asset_importer(&importer);
+
+	
+	
+
+	
+	
 
 	// TODO: dont forget to free meshes
 
@@ -216,11 +256,21 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
 
 
+
+	
+
+	//load_texture("Assets/BB8 New/Body diff MAP.jpg", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/BB8 New/head top diff MAP.jpg", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/BB8 New/HEAD diff MAP.jpg", &scene->albedo_map, &game->stack, false);
 	load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->stack, false);
 	load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->stack, false);
 	load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->stack, false);
 	load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->stack, false);
 	load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->stack, false);
+
+	
+
+	
 
 
 
@@ -423,14 +473,14 @@ void game_update(Game* game) {
 	
 	
 	for (int i = 0; i < scene->entity_mesh_list_count; i++) {
+	
 		Entity e = scene->entity_mesh_list[i];
 		RenderMesh rm;
 		rm.material_id = 0;
 		rm.mesh = get_static_mesh(entity_manager, e);
 		rm.world = get_world_mat(entity_manager, e);
-		if (rm.mesh->uv_count > 0) {
-			push_render_object(renderer, rm);
-		}
+		push_render_object(renderer, rm);
+		
 		
 
 	}

@@ -123,3 +123,24 @@ Vec3f quat_to_euler(const Quat& q) {
 
 	return euler;
 }
+
+Quat euler_to_quat(const Vec3f& euler) {
+	Quat result;
+	float pitch = euler.x;
+	float yaw = euler.y;
+	float roll = euler.z;
+
+	// Abbreviations for the various angular functions
+	double cy = cosf_(yaw * 0.5);
+	double sy = sinf_(yaw * 0.5);
+	double cr = cosf_(roll * 0.5);
+	double sr = sinf_(roll * 0.5);
+	double cp = cosf_(pitch * 0.5);
+	double sp = sinf_(pitch * 0.5);
+
+	result.w = cy * cr * cp + sy * sr * sp;
+	result.x = cy * sr * cp - sy * cr * sp;
+	result.y = cy * cr * sp + sy * sr * cp;
+	result.z = sy * cr * cp - cy * sr * sp;
+	return result;
+}

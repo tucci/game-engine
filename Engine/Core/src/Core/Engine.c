@@ -461,6 +461,11 @@ static bool init_ecs(Engine* engine) {
 	return true;
 }
 
+static bool init_asset_manager(Engine* engine) {
+	init_asset_manager(&engine->asset_manager);
+	return true;
+}
+
 static void update_clock(Engine* engine) {
 	uint64_t ticks = SDL_GetPerformanceCounter() - engine->clock.sdl_start_ticks;
 	engine->clock.delta_ticks = (int)(ticks - engine->clock.ticks);
@@ -630,8 +635,10 @@ static bool load_game(Engine* engine, const char* game_file) {
 		&engine->input,
 		&engine->game_loop,
 		&engine->entity_manager,
-		&engine->renderer
+		&engine->renderer,
+		&engine->asset_manager
 	};
+	
 
 	attach_engine_subsytems(&engine->loaded_game, api);
 	on_game_start(&engine->loaded_game);
@@ -665,6 +672,7 @@ bool init_engine(Engine* engine) {
 	if (!init_event_queue(engine)) { return false; }
 	if (!init_clock(engine)) { return false; }
 	if (!init_ecs(engine)) { return false; }
+	if (!init_asset_manager(engine)) { return false; }
 	if (!init_renderer(engine)) { return false; }
 	if (!init_game_loop(engine)) { return false; }
 	// TODO: Load game file here
@@ -681,6 +689,7 @@ bool destroy_engine(Engine* engine) {
 	
 	on_game_quit(&engine->loaded_game);
 	destroy_entity_manager(&engine->entity_manager);
+	destroy_asset_manager(&engine->asset_manager);
 
 	switch (engine->renderer.type) {
 		case BackenedRenderer_Software:

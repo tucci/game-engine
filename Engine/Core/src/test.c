@@ -104,8 +104,18 @@ void inline test_stack_alloc(void) {
 		}
 		
 	}
-
 	stack_pop(&sa);
+
+	char* f = cast(char*)stack_alloc(&sa, 10, 4);
+	f[0] = 't';
+
+	stack_set_reset_point(&sa);
+	f = cast(char*)stack_alloc(&sa, 10, 4);
+	f[0] = 'a';
+	f = cast(char*)stack_alloc(&sa, 10, 4);
+	f[0] = 'b';
+
+	stack_pop_to_last_reset_point(&sa);
 
 
 	free(game_mem);
@@ -350,12 +360,12 @@ void inline main_test(void) {
 	
 
 	//test_linear_alloc();
-	//test_stack_alloc();
+	test_stack_alloc();
 	//test_simd_vec();
 	//test_quats();
 	//test_transforms();
 	//test_matrix();
-	test_ecs();
+	//test_ecs();
 	//test_arena();
 	//test_map();
 }

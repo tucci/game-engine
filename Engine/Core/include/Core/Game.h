@@ -24,6 +24,8 @@ typedef struct Game {
 	
 } Game;
 
+
+void attach_engine_subsytems(Game* game, EngineAPI api);
 void on_game_start(Game* game);
 void on_game_quit(Game* game);
 void attach_engine_subsytems(Game* game, EngineAPI api);

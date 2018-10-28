@@ -11,6 +11,7 @@
 #include "Core/Input.h"
 #include "Core/GameTimer.h"
 #include "Core/Renderer/Renderer.h"
+#include "Asset/AssetManager.h"
 
 #include "Core/ECS/EntityManager.h"
 
@@ -133,7 +134,10 @@ typedef struct Engine {
 	Clock clock;
 	GameTimer game_loop;
 	EntityManager entity_manager;
+	AssetManager asset_manager;
 	Renderer renderer;
+	
+	
 	
 	
 
@@ -177,6 +181,7 @@ static bool init_clock(Engine* engine);
 static bool init_game_loop(Engine* engine);
 static bool init_debug(Engine* engine);
 static bool init_ecs(Engine* engine);
+static bool init_asset_manager(Engine* engine);
 static void update_clock(Engine* engine);
 
 static void process_inputs(Engine* engine);

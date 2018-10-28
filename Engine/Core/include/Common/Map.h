@@ -105,7 +105,7 @@ MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
 			MapResult<V> result;
 			result.found = false;
 			result.key = key;
-			result.value = 0;
+			//result.value = 0;
 			return result;
 			//return map->empty_ref;
 		}
@@ -114,7 +114,7 @@ MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
 	MapResult<V> result;
 	result.found = false;
 	result.key = key;
-	result.value = 0;
+//	result.value = 0;
 	return result;
 
 }

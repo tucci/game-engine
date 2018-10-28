@@ -39,5 +39,6 @@ Quat& operator*=(Quat& q1, const Quat& q2);
 Vec3f operator*(const Quat& q, const Vec3f& pt);
 Mat4x4f quat_to_rotation_matrix(const Quat& q);
 Vec3f quat_to_euler(const Quat& q);
+Quat euler_to_quat(const Vec3f& euler);
 
 // TODO: implement slerp

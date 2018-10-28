@@ -22,8 +22,8 @@ typedef struct Camera {
 	float aspect_ratio;
 	Mat4x4f view_mat;
 	Camera() {
-		near = 0.1f;
-		far = 10.0f;
+		near = 0.0001f;
+		far = 100.0f;
 		fov = 90.0f;
 		aspect_ratio = 1.0f;
 		view_mat = Mat4x4f();

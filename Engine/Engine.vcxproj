@@ -182,6 +182,8 @@
     <ClCompile Include="Core\src\Core\ECS\Component\StaticMesh.c" />
     <ClCompile Include="Core\src\Core\TextureData.c" />
     <ClCompile Include="Core\src\Core\Engine.c" />
+    <ClCompile Include="Core\src\Asset\AssetManager.c" />
+    <ClCompile Include="Core\src\Asset\FbxImport.c" />
     <ClCompile Include="Core\src\Main.c" />
     <ClCompile Include="Core\src\Math\Mat.cpp" />
     <ClCompile Include="Core\src\Math\Quaternion.cpp" />
@@ -196,8 +198,10 @@
   <ItemGroup>
     <ClInclude Include="Common\StackAllocator.h" />
     <ClInclude Include="Core\Entities\Skybox.h" />
+    <ClInclude Include="Core\include\Asset\Asset.h" />
     <ClInclude Include="Core\include\Common\Arena.h" />
     <ClInclude Include="Core\include\Common\Map.h" />
+    <ClInclude Include="Core\include\Asset\AssetManager.h" />
     <ClInclude Include="Core\include\Core\ECS\Component\RenderComponent.h" />
     <ClInclude Include="Core\include\Core\ECS\Entity.h" />
     <ClInclude Include="Core\include\Core\ECS\EntityManager.h" />
@@ -207,6 +211,7 @@
     <ClInclude Include="Core\include\Core\ECS\JobSystem\TransformSystem.h" />
     <ClInclude Include="Core\include\Core\Renderer\Renderer.h" />
     <ClInclude Include="Core\include\Core\Renderer\RenderInterface.h" />
+    <ClInclude Include="Core\include\Asset\FbxImport.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="Core\include\Common\common_macros.h" />
     <ClInclude Include="Core\include\Common\LinearAllocator.h" />

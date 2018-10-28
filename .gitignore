@@ -16,6 +16,13 @@
 Engine/My Amplifier Results - Engine/
 
 Engine/Assets/textures
+Engine/*.fbx
+Engine/*.FBX
+
+*.fbx
+*.FBX
+
+Engine/*.easset
 
 # Build results
 [Dd]ebug/
