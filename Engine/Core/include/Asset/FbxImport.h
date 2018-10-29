@@ -135,14 +135,24 @@ typedef struct AssetImporter {
 	Arena mem;
 	StackAllocator stack;
 	int32_t stack_allocs_count;
-	// TODO: once we have seperated out the fbx importer, remove this from assetimporter
-	CompactMap<FBX_Object> fbx_object_map;
+	
 
-	int32_t asset_info_import_count;
-	AssetInfo* assets_infos;
-	bool y_is_up;
+	
+	//int32_t asset_info_import_count;
+	//AssetInfo* assets_infos;
+	
 
 } AssetImporter;
+
+
+
+typedef struct FBX_ImportData {
+	AssetScene export_scene;
+	CompactMap<FBX_Object> fbx_object_map;
+	CompactMap<AssetSceneNode*> scene_node_cache_map;
+	
+	bool y_is_up;
+} FBX_ImportData;
 
 
 void init_asset_importer(AssetImporter* importer);
@@ -155,9 +165,10 @@ AssetInfo export_static_mesh(AssetImporter* importer,
 	Vec3f scale,
 	char* filename, int filename_str_len);
 
-void static fbx_process_node(AssetImporter* importer, FBX_Node* node);
-void import_fbx(AssetImporter* importer, const char* filename, bool y_is_up);
 
-void FBX_geo_to_static_mesh(AssetImporter* importer, FBX_Geometry_Object* geo, StaticMesh* mesh);
+
+
+AssetInfo import_fbx(AssetImporter* importer, const char* filename, bool y_is_up);
+
 
 

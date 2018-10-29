@@ -114,40 +114,43 @@ void load_scene(Game* game, int scene_id) {
 	
 
 
-	//import_fbx(&importer, "Assets/BB8 New/bb8.fbx", false);
-	//import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
-	//import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
-	//import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
-	import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
+	//AssetInfo import_file = import_fbx(&importer, "Assets/BB8 New/bb8.fbx", false);
+	//AssetInfo import_file = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
+	AssetInfo import_file = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+	//AssetInfo import_file = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
+	
+	//AssetInfo import_file = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
+	Asset import_scene = import_asset(asset_manager, import_file.filename);
 	
 	
-	scene->entity_mesh_list_count = importer.asset_info_import_count;
+	
+	//scene->entity_mesh_list_count = importer.asset_info_import_count;
 
-	scene->entity_mesh_list = cast(Entity*) stack_alloc(&game->stack, scene->entity_mesh_list_count * sizeof(Entity), 1);
+	//scene->entity_mesh_list = cast(Entity*) stack_alloc(&game->stack, scene->entity_mesh_list_count * sizeof(Entity), 1);
 
-	for (int i = 0; i < importer.asset_info_import_count; i++) {
-		Asset asset = import_asset(asset_manager, importer.assets_infos[i].filename);
-		if (asset.type == AssetType_StaticMesh) {
-			// move meshes into scene
-			scene->entity_mesh_list[i] = create_entity(entity_manager);
-			add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_Transform);
+	//for (int i = 0; i < importer.asset_info_import_count; i++) {
+	//	Asset asset = import_asset(asset_manager, importer.assets_infos[i].filename);
+	//	if (asset.type == AssetType_StaticMesh) {
+	//		// move meshes into scene
+	//		scene->entity_mesh_list[i] = create_entity(entity_manager);
+	//		add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_Transform);
 
-			set_position(entity_manager, scene->entity_mesh_list[i], asset.import_mesh->translation);
-			Vec3f scaled = Vec3f(
-				asset.import_mesh->scale.x * 0.1f,
-				asset.import_mesh->scale.y * 0.1f,
-				asset.import_mesh->scale.z * 0.1f);
+	//		set_position(entity_manager, scene->entity_mesh_list[i], asset.import_mesh->translation);
+	//		Vec3f scaled = Vec3f(
+	//			asset.import_mesh->scale.x * 0.1f,
+	//			asset.import_mesh->scale.y * 0.1f,
+	//			asset.import_mesh->scale.z * 0.1f);
 
-			set_scale(entity_manager, scene->entity_mesh_list[i], scaled);
-			
-			set_rotation(entity_manager, scene->entity_mesh_list[i], euler_to_quat(asset.import_mesh->rotation));
-			
-			
-			add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_StaticMesh);
-			set_static_mesh(entity_manager, scene->entity_mesh_list[i], &asset.import_mesh->mesh);
-		}
-		
-	}
+	//		set_scale(entity_manager, scene->entity_mesh_list[i], scaled);
+	//		
+	//		set_rotation(entity_manager, scene->entity_mesh_list[i], euler_to_quat(asset.import_mesh->rotation));
+	//		
+	//		
+	//		add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_StaticMesh);
+	//		set_static_mesh(entity_manager, scene->entity_mesh_list[i], &asset.import_mesh->mesh);
+	//	}
+	//	
+	//}
 
 	
 	

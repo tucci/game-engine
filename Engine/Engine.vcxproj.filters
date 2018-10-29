@@ -111,6 +111,9 @@
     <ClCompile Include="Core\src\Asset\AssetManager.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\src\Asset\Asset.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec.h">

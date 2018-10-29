@@ -24,6 +24,7 @@ struct MapResult {
 
 template <typename V>
 struct CompactMap {
+	int inited;
 	CompactMapItem<V>* map;
 	size_t item_count; // Amount of items hashed inside the map
 	size_t tomestones; // Amount of tomestombs in the map
@@ -68,6 +69,7 @@ static uint64_t MurmurHash3Mixer(uint64_t key) {
 
 template <typename V>
 void map_init(CompactMap<V>* map) {
+	map->inited = 1;
 	map->map = NULL;
 	map->size = 0;
 	map->item_count = 0;
@@ -77,12 +79,17 @@ void map_init(CompactMap<V>* map) {
 
 template <typename V>
 void map_destroy(CompactMap<V>* map) {
-	free(map->map);
+	assert(map->inited == 1);
+	if (map->inited == 1) {
+		free(map->map);
+	}
+	
 
 }
 
 template <typename V>
 MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
+	assert(map != NULL);
 	assert(key != 0);
 	assert(key != TOMBSTONE);
 	assert(IS_POW2(map->size));

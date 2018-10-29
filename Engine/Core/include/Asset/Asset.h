@@ -1,10 +1,14 @@
 #pragma once
 
 #include <stdint.h>
+#include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
+#include "Math/Mat.h"
+
 
 typedef enum AssetType {
 	AssetType_None,
+	AssetType_Scene,
 	AssetType_StaticMesh,
 	AssetType_Texture,
 	AssetType_Material
@@ -20,6 +24,7 @@ typedef struct AssetImport_StaticMesh {
 } AssetImport_StaticMesh;
 
 typedef struct AssetInfo {
+	AssetType type;
 	char* filename;
 } AssetInfo;
 
@@ -28,11 +33,17 @@ typedef struct AssetInfo {
 typedef struct AssetSceneNode {
 	char* name;
 	uint32_t name_length;
-
-	struct AssetSceneNode* parent;
+	// NOTE: not sure if a node can have multiple parents
+	// Looks like some nodes have multiple parents. for example a material node
+	//struct AssetSceneNode* parent;
 
 	uint32_t children_count;
-	struct AssetSceneNode** children;
+	struct AssetSceneNode* first_child;
+
+	struct AssetSceneNode* next_sibling;
+	// Relative to the node's parent
+	Mat4x4f transform;
+	
 	
 	uint32_t mesh_count;
 	uint32_t* meshes;
@@ -53,8 +64,16 @@ typedef struct Asset {
 	uint64_t id;
 	AssetType type;
 	union {
+		AssetScene scene;
 		AssetImport_StaticMesh* import_mesh;
 	};
 } Asset;
+
+
+void init_scene_node(AssetSceneNode* node, char* name, uint32_t name_length);
+void set_scene_node_name(AssetSceneNode* node, char* name, uint32_t name_length);
+void add_child_to_scene_node(AssetSceneNode* node, AssetSceneNode* child);
+void set_scene_node_transform(AssetSceneNode* node, Vec3f pos, Vec3f scale, Vec3f rot);
+void set_scene_node_transform(AssetSceneNode* node, Mat4x4f transform);
 
 

@@ -162,6 +162,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\src\Asset\Asset.c" />
     <ClCompile Include="Core\src\Common\Arena.c" />
     <ClCompile Include="Core\src\Common\LinearAllocator.c" />
     <ClCompile Include="Core\src\Common\Map.c" />
