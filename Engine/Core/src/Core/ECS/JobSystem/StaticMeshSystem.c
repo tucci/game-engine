@@ -3,22 +3,27 @@
 
 #include "Core/ECS/JobSystem/StaticMeshSystem.h"
 
-StaticMesh* get_static_mesh(EntityManager* manager, Entity entity) {
-	MapResult<uint64_t> result = map_get(&manager->static_meshs.id_map, entity.id);
+StaticMeshID get_static_mesh(EntityManager* manager, Entity entity) {
+	MapResult<uint64_t> result = map_get(&manager->static_mesh_manger.id_map, entity.id);
 	if (!result.found) {
-		return NULL;
+		StaticMeshID id;
+		id.id = -1;
+		return id;
 	}
 	uint64_t index = result.value;
-	return &manager->static_meshs.meshes[index];
+	StaticMeshID id;
+	id.id = manager->static_mesh_manger.meshes[index];
+	return id;
 }
 
-bool set_static_mesh(EntityManager* manager, Entity entity, StaticMesh* mesh) {
+bool set_static_mesh(EntityManager* manager, Entity entity, StaticMeshID id) {
 	
-	MapResult<uint64_t> result = map_get(&manager->static_meshs.id_map, entity.id);
+	MapResult<uint64_t> result = map_get(&manager->static_mesh_manger.id_map, entity.id);
 	if (!result.found) {
 		return false;
 	}
+	
 	uint64_t index = result.value;
-	manager->static_meshs.meshes[index] = *mesh;
+	manager->static_mesh_manger.meshes[index] = id.id;
 	return true;
 }

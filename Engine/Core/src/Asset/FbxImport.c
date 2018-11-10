@@ -15,59 +15,184 @@
 
 
 
-void init_asset_importer(AssetImporter* importer) {
+void init_asset_importer(AssetImporter* importer, AssetTracker* tracker) {
 	arena_init(&importer->mem);
 	size_t importer_mem_size = MEGABYTES(100);
 	void* start = arena_alloc(&importer->mem, importer_mem_size);
 	stack_alloc_init(&importer->stack, start, importer_mem_size);
 	importer->stack_allocs_count = 0;
 
+	importer->tracker = tracker;
+
 	
 
-
 }
+
 void destroy_asset_importer(AssetImporter* importer) {
 	stack_reset(&importer->stack);
 	arena_free(&importer->mem);
-	
-	
 }
 
 
-AssetInfo export_static_mesh(AssetImporter* importer,
-	StaticMesh* mesh,
-	Vec3f pos,
-	Vec3f rotation,
-	Vec3f scale,
-	char* filename, int filename_str_len) {
+static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry_Object* geo, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len) {
 
-	AssetInfo asset_info;
-	asset_info.type = AssetType_StaticMesh;
 
-	size_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
-	asset_info.filename = cast(char*)arena_alloc(&importer->mem, str_size);
-	snprintf(asset_info.filename, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
+	AssetID id;
+	id.id = next_asset_id(importer->tracker);
+	id.type = AssetType_StaticMesh;
+
+
+	char file_str[256];
+	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
+	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
+
+	track_asset(importer->tracker, id, file_str, str_size);
 
 
 	FILE* file;
 	errno_t err;
 
-	err = fopen_s(&file, asset_info.filename, "wb");  // write binary
+	err = fopen_s(&file, file_str, "wb");  // write binary
 
 	if (err == 0) {
-		debug_print("Writing to %s,", asset_info.filename);
+		debug_print("Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", asset_info.filename);
+		debug_print("Fail writing to %s,", file_str);
 	}
 	//void* buffer[256];
+
+
+	// Write asset id
+	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
+
+	// Write type of asset
+	AssetType type = AssetType_StaticMesh;
+	fwrite(cast(const void*) &type, sizeof(type), 1, file);
+
+	// Write the transform
+	fwrite(cast(const void*) &pos, sizeof(Vec3f), 1, file);
+	fwrite(cast(const void*) &scale, sizeof(Vec3f), 1, file);
+	fwrite(cast(const void*) &rotation, sizeof(Vec3f), 1, file);
+	
+	int vertex_count = geo->index_count * 3;
+	int index_count = geo->index_count;
+
+	fwrite(cast(const void*) &vertex_count, sizeof(vertex_count), 1, file);
+	fwrite(cast(const void*) &index_count, sizeof(index_count), 1, file);
+	
+	// TODO: compress output buffers
+	//z_stream defstream;
+	//defstream.zalloc = Z_NULL;
+	//defstream.zfree = Z_NULL;
+	//defstream.opaque = Z_NULL;
+
+
+	//defstream.avail_in = (uInt)mesh->vertex_count * sizeof(Vec3f); // size of uncompressed input buffer
+	//defstream.next_in = (Bytef *)mesh->pos; // input char array
+	//defstream.avail_out = (uInt)sizeof(b); // size of output
+	//defstream.next_out = (Bytef *)b; // output char array
+
+
+	//deflateInit(&defstream, Z_BEST_COMPRESSION);
+	//deflate(&defstream, Z_FINISH);
+	//deflateEnd(&defstream);
+
+
+	// Write the positions straight to the file
+	for (int i = 0; i < geo->index_count; i++) {
+		fwrite(cast(const void*) &geo->pos[geo->indices[i].x], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->pos[geo->indices[i].y], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->pos[geo->indices[i].z], sizeof(Vec3f), 1, file);
+	}
+
+	// Write indices straight to the file
+	for (int i = 0; i < geo->index_count; i++) {
+		fwrite(cast(const void*) &Vec3i((3 * i), (3 * i) + 1, (3 * i) + 2), sizeof(Vec3i), 1, file);
+	}
+
+	// Write normals straight to file
+	for (int i = 0; i < geo->index_count; i++) {
+
+		//fwrite(cast(const void*) &geo->normal[(3 * i) + 0], sizeof(Vec3f), 1, file);
+		//fwrite(cast(const void*) &geo->normal[(3 * i) + 1], sizeof(Vec3f), 1, file);
+		//fwrite(cast(const void*) &geo->normal[(3 * i) + 2], sizeof(Vec3f), 1, file);
+
+		fwrite(cast(const void*) &geo->normal[0], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->normal[1], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->normal[2], sizeof(Vec3f), 1, file);
+	}
+
+	if (geo->uv_count > 0) {
+
+		for (int i = 0; i < geo->index_count; i++) {
+
+			//fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].x], sizeof(Vec2f), 1, file);
+			//fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].y], sizeof(Vec2f), 1, file);
+			//fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].z], sizeof(Vec2f), 1, file);
+
+			fwrite(cast(const void*) &geo->texcoords[0], sizeof(Vec2f), 1, file);
+			fwrite(cast(const void*) &geo->texcoords[1], sizeof(Vec2f), 1, file);
+			fwrite(cast(const void*) &geo->texcoords[2], sizeof(Vec2f), 1, file);
+		}
+	}
+
+
+
+	err = fclose(file);
+	if (err == 0) {
+		debug_print("Finished writing to %s\n", file_str);
+	} else {
+		assert_fail();
+		debug_print("Cannot close to %s\n", file_str);
+	}
+
+
+
+
+
+	return id;
+}
+
+AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len) {
+
+	AssetID id;
+	id.id = next_asset_id(importer->tracker);
+	id.type = AssetType_StaticMesh;
+
+	
+
+	char file_str[256];
+	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
+	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
+
+	track_asset(importer->tracker, id, file_str, str_size);
+
+
+	FILE* file;
+	errno_t err;
+
+	err = fopen_s(&file, file_str, "wb");  // write binary
+
+	if (err == 0) {
+		debug_print("Writing to %s,", file_str);
+	} else {
+		assert_fail();
+		debug_print("Fail writing to %s,", file_str);
+	}
+	//void* buffer[256];
+
+	
+
+	// Write asset id
+	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
 	AssetType type = AssetType_StaticMesh;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	fwrite(cast(const void*) &pos, sizeof(Vec3f), 1, file);
-	fwrite(cast(const void*) &rotation, sizeof(Vec3f), 1, file);
 	fwrite(cast(const void*) &scale, sizeof(Vec3f), 1, file);
+	fwrite(cast(const void*) &rotation, sizeof(Vec3f), 1, file);
 
 	fwrite(cast(const void*) &mesh->vertex_count, sizeof(mesh->vertex_count), 1, file);
 	fwrite(cast(const void*) &mesh->index_count, sizeof(mesh->index_count), 1, file);
@@ -118,118 +243,265 @@ AssetInfo export_static_mesh(AssetImporter* importer,
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", asset_info.filename);
+		debug_print("Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", asset_info.filename);
+		debug_print("Cannot close to %s\n", file_str);
 	}
 		
 
 	
 		
 		
-	return asset_info;
+	return id;
 	
 }
+
+static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* node, FILE* file) {
+
+	
+
+	uint32_t node_size =
+		+ sizeof(node->id)
+		+ sizeof(node->name_length)
+		+ node->name_length
+		+ sizeof(node->translation)
+		+ sizeof(node->scale)
+		+ sizeof(node->rotation)
+		+ sizeof(node->children_count)
+		+ node->children_count * sizeof(uint64_t)
+		+ sizeof(node->mesh_count)
+		+ node->mesh_count * sizeof(uint32_t);
+
+
+	// Node size
+	fwrite(cast(const void*) &node_size, sizeof(uint32_t), 1, file);
+	
+	// Node id
+	fwrite(cast(const void*) &node->id, sizeof(node->id), 1, file);
+	// Length of node name
+	fwrite(cast(const void*) &node->name_length, sizeof(node->name_length), 1, file);
+	// The node name
+	fwrite(cast(const void*) node->name, node->name_length, 1, file);
+
+
+	// Transform
+	Vec3f scaled_pos = node->translation * importer->global_settings.unit_scale_factor;
+	Vec3f export_pos = scaled_pos;
+	//Vec3f offset = Vec3f(360.0f, 360.0f, 360.0f);
+	Vec3f export_rotation = node->rotation;
+	Vec3f export_scale = node->scale;
+
+
+	export_pos.x = scaled_pos.data[importer->global_settings.coord_axis] * importer->global_settings.coord_axis_sign;
+	export_pos.y = scaled_pos.data[importer->global_settings.up_axis] * importer->global_settings.up_axis_sign;
+	export_pos.z = scaled_pos.data[importer->global_settings.front_axis] * importer->global_settings.front_axis_sign;
+	
+	export_rotation.x = node->rotation.data[importer->global_settings.coord_axis];
+	export_rotation.y = node->rotation.data[importer->global_settings.up_axis];
+	export_rotation.z = node->rotation.data[importer->global_settings.front_axis];
+
+	
+	
+	
+	export_scale.x = node->scale.data[importer->global_settings.coord_axis];
+	export_scale.y = node->scale.data[importer->global_settings.up_axis];
+	export_scale.z = node->scale.data[importer->global_settings.front_axis];
+
+		
+
+	
+	//export_pos.x = -1 * export_pos.x;
+	//export_pos.z = -1 * export_pos.z;
+	//export_pos.y = -1 * export_pos.y;
+	
+	//export_pos = export_pos * -1;
+
+	//export_rotation.y = export_rotation.y + 180.0f;
+	//export_rotation.x = -1 * export_rotation.x;
+	//export_rotation.y = -1 * export_rotation.y;
+	//export_rotation.z = -1 * export_rotation.z;
+	
+	debug_print("%s, POS:[%f, %f, %f]\tROT:[%f, %f, %f]\tSCALE:[%f,%f,%f]\n", node->name,
+		export_pos.x, export_pos.y, export_pos.z,
+		export_rotation.x, export_rotation.y, export_rotation.z,
+		export_scale.x, export_scale.y, export_scale.z);
+	
+
+	fwrite(cast(const void*) &export_pos, sizeof(node->translation), 1, file);
+	fwrite(cast(const void*) &export_scale, sizeof(node->scale), 1, file);
+	fwrite(cast(const void*) &export_rotation, sizeof(node->rotation), 1, file);
+	// amount of children this node has
+	fwrite(cast(const void*) &node->children_count, sizeof(node->children_count), 1, file);
+
+
+	// Write ids of child nodes
+	AssetImport_SceneNode* child = node->first_child;
+	while (child != NULL) {
+		fwrite(cast(const void*) &child->id, sizeof(child->id), 1, file);
+		child = child->next_sibling;
+	}
+
+	// Mesh count
+	fwrite(cast(const void*) &node->mesh_count, sizeof(node->mesh_count), 1, file);
+	// Mesh indices to the scene mesh list
+	for (int j = 0; j < node->mesh_count; j++) {
+		fwrite(cast(const void*) &node->meshes[j], sizeof(node->meshes[j]), 1, file);
+	}
+	// Recursivly write the node tree
+	if (node->first_child != NULL) {
+		write_scene_node(importer, node->first_child, file);
+		if (node->first_child->next_sibling != NULL) {
+			AssetImport_SceneNode* ptr = node->first_child->next_sibling;
+			while (ptr != NULL) {
+				write_scene_node(importer, ptr, file);
+				ptr = ptr->next_sibling;
+			}
+		}
+	}
+
+}
+
+AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, char* filename, int filename_str_len) {
+	AssetID id;
+	id.id = next_asset_id(importer->tracker);
+	id.type = AssetType_Scene;
+
+
+
+	char file_str[256];
+	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
+	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
+
+	track_asset(importer->tracker, id, file_str, str_size);
+
+
+
+	
+
+
+
+	FILE* file;
+	errno_t err;
+
+	err = fopen_s(&file, file_str, "wb");  // write binary
+
+	if (err == 0) {
+		debug_print("Writing to %s,", file_str);
+	} else {
+		assert_fail();
+		debug_print("Fail writing to %s,", file_str);
+	}
+	//void* buffer[256];
+
+	// Write asset id
+	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
+
+	// Write type
+	AssetType type = AssetType_Scene;
+	fwrite(cast(const void*) &type, sizeof(type), 1, file);
+
+	
+
+	fwrite(cast(const void*) &scene->node_count, sizeof(scene->node_count), 1, file);
+	fwrite(cast(const void*) &scene->mesh_count, sizeof(scene->mesh_count), 1, file);
+	fwrite(cast(const void*) &scene->material_count, sizeof(scene->material_count), 1, file);
+	fwrite(cast(const void*) &scene->light_count, sizeof(scene->light_count), 1, file);
+	fwrite(cast(const void*) &scene->camera_count, sizeof(scene->camera_count), 1, file);
+	fwrite(cast(const void*) &scene->anim_count, sizeof(scene->anim_count), 1, file);
+	fwrite(cast(const void*) &scene->texture_count, sizeof(scene->texture_count), 1, file);
+
+
+	// Write asset ids to file
+
+	for (int i = 0; i < scene->mesh_count; i++) {
+		AssetID asset = scene->mesh_infos[i];
+		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
+	}
+
+	for (int i = 0; i < scene->material_count; i++) {
+		AssetID asset = scene->material_infos[i];
+		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
+	}
+
+	for (int i = 0; i < scene->light_count; i++) {
+		AssetID asset = scene->light_infos[i];
+		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
+	}
+
+	for (int i = 0; i < scene->camera_count; i++) {
+		AssetID asset = scene->camera_infos[i];
+		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
+	}
+
+	for (int i = 0; i < scene->anim_count; i++) {
+		AssetID asset = scene->animation_infos[i];
+		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
+	}
+
+	for (int i = 0; i < scene->texture_count; i++) {
+		AssetID asset = scene->texture_infos[i];
+		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
+	}
+
+	
+	write_scene_node(importer, scene->root, file);
+	
+
+
+	err = fclose(file);
+	if (err == 0) {
+		debug_print("Finished writing to %s\n", file_str);
+	} else {
+		assert_fail();
+		debug_print("Cannot close to %s\n", file_str);
+	}
+
+
+
+
+
+	return id;
+}
+
 
 static bool is_null_node(void* buffer) {
 	assert(buffer != NULL);
 	char* c = (char*)buffer;
-	return c[0] == '\0' &
-		c[1] == '\0' &
-		c[2] == '\0' &
-		c[3] == '\0' &
-		c[4] == '\0' &
-		c[5] == '\0' &
-		c[6] == '\0' &
-		c[7] == '\0' &
-		c[8] == '\0' &
-		c[9] == '\0' &
-		c[10] == '\0' &
-		c[11] == '\0' &
+	return c[0] == '\0' &&
+		c[1] == '\0' &&
+		c[2] == '\0' &&
+		c[3] == '\0' &&
+		c[4] == '\0' &&
+		c[5] == '\0' &&
+		c[6] == '\0' &&
+		c[7] == '\0' &&
+		c[8] == '\0' &&
+		c[9] == '\0' &&
+		c[10] == '\0' &&
+		c[11] == '\0' &&
 		c[12] == '\0';
-	/*return c[0] == c[1] == c[2] == c[3]
-	== c[4] == c[5] == c[6] == c[7]
-	== c[8] == c[9] == c[10] == c[11]
-	== c[12] == '\0';*/
-	//return (strcmp((char*)buffer, FBX_NULL_RECORD) == 0);
 }
 
 static inline int fbx_convert_type_array_char_to_size(char type) {
 	switch (type) {
-		case 'd': {
-			return sizeof(double);
-			break;
-		}
-		case 'f': {
-			return sizeof(float);
-			break;
-		}
-		case 'l': {
-			return sizeof(int64_t);
-			break;
-		}
-		case 'i': {
-			return sizeof(int32_t);
-			break;
-		}
-		case 'b': {
-			return 1;
-			break;
-		}
+		case 'd': {return sizeof(double);}
+		case 'f': {return sizeof(float);}
+		case 'l': {return sizeof(int64_t);}
+		case 'i': {return sizeof(int32_t);}
+		case 'b': {return 1;}
+		default:  {assert_fail(); return 0; }
 	}
 }
 
-static void FBX_geo_to_static_mesh(AssetImporter* importer, FBX_Geometry_Object* geo, StaticMesh* mesh) {
-	mesh->vertex_count = 3 * geo->index_count;
-	mesh->index_count = geo->index_count;
 
-	mesh->pos = cast(Vec3f*)stack_alloc(&importer->stack, mesh->vertex_count * sizeof(Vec3f), 4);
-	mesh->indices = cast(Vec3i*)stack_alloc(&importer->stack, mesh->index_count * sizeof(Vec3i), 4);
-	mesh->normal = cast(Vec3f*)stack_alloc(&importer->stack, mesh->vertex_count * sizeof(Vec3f), 4);
-	mesh->texcoords = cast(Vec2f*)stack_alloc(&importer->stack, mesh->vertex_count * sizeof(Vec2f), 4);
-
-
-
-	for (int i = 0; i < mesh->index_count; i++) {
-		// TODO: implement y is up
-		mesh->pos[(3 * i) + 0] = geo->pos[geo->indices[i].x];
-		mesh->pos[(3 * i) + 1] = geo->pos[geo->indices[i].y];
-		mesh->pos[(3 * i) + 2] = geo->pos[geo->indices[i].z];
-
-		mesh->indices[i] = Vec3i((3 * i), (3 * i) + 1, (3 * i) + 2);
-
-		//mesh->normal[(3 * i) + 0] = geo->normal[(3 * i) + 0];
-		//mesh->normal[(3 * i) + 1] = geo->normal[(3 * i) + 1];
-		//mesh->normal[(3 * i) + 2] = geo->normal[(3 * i) + 2];
-
-		mesh->normal[(3 * i) + 0] = geo->normal[0];
-		mesh->normal[(3 * i) + 1] = geo->normal[1];
-		mesh->normal[(3 * i) + 2] = geo->normal[2];
-
-
-
-
-		//mesh->texcoords[(3 * i) + 0] = geo->texcoords[geo->uv_indices[i].x];
-		//mesh->texcoords[(3 * i) + 1] = geo->texcoords[geo->uv_indices[i].y];
-		//mesh->texcoords[(3 * i) + 2] = geo->texcoords[geo->uv_indices[i].z];
-		//
-		mesh->texcoords[(3 * i) + 0] = geo->texcoords[0];
-		mesh->texcoords[(3 * i) + 1] = geo->texcoords[1];
-		mesh->texcoords[(3 * i) + 2] = geo->texcoords[2];
-
-	}
-
-}
-
-
-
-void static fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
+static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
 	FBX_Node* node_to_process = node;
 
 	FBX_Node* node_attr = node_to_process->first_child;
 	FBX_Node* obj_node = node_attr->next_sibling;
-
+	
+	
 	int obj_count = node_to_process->child_count - 1;
 	// Loop over all child nodes of the object node
 	int geo_index = 0;
@@ -494,6 +766,11 @@ void static fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 			object.model->name = obj_node->properties[1].special.str_data;
 			//strcpy_s(object.model->name, object.model->name_length, obj_node->properties[1].special.str_data);
 
+			// Set defaults, some times, some models dont have the data in the binary, and it assumes tha values are default if not specified
+			object.model->local_translation = Vec3f(0, 0, 0);
+			object.model->local_rotation = Vec3f(0, 0, 0);
+			object.model->local_scaling = Vec3f(1, 1, 1);
+
 			map_put(&fbx_import->fbx_object_map, id, object);
 
 			FBX_Node* model_node = obj_node->first_child;
@@ -514,22 +791,22 @@ void static fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 
 									if (strcmp(p->special.str_data, "Lcl Translation") == 0) {
 										assert(num_properties > 4);
-										object.model->local_translation.x = property_node->properties[num_properties - 3].primative.D_data;
-										object.model->local_translation.y = property_node->properties[num_properties - 2].primative.D_data;
-										object.model->local_translation.z = property_node->properties[num_properties - 1].primative.D_data;
+										object.model->local_translation.x = (float)property_node->properties[num_properties - 3].primative.D_data;
+										object.model->local_translation.y = (float)property_node->properties[num_properties - 2].primative.D_data;
+										object.model->local_translation.z = (float)property_node->properties[num_properties - 1].primative.D_data;
 										i = num_properties; // jump out of loop, cant' use break because we are in switch
 									} else if (strcmp(p->special.str_data, "Lcl Rotation") == 0) {
 										assert(num_properties > 4);
-										object.model->local_rotation.x = property_node->properties[num_properties - 3].primative.D_data;
-										object.model->local_rotation.y = property_node->properties[num_properties - 2].primative.D_data;
-										object.model->local_rotation.z = property_node->properties[num_properties - 1].primative.D_data;
+										object.model->local_rotation.x = (float)property_node->properties[num_properties - 3].primative.D_data;
+										object.model->local_rotation.y = (float)property_node->properties[num_properties - 2].primative.D_data;
+										object.model->local_rotation.z = (float)property_node->properties[num_properties - 1].primative.D_data;
 										i = num_properties; // jump out of loop, cant' use break because we are in switch
 									} else if (strcmp(p->special.str_data, "Lcl Scaling") == 0) {
 										assert(num_properties > 4);
-										object.model->local_scaling.x = property_node->properties[num_properties - 3].primative.D_data;
-										object.model->local_scaling.y = property_node->properties[num_properties - 2].primative.D_data;
-										object.model->local_scaling.z = property_node->properties[num_properties - 1].primative.D_data;
-										i = num_properties; // jump out of loop, cant' use break because we are in switch
+										object.model->local_scaling.x = (float)property_node->properties[num_properties - 3].primative.D_data;
+										object.model->local_scaling.y = (float)property_node->properties[num_properties - 2].primative.D_data;
+										object.model->local_scaling.z = (float)property_node->properties[num_properties - 1].primative.D_data;
+										i = num_properties; // jump out (float)of loop, cant' use break because we are in switch
 									}
 									break;
 								}
@@ -546,13 +823,17 @@ void static fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 
 
 		}
+
+		
+
+
 		obj_index++;
 		obj_node = obj_node->next_sibling;
 
 	}
 }
 
-void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
+static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
 	FBX_Node* connection_node = node->first_child;
 
 	while (connection_node != NULL) {
@@ -583,15 +864,18 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 				
 			
 
-			AssetSceneNode* parent_scene_node;
-
+			// Process parent node
+			AssetImport_SceneNode* parent_scene_node;
 			// Root parent
 			if (parent_object_id == 0) {
 				// Since our map doesnt allow for keys that are zero, we need to check before we get it in the map
 				// an id with 0, means it is the root object
 				if (fbx_import->export_scene.root == NULL) {
-					fbx_import->export_scene.root = cast(AssetSceneNode*) stack_alloc(&importer->stack, sizeof(AssetSceneNode), 4);
-					init_scene_node(fbx_import->export_scene.root, "Root", 4);
+					fbx_import->export_scene.root = cast(AssetImport_SceneNode*) stack_alloc(&importer->stack, sizeof(AssetImport_SceneNode), 4);
+					
+					init_scene_node(fbx_import->export_scene.root, parent_object_id, "Root", 4);
+					fbx_import->export_scene.node_count++;
+					
 					set_scene_node_transform(fbx_import->export_scene.root,
 						Vec3f(0, 0, 0),
 						Vec3f(1, 1, 1),
@@ -604,7 +888,7 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 
 			} else {
-				// is a parent node, but is not the root node,
+				// this is a parent node, but is not the root node,
 				// may be a transitive node(a node that has a child and a parent)
 				// A -> B -> C, this is the B node
 				MapResult<FBX_Object> parent_result = map_get(&fbx_import->fbx_object_map, parent_object_id);
@@ -617,7 +901,7 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 				
 
 				
-				MapResult<AssetSceneNode*> result = map_get(&fbx_import->scene_node_cache_map, parent_object_id);
+				MapResult<AssetImport_SceneNode*> result = map_get(&fbx_import->scene_node_cache_map, parent_object_id);
 				
 				// Check to see if we have already seen this node and added to our scene graph
 				if (result.found) {
@@ -636,9 +920,10 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 					// This is the first time we seen this object
 					// we need to create a scene node for it, and add it to our scene
-					parent_scene_node = cast(AssetSceneNode*) stack_alloc(&importer->stack, sizeof(AssetSceneNode), 4);
+					parent_scene_node = cast(AssetImport_SceneNode*) stack_alloc(&importer->stack, sizeof(AssetImport_SceneNode), 4);
 					// Create the node, and add the transform
-					init_scene_node(parent_scene_node, parent_model->name, parent_model->name_length);
+					init_scene_node(parent_scene_node, parent_object_id, parent_model->name, parent_model->name_length);
+					fbx_import->export_scene.node_count++;
 					set_scene_node_transform(fbx_import->export_scene.root,
 						parent_model->local_translation,
 						parent_model->local_scaling,
@@ -647,13 +932,6 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					// Add it to our cache map, so that next time when we check, we'll know if it has been seen
 					map_put(&fbx_import->scene_node_cache_map, parent_object_id, parent_scene_node);
 				}
-				
-
-				
-
-				
-				
-
 			}
 
 
@@ -661,78 +939,35 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 				
 			
 
-
+			// Process child node
 			switch (child_object.type) {
 				case FBX_Object_Type_Geometry: {
-
+					
 					FBX_Geometry_Object* geo = child_object.geo;
-					// Geometry nodes dont have any transform/name data attached to them
+					
+					// Note we should not create a node for this geometry, we simply just attach the geometry to the parent model node
+					// Geometry objects dont have any transform/name data attached to them
 					// that data is attached to the parent model object
 					// So we'll grab the name from the parent in the scene node
-					
 
+					AssetID asset_id = fbx_convert_geo2static_mesh_and_export(importer,
+						geo,
+						parent_scene_node->translation,
+						parent_scene_node->scale,
+						parent_scene_node->rotation,
+						parent_scene_node->name,
+						parent_scene_node->name_length);
 
-					
+					sb_push(fbx_import->export_scene.mesh_infos, asset_id);
+					uint32_t last_index = sb_count(fbx_import->export_scene.mesh_infos) - 1;
 
-					
-
-					StaticMesh static_mesh;
-
-					to avoid copying, we can just write straight to the file, and avoid the extra copy allocs
-					FBX_geo_to_static_mesh(importer, geo, &static_mesh);
-
-					Here are the current problems
-					- We cant just set the address of static_mesh and add it to our export_scene, bc it is local
-					- when we do FBX_geo_to_static_mesh is rearranges the mesh data, and stores it, but the problem is that it makes a copy of all that data.
-						so while we are parsing, it will take double the memory, which is bad
-
-					Possible Solutions
-						- we build the entire export tree with all the duplicated meshes, and then write the scene file
-						- as we build the scene, we write to our scene file, but the problem is how do u manage multiple links
-						
-					
-
-					fbx_import->export_scene.meshes[fbx_import->export_scene.mesh_count] = 
 					
 					
-
-					parent_scene_node->meshes[parent_scene_node->mesh_count] = fbx_import->export_scene.mesh_count;
+					// Since nodes like this can be deeply linked
+					sb_push(parent_scene_node->meshes, last_index);
 					parent_scene_node->mesh_count++;
-
 					fbx_import->export_scene.mesh_count++;
-						
-
 					
-
-					
-
-					
-
-
-
-
-					//if (geo->uv_count > 0) {
-
-					//	StaticMesh static_mesh;
-					//	FBX_geo_to_static_mesh(importer, geo, &static_mesh);
-
-					//	//need to export with transform, but also we need to think about exporting the parent models and all this
-					//	//i guess we could create an fbx importer that has a root fbx scene, we parse into that, then at the end, once the tree is made
-					//	//we traverse it and export that way?
-
-
-					//	AssetInfo asset_info = export_static_mesh(importer, &static_mesh,
-					//		local_pos,
-					//		local_rot,
-					//		local_scale,
-					//		name, str_length);
-
-					//	stack_pop(&importer->stack);
-					//	stack_pop(&importer->stack);
-					//	stack_pop(&importer->stack);
-					//	stack_pop(&importer->stack);
-					//}
-
 					// Free the geo mesh
 					stb_sb_free(geo->pos);
 					stb_sb_free(geo->indices);
@@ -748,19 +983,20 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 				case FBX_Object_Type_Model: {
 					// This is a model which may have may a geometry as a child
 					// This may also be a link between a geometry and another parent model
-					AssetSceneNode* child_scene_node;
+					AssetImport_SceneNode* child_scene_node;
 
-					MapResult<AssetSceneNode*> result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
+					MapResult<AssetImport_SceneNode*> result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
 					if (result.found) {
 						child_scene_node = result.value;
 					} else {
-						child_scene_node = cast(AssetSceneNode*) stack_alloc(&importer->stack, sizeof(AssetSceneNode), 4);
+						child_scene_node = cast(AssetImport_SceneNode*) stack_alloc(&importer->stack, sizeof(AssetImport_SceneNode), 4);
+						fbx_import->export_scene.node_count++;
 						map_put(&fbx_import->scene_node_cache_map, child_object_id, child_scene_node);
 					}
 
 					add_child_to_scene_node(parent_scene_node, child_scene_node);
 
-					init_scene_node(child_scene_node, child_object.model->name, child_object.model->name_length);
+					init_scene_node(child_scene_node, child_object_id, child_object.model->name, child_object.model->name_length);
 					set_scene_node_transform(child_scene_node,
 						child_object.model->local_translation,
 						child_object.model->local_scaling,
@@ -799,8 +1035,7 @@ void static fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 	
 }
 
-
-void static fbx_process_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
+static void fbx_process_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
 	
 	// Skip nodes that are not objects
 	if (strcmp(node->name, "Objects") == 0) {
@@ -808,8 +1043,96 @@ void static fbx_process_node(AssetImporter* importer, FBX_Node* node, FBX_Import
 	} else if (strcmp(node->name, "Connections") == 0) {
 		fbx_process_connections_node(importer, node, fbx_import);
 	}
+	else if (strcmp(node->name, "GlobalSettings") == 0) {
+		
 
 
+		FBX_Node* settings_node = node->first_child;
+
+
+		while (settings_node != NULL) {
+
+			if (strcmp(settings_node->name, "Properties70") == 0) {
+				FBX_Node* property_node = settings_node->first_child;
+
+				while (property_node != NULL) {
+					const int num_properties = property_node->num_properties;
+
+					
+
+					for (int i = 0; i < num_properties; i++) {
+						FBX_Property* p = &property_node->properties[i];
+						switch (p->type_code) {
+							case 'S': {
+
+								if (strcmp(p->special.str_data, "UpAxis") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.up_axis = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								} else if (strcmp(p->special.str_data, "UpAxisSign") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.up_axis_sign = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+								else if (strcmp(p->special.str_data, "FrontAxis") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.front_axis = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+								else if (strcmp(p->special.str_data, "FrontAxisSign") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.front_axis_sign = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+
+								else if (strcmp(p->special.str_data, "CoordAxis") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.coord_axis = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+
+								else if (strcmp(p->special.str_data, "CoordAxisSign") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.coord_axis_sign = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+
+								else if (strcmp(p->special.str_data, "OriginalUpAxis") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.original_up_axis = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+
+								else if (strcmp(p->special.str_data, "OriginalUpAxisSign") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.original_up_axis_sign = property_node->properties[4].primative.I_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+								else if (strcmp(p->special.str_data, "UnitScaleFactor") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.unit_scale_factor = property_node->properties[4].primative.D_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+
+								else if (strcmp(p->special.str_data, "OriginalUnitScaleFactor") == 0) {
+									assert(num_properties == 5);
+									fbx_import->global_settings.original_unit_scale_factor = property_node->properties[4].primative.D_data;
+									i = num_properties; // jump out of loop, cant' use break because we are in switch
+								}
+								break;
+							}
+
+						}
+
+					}
+
+					property_node = property_node->next_sibling;
+				}
+			}
+			settings_node = settings_node->next_sibling;
+		}
+
+	}
 	
 }
 
@@ -1070,28 +1393,42 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 
 
 
-AssetInfo import_fbx(AssetImporter* importer, const char* filename, bool y_is_up) {
+AssetID import_fbx(AssetImporter* importer, char* filename, bool y_is_up) {
 	
-	AssetInfo export_scene_file;
-	export_scene_file.type = AssetType_None;
-	export_scene_file.filename = NULL;
+	AssetID scene_id;
+	scene_id.id = -1;// Underflows to max, this should alert to our map, that this is an error
+	scene_id.type = AssetType_None;
+
+	
+	
 
 	
 	// Init internal fbx import data
 	// the data inside fbx import data should be freed at the end of this function call
 	FBX_ImportData fbx_import;
-	fbx_import.y_is_up = y_is_up;
+	
 	map_init(&fbx_import.fbx_object_map);
 	map_init(&fbx_import.scene_node_cache_map);
 	// For now we'll default the size to 16
 	map_grow(&fbx_import.scene_node_cache_map, 16);
 
-	
 	fbx_import.export_scene.root = NULL;
-	fbx_import.export_scene.mesh_count = 0;
-	fbx_import.export_scene.meshes = NULL;
-	
+	fbx_import.export_scene.node_count = 0;
 
+	fbx_import.export_scene.mesh_count = 0;
+	fbx_import.export_scene.material_count = 0;
+	fbx_import.export_scene.light_count = 0;
+	fbx_import.export_scene.camera_count = 0;
+	fbx_import.export_scene.anim_count = 0;
+	fbx_import.export_scene.texture_count = 0;
+
+	fbx_import.export_scene.mesh_infos = NULL;
+	fbx_import.export_scene.material_infos = NULL;
+	fbx_import.export_scene.light_infos = NULL;
+	fbx_import.export_scene.camera_infos = NULL;
+	fbx_import.export_scene.animation_infos = NULL;
+	fbx_import.export_scene.texture_infos = NULL;
+	
 
 
 	FILE* file;
@@ -1129,6 +1466,7 @@ AssetInfo import_fbx(AssetImporter* importer, const char* filename, bool y_is_up
 				debug_print("Cannot close obj %s\n", filename);
 			}
 		}
+		goto cleanup_import_data;
 	}
 
 
@@ -1137,12 +1475,7 @@ AssetInfo import_fbx(AssetImporter* importer, const char* filename, bool y_is_up
 
 
 	
-	export_scene_file.type = AssetType_Scene;
-
-	// Reserve space for the export scene file
-	size_t str_size = strlen(filename) + ASSET_FILE_EXTENSION_LENGTH;
-	export_scene_file.filename = cast(char*)arena_alloc(&importer->mem, str_size);
-	snprintf(export_scene_file.filename, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
+	
 
 	
 	
@@ -1159,13 +1492,34 @@ AssetInfo import_fbx(AssetImporter* importer, const char* filename, bool y_is_up
 		fseek(file, node.end_offset, SEEK_SET);
 	}
 
+	
 
+	// Instead of making a copy, just find the neccessary length to cut of the extension
+	//char* stripped_filename = filename;
+	//// TODO: implement something more generic
+	//// right now it is doing -4 to remove the .fbx extension
+	//uint32_t stripped_filename_length = strlen(filename) - 4;
 
+	char* stripped_filename = "Sink";
+	uint32_t stripped_filename_length = 5;
+
+	importer->global_settings.up_axis = fbx_import.global_settings.up_axis;
+	importer->global_settings.up_axis_sign = fbx_import.global_settings.up_axis_sign;
+	importer->global_settings.front_axis = fbx_import.global_settings.front_axis;
+	importer->global_settings.front_axis_sign = fbx_import.global_settings.front_axis_sign;
+	importer->global_settings.coord_axis = fbx_import.global_settings.coord_axis;
+	importer->global_settings.coord_axis_sign = fbx_import.global_settings.coord_axis_sign;
+	importer->global_settings.original_up_axis = fbx_import.global_settings.original_up_axis;
+	importer->global_settings.original_up_axis_sign = fbx_import.global_settings.original_up_axis_sign;
+	importer->global_settings.unit_scale_factor = fbx_import.global_settings.unit_scale_factor;
+	importer->global_settings.original_unit_scale_factor = fbx_import.global_settings.original_unit_scale_factor;
+	
+	scene_id = export_asset_scene(importer, &fbx_import.export_scene, stripped_filename, stripped_filename_length);
 	
 
 
 	
-// Label
+// Clean up memory and any import data
 cleanup_import_data:
 
 	if (file) {
@@ -1178,18 +1532,30 @@ cleanup_import_data:
 		}
 	}
 
+	// We need to free any data from all the nodes
+	for (int i = 0; i < fbx_import.scene_node_cache_map.size; i++) {
+		CompactMapItem<AssetImport_SceneNode*> node = fbx_import.scene_node_cache_map.map[i];
+		if (node.key != 0) {
+			sb_free(node.value->meshes);
+		}
+	}
 	
-
-	// Clean up memory and any import data
-
-	stack_reset(&importer->stack);
 
 
 	map_destroy(&fbx_import.fbx_object_map);
 	map_destroy(&fbx_import.scene_node_cache_map);
-	
 
-	return export_scene_file;
+	sb_free(fbx_import.export_scene.mesh_infos);
+	sb_free(fbx_import.export_scene.material_infos);
+	sb_free(fbx_import.export_scene.light_infos);
+	sb_free(fbx_import.export_scene.camera_infos);
+	sb_free(fbx_import.export_scene.animation_infos);
+	sb_free(fbx_import.export_scene.texture_infos);
+
+	stack_reset(&importer->stack);
+
+
+	return scene_id;
 
 }
 

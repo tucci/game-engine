@@ -287,7 +287,7 @@ void destroy_static_mesh_manager(StaticMeshManager* manager) {
 void entity_add_mesh_component(StaticMeshManager* manager, Entity entity) {
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
-	stb_sb_push(manager->meshes, StaticMesh());
+	stb_sb_push(manager->meshes, -1);
 }
 
 void entity_remove_mesh_component(StaticMeshManager* manager, Entity entity) {
@@ -298,7 +298,7 @@ void entity_remove_mesh_component(StaticMeshManager* manager, Entity entity) {
 
 	uint64_t index = result.value;
 	// Get the last mesh in the list to swap with
-	StaticMesh last = manager->meshes[manager->count - 1];
+	uint64_t last = manager->meshes[manager->count - 1];
 	// swap the last mesh at the current index we are removing from
 	manager->meshes[index] = last;
 	manager->count--;
@@ -306,9 +306,3 @@ void entity_remove_mesh_component(StaticMeshManager* manager, Entity entity) {
 	map_remove(&manager->id_map, entity.id);
 }
 
-void free_static_mesh(StaticMesh* mesh) {
-	stb_sb_free(mesh->pos);
-	stb_sb_free(mesh->indices);
-	stb_sb_free(mesh->normal);
-	stb_sb_free(mesh->texcoords);
-}

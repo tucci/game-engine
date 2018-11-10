@@ -2,6 +2,13 @@
 - material id
 - Triangle list<first index, num index, material_index> for multiple materials per mesh
 
+- write non platform specific file handling utils
+- asset/import system
+- refer to assets by id, not pointers
+- when packing the game, we need to move all assets to .pak files
+- LOD
+- get the entire asset system off strings, only the entry point of importing should be strings
+
 - memory allocators. No more random mallocs
 - general purpose allocator
 - pool allocator

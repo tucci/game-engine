@@ -15,13 +15,14 @@ struct EntityManager;
 typedef struct Camera {
 	
 	//Transform transform;
-
+	Entity entity_ref;
 	float near;
 	float far;
 	float fov;
 	float aspect_ratio;
 	Mat4x4f view_mat;
-	Camera() {
+	Camera(Entity ref) {
+		entity_ref = ref;
 		near = 0.0001f;
 		far = 100.0f;
 		fov = 90.0f;

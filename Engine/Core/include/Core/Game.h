@@ -32,4 +32,6 @@ void attach_engine_subsytems(Game* game, EngineAPI api);
 void load_scene(Game* game, int scene_id);
 void unload_scene(Game* game, Scene* scene);
 
+Entity import_asset_scene_into_scene(Game* game, SceneID id);
+
 void game_update(Game* game);

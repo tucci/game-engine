@@ -1,0 +1,17 @@
+THE MILL HOUSE
+by Ufuk Orbey (shadedancer619)
+Made in: Cinema 4 D R16
+--------------------------------------
+High quality mill house model for any purpose.
+
+26 objects (all structure)
+59358 polygons
+118900 edges
+60575 points
+
+Just locate the mill in any place you want and rotate it:) It needs some water. You may use it with realflow maybe!
+
+Textures are ok for C4D format but baked textures are perfectly fit to all other formats.
+Just find and define them to the correct objects.
+
+See you... 

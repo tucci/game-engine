@@ -124,11 +124,19 @@ Vec3f quat_to_euler(const Quat& q) {
 	return euler;
 }
 
+// Euler angles in degrees
 Quat euler_to_quat(const Vec3f& euler) {
 	Quat result;
-	float pitch = euler.x;
-	float yaw = euler.y;
-	float roll = euler.z;
+	
+
+	float pitch = DEG2RAD(euler.x);
+	float yaw = DEG2RAD(euler.y);
+	float roll = DEG2RAD(euler.z);
+
+
+	
+
+	
 
 	// Abbreviations for the various angular functions
 	double cy = cosf_(yaw * 0.5);

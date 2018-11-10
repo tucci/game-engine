@@ -19,6 +19,7 @@
 #include "Core/ECS/JobSystem/CameraSystem.h"
 #include "Core/ECS/JobSystem/StaticMeshSystem.h"
 #include "Core/ECS/JobSystem/LightSystem.h"
+#include "Core/ECS/JobSystem/RenderSystem.h"
 
 
 
@@ -61,17 +62,9 @@ void load_scene(Game* game, int scene_id) {
 	
 	
 
-	Scene* scene = game->loaded_scene;
 
-	//// Init root node
-	//scene->root.type = SceneNodeType_Root;
-	//scene->root.parent = NULL;
-	//scene->root.children = NULL;
-	//scene->root.child_count = 0;
-	
 
 	
-	assert(scene != NULL);
 	
 	
 	
@@ -80,10 +73,10 @@ void load_scene(Game* game, int scene_id) {
 	Renderer* renderer = api->renderer;
 	AssetManager* asset_manager = api->asset_manager;
 
-	
+	Scene* scene = game->loaded_scene;
+	assert(scene != NULL);
 
-	Entity test = create_entity(entity_manager);
-	add_component(entity_manager, test, ComponentType_Camera);
+	
 
 	// Camera loading
 	scene->entity_main_camera = create_entity(entity_manager);
@@ -109,54 +102,36 @@ void load_scene(Game* game, int scene_id) {
 	//FBX_Import_Data import = import_fbx("Assets/AC Cobra/Shelby.fbx", &game->stack, true);
 
 	AssetImporter importer;
-	init_asset_importer(&importer);
+	init_asset_importer(&importer, &asset_manager->asset_tracker);
 
 	
 
 
-	//AssetInfo import_file = import_fbx(&importer, "Assets/BB8 New/bb8.fbx", false);
-	//AssetInfo import_file = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
-	AssetInfo import_file = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
-	//AssetInfo import_file = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
-	
-	//AssetInfo import_file = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
-	Asset import_scene = import_asset(asset_manager, import_file.filename);
-	
-	
-	
-	//scene->entity_mesh_list_count = importer.asset_info_import_count;
+	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/bb8.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
+	AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
+	//AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
 
-	//scene->entity_mesh_list = cast(Entity*) stack_alloc(&game->stack, scene->entity_mesh_list_count * sizeof(Entity), 1);
-
-	//for (int i = 0; i < importer.asset_info_import_count; i++) {
-	//	Asset asset = import_asset(asset_manager, importer.assets_infos[i].filename);
-	//	if (asset.type == AssetType_StaticMesh) {
-	//		// move meshes into scene
-	//		scene->entity_mesh_list[i] = create_entity(entity_manager);
-	//		add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_Transform);
-
-	//		set_position(entity_manager, scene->entity_mesh_list[i], asset.import_mesh->translation);
-	//		Vec3f scaled = Vec3f(
-	//			asset.import_mesh->scale.x * 0.1f,
-	//			asset.import_mesh->scale.y * 0.1f,
-	//			asset.import_mesh->scale.z * 0.1f);
-
-	//		set_scale(entity_manager, scene->entity_mesh_list[i], scaled);
-	//		
-	//		set_rotation(entity_manager, scene->entity_mesh_list[i], euler_to_quat(asset.import_mesh->rotation));
-	//		
-	//		
-	//		add_component(entity_manager, scene->entity_mesh_list[i], ComponentType_StaticMesh);
-	//		set_static_mesh(entity_manager, scene->entity_mesh_list[i], &asset.import_mesh->mesh);
-	//	}
-	//	
-	//}
-
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
 	
+	
+	
+
+
+	scene->sink = import_asset_scene_into_scene(game, import_scene.scene);
+	
+	//set_scale(entity_manager, scene->sink, Vec3f(0.1, 0.1, 0.1));
+
 	
 	destroy_asset_importer(&importer);
 
-	
+	Vec3f model_pos = position(entity_manager, scene->sink);
+
+	set_position(entity_manager, scene->entity_main_camera, model_pos);
 	
 
 	
@@ -165,9 +140,7 @@ void load_scene(Game* game, int scene_id) {
 	// TODO: dont forget to free meshes
 
 	//set_position(entity_manager, scene->entity_mesh_test, Vec3f(0, 0, -5));
-	//
-	//
-	//
+
 
 	//// Mesh 2
 	//scene->entity_mesh_test2 = create_entity(entity_manager);
@@ -252,24 +225,22 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
+	load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
 
 
 
 	
 
-	//load_texture("Assets/BB8 New/Body diff MAP.jpg", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/BB8 New/head top diff MAP.jpg", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/BB8 New/HEAD diff MAP.jpg", &scene->albedo_map, &game->stack, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->stack, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->stack, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->stack, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->stack, false);
-	load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->stack, false);
+	
+	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->stack, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->stack, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->stack, false);
+	//load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->stack, false);
 
 	
 
@@ -325,18 +296,11 @@ void game_update(Game* game) {
 	EntityManager* entity_manager = game->engineAPI.entity_manager;
 	Scene* scene = game->loaded_scene;
 	Renderer* renderer = game->engineAPI.renderer;
-
-	Camera* camera = get_camera(entity_manager, scene->entity_main_camera);
-	
-	
-
-
-
-	
 	float delta_time = timer->delta_time;
 
 
-	
+	Camera* camera = get_camera(entity_manager, scene->entity_main_camera);
+
 
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
 	// TODO: figure out why everything is inverted
@@ -351,38 +315,30 @@ void game_update(Game* game) {
 	if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction = (delta_time * -up(entity_manager, scene->entity_main_camera)); }
 
 	Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
-	set_position(entity_manager, scene->entity_main_camera, cam_pos + new_cam_direction);
-
-
-	Vec3f new_mesh_pos;
+	set_position(entity_manager, scene->entity_main_camera, cam_pos + (new_cam_direction * 50));
 
 	
-	//if (input->keys[SDL_SCANCODE_UP].down) { new_mesh_pos = (delta_time * -forward(entity_manager, scene->entity_mesh_test2)); }
-	//if (input->keys[SDL_SCANCODE_DOWN].down) { new_mesh_pos = (delta_time * forward(entity_manager, scene->entity_mesh_test2)); }
-	//if (input->keys[SDL_SCANCODE_LEFT].down) { new_mesh_pos = (delta_time * -right(entity_manager, scene->entity_mesh_test2)); }
-	//if (input->keys[SDL_SCANCODE_RIGHT].down) { new_mesh_pos =  (delta_time * right(entity_manager, scene->entity_mesh_test2)); }
-	//
-	//
-	//Vec3f mesh_pos = position(entity_manager, scene->entity_mesh_test2);
-	//set_position(entity_manager, scene->entity_mesh_test2, mesh_pos + new_mesh_pos);
+
+
+	
 
 
 	Vec3f new_mesh_scale = Vec3f(0, 0, 0);
 
 	if (input->keys[SDL_SCANCODE_PAGEUP].down) {
-		new_mesh_scale.x += delta_time * 10;
-		new_mesh_scale.y += delta_time * 10;
-		new_mesh_scale.z += delta_time * 10;
+		new_mesh_scale.x += delta_time * 1;
+		new_mesh_scale.y += delta_time * 1;
+		new_mesh_scale.z += delta_time * 1;
 	}
 
 	if (input->keys[SDL_SCANCODE_PAGEDOWN].down) {
-		new_mesh_scale.x -= delta_time * 10;
-		new_mesh_scale.y -= delta_time * 10;
-		new_mesh_scale.z -= delta_time * 10;
+		new_mesh_scale.x -= delta_time * 1;
+		new_mesh_scale.y -= delta_time * 1;
+		new_mesh_scale.z -= delta_time * 1;
 	}
 
-	//Vec3f test_scale = get_scale(entity_manager, scene->entity_mesh_test);
-	//set_scale(entity_manager, scene->entity_mesh_test, test_scale + new_mesh_scale);
+	Vec3f test_scale = get_scale(entity_manager, scene->sink);
+	set_scale(entity_manager, scene->sink, test_scale + new_mesh_scale);
 
 
 
@@ -402,17 +358,19 @@ void game_update(Game* game) {
 		//test->transform.rotation = test->transform.rotation * quat_from_axis_angle(Vec3f_Right, 5);
 	}
 
-	//Quat old_test_rot = rotation(entity_manager, scene->entity_mesh_test);
-	//set_rotation(entity_manager, scene->entity_mesh_test, old_test_rot * new_test_rot);
+	Quat old_test_rot = rotation(entity_manager, scene->sink);
+	set_rotation(entity_manager, scene->sink, old_test_rot * new_test_rot);
 	
 
 
 	Light light = get_light(entity_manager, scene->entity_test_light);
 
+
+	Vec3f sink_dir;
 	
 	if (input->keys[SDL_SCANCODE_LEFT].down) {
-		
 		light.dir_light.direction.z -= delta_time * 0.5f;
+		
 		
 	}
 
@@ -423,11 +381,15 @@ void game_update(Game* game) {
 
 	if (input->keys[SDL_SCANCODE_UP].down) {
 		light.dir_light.direction.x += delta_time * 0.5f;
+		sink_dir = (delta_time * -forward(entity_manager, scene->sink));
 	}
 
 	if (input->keys[SDL_SCANCODE_DOWN].down) {
 		light.dir_light.direction.x -= delta_time * 0.5f;
 	}
+
+	Vec3f sink_pos = position(entity_manager, scene->sink);
+	set_position(entity_manager, scene->sink, sink_pos + sink_dir);
 
 
 	set_light(entity_manager, scene->entity_test_light, light);
@@ -468,52 +430,78 @@ void game_update(Game* game) {
 	t = transpose(t);
 	
 	camera->view_mat = quat_to_rotation_matrix(new_cam_rot) * t;
+	set_position(entity_manager, scene->entity_main_camera, cam_pos);
 
 
-	job_update_basis_vectors(entity_manager);
-	job_compute_world_matrices(entity_manager);
-		
-	
-	
-	for (int i = 0; i < scene->entity_mesh_list_count; i++) {
-	
-		Entity e = scene->entity_mesh_list[i];
-		RenderMesh rm;
-		rm.material_id = 0;
-		rm.mesh = get_static_mesh(entity_manager, e);
-		rm.world = get_world_mat(entity_manager, e);
-		push_render_object(renderer, rm);
-		
-		
+	// You go through all the entites, and push them to the render state
+	//for (int i = 0; i < entity_manager->camera_manager.count; i++) {
+	//	Camera cam = entity_manager->camera_manager.cameras[i];
+	//	Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
+	//	Vec3f cam_pos = position(entity_manager, e);
+		push_camera(renderer, camera, cam_pos);
+	//}
 
-	}
-	
-	//RenderMesh desc1;
-	//desc1.material_id = 0;
-	//desc1.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test);
-	//desc1.world= get_world_mat(entity_manager, scene->entity_mesh_test);
-	//push_render_object(renderer, desc1);
-	//
-	//RenderMesh desc2;
-	//desc2.material_id = 0;
-	//desc2.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test2);
-	//desc2.world = get_world_mat(entity_manager, scene->entity_mesh_test2);
-	//push_render_object(renderer, desc2);
-	//
-	//RenderMesh desc3;
-	//desc3.material_id = 0;
-	//desc3.mesh = get_static_mesh(entity_manager, scene->entity_mesh_test3);
-	//desc3.world = get_world_mat(entity_manager, scene->entity_mesh_test3);
-	//push_render_object(renderer, desc3);
-
-
-	push_camera(renderer, camera, cam_pos);
-	push_light(renderer, light);
-	
 
 
 	
+
 }
 
 
+
+static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
+
+	AssetImport_SceneNode* children = parent_node->children;
+	for (int i = 0; i < parent_node->children_count; i++) {
+		AssetImport_SceneNode* child_node = &children[i];
+		Entity child_entity = create_entity(manager);
+
+
+
+
+		add_component(manager, child_entity, ComponentType_Transform);
+		set_position(manager, child_entity, child_node->translation);
+		set_scale(manager, child_entity, child_node->scale);
+		set_rotation(manager, child_entity, euler_to_quat(child_node->rotation));
+		attach_child_entity(manager, parent_entity, child_entity);
+
+		import_asset_scene_node(manager, scene, child_node, child_entity);
+	}
+
+	if (parent_node->mesh_count > 0) {
+		for (int i = 0; i < parent_node->mesh_count; i++) {
+			add_component(manager, parent_entity, ComponentType_StaticMesh);
+			add_component(manager, parent_entity, ComponentType_Render);
+			set_render_visibility(manager, parent_entity, true);
+
+			uint32_t index = parent_node->meshes[i];
+			AssetID mesh_id = scene->mesh_infos[index];
+			set_static_mesh(manager, parent_entity, mesh_id.mesh);
+
+		}
+	}
+}
+
+Entity import_asset_scene_into_scene(Game* game, SceneID id) {
+
+	AssetID scene_id;
+	scene_id.id = id.id;
+	scene_id.type = AssetType_Scene;
+	InternalAsset asset = get_asset_by_id(game->engineAPI.asset_manager, scene_id);
+	
+	AssetImport_Scene* scene = asset.scene;
+	EntityManager* manager = game->engineAPI.entity_manager;
+
+	
+	Entity root = create_entity(manager);
+	add_component(manager, root, ComponentType_Transform);
+
+	
+	set_position(manager, root, scene->root->translation);
+	set_scale(manager, root, scene->root->scale);
+	set_rotation(manager, root, euler_to_quat(scene->root->rotation));
+
+	import_asset_scene_node(manager, scene, scene->root, root);
+	return root;
+}
 

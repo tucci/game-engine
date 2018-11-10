@@ -36,9 +36,9 @@ void destroy_camera_manager(CameraManager* manager) {
 }
 void entity_add_camera_component(CameraManager* manager, Entity entity) {
 	if (stb_sb_count(manager->cameras) == manager->count) {
-		stb_sb_push(manager->cameras, Camera());
+		stb_sb_push(manager->cameras, Camera(entity));
 	} else {
-		manager->cameras[manager->count] = Camera();
+		manager->cameras[manager->count] = Camera(entity);
 	}
 
 	map_put(&manager->id_map, entity.id, manager->count);

@@ -79,6 +79,7 @@ void map_init(CompactMap<V>* map) {
 
 template <typename V>
 void map_destroy(CompactMap<V>* map) {
+	assert(map != NULL);
 	assert(map->inited == 1);
 	if (map->inited == 1) {
 		free(map->map);
@@ -90,6 +91,7 @@ void map_destroy(CompactMap<V>* map) {
 template <typename V>
 MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
 	assert(map != NULL);
+	assert(map->map != NULL);
 	assert(key != 0);
 	assert(key != TOMBSTONE);
 	assert(IS_POW2(map->size));
@@ -118,19 +120,15 @@ MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
 		}
 		hash_index++;
 	}
-	MapResult<V> result;
-	result.found = false;
-	result.key = key;
-//	result.value = 0;
-	return result;
-
 }
 
 template <typename V>
 void map_put(CompactMap<V>* map, uint64_t key, V val) {
+	assert(map != NULL);
 	// Note keys cant be 0
 	assert(key != 0);
 	assert(key != TOMBSTONE);
+	
 
 	// Regrow map, if the hashmap is half full
 	if (2 * (map->item_count + map->tomestones) >= map->size) {
@@ -165,12 +163,13 @@ void map_put(CompactMap<V>* map, uint64_t key, V val) {
 
 template <typename V>
 void map_grow(CompactMap<V>* map, size_t new_size) {
-
+	assert(map != NULL);
 	new_size = MAX(new_size, 16);
 	assert(IS_POW2(new_size));
 	CompactMap<V> new_map;
 
 	new_map.map = (CompactMapItem<V>*)calloc(new_size, sizeof(CompactMapItem<V>));
+	new_map.inited = 1;
 	new_map.size = new_size;
 	new_map.item_count = 0;
 	new_map.tomestones = 0;
@@ -189,8 +188,13 @@ void map_grow(CompactMap<V>* map, size_t new_size) {
 	free((void*)map->map);
 	*map = new_map;
 }
+
+
+#pragma warning ("If Type V is a pointer type, you must free any internal data before calling map_remove")
+//If Type V is a pointer type, you must free any internal data before calling map_remove
 template <typename V>
 void map_remove(CompactMap<V>* map, uint64_t key) {
+	assert(map != NULL);
 	assert(key != 0);
 	assert(key != TOMBSTONE);
 
@@ -205,6 +209,7 @@ void map_remove(CompactMap<V>* map, uint64_t key) {
 			// This slot cannot be used untill we rehash the table
 			map->map[hash_index].key = TOMBSTONE;
 			map->tomestones++;
+			
 			return;
 			
 		} else if (map->map[hash_index].key == 0) {

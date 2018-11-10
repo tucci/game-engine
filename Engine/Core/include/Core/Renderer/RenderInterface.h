@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Asset/Asset.h"
 #include "Core/ECS/Component/StaticMesh.h"
 #include "Core/ECS/Component/Camera.h"
 #include "Core/ECS/Component/Lights.h"

@@ -2,7 +2,8 @@
 
 #include "Core/ECS/EntityManager.h"
 #include "Common/common_macros.h"
-#include "Core/ECS/JobSystem/TransformSystem.h"
+
+
 
 #include "Common/stretchy_buffer.h"
 
@@ -41,7 +42,8 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 	//                                          ^
 	//                                     entity_count
 	// Delete entity 3
-	// Entity list after swapping [1, 2, 5, 4][5]
+	// Entity list after swapping [1, 2, 5, 4, 3]
+	// Entity list after deleting [1, 2, 5, 4][5]
 	//                                      ^
 	//                                entity_count
 
@@ -87,19 +89,24 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 	switch (type) {
 		case ComponentType_Transform: {
-			entity_add_transform_component(&manager->transforms, entity);
+			entity_add_transform_component(&manager->transform_manager, entity);
 			break;
 		}
 		case ComponentType_Camera: {
-			entity_add_camera_component(&manager->cameras, entity);
+			entity_add_camera_component(&manager->camera_manager, entity);
 			break;
 		}
 		case ComponentType_StaticMesh: {
-			entity_add_mesh_component(&manager->static_meshs, entity);
+			entity_add_mesh_component(&manager->static_mesh_manger, entity);
 			break;
 		}
 		case ComponentType_Light: {
-			entity_add_light_component(&manager->lights, entity);
+			entity_add_light_component(&manager->light_manager, entity);
+			break;
+		}
+
+		case ComponentType_Render: {
+			entity_add_render_component(&manager->render_manager, entity);
 			break;
 		}
 	}
@@ -109,19 +116,24 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 void remove_component(EntityManager* manager, Entity entity, ComponentType type) {
 	switch (type) {
 		case ComponentType_Transform: {
-			entity_remove_transform_component(&manager->transforms, entity);
+			entity_remove_transform_component(&manager->transform_manager, entity);
 			break;
 		}
 		case ComponentType_Camera: {
-			entity_remove_camera_component(&manager->cameras, entity);
+			entity_remove_camera_component(&manager->camera_manager, entity);
 			break;
 		}
 		case ComponentType_StaticMesh: {
-			entity_remove_mesh_component(&manager->static_meshs, entity);
+			entity_remove_mesh_component(&manager->static_mesh_manger, entity);
 			break;
 		}
 		case ComponentType_Light: {
-			entity_remove_light_component(&manager->lights, entity);
+			entity_remove_light_component(&manager->light_manager, entity);
+			break;
+		}
+
+		case ComponentType_Render: {
+			entity_remove_render_component(&manager->render_manager, entity);
 			break;
 		}
 	}
@@ -144,10 +156,11 @@ void init_entity_manager(EntityManager* manager) {
 	stack_alloc_init(&manager->stack_mem, mem_block, mem_size);
 	
 	
-	init_transform_manager(&manager->transforms);
-	init_static_mesh_manager(&manager->static_meshs);
-	init_camera_manager(&manager->cameras);
-	init_light_manager(&manager->lights);
+	init_transform_manager(&manager->transform_manager);
+	init_static_mesh_manager(&manager->static_mesh_manger);
+	init_camera_manager(&manager->camera_manager);
+	init_light_manager(&manager->light_manager);
+	init_render_manager(&manager->render_manager);
 
 	
 
@@ -158,35 +171,49 @@ void destroy_entity_manager(EntityManager* manager) {
 	stb_sb_free(manager->entity_list);
 
 	
-	destroy_transform_manager(&manager->transforms);
-	destroy_static_mesh_manager(&manager->static_meshs);
-	destroy_camera_manager(&manager->cameras);
-	destroy_light_manager(&manager->lights);
+	destroy_transform_manager(&manager->transform_manager);
+	destroy_static_mesh_manager(&manager->static_mesh_manger);
+	destroy_camera_manager(&manager->camera_manager);
+	destroy_light_manager(&manager->light_manager);
+	destroy_render_manager(&manager->render_manager);
 }
 
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 
-	MapResult<uint64_t> result = map_get(&manager->transforms.id_map, entity.id);
+	MapResult<uint64_t> result = map_get(&manager->transform_manager.id_map, entity.id);
 	if (!result.found) { return; }
 	
 	
 	uint64_t index = result.value;
 
-	Entity* first_child = &manager->transforms.first_child[index];
+	Entity* first_child = &manager->transform_manager.first_child[index];
 	if (first_child->id == NO_ENTITY_ID) {
 		// This entity has no children, so we need to add this child to the first child
 		first_child->id = child.id;
 	} else {
 		// This entity already has a first child so we need to look at the siblings
-		Entity* next_sibling = &manager->transforms.next_sibling[first_child->id];
+
+		MapResult<uint64_t> child_result = map_get(&manager->transform_manager.id_map, first_child->id);
+		if (!child_result.found) { return; }
+		uint64_t first_child_index = child_result.value;
+
+		
+
+		
+		Entity* next_sibling = &manager->transform_manager.next_sibling[first_child_index];
+
+		
+
 
 		while (next_sibling->id != NO_ENTITY_ID) {
-			next_sibling = &manager->transforms.next_sibling[next_sibling->id];
+			child_result = map_get(&manager->transform_manager.id_map, next_sibling->id);
+			if (!child_result.found) { return; }
+			next_sibling = &manager->transform_manager.next_sibling[child_result.value];
 		}
 		next_sibling->id = child.id;
 		
 	}
-	MapResult<uint64_t> child_result = map_get(&manager->transforms.id_map, child.id);
+	MapResult<uint64_t> child_result = map_get(&manager->transform_manager.id_map, child.id);
 	if (!child_result.found) {
 		return;
 	}
@@ -194,6 +221,14 @@ void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 	// Assign the child, the parent entity
 	uint64_t child_index = child_result.value;
 	
-	manager->transforms.parent[child_index] = entity;
+	manager->transform_manager.parent[child_index] = entity;
 }
 
+
+uint64_t get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<uint64_t>* map) {
+	MapResult<uint64_t> result = map_get(map, entity.id);
+	assert(result.found);
+	if (!result.found) {}
+	int index = result.value;
+	return index;
+}

@@ -8,7 +8,7 @@ void job_update_basis_vectors(EntityManager* manager) {
 	Vec3f up = Vec3f_Up;
 	Vec3f right = Vec3f_Right;
 
-	TransformManager* tm = &manager->transforms;
+	TransformManager* tm = &manager->transform_manager;
 
 	for (int i = 0; i < tm->count; i++) {
 		tm->forwards[i] = tm->rotations[i] * forward;
@@ -25,10 +25,29 @@ void job_update_basis_vectors(EntityManager* manager) {
 
 
 
+static void world_transform(TransformManager* tm, Mat4x4f* parent, Entity e) {
+
+	MapResult<uint64_t> result = map_get(&tm->id_map, e.id);
+	assert(result.found);
+	if (!result.found) {}
+	int index = result.value;
+
+	tm->world[index] = *parent * tm->local[index];
+	Entity child = tm->first_child[index];
+	while (child.id != NO_ENTITY_ID) {
+		world_transform(tm, &tm->world[index], child);
+		MapResult<uint64_t> result = map_get(&tm->id_map, child.id);
+		assert(result.found);
+		if (!result.found) {}
+		uint64_t child_index = result.value;
+		child = tm->next_sibling[child_index];
+	}
+}
+
 
 void job_compute_world_matrices(EntityManager* manager) {
 
-	TransformManager* tm = &manager->transforms;
+	TransformManager* tm = &manager->transform_manager;
 
 
 	// Scale first
@@ -45,39 +64,34 @@ void job_compute_world_matrices(EntityManager* manager) {
 
 	// Then translate
 	for (int i = 0; i < tm->count; i++) {
-		
 		Mat4x4f t = translate(tm->positions[i]);
 		t = transpose(t);
+		//tm->local[i] = t * r * s;
 		tm->local[i] = t * tm->local[i];
 	}
 
-
+	// Go through each entity's transform
 	for (int i = 0; i < tm->count; i++) {
 		int index = i;
+		//// Get the parent of the current entity
 		Entity parent_id = tm->parent[index];
+		// If this entity has no parent, then we'll just use the current local matrix
 		if (parent_id.id == NO_ENTITY_ID) {
 			tm->world[index] = tm->local[index];
-		} else {
+		} else {	
+
+			//tm->world[index] = tm->local[index];
+			// If we do have a parent
+			// Then get the index into the world matrix of the parent entity
 			MapResult<uint64_t> result = map_get(&tm->id_map, parent_id.id);
 			assert(result.found);
 			if (!result.found) {}
 			uint64_t parent_index = result.value;
+			// Get parent world transform
 			Mat4x4f parent_transform = tm->world[parent_index];
-			
-
-			for (;;) {// keep transforming until we have no more children
-				tm->world[index] = parent_transform * tm->local[index];
-				Entity child = tm->first_child[index];
-				while (child.id != NO_ENTITY_ID) {
-					MapResult<uint64_t> result = map_get(&tm->id_map, child.id);
-					assert(result.found);
-					if (!result.found) {}
-					uint64_t child_index = result.value;
-					child = tm->next_sibling[child_index];
-				}
-				break;
-			}
-			
+			Entity e;
+			e.id = index;
+			world_transform(tm, &parent_transform, e);
 		}
 		
 	}	
@@ -86,66 +100,59 @@ void job_compute_world_matrices(EntityManager* manager) {
 
 }
 
-// quick helper function so we dont have to keep writing this below
-static inline uint64_t get_index_for_entity(EntityManager* manager, Entity entity) {
-	MapResult<uint64_t> result = map_get(&manager->transforms.id_map, entity.id);
-	assert(result.found);
-	if (!result.found) {}
-	int index = result.value;
-	return index;
-}
+
 
 Mat4x4f* get_world_mat(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return &manager->transforms.world[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return &manager->transform_manager.world[index];
 }
 
 Mat4x4f* get_local_mat(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return &manager->transforms.local[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return &manager->transform_manager.local[index];
 }
 
 Vec3f position(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return manager->transforms.positions[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.positions[index];
 }
 
 void set_position(EntityManager* manager, Entity entity, Vec3f pos) {
-	int index = get_index_for_entity(manager, entity);
-	manager->transforms.positions[index] = pos;
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	manager->transform_manager.positions[index] = pos;
 }
 
 Vec3f get_scale(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return manager->transforms.scales[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.scales[index];
 }
 
 void set_scale(EntityManager* manager, Entity entity, Vec3f scale) {
-	int index = get_index_for_entity(manager, entity);
-	manager->transforms.scales[index] = scale;
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	manager->transform_manager.scales[index] = scale;
 }
 
 Quat rotation(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return manager->transforms.rotations[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.rotations[index];
 }
 
 void set_rotation(EntityManager* manager, Entity entity, Quat rotation) {
-	int index = get_index_for_entity(manager, entity);
-	manager->transforms.rotations[index] = rotation;
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	manager->transform_manager.rotations[index] = rotation;
 }
 
 Vec3f forward(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return manager->transforms.forwards[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.forwards[index];
 }
 
 Vec3f up(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return manager->transforms.ups[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.ups[index];
 }
 
 Vec3f right(EntityManager* manager, Entity entity) {
-	int index = get_index_for_entity(manager, entity);
-	return manager->transforms.rights[index];
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.rights[index];
 }

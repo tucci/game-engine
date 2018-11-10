@@ -114,6 +114,12 @@
     <ClCompile Include="Core\src\Asset\Asset.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\Component\RenderComponent.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\RenderSystem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec.h">
@@ -534,6 +540,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\sdl\include\SDL_vulkan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\JobSystem\RenderSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 
 #include "Core/ECS/Entity.h"
 
+#include "Asset/Asset.h"
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
 
@@ -9,6 +10,7 @@
 #include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
 #include "Core/ECS/Component/Lights.h"
+#include "Core/ECS/Component/RenderComponent.h"
 #include "Common/Map.h"
 
 
@@ -22,6 +24,7 @@ typedef enum ComponentType {
 	ComponentType_Camera,
 	ComponentType_StaticMesh,
 	ComponentType_Light,
+	ComponentType_Render,
 
 	ComponentType_Count
 } ComponentType;
@@ -33,11 +36,14 @@ typedef enum ComponentType {
 
 typedef struct EntityManager {
 	
-	TransformManager transforms;
-	CameraManager cameras;
-	StaticMeshManager static_meshs;
-	LightManager lights;
-	
+	TransformManager transform_manager;
+	CameraManager camera_manager;
+	StaticMeshManager static_mesh_manger;
+	LightManager light_manager;
+	RenderManager render_manager;
+
+
+
 
 	Arena arena;
 	StackAllocator stack_mem;
@@ -52,14 +58,16 @@ typedef struct EntityManager {
 
 void init_entity_manager(EntityManager* manager);
 void destroy_entity_manager(EntityManager* manager);
-Entity create_entity(EntityManager* manager);
 
+Entity create_entity(EntityManager* manager);
 void destroy_entity(EntityManager* manager, Entity entity);
+void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
+
 void add_component(EntityManager* manager, Entity entity, ComponentType type);
 void remove_component(EntityManager* manager, Entity entity, ComponentType type);
 
-void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
 
 
-
+// quick helper function so we dont have to keep writing this below
+uint64_t get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<uint64_t>* map);
 

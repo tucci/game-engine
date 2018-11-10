@@ -93,6 +93,10 @@ Vec4f operator*(float scalar, const Vec4f& vec) {
 #endif
 
 }
+// Scalar multiplication
+Vec4f operator*(const Vec4f& vec, float scalar) {
+	return scalar * vec;
+}
 
 
 float dot(const Vec4f& v1, const Vec4f& v2) {
@@ -195,6 +199,10 @@ Vec3f operator*(float scalar, const Vec3f& v) {
 	return result;
 }
 
+// Scalar multiplication
+Vec3f operator*(const Vec3f& v, float scalar) {
+	return scalar * v;
+}
 
 float magnitude(const Vec3f& vec) {
 	float result = magnitude(Vec4f(vec, 0));
@@ -262,3 +270,26 @@ Vec3f euler_to_vector(const Vec3f& euler_angles) {
 	return result;
 }
 
+Vec3f swap_yz(const Vec3f& v) {
+	Vec3f result;
+	float temp = v.y;
+	result.y = v.z;
+	result.z = temp;
+	return result;
+}
+
+Vec3f swap_xy(const Vec3f& v) {
+	Vec3f result;
+	float temp = v.x;
+	result.x = v.y;
+	result.y = temp;
+	return result;
+}
+
+Vec3f swap_xz(const Vec3f& v) {
+	Vec3f result;
+	float temp = v.x;
+	result.x = v.z;
+	result.z = temp;
+	return result;
+}

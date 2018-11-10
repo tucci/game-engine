@@ -5,6 +5,12 @@
 
 #include "Core/Game.h"
 
+#include "Core/ECS/JobSystem/TransformSystem.h"
+#include "Core/ECS/JobSystem/CameraSystem.h"
+#include "Core/ECS/JobSystem/StaticMeshSystem.h"
+#include "Core/ECS/JobSystem/LightSystem.h"
+#include "Core/ECS/JobSystem/RenderSystem.h"
+
 
 
 static void update_button_state(ButtonState* button_state, bool down_now) {
@@ -707,8 +713,6 @@ bool destroy_engine(Engine* engine) {
 	SDL_DestroyWindow(engine->window.sdl_window);
 	SDL_Quit();
 
-	// NOTE: this frees the entire game engine memory and all the subsystems
-	//free(engine->engine_memory);
 
 	return true;
 }
@@ -739,6 +743,44 @@ static void update_engine_state(Engine* engine, float delta_time) {
 
 	// Game specific update
 	game_update(&engine->loaded_game);
+
+	EntityManager* entity_manager = &engine->entity_manager;
+	Renderer* renderer = &engine->renderer;
+	AssetManager* asset_manager = &engine->asset_manager;
+
+
+	job_update_basis_vectors(entity_manager);
+	job_compute_world_matrices(entity_manager);
+
+
+	//// You go through all the entites, and push them to the render state
+	//for (int i = 0; i < entity_manager->camera_manager.count; i++) {
+	//	Camera cam = entity_manager->camera_manager.cameras[i];
+	//	Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
+	//	Vec3f cam_pos = position(entity_manager, e);
+	//	push_camera(renderer, &cam, cam_pos);
+	//}
+
+
+	for (int i = 0; i < entity_manager->light_manager.count; i++) {
+		Light light = entity_manager->light_manager.lights[i];
+		push_light(renderer, light);
+	}
+
+	
+
+
+	for (int i = 0; i < entity_manager->render_manager.count; i++) {
+
+		Entity e = entity_manager->render_manager.renders[i].entity_ref;
+		RenderMesh rm;
+		rm.material_id = 0;
+		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
+		rm.mesh = get_static_mesh_by_id(asset_manager, mesh_id);
+		rm.world = get_world_mat(entity_manager, e);
+		push_render_object(renderer, rm);
+	}
+
 
 	
 }

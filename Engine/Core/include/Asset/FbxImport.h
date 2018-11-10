@@ -64,6 +64,23 @@ typedef struct FBX_Object {
 
 } FBX_Object;
 
+typedef struct FBX_GlobalSettings {
+	int up_axis;
+	int up_axis_sign;
+	int front_axis;
+	int front_axis_sign;
+	int coord_axis;
+	int coord_axis_sign;
+	int original_up_axis;
+	int original_up_axis_sign;
+
+
+	double unit_scale_factor;
+	double original_unit_scale_factor;
+
+
+}FBX_GlobalSettings;
+
 
 typedef struct FBX_Property {
 	char type_code;
@@ -129,46 +146,54 @@ typedef struct FBX_Node {
 } FBX_Node;
 
 
+typedef struct AssetImportGlobalSettings {
+	int up_axis;
+	int up_axis_sign;
 
+	int front_axis;
+	int front_axis_sign;
+
+	int coord_axis;
+	int coord_axis_sign;
+
+	int original_up_axis;
+	int original_up_axis_sign;
+
+
+	double unit_scale_factor;
+	double original_unit_scale_factor;
+} AssetImportGlobalSettings;
 
 typedef struct AssetImporter {
 	Arena mem;
 	StackAllocator stack;
 	int32_t stack_allocs_count;
-	
+	// The tracker is usually owned by the asset manager, and is passed to this
+	AssetTracker* tracker;
 
-	
-	//int32_t asset_info_import_count;
-	//AssetInfo* assets_infos;
-	
-
+	AssetImportGlobalSettings global_settings;
 } AssetImporter;
 
 
 
+
 typedef struct FBX_ImportData {
-	AssetScene export_scene;
+	AssetImport_Scene export_scene;
 	CompactMap<FBX_Object> fbx_object_map;
-	CompactMap<AssetSceneNode*> scene_node_cache_map;
-	
-	bool y_is_up;
+	CompactMap<AssetImport_SceneNode*> scene_node_cache_map;
+	FBX_GlobalSettings global_settings;
 } FBX_ImportData;
 
 
-void init_asset_importer(AssetImporter* importer);
+void init_asset_importer(AssetImporter* importer, AssetTracker* tracker);
 void destroy_asset_importer(AssetImporter* importer);
 
-AssetInfo export_static_mesh(AssetImporter* importer,
-	StaticMesh* mesh,
-	Vec3f pos,
-	Vec3f rotation,
-	Vec3f scale,
-	char* filename, int filename_str_len);
 
 
-
-
-AssetInfo import_fbx(AssetImporter* importer, const char* filename, bool y_is_up);
+static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry_Object* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
+AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
+AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, char* filename, int filename_str_len);
+AssetID import_fbx(AssetImporter* importer, char* filename, bool y_is_up);
 
 
 

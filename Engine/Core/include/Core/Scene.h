@@ -13,42 +13,6 @@
 
 
 
-typedef enum SceneNodeType {
-	SceneNodeType_Root,
-	SceneNodeType_Camera,
-	SceneNodeType_StaticMesh,
-} SceneNodeType;
-
-
-typedef struct SceneNodeArray {
-	int size;
-	int capacity;
-	struct SceneNode* nodes;
-} SceneNodeArray;
-
-
-typedef struct SceneNode {
-	SceneNodeType type;
-
-	struct SceneNode* parent;
-	SceneNodeArray children;
-
-	union {
-		Camera camera;
-		StaticMesh mesh;
-	};
-	
-
-} SceneNode;
-
-
-
-
-
-
-
-
-
 typedef struct Scene {
 	int scene_id;
 	
@@ -58,6 +22,7 @@ typedef struct Scene {
 	int entity_mesh_list_count = 0;
 	Entity* entity_mesh_list;
 
+	Entity sink;
 	//Entity entity_mesh_test;
 	//Entity entity_mesh_test2;
 	//Entity entity_mesh_test3;

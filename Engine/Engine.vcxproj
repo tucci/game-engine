@@ -168,6 +168,7 @@
     <ClCompile Include="Core\src\Common\Map.c" />
     <ClCompile Include="Core\src\Common\StackAllocator.c" />
     <ClCompile Include="Core\src\Core\ECS\Component\Lights.c" />
+    <ClCompile Include="Core\src\Core\ECS\Component\RenderComponent.c" />
     <ClCompile Include="Core\src\Core\ECS\Component\Transform.c" />
     <ClCompile Include="Core\src\Core\ECS\EntityManager.c" />
     <ClCompile Include="Core\src\Core\ECS\Component\Camera.c" />
@@ -175,6 +176,7 @@
     <ClCompile Include="Core\src\Core\ECS\Component\Skybox.c" />
     <ClCompile Include="Core\src\Core\ECS\JobSystem\CameraSystem.c" />
     <ClCompile Include="Core\src\Core\ECS\JobSystem\LightSystem.c" />
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\RenderSystem.c" />
     <ClCompile Include="Core\src\Core\ECS\JobSystem\StaticMeshSystem.c" />
     <ClCompile Include="Core\src\Core\ECS\JobSystem\TransformSystem.c" />
     <ClCompile Include="Core\src\Core\Game.c" />
@@ -208,6 +210,7 @@
     <ClInclude Include="Core\include\Core\ECS\EntityManager.h" />
     <ClInclude Include="Core\include\Core\ECS\JobSystem\CameraSystem.h" />
     <ClInclude Include="Core\include\Core\ECS\JobSystem\LightSystem.h" />
+    <ClInclude Include="Core\include\Core\ECS\JobSystem\RenderSystem.h" />
     <ClInclude Include="Core\include\Core\ECS\JobSystem\StaticMeshSystem.h" />
     <ClInclude Include="Core\include\Core\ECS\JobSystem\TransformSystem.h" />
     <ClInclude Include="Core\include\Core\Renderer\Renderer.h" />
