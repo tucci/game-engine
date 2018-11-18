@@ -343,6 +343,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			//asset.import_mesh = cast(AssetImport_StaticMesh*)arena_alloc(&manager->asset_mem, sizeof(AssetImport_StaticMesh));
 
 
+			
 			fread(buffer, sizeof(Vec3f), 1, file);
 			//asset.import_mesh->translation = *cast(Vec3f*)buffer;
 			fread(buffer, sizeof(Vec3f), 1, file);

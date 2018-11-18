@@ -9,6 +9,10 @@ void job_update_basis_vectors(EntityManager* manager);
 
 void job_compute_world_matrices(EntityManager* manager);
 
+void set_name(EntityManager* manager, Entity entity, char* name);
+
+const char* get_name(EntityManager* manager, Entity entity);
+
 Mat4x4f* get_world_mat(EntityManager* manager, Entity entity);
 
 Mat4x4f* get_local_mat(EntityManager* manager, Entity entity);

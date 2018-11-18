@@ -7,6 +7,7 @@
 void init_transform_manager(TransformManager* manager) {
 	map_init(&manager->id_map);
 	manager->count = 0;
+	manager->names = NULL;
 	manager->positions = NULL;
 	manager->scales = NULL;
 	manager->ups = NULL;
@@ -22,7 +23,7 @@ void init_transform_manager(TransformManager* manager) {
 }
 
 void destroy_transform_manager(TransformManager* manager) {
-
+	stb_sb_free(manager->names);
 	stb_sb_free(manager->positions);
 	stb_sb_free(manager->scales);
 	stb_sb_free(manager->rotations);
@@ -43,7 +44,7 @@ void entity_add_transform_component(TransformManager* manager, Entity entity) {
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
 
-
+	stb_sb_push(manager->names, NULL);
 	stb_sb_push(manager->positions, Vec3f(0, 0, 0));
 	stb_sb_push(manager->scales, Vec3f(1, 1, 1));
 	stb_sb_push(manager->ups, Vec3f(0, 1, 0));
@@ -65,6 +66,7 @@ void entity_remove_transform_component(TransformManager* manager, Entity entity)
 
 	uint64_t index = result.value;
 
+	char* last_name = manager->names[manager->count - 1];
 	// Get the last in the list to swap with
 	Vec3f last_pos = manager->positions[manager->count - 1];
 	Vec3f last_scale = manager->scales[manager->count - 1];
@@ -81,6 +83,7 @@ void entity_remove_transform_component(TransformManager* manager, Entity entity)
 	Entity last_next_sibling = manager->next_sibling[manager->count - 1];
 
 	// Swap
+	manager->names[index] = last_name;
 	manager->positions[index] = last_pos;
 	manager->scales[index] = last_scale;
 	manager->ups[index] = last_up;

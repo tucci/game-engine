@@ -204,6 +204,8 @@ typedef union Vec4i {
 
 // Vec 4 operations
 Vec4f operator+(const Vec4f& v1, const Vec4f& v2);// Addition
+Vec4f& operator+=(Vec4f& v1, const Vec4f& v);// Addition
+bool operator==(const Vec4f& v1, const Vec4f& v2);// Equality
 Vec4f operator-(const Vec4f& v1, const Vec4f& v2);// Subtraction
 Vec4f operator-(const Vec4f& vec); // Negation
 Vec4f operator*(float scalar, const Vec4f& vec);// Scalar multiplication
@@ -216,6 +218,8 @@ float dot(const Vec4f& v1, const Vec4f& v2);
 
 // Vec3f operator overloads
 Vec3f operator+(const Vec3f& v1, const Vec3f& v2);// Addition
+Vec3f& operator+=(Vec3f& v1, const Vec3f& v);// Addition
+bool operator==(const Vec3f& v1, const Vec3f& v2);// Equality
 Vec3f operator-(const Vec3f& v1, const Vec3f& v2);// Subtraction
 Vec3f operator-(const Vec3f& v);// Negation
 Vec3f operator*(float scalar, const Vec3f& v); // Scalar multiplication

@@ -34,4 +34,5 @@ void unload_scene(Game* game, Scene* scene);
 
 Entity import_asset_scene_into_scene(Game* game, SceneID id);
 
+
 void game_update(Game* game);

@@ -71,9 +71,9 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	// Write the transform
-	fwrite(cast(const void*) &pos, sizeof(Vec3f), 1, file);
-	fwrite(cast(const void*) &scale, sizeof(Vec3f), 1, file);
-	fwrite(cast(const void*) &rotation, sizeof(Vec3f), 1, file);
+	fwrite(cast(const void*) &pos, sizeof(pos), 1, file);
+	fwrite(cast(const void*) &scale, sizeof(scale), 1, file);
+	fwrite(cast(const void*) &rotation, sizeof(rotation), 1, file);
 	
 	int vertex_count = geo->index_count * 3;
 	int index_count = geo->index_count;
@@ -190,9 +190,9 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	AssetType type = AssetType_StaticMesh;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
-	fwrite(cast(const void*) &pos, sizeof(Vec3f), 1, file);
-	fwrite(cast(const void*) &scale, sizeof(Vec3f), 1, file);
-	fwrite(cast(const void*) &rotation, sizeof(Vec3f), 1, file);
+	fwrite(cast(const void*) &pos, sizeof(pos), 1, file);
+	fwrite(cast(const void*) &scale, sizeof(scale), 1, file);
+	fwrite(cast(const void*) &rotation, sizeof(rotation), 1, file);
 
 	fwrite(cast(const void*) &mesh->vertex_count, sizeof(mesh->vertex_count), 1, file);
 	fwrite(cast(const void*) &mesh->index_count, sizeof(mesh->index_count), 1, file);
@@ -257,7 +257,7 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	
 }
 
-static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* node, FILE* file) {
+static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* node, FILE* file, bool parent_is_root) {
 
 	
 
@@ -286,41 +286,87 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 
 
 	// Transform
-	Vec3f scaled_pos = node->translation * importer->global_settings.unit_scale_factor;
-	Vec3f export_pos = scaled_pos;
-	//Vec3f offset = Vec3f(360.0f, 360.0f, 360.0f);
+	Vec3f export_pos = node->translation;
 	Vec3f export_rotation = node->rotation;
 	Vec3f export_scale = node->scale;
 
 
-	export_pos.x = scaled_pos.data[importer->global_settings.coord_axis] * importer->global_settings.coord_axis_sign;
-	export_pos.y = scaled_pos.data[importer->global_settings.up_axis] * importer->global_settings.up_axis_sign;
-	export_pos.z = scaled_pos.data[importer->global_settings.front_axis] * importer->global_settings.front_axis_sign;
+	// TODO: better way to check is root without strcmp
+	bool is_root = strcmp(node->name, "Root") == 0;
 	
+	
+
+	
+	
+
+	
+	export_pos.x = node->translation.data[importer->global_settings.coord_axis];
+	export_pos.y = node->translation.data[importer->global_settings.up_axis];
+	export_pos.z = node->translation.data[importer->global_settings.front_axis];
+
+	export_scale.x = node->scale.data[importer->global_settings.coord_axis];
+	export_scale.y = node->scale.data[importer->global_settings.up_axis];
+	export_scale.z = node->scale.data[importer->global_settings.front_axis];
+
 	export_rotation.x = node->rotation.data[importer->global_settings.coord_axis];
 	export_rotation.y = node->rotation.data[importer->global_settings.up_axis];
 	export_rotation.z = node->rotation.data[importer->global_settings.front_axis];
 
 	
+
 	
-	
-	export_scale.x = node->scale.data[importer->global_settings.coord_axis];
-	export_scale.y = node->scale.data[importer->global_settings.up_axis];
-	export_scale.z = node->scale.data[importer->global_settings.front_axis];
+	if (parent_is_root) {
+		
+		//Vec3f axes[3] = { Vec3f_Right, Vec3f_Up, Vec3f_Forward };
+		//
+		//Vec3f coord_axis = axes[importer->global_settings.coord_axis] * importer->global_settings.coord_axis_sign;
+		//Vec3f front_axis = axes[importer->global_settings.front_axis] * importer->global_settings.front_axis_sign;
+		//
+		//Vec3f test_up_axis = cross(front_axis, coord_axis);
+		//Vec3f original_up_axis = axes[ABS(importer->global_settings.original_up_axis)] * copysignf_(1, importer->global_settings.original_up_axis);
+		//Vec3f up_axis = axes[importer->global_settings.up_axis] * importer->global_settings.up_axis_sign;
 
 		
+		
+		//if (test_up_axis == up_axis) {
+		//	// This is right hand
+		//	// do nothing
+		//	//DEBUG_BREAK;
+		//} else {
+			// left hand to right hand
+			//export_pos.x *= -1;
+			////DEBUG_BREAK;
+			//
+			//Mat4x4f rx = rotate(DEG2RAD(export_rotation.x), Vec3f_Right);
+			//Mat4x4f ry = rotate(DEG2RAD(export_rotation.y), Vec3f_Up);
+			//Mat4x4f rz = rotate(DEG2RAD(export_rotation.z), Vec3f_Forward);
+			//
+			//Mat4x4f lh = ry * rx * rz;
+			//Mat4x4f rh = lh;
+			//
+			//rh.mat2d[0][2] *= -1;
+			//rh.mat2d[1][2] *= -1;
+			//rh.mat2d[2][0] *= -1;
+			//rh.mat2d[2][1] *= -1;
+			//
+			//export_rotation = rotation_mat_to_euler(rh);
+		//}
+		
 
-	
-	//export_pos.x = -1 * export_pos.x;
-	//export_pos.z = -1 * export_pos.z;
-	//export_pos.y = -1 * export_pos.y;
-	
-	//export_pos = export_pos * -1;
 
-	//export_rotation.y = export_rotation.y + 180.0f;
-	//export_rotation.x = -1 * export_rotation.x;
-	//export_rotation.y = -1 * export_rotation.y;
-	//export_rotation.z = -1 * export_rotation.z;
+		// Scale by scale factor
+		export_pos = export_pos * importer->global_settings.unit_scale_factor;;
+		export_scale = export_scale  * importer->global_settings.unit_scale_factor;
+		
+		debug_print("root object\n");
+	}
+
+
+	if (is_root) {
+		parent_is_root = true;
+	} else {
+		parent_is_root = false;
+	}
 	
 	debug_print("%s, POS:[%f, %f, %f]\tROT:[%f, %f, %f]\tSCALE:[%f,%f,%f]\n", node->name,
 		export_pos.x, export_pos.y, export_pos.z,
@@ -350,11 +396,11 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 	}
 	// Recursivly write the node tree
 	if (node->first_child != NULL) {
-		write_scene_node(importer, node->first_child, file);
+		write_scene_node(importer, node->first_child, file, parent_is_root);
 		if (node->first_child->next_sibling != NULL) {
 			AssetImport_SceneNode* ptr = node->first_child->next_sibling;
 			while (ptr != NULL) {
-				write_scene_node(importer, ptr, file);
+				write_scene_node(importer, ptr, file, parent_is_root);
 				ptr = ptr->next_sibling;
 			}
 		}
@@ -445,7 +491,7 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, ch
 	}
 
 	
-	write_scene_node(importer, scene->root, file);
+	write_scene_node(importer, scene->root, file, false);
 	
 
 
@@ -498,9 +544,8 @@ static inline int fbx_convert_type_array_char_to_size(char type) {
 static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
 	FBX_Node* node_to_process = node;
 
-	FBX_Node* node_attr = node_to_process->first_child;
-	FBX_Node* obj_node = node_attr->next_sibling;
-	
+	FBX_Node* obj_node = node_to_process->first_child;
+
 	
 	int obj_count = node_to_process->child_count - 1;
 	// Loop over all child nodes of the object node
@@ -877,9 +922,9 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					fbx_import->export_scene.node_count++;
 					
 					set_scene_node_transform(fbx_import->export_scene.root,
-						Vec3f(0, 0, 0),
+						Vec3f_Zero,
 						Vec3f(1, 1, 1),
-						Vec3f(0, 0, 0));
+						Vec3f_Zero);
 				}
 				
 				
@@ -1513,6 +1558,14 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool y_is_up) {
 	importer->global_settings.original_up_axis_sign = fbx_import.global_settings.original_up_axis_sign;
 	importer->global_settings.unit_scale_factor = fbx_import.global_settings.unit_scale_factor;
 	importer->global_settings.original_unit_scale_factor = fbx_import.global_settings.original_unit_scale_factor;
+
+
+	debug_print("\n\nUp axis [%d, %d]\nFront axis[%d, %d]\nCoord Axis[%d, %d]\nOriginal Up Axis[%d, %d]\nScale Factor[%f, %f]\n\n",
+		importer->global_settings.up_axis, importer->global_settings.up_axis_sign,
+		importer->global_settings.front_axis, importer->global_settings.front_axis_sign,
+		importer->global_settings.coord_axis, importer->global_settings.coord_axis_sign,
+		importer->global_settings.original_up_axis, importer->global_settings.original_up_axis_sign,
+		importer->global_settings.unit_scale_factor, importer->global_settings.original_unit_scale_factor);
 	
 	scene_id = export_asset_scene(importer, &fbx_import.export_scene, stripped_filename, stripped_filename_length);
 	

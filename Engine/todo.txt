@@ -1,35 +1,51 @@
-- pbr workflow / material system
-- material id
+
+Asset Tracker
+- handle tracker file errors, broken
+- tracker keeps adding to tracker file
+- pak files/ get asset by pak file offset
+- get the entire asset system off strings, only the entry point of importing should be strings(or in editor asset importing)
+- figure out how to handle LOD
+		
+FBX
+- fbx hardcoded asset name
+- make sure uvs,textures, normals are properly imported
+- update in game mesh when fbx file updates (sync when edits)
+- import materials, textures, lights, all the other objects
+- multipolygon to triangles 4+ sided meshes
+- multi thread imports of assets
+
+Material System
+- material id	
 - Triangle list<first index, num index, material_index> for multiple materials per mesh
+- Material layering?
+- pbr workflow / material system
 
+Debug (More in game debug tools)
+- Normals, tangents, bitangents visualzation
+- memory stats / allocator stats. How much has been allocated, freed, how many allocs, etc
+- debug windows/overlays
+- Hot loading
+
+
+System Desgin
+- String interning/ string management
+- multi threaded game loop
 - write non platform specific file handling utils
-- asset/import system
-- refer to assets by id, not pointers
-- when packing the game, we need to move all assets to .pak files
-- LOD
-- get the entire asset system off strings, only the entry point of importing should be strings
-
-- memory allocators. No more random mallocs
 - general purpose allocator
 - pool allocator
 - Simd/ Optimize / Profile/ Vtune
-- Set up renderdoc
-- proper mesh importers using our custom allocators
-- debug windows/overlays
-- Hot loading
-- Directx backend
-- Vulkan backend
-- Scene tree
-- Collisions
 
-- Write some swizzling data to interleave, positions, uvs, other data
-- Editor guis
-- multi threaded game loop
+
+Rendering
+- Vulkan backend?
+- Directx backend? If we have vulkan, we probably dont need dx12
+- gamma corrected lighting
 - implement deffered rendering
+- more lights/ point light / cone lighting
 - frustum culling
 - occlusion culling
-- lod  
-- ecs without inheritance
-- more asserts
-- gamma corrected lighting
-- allocator stats. How much has been allocated, freed, how many allocs, etc
+
+
+
+
+

@@ -44,6 +44,22 @@ static void world_transform(TransformManager* tm, Mat4x4f* parent, Entity e) {
 	}
 }
 
+static Mat4x4f get_world_transform(EntityManager* manager, Entity e) {
+
+	TransformManager* tm = &manager->transform_manager;
+	
+	
+	uint64_t index = get_index_for_entity(manager, e, &manager->transform_manager.id_map);
+	Entity parent_entity = tm->parent[index];
+	// If this entity has no parent, then we'll just use the current local matrix
+	if (parent_entity.id == NO_ENTITY_ID) {
+		return tm->local[index];
+	} else {
+		return get_world_transform(manager, parent_entity)* *get_local_mat(manager, e);
+	}
+}
+
+
 
 void job_compute_world_matrices(EntityManager* manager) {
 
@@ -65,42 +81,60 @@ void job_compute_world_matrices(EntityManager* manager) {
 	// Then translate
 	for (int i = 0; i < tm->count; i++) {
 		Mat4x4f t = translate(tm->positions[i]);
-		t = transpose(t);
-		//tm->local[i] = t * r * s;
 		tm->local[i] = t * tm->local[i];
 	}
 
 	// Go through each entity's transform
 	for (int i = 0; i < tm->count; i++) {
 		int index = i;
+		Entity e;
+		e.id = index + 1;
+		// TODO: this is very slow and cache unfriendly
+		// A better solution woould be to sort the parent/dirty to the front of the array
+		// http://bitsquid.blogspot.com/2014/10/building-data-oriented-entity-system.html
+		
+		tm->world[index] = get_world_transform(manager, e);
+		
+		
+		
 		//// Get the parent of the current entity
-		Entity parent_id = tm->parent[index];
-		// If this entity has no parent, then we'll just use the current local matrix
-		if (parent_id.id == NO_ENTITY_ID) {
-			tm->world[index] = tm->local[index];
-		} else {	
+		//Entity parent_id = tm->parent[index];
+		//// If this entity has no parent, then we'll just use the current local matrix
+		//if (parent_id.id == NO_ENTITY_ID) {
+		//	tm->world[index] = tm->local[index];
+		//} else {	
+		//
+		//	// If we do have a parent
+		//	// Then get the index into the world matrix of the parent entity
+		//	MapResult<uint64_t> result = map_get(&tm->id_map, parent_id.id);
+		//	assert(result.found);
+		//	uint64_t parent_index = result.value;
+		
+		//
+		//	 
+		// The current problem with this is that, the parent world matrix might not have been already computed,
+		// so we need to compute it before we compute the world matrix of the child
 
-			//tm->world[index] = tm->local[index];
-			// If we do have a parent
-			// Then get the index into the world matrix of the parent entity
-			MapResult<uint64_t> result = map_get(&tm->id_map, parent_id.id);
-			assert(result.found);
-			if (!result.found) {}
-			uint64_t parent_index = result.value;
-			// Get parent world transform
-			Mat4x4f parent_transform = tm->world[parent_index];
-			Entity e;
-			e.id = index;
-			world_transform(tm, &parent_transform, e);
-		}
+		// Get parent world transform
+		//	Mat4x4f parent_transform = tm->world[parent_index];
+		//	Entity e;
+		//	e.id = index;
+		//	world_transform(tm, &parent_transform, e);
+		//}
 		
 	}	
 	
-
-
 }
 
+void set_name(EntityManager* manager, Entity entity, char* name) {
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	manager->transform_manager.names[index] = name;
+}
 
+const char* get_name(EntityManager* manager, Entity entity) {
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	return manager->transform_manager.names[index];
+}
 
 Mat4x4f* get_world_mat(EntityManager* manager, Entity entity) {
 	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
@@ -156,3 +190,4 @@ Vec3f right(EntityManager* manager, Entity entity) {
 	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
 	return manager->transform_manager.rights[index];
 }
+

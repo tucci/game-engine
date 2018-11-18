@@ -30,6 +30,20 @@ Vec4f operator+(const Vec4f& v1, const Vec4f& v2) {
 
 }
 
+Vec4f& operator+=(Vec4f& v1, const Vec4f& v) {
+	v1 = v1 + v;
+	return v1;
+}
+
+// Equality
+bool operator==(const Vec4f& v1, const Vec4f& v2) {
+	return
+		v1.x == v2.x &&
+		v1.y == v2.y &&
+		v1.z == v2.z &&
+		v1.w == v2.w;
+}
+
 // Subtraction
 Vec4f operator-(const Vec4f& v1, const Vec4f& v2) {
 
@@ -175,6 +189,19 @@ Vec3f operator+(const Vec3f& v1, const Vec3f& v2) {
 	Vec4f v42 = { v2.x, v2.y, v2.z, 0 };
 	Vec3f result = (v41 + v42).xyz;
 	return result;
+}
+
+Vec3f& operator+=(Vec3f& v1, const Vec3f& v) {
+	v1 = v1 + v;
+	return v1;
+}
+
+// equality
+bool operator==(const Vec3f& v1, const Vec3f& v2) {
+	return
+		v1.x == v2.x &&
+		v1.y == v2.y &&
+		v1.z == v2.z;
 }
 
 // Subtraction

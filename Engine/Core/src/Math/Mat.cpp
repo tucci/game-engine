@@ -183,7 +183,6 @@ Mat4x4f operator*(const Mat4x4f& m1, const Mat4x4f& m2) {
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 4; j++) {
 			result.mat1d[j * 4 + i] = 0;
-
 			for (k = 0; k < 4; k++) {
 				result.mat1d[j * 4 + i] += m1.mat1d[k * 4 + i] * m2.mat1d[j * 4 + k];
 			}
@@ -196,7 +195,7 @@ Mat4x4f operator*(const Mat4x4f& m1, const Mat4x4f& m2) {
 
 
 Vec4f operator*(const Mat4x4f& m, const Vec4f& v) {
-	// NOTE: this is column major multiplication
+	
 	Vec4f result;
 	result.x = (m.m00 * v.x) + (m.m01 * v.y) + (m.m02 * v.z) + (m.m03 * v.w);
 	result.y = (m.m10 * v.x) + (m.m11 * v.y) + (m.m12 * v.z) + (m.m13 * v.w);
@@ -213,6 +212,7 @@ Vec4f operator*(const Mat4x4f& m, const Vec4f& v) {
 	}
 
 
+	
 	return result;
 }
 
@@ -272,26 +272,22 @@ Mat4x4f ortho(float near, float far, float top, float bottom, float right, float
 
 Mat4x4f look_at(const Vec3f& eye, const Vec3f& to, const Vec3f& up) {
 	Vec3f forward = normalize(eye - to);
-	//shadows break here goes to nan
 	Vec3f right = normalize(cross(up, forward));
 	Vec3f up2 = normalize(cross(forward, right));
 
 	Mat4x4f mat;
-	Mat4x4f mat2;
-
-
+	
 	for (int i = 0; i<3; i++) {
 		mat.mat2d[i][0] = right.data[i];
 		mat.mat2d[i][1] = up2.data[i];
 		mat.mat2d[i][2] = forward.data[i];
-		mat2.mat2d[3][i] = -eye.data[i];
 	}
-	mat = mat2 * mat;
 
+	mat.mat2d[3][0] = -dot(right, eye);
+	mat.mat2d[3][1] = -dot(up2, eye);
+	mat.mat2d[3][2] = -dot(forward, eye);
 
 	return mat;
-
-
 }
 
 Mat4x4f viewport(int x, int y, int w, int h, float normalized_near, float normalized_far) {

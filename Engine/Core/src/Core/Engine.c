@@ -723,9 +723,6 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	// Engine specific updates
 	if (engine->input.keys[SDL_SCANCODE_G].just_pressed) {
 		engine->renderer.opengl.show_debug_grid = !engine->renderer.opengl.show_debug_grid;
-	}
-
-	if (engine->input.keys[SDL_SCANCODE_H].just_pressed) {
 		engine->renderer.opengl.show_debug_axes = !engine->renderer.opengl.show_debug_axes;
 	}
 
@@ -750,16 +747,17 @@ static void update_engine_state(Engine* engine, float delta_time) {
 
 
 	job_update_basis_vectors(entity_manager);
+	job_compute_camera_view_matrices(entity_manager);
 	job_compute_world_matrices(entity_manager);
 
 
-	//// You go through all the entites, and push them to the render state
-	//for (int i = 0; i < entity_manager->camera_manager.count; i++) {
-	//	Camera cam = entity_manager->camera_manager.cameras[i];
-	//	Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
-	//	Vec3f cam_pos = position(entity_manager, e);
-	//	push_camera(renderer, &cam, cam_pos);
-	//}
+	// You go through all the entites, and push them to the render state
+	for (int i = 0; i < entity_manager->camera_manager.count; i++) {
+		Camera* cam = &entity_manager->camera_manager.cameras[i];
+		Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
+		Vec3f cam_pos = position(entity_manager, e);
+		push_camera(renderer, cam, cam_pos);
+	}
 
 
 	for (int i = 0; i < entity_manager->light_manager.count; i++) {

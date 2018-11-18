@@ -614,6 +614,79 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 	}
 }
 
+void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right) {
+
+
+	Camera camera = *opengl->render_world->camera;
+	Mat4x4f model_mat;
+	Mat4x4f view_mat = camera.view_mat;
+	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+
+	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
+
+
+	GLShader debug_shader = opengl->shaders[opengl->render_world->debug_shader_res.handle];
+
+	glBindVertexArray(opengl->vaos[opengl->render_world->debug_grid_vao_res.handle]);
+	glUseProgram(debug_shader.program);
+
+	glUniformMatrix4fv(glGetUniformLocation(debug_shader.program, "transform"), 1, GL_FALSE, mvp_mat.mat1d);
+	glBindBuffer(GL_ARRAY_BUFFER, opengl->vbos[opengl->render_world->debug_grid_vbo_res.handle]);
+
+	
+	Vec3f pos_array[6];
+
+	pos_array[0] = pos;
+	pos_array[1] = pos + normalize(right);
+	pos_array[2] = pos;
+	pos_array[3] = pos + normalize(up);
+	pos_array[4] = pos;
+	pos_array[5] = pos + normalize(forward);
+
+	Vec3f color_array[6]; 
+	color_array[0] = Vec3f(1,0,0);
+	color_array[1] = Vec3f(1,0,0);
+	color_array[2] = Vec3f(0,1,0);
+	color_array[3] = Vec3f(0,1,0);
+	color_array[4] = Vec3f(0,0,1);
+	color_array[5] = Vec3f(0,0,1);
+
+
+
+	glBufferData(GL_ARRAY_BUFFER,
+		2 * 6 * sizeof(Vec3f),
+		NULL,
+		GL_STATIC_DRAW);
+
+	// Buffer pos data
+	glBufferSubData(GL_ARRAY_BUFFER,
+		0,
+		6 * sizeof(Vec3f),
+		&pos_array);
+
+	// Buffer color data
+	glBufferSubData(GL_ARRAY_BUFFER,
+		6 * sizeof(Vec3f),
+		6 * sizeof(Vec3f),
+		&color_array);
+
+
+	// Pos attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	// Color attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(6 * sizeof(Vec3f)));
+	glEnableVertexAttribArray(1);
+
+
+	
+	glLineWidth(4);
+	glDrawArrays(GL_LINES, 0, 6);
+	
+
+}
+
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -843,55 +916,92 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	if (opengl->show_debug_grid) {
 		glLineWidth(2);
 		glDrawArrays(GL_LINES, 0, opengl->axes_pos_offset);
-	}
 
-	if (opengl->show_debug_axes) {
 		glLineWidth(4);
 		glDrawArrays(GL_LINES, opengl->axes_pos_offset, opengl->grid_mesh.vertex_count - opengl->axes_pos_offset);
 
+
+
+
+		// Draw light
+
+
+		Vec3f dir_light_line[2];
+		Vec3f dir_light_line_color[2];
+
+		dir_light_line[1] = opengl->render_world->test_light.dir_light.direction;
+		dir_light_line[0] = Vec3f(0, 0, 0);
+
+
+		dir_light_line_color[0] = Vec3f(1, 1, 1);
+		dir_light_line_color[1] = Vec3f(1, 1, 1);
+		glBufferData(GL_ARRAY_BUFFER,
+			4 * sizeof(Vec3f),
+			NULL,
+			GL_STATIC_DRAW);
+
+		// Buffer pos data
+		glBufferSubData(GL_ARRAY_BUFFER,
+			0,
+			2 * sizeof(Vec3f),
+			&dir_light_line);
+
+
+		// Buffer color data
+		glBufferSubData(GL_ARRAY_BUFFER,
+			2 * sizeof(Vec3f),
+			2 * sizeof(Vec3f),
+			&dir_light_line_color);
+
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
+		glEnableVertexAttribArray(0);
+
+		// Color attribute
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(2 * sizeof(Vec3f)));
+		glEnableVertexAttribArray(1);
+
+
+
+		glDrawArrays(GL_LINES, 0, 2);
+
+
+
+
+		for (int i = 0; i < opengl->render_world->render_mesh_count; i++) {
+			RenderMesh render_mesh = opengl->render_world->render_mesh_list[i];
+			Mat4x4f* world_mat = render_mesh.world;
+
+			Vec3f pos;
+
+			pos.x = world_mat->mat2d[3][0];
+			pos.y = world_mat->mat2d[3][1];
+			pos.z = world_mat->mat2d[3][2];
+
+
+			Vec3f right;
+			right.x = world_mat->mat2d[0][0];
+			right.y = world_mat->mat2d[0][1];
+			right.z = world_mat->mat2d[0][2];
+
+			Vec3f up;
+			up.x = world_mat->mat2d[1][0];
+			up.y = world_mat->mat2d[1][1];
+			up.z = world_mat->mat2d[1][2];
+
+			Vec3f forward;
+			forward.x = world_mat->mat2d[2][0];
+			forward.y = world_mat->mat2d[2][1];
+			forward.z = world_mat->mat2d[2][2];
+
+
+
+			gizmo_render_axis(opengl, pos, forward, up, right);
+
+		}
 	}
 
 
-	// Draw light
 
-
-	Vec3f dir_light_line[2];
-	Vec3f dir_light_line_color[2];
-
-	dir_light_line[1] = opengl->render_world->test_light.dir_light.direction;
-	dir_light_line[0] = Vec3f(0, 0, 0);
-	
-
-	dir_light_line_color[0] = Vec3f(1, 1, 1);
-	dir_light_line_color[1] = Vec3f(1, 1, 1);
-	glBufferData(GL_ARRAY_BUFFER,
-		4 * sizeof(Vec3f),
-		NULL,
-		GL_STATIC_DRAW);
-
-	// Buffer pos data
-	glBufferSubData(GL_ARRAY_BUFFER,
-		0,
-		2 * sizeof(Vec3f),
-		&dir_light_line);
-
-
-	// Buffer color data
-	glBufferSubData(GL_ARRAY_BUFFER,
-		2 * sizeof(Vec3f),
-		2 * sizeof(Vec3f),
-		&dir_light_line_color);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	// Color attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(2 * sizeof(Vec3f)));
-	glEnableVertexAttribArray(1);
-
-
-	glPointSize(25);
-	glDrawArrays(GL_LINES, 0, 2);
 
 }
 
@@ -1010,23 +1120,23 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		
 		StaticMesh* mesh = render_mesh.mesh;
 		Mat4x4f* world_mat = render_mesh.world;
-		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);
+		
 		if (mesh->vertex_count == 0) { continue; }
-
+		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);
 		glBufferData(GL_ARRAY_BUFFER,
 			mesh->vertex_count * sizeof(Vec3f)
 			+ mesh->vertex_count * sizeof(Vec2f)
 			+ mesh->vertex_count * sizeof(Vec3f),
 			NULL,
 			GL_DYNAMIC_DRAW);
-
+		
 		glBufferSubData(GL_ARRAY_BUFFER,
 			0,
 			mesh->vertex_count * sizeof(Vec3f),
 			mesh->pos);
-
+		
 		//crashes because vertex count is bigger than size of normal / texcoords
-
+		
 		glBufferSubData(GL_ARRAY_BUFFER,
 			mesh->vertex_count * sizeof(Vec3f),
 			mesh->vertex_count * sizeof(Vec2f),
@@ -1036,24 +1146,24 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			mesh->vertex_count * sizeof(Vec3f) + mesh->vertex_count * sizeof(Vec2f),
 			mesh->vertex_count * sizeof(Vec3f),
 			mesh->normal);
-
-
-	
-
-
+		
+		
+		
+		
+		
 		// Position
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)0);
 		glEnableVertexAttribArray(0);
-
+		
 		// Texcoords
 		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vec2f), cast(GLvoid*)(mesh->vertex_count * sizeof(Vec3f)));
 		glEnableVertexAttribArray(1);
-
+		
 		// Normals
 		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vec3f), cast(GLvoid*)(mesh->vertex_count * sizeof(Vec3f) + mesh->vertex_count * sizeof(Vec2f)));
 		glEnableVertexAttribArray(2);
-
-
+		
+		
 		
 		
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, opengl->ebos[opengl->render_world->EBO.handle]);
@@ -1061,11 +1171,10 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			mesh->index_count * sizeof(Vec3i),
 			mesh->indices,
 			GL_DYNAMIC_DRAW);
-
-
-
+		
+		
+		
 		glDrawElements(draw_type, 3 * mesh->index_count, GL_UNSIGNED_INT, 0);
-
 	}
 
 

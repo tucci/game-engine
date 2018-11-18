@@ -110,6 +110,8 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, uint32_t width, uint32_t he
 
 
 
+void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right);
+
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world);
 bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 

@@ -52,14 +52,11 @@ Mat4x4f inline scale(const Vec3f& vec) {
 }
 
 
-
-// TODO: figure out why we need to transpose everything
-// I think some thinks are column major, and some things are row major
 Mat4x4f inline translate(const Vec3f& vec) {
 	Mat4x4f mat;
-	mat.m03 = vec.x;
-	mat.m13 = vec.y;
-	mat.m23 = vec.z;
+	mat.m30 = vec.x;
+	mat.m31 = vec.y;
+	mat.m32 = vec.z;
 	return mat;
 }
 
@@ -87,47 +84,15 @@ Mat4x4f inline rotate(float rads, const Vec3f& axis) {
 	result.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
 	result.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
 
-
+	//result = transpose(result);
 	return result;
 }
-
-
-Mat4x4f inline trs_mat_from_transform(Transform* transform) {
-	Mat4x4f result;
-
-	// Scale matrix
-	Mat4x4f s = scale(transform->scale);
-
-
-	// Build quat from our euler angles
-	// Build the rotation matrix from our quat
-	Quat q = transform->rotation;
-	Mat4x4f r = quat_to_rotation_matrix(q);
-
-	// Build the translate matrix
-	Mat4x4f t = translate(transform->position);
-	t = transpose(t);
-
-
-	// Scale first
-	// Then rotate
-	// Then translate
-	result = r * s;
-	result = t * result;
-	
-
-
-	return result;
-
-}
-
-
 
 typedef struct TransformManager {
 	uint64_t count;
 	CompactMap<uint64_t> id_map;
 	
-
+	char** names;
 	Vec3f* positions;
 	Vec3f* scales;
 	Vec3f* ups;

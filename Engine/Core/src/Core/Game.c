@@ -107,74 +107,37 @@ void load_scene(Game* game, int scene_id) {
 	
 
 
-	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/bb8.fbx", false);
+	
 	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+	
 	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
-	AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
+	//AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
 	//AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
 
 	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
-	
-	
-	
+	AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
 
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx", false);
+
+	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx", false);
+
+
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
+
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx", false);
+	
 
 	scene->sink = import_asset_scene_into_scene(game, import_scene.scene);
-	
-	//set_scale(entity_manager, scene->sink, Vec3f(0.1, 0.1, 0.1));
 
-	
+
 	destroy_asset_importer(&importer);
 
 	Vec3f model_pos = position(entity_manager, scene->sink);
-
 	set_position(entity_manager, scene->entity_main_camera, model_pos);
 	
-
 	
-	
-
-	// TODO: dont forget to free meshes
-
-	//set_position(entity_manager, scene->entity_mesh_test, Vec3f(0, 0, -5));
-
-
-	//// Mesh 2
-	//scene->entity_mesh_test2 = create_entity(entity_manager);
-	//add_component(entity_manager, scene->entity_mesh_test2, ComponentType_Transform);
-	//add_component(entity_manager, scene->entity_mesh_test2, ComponentType_StaticMesh);
-
-	//StaticMesh* mesh2 = get_static_mesh(entity_manager, scene->entity_mesh_test2);
-	//make_uv_sphere(mesh2, 16, 32, &game->stack);
-	//set_static_mesh(entity_manager, scene->entity_mesh_test2, mesh2);
-	////make_cube(mesh2, &game->game_memory);
-	//set_position(entity_manager, scene->entity_mesh_test2, Vec3f(5, 0, 1));
-	//
-
-
-	//// Mesh 3
-	//scene->entity_mesh_test3 = create_entity(entity_manager);
-	//add_component(entity_manager, scene->entity_mesh_test3, ComponentType_Transform);
-	//add_component(entity_manager, scene->entity_mesh_test3, ComponentType_StaticMesh);
-
-	//StaticMesh* mesh3 = get_static_mesh(entity_manager, scene->entity_mesh_test3);
-	//make_plane(mesh3, &game->stack);
-	//set_static_mesh(entity_manager, scene->entity_mesh_test3, mesh3);
-	//set_position(entity_manager, scene->entity_mesh_test3, Vec3f(0, -2, 0));
-	//set_scale(entity_manager, scene->entity_mesh_test3, Vec3f(100, 100, 100));
-	
-
-	//attach_child_entity(entity_manager, scene->entity_mesh_test, scene->entity_mesh_test2);
-	//attach_child_entity(entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test3);
-	//attach_child_entity(entity_manager, scene->entity_mesh_test2, scene->entity_mesh_test3);
-	//attach_child_entity(entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test2);
-	//attach_child_entity(entity_manager, *scene->entity_main_camera, *scene->entity_mesh_test3);
-	
-	
-
 
 	scene->entity_test_light = create_entity(entity_manager);
 	add_component(entity_manager, scene->entity_test_light, ComponentType_Light);
@@ -303,20 +266,24 @@ void game_update(Game* game) {
 
 
 	// TODO: remove need for sdl specific scan codes. convert to our own input api
-	// TODO: figure out why everything is inverted
-	// i think it has to do with the -1 * position, and transpose 
+	
 	Vec3f new_cam_direction;
 	
-	if (input->keys[SDL_SCANCODE_W].down) { new_cam_direction = (delta_time * -forward(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction = (delta_time * forward(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction = (delta_time * -right(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction = (delta_time * right(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction = (delta_time * up(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction = (delta_time * -up(entity_manager, scene->entity_main_camera)); }
+	// Since the camera always looks down -z
+	if (input->keys[SDL_SCANCODE_W].down) {new_cam_direction += (delta_time * -forward(entity_manager, scene->entity_main_camera));}
+	if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction += (delta_time * forward(entity_manager, scene->entity_main_camera)); }
 
+	if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction += (delta_time * right(entity_manager, scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction += (delta_time * -right(entity_manager, scene->entity_main_camera)); }
+
+	if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction += (delta_time * up(entity_manager, scene->entity_main_camera)); }
+	if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
+
+	float cam_move_scale = 10;
 	Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
-	set_position(entity_manager, scene->entity_main_camera, cam_pos + (new_cam_direction * 50));
+	set_position(entity_manager, scene->entity_main_camera, cam_pos + (cam_move_scale * new_cam_direction));
 
+	//debug_print("POS [%f, %f, %f]\n", cam_pos.x, cam_pos.y, cam_pos.z);
 	
 
 
@@ -326,6 +293,7 @@ void game_update(Game* game) {
 	Vec3f new_mesh_scale = Vec3f(0, 0, 0);
 
 	if (input->keys[SDL_SCANCODE_PAGEUP].down) {
+		
 		new_mesh_scale.x += delta_time * 1;
 		new_mesh_scale.y += delta_time * 1;
 		new_mesh_scale.z += delta_time * 1;
@@ -346,27 +314,19 @@ void game_update(Game* game) {
 
 
 
-	Quat new_test_rot;
 
-	if (input->mouse.mouse_button_left.down) {
-		new_test_rot *= quat_from_axis_angle(Vec3f_Up, -5);
-		//test->transform.rotation = test->transform.rotation * quat_from_axis_angle(Vec3f_Up, -5);
-	}
+	
 
-	if (input->mouse.mouse_button_right.down) {
-		new_test_rot *= quat_from_axis_angle(Vec3f_Up, 5);
-		//test->transform.rotation = test->transform.rotation * quat_from_axis_angle(Vec3f_Right, 5);
-	}
 
-	Quat old_test_rot = rotation(entity_manager, scene->sink);
-	set_rotation(entity_manager, scene->sink, old_test_rot * new_test_rot);
+	
+
 	
 
 
 	Light light = get_light(entity_manager, scene->entity_test_light);
 
 
-	Vec3f sink_dir;
+	
 	
 	if (input->keys[SDL_SCANCODE_LEFT].down) {
 		light.dir_light.direction.z -= delta_time * 0.5f;
@@ -379,17 +339,41 @@ void game_update(Game* game) {
 	}
 
 
+	Vec3f sink_dir;
+	Vec3f sink_pos = position(entity_manager, scene->sink);
+
 	if (input->keys[SDL_SCANCODE_UP].down) {
 		light.dir_light.direction.x += delta_time * 0.5f;
-		sink_dir = (delta_time * -forward(entity_manager, scene->sink));
+
+	
+		sink_dir += (delta_time * forward(entity_manager, scene->sink));
 	}
 
 	if (input->keys[SDL_SCANCODE_DOWN].down) {
 		light.dir_light.direction.x -= delta_time * 0.5f;
+		sink_dir += (delta_time * -forward(entity_manager, scene->sink));
 	}
 
-	Vec3f sink_pos = position(entity_manager, scene->sink);
 	set_position(entity_manager, scene->sink, sink_pos + sink_dir);
+
+
+	Quat old_rot = rotation(entity_manager, scene->sink);
+	Quat new_test_rot;
+
+
+
+	if (input->mouse.mouse_button_left.down) {
+
+		new_test_rot *= quat_from_axis_angle(Vec3f_Up, 5.0f);
+
+	}
+
+	if (input->mouse.mouse_button_right.down) {
+		new_test_rot *= quat_from_axis_angle(Vec3f_Up, -5.0f);
+	}
+	set_rotation(entity_manager, scene->sink, new_test_rot * old_rot);
+
+	
 
 
 	set_light(entity_manager, scene->entity_test_light, light);
@@ -401,7 +385,7 @@ void game_update(Game* game) {
 	// See world/local rotation
 	// Rotate camera around world first
 	Quat old_cam_rot = rotation(entity_manager, scene->entity_main_camera);
-	Quat new_cam_rot = new_cam_rot = quat_from_axis_angle(Vec3f_Up, -delta_pos.x * 0.25f) * old_cam_rot;
+	Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -delta_pos.x * 0.25f) * old_cam_rot;
 	
 	
 
@@ -413,33 +397,22 @@ void game_update(Game* game) {
 	// if it does, then we wont add this rotation
 	// if it doesnt, then we set the new camera rotation to the test rotation
 	Quat test_new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -delta_pos.y * 0.25f);
+	
+
+	// TODO: fix clamping issue
 	// Get the euler angle so we can see if we want to clamp the rotation
-	Vec3f euler = quat_to_euler(test_new_cam_rot);
-	// hard coded clamp between -89 and 89 degrees in radians
-	if (euler.x > DEG2RAD(-89) && euler.x <  DEG2RAD(89)) {
+	// Vec3f euler = quat_to_euler(test_new_cam_rot);
+	//// hard coded clamp between -89 and 89 degrees in radians
+	//if (euler.x > -89.0f && euler.x < 89.0f) {
 		new_cam_rot = test_new_cam_rot;
-	}
+	//}
 
 	set_rotation(entity_manager, scene->entity_main_camera, new_cam_rot);
 	
 	
 
-	cam_pos = position(entity_manager, scene->entity_main_camera);
-	// We need this minus, because we need to local rotate, also it seems to break the lighting calcs
-	Mat4x4f t = translate(-cam_pos);
-	t = transpose(t);
+
 	
-	camera->view_mat = quat_to_rotation_matrix(new_cam_rot) * t;
-	set_position(entity_manager, scene->entity_main_camera, cam_pos);
-
-
-	// You go through all the entites, and push them to the render state
-	//for (int i = 0; i < entity_manager->camera_manager.count; i++) {
-	//	Camera cam = entity_manager->camera_manager.cameras[i];
-	//	Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
-	//	Vec3f cam_pos = position(entity_manager, e);
-		push_camera(renderer, camera, cam_pos);
-	//}
 
 
 
@@ -460,6 +433,7 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 
 
 		add_component(manager, child_entity, ComponentType_Transform);
+		set_name(manager, child_entity, child_node->name);
 		set_position(manager, child_entity, child_node->translation);
 		set_scale(manager, child_entity, child_node->scale);
 		set_rotation(manager, child_entity, euler_to_quat(child_node->rotation));
@@ -497,6 +471,7 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 	add_component(manager, root, ComponentType_Transform);
 
 	
+	set_name(manager, root, scene->root->name);
 	set_position(manager, root, scene->root->translation);
 	set_scale(manager, root, scene->root->scale);
 	set_rotation(manager, root, euler_to_quat(scene->root->rotation));
@@ -504,4 +479,8 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 	import_asset_scene_node(manager, scene, scene->root, root);
 	return root;
 }
+
+
+
+
 

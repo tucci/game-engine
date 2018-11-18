@@ -30,7 +30,7 @@ typedef Quaternion Quat;
 
 
 Quat quat_from_axis_angle(const Vec3f& n, float deg);
-Quat quat_invert(const Quat& q);
+Quat quat_conj(const Quat& q);
 Quat quat_normalize(const Quat& q);
 // Rotate around a local axis: rotation = rotation * quat_from_axis_angle(Vec3f_Up, angle)
 // Rotate around a world axis : rotation = quat_from_axis_angle(Vec3f_Up, angle) * rotation;

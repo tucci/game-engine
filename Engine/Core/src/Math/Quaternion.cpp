@@ -3,6 +3,7 @@
 #include "Math/Quaternion.h"
 
 Quat quat_from_axis_angle(const Vec3f& n, float deg) {
+	
 	Quat result;
 	// Convert to radians
 	float rad = DEG2RAD(deg);
@@ -18,7 +19,7 @@ Quat quat_from_axis_angle(const Vec3f& n, float deg) {
 	return result;
 }
 
-Quat quat_invert(const Quat& q) {
+Quat quat_conj(const Quat& q) {
 	Quat result;
 	result.w = q.w;
 
@@ -35,7 +36,7 @@ Quat operator*(const Quat& q1, const Quat& q2) {
 	result.w = (q1.w * q2.w) - (dot(q1.v, q2.v));
 	// Note q1 * q2 != q2 * q1
 	result.v = ((q1.w * q2.v) + (q2.w * q1.v)) + cross(q1.v, q2.v);
-	//result = quat_normalize(result);
+	
 	return result;
 }
 
@@ -53,15 +54,21 @@ Quat quat_normalize(const Quat& q) {
 	result.w /= length;
 	return result;
 }
-Vec3f operator*(const Quat& q, const Vec3f& pt) {
+Vec3f operator*(const Quat& q, const Vec3f& p) {
 	Vec3f result;
-	Quat pt_quat;
-	pt_quat.w = 0;
-	pt_quat.v = pt;
+	//Quat pt_quat;
+	//pt_quat.w = 0;
+	//pt_quat.v = v;
 
 	// TODO: optimize simd
-	result = ((q * pt_quat) * quat_invert(q)).v;
+	//result = ((q * pt_quat) * quat_conj(q)).v;
 
+	
+	// Taken from https://www.essentialmath.com/GDC2012/GDC2012_JMV_Rotations.pdf
+	Vec3f v(q.x, q.y, q.z);
+	float w = q.w;
+	// dot(v,v) because v is not normalized = 1 - (w^2)
+	result =  ((w*w - dot(v, v)) * p) + (2.0f * dot(v, p) * v) + (2.0f * w * cross(v, p));
 	return result;
 }
 
@@ -73,50 +80,45 @@ Mat4x4f quat_to_rotation_matrix(const Quat& q) {
 	float qz2 = q.z * q.z;
 
 
-	result.mat2d[0][0] = 1 - 2 * (qy2 + qz2);
-	result.mat2d[0][1] = 2 * (q.x * q.y - q.z * q.w);
-	result.mat2d[0][2] = 2 * (q.x * q.z + q.y * q.w);
+	result.mat2d[0][0] = 1 - (2 * qy2) - (2 * qz2);
+	result.mat2d[0][1] = (2 * q.x * q.y) - (2 * q.z * q.w);
+	result.mat2d[0][2] = (2 * q.x * q.z) + (2 * q.y * q.w);
 
-	result.mat2d[1][0] = 2 * (q.x * q.y + q.z * q.w);
-	result.mat2d[1][1] = 1 - 2 * (qx2 + qz2);
-	result.mat2d[1][2] = 2 * (q.y * q.z - q.x * q.w);
+	result.mat2d[1][0] = (2 * q.x * q.y) + (2 * q.z * q.w);
+	result.mat2d[1][1] = 1 - (2 * qx2) - (2 * qz2);
+	result.mat2d[1][2] = (2 * q.y * q.z) - (2 * q.x * q.w);
 
-	result.mat2d[2][0] = 2 * (q.x * q.z - q.y * q.w);
-	result.mat2d[2][1] = 2 * (q.y * q.z + q.x * q.w);
-	result.mat2d[2][2] = 1 - 2 * (qx2 + qy2);
+	result.mat2d[2][0] = (2 * q.x * q.z) - (2 * q.y * q.w);
+	result.mat2d[2][1] = (2 * q.y * q.z) + (2 * q.x * q.w);
+	result.mat2d[2][2] = 1 - (2 * qx2) - (2 * qy2);
 
 
+	result = transpose(result);
 	return result;
 }
 
 
 Vec3f quat_to_euler(const Quat& q) {
 
-	//// Taken from https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_Angles_Conversion
+	
 	Vec3f euler;
 
-	//// roll (x-axis rotation)
-	//float sinr = 2.0 * (q.w * q.x + q.y * q.z);
-	//float cosr = 1.0 - 2.0 * (q.x * q.x + q.y * q.y);
-	//euler.x = atan2f_(sinr, cosr);
+	// roll 
+	float sinr_cosp = +2.0 * (q.w * q.x + q.y * q.z);
+	float cosr_cosp = +1.0 - 2.0 * (q.x * q.x + q.y * q.y);
+	euler.x = RAD2DEG(atan2f_(sinr_cosp, cosr_cosp));
 
-	//// pitch (y-axis rotation)
-	//double sinp = +2.0 * (q.w * q.y - q.z * q.x);
-	//if (ABS(sinp) >= 1)
-	//	euler.y = copysign_(PI / 2, sinp); // use 90 degrees if out of range
-	//else
-	//	euler.y = asinf_(sinp);
+	// pitch 
+	double sinp = +2.0 * (q.w * q.y - q.z * q.x);
+	if (fabs(sinp) >= 1)
+		euler.z = RAD2DEG(copysignf_(PI / 2, sinp)); // use 90 degrees if out of range
+	else
+		euler.z = RAD2DEG(asinf_(sinp));
 
-	//// yaw (z-axis rotation)
-	//double siny = 2.0 * (q.w * q.z + q.x * q.y);
-	//double cosy = 1.0 - 2.0 * (q.y * q.y + q.z * q.z);
-	//euler.z = atan2f_(siny, cosy);
-
-
-
-	euler.x = atan2f_(2 * q.x * q.w - 2 * q.y * q.z, 1 - 2 * q.x * q.x - 2 * q.z * q.z);
-	euler.y = atan2f_(2 * q.y * q.w - 2 * q.x * q.z, 1 - 2 * q.y * q.y - 2 * q.z * q.z);
-	euler.z = asinf_(2 * q.x * q.y + 2 * q.z * q.w);
+	// yaw 
+	double siny_cosp = +2.0 * (q.w * q.z + q.x * q.y);
+	double cosy_cosp = +1.0 - 2.0 * (q.y * q.y + q.z * q.z);
+	euler.y = RAD2DEG(atan2f_(siny_cosp, cosy_cosp));
 	
 
 
@@ -129,26 +131,18 @@ Quat euler_to_quat(const Vec3f& euler) {
 	Quat result;
 	
 
-	float pitch = DEG2RAD(euler.x);
-	float yaw = DEG2RAD(euler.y);
-	float roll = DEG2RAD(euler.z);
-
-
+	//float pitch = DEG2RAD(euler.z);
+	//float yaw = DEG2RAD(euler.x);
+	//float roll = DEG2RAD(euler.y);
 	
-
 	
+	Quat qx = quat_from_axis_angle(Vec3f_Right, euler.x);
+	Quat qy = quat_from_axis_angle(Vec3f_Up, euler.y);
+	Quat qz = quat_from_axis_angle(Vec3f_Forward, euler.z);
+	
+	// x y z backwards
+	return qz * qy * qx;
 
-	// Abbreviations for the various angular functions
-	double cy = cosf_(yaw * 0.5);
-	double sy = sinf_(yaw * 0.5);
-	double cr = cosf_(roll * 0.5);
-	double sr = sinf_(roll * 0.5);
-	double cp = cosf_(pitch * 0.5);
-	double sp = sinf_(pitch * 0.5);
 
-	result.w = cy * cr * cp + sy * sr * sp;
-	result.x = cy * sr * cp - sy * cr * sp;
-	result.y = cy * cr * sp + sy * sr * cp;
-	result.z = sy * cr * cp - cy * sr * sp;
 	return result;
 }

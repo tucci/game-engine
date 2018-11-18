@@ -40,7 +40,6 @@ void entity_add_camera_component(CameraManager* manager, Entity entity) {
 	} else {
 		manager->cameras[manager->count] = Camera(entity);
 	}
-
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
 	

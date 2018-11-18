@@ -32,7 +32,10 @@
 
 
 
+
+
 float inline clamp(float x, float min, float max) {
+	
 	if (x < min) {
 		x = min;
 	}
@@ -82,6 +85,10 @@ float inline powf_(float base, float exponent) {
 
 float inline fmodf_(float number, float denom) {
 	return fmodf(number, denom);
+}
+
+float inline copysignf_(float number, float sign) {
+	return copysignf(number, sign);
 }
 
 

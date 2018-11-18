@@ -94,6 +94,7 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 		}
 		case ComponentType_Camera: {
 			entity_add_camera_component(&manager->camera_manager, entity);
+			
 			break;
 		}
 		case ComponentType_StaticMesh: {
