@@ -21,6 +21,8 @@ Engine/*.FBX
 
 *.fbx
 *.FBX
+*.tif
+*.trak
 
 Engine/*.easset
 
