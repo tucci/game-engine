@@ -5,18 +5,11 @@
 #include <stdbool.h>
 
 typedef union Mat4x4f {
+
 	float mat1d[16];
-
-	struct {
-		float mat2d[4][4];
-	};
-
-	struct {
-		float m00, m01, m02, m03;
-		float m10, m11, m12, m13;
-		float m20, m21, m22, m23;
-		float m30, m31, m32, m33;
-	};
+	float mat2d[4][4];
+		
+	
 
 	Mat4x4f() {
 		// Create identity matrix
@@ -35,6 +28,16 @@ typedef union Mat4x4f {
 		}
 	};
 
+	// Returns a pointer to the inner array
+	// this is very unsafe, but it allows for better [][] indexing
+	// it is unsafe cause it returns a pointer and the caller can try to index higher indices then the matrix
+	// examle mat[2][5] is undefined
+	// it is assumed that the caller will provide indices between [0][0] and [3][3]
+	float* Mat4x4f::operator[](const int col_index) {
+		return this->mat2d[col_index];
+	}
+	
+
 } Mat4x4f;
 
 
@@ -43,6 +46,7 @@ Mat4x4f mat4x4f_identity();// You can use the construtor, but this can be used f
 Mat4x4f mat4x4f_zero();// You can use the construtor, but this can be used for more clarity
 bool mat4x4f_invert(const Mat4x4f& m, Mat4x4f* invOut);
 Mat4x4f operator*(const Mat4x4f& m1, const Mat4x4f& m2);
+
 Vec4f operator*(const Mat4x4f& m, const Vec4f& v);
 Mat4x4f perspective(float near, float far, float fov_deg, float aspect_ratio);
 Mat4x4f ortho(float near, float far, float top, float bottom, float right, float left);

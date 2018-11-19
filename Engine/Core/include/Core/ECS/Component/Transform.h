@@ -45,18 +45,18 @@ void inline update_direction_vectors_for_transform(Transform& transform) {
 
 Mat4x4f inline scale(const Vec3f& vec) {
 	Mat4x4f mat;
-	mat.m00 = vec.x;
-	mat.m11 = vec.y;
-	mat.m22 = vec.z;
+	mat[0][0] = vec.x;
+	mat[1][1] = vec.y;
+	mat[2][2] = vec.z;
 	return mat;
 }
 
 
 Mat4x4f inline translate(const Vec3f& vec) {
 	Mat4x4f mat;
-	mat.m30 = vec.x;
-	mat.m31 = vec.y;
-	mat.m32 = vec.z;
+	mat[3][0] = vec.x;
+	mat[3][1] = vec.y;
+	mat[3][2] = vec.z;
 	return mat;
 }
 
@@ -72,17 +72,17 @@ Mat4x4f inline rotate(float rads, const Vec3f& axis) {
 	float yz = axis.y * axis.z;
 	float xz = axis.x * axis.z;
 
-	result.mat2d[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
-	result.mat2d[0][1] = xy * one_minus_cos - axis.z * sin_angle;
-	result.mat2d[0][2] = xz * one_minus_cos + axis.y * sin_angle;
+	result[0][0] = axis.x * axis.x * one_minus_cos + cos_angle;
+	result[0][1] = xy * one_minus_cos - axis.z * sin_angle;
+	result[0][2] = xz * one_minus_cos + axis.y * sin_angle;
 
-	result.mat2d[1][0] = xy * one_minus_cos + axis.z * sin_angle;
-	result.mat2d[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
-	result.mat2d[1][2] = yz * one_minus_cos - axis.x * sin_angle;
+	result[1][0] = xy * one_minus_cos + axis.z * sin_angle;
+	result[1][1] = axis.y * axis.y * one_minus_cos + cos_angle;
+	result[1][2] = yz * one_minus_cos - axis.x * sin_angle;
 
-	result.mat2d[2][0] = xz * one_minus_cos - axis.y * sin_angle;
-	result.mat2d[2][1] = yz * one_minus_cos + axis.x * sin_angle;
-	result.mat2d[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
+	result[2][0] = xz * one_minus_cos - axis.y * sin_angle;
+	result[2][1] = yz * one_minus_cos + axis.x * sin_angle;
+	result[2][2] = axis.z * axis.z * one_minus_cos + cos_angle;
 
 	//result = transpose(result);
 	return result;

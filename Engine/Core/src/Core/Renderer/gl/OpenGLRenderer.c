@@ -1128,7 +1128,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			+ mesh->vertex_count * sizeof(Vec2f)
 			+ mesh->vertex_count * sizeof(Vec3f),
 			NULL,
-			GL_DYNAMIC_DRAW);
+			GL_STATIC_DRAW);
 		
 		glBufferSubData(GL_ARRAY_BUFFER,
 			0,
@@ -1170,7 +1170,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
 			mesh->index_count * sizeof(Vec3i),
 			mesh->indices,
-			GL_DYNAMIC_DRAW);
+			GL_STATIC_DRAW);
 		
 		
 		

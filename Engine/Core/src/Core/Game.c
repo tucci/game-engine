@@ -115,7 +115,7 @@ void load_scene(Game* game, int scene_id) {
 	//AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
 
 	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", false);
-	AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
 
 	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx", false);
 
@@ -124,9 +124,16 @@ void load_scene(Game* game, int scene_id) {
 
 
 	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
+	AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
 
 	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx", false);
+
+
+	// TOO MUCH MEMORY here
+	// TODO: need to find a way for the importer memory to scale without having a fixed memory
+	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx", false);
+
+	
 	
 
 	scene->sink = import_asset_scene_into_scene(game, import_scene.scene);

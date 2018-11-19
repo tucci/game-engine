@@ -3,6 +3,9 @@
 #include "Math/Mat.h"
 #include "Math/Math.h"
 
+
+
+
 // TODO: speed up with simd
 Mat4x4f transpose(const Mat4x4f& mat) {
 	Mat4x4f result;
@@ -196,11 +199,12 @@ Mat4x4f operator*(const Mat4x4f& m1, const Mat4x4f& m2) {
 
 Vec4f operator*(const Mat4x4f& m, const Vec4f& v) {
 	
+	
 	Vec4f result;
-	result.x = (m.m00 * v.x) + (m.m01 * v.y) + (m.m02 * v.z) + (m.m03 * v.w);
-	result.y = (m.m10 * v.x) + (m.m11 * v.y) + (m.m12 * v.z) + (m.m13 * v.w);
-	result.z = (m.m20 * v.x) + (m.m21 * v.y) + (m.m22 * v.z) + (m.m23 * v.w);
-	result.w = (m.m30 * v.x) + (m.m31 * v.y) + (m.m32 * v.z) + (m.m33 * v.w);
+	result.x = (m.mat2d[0][0] * v.x) + (m.mat2d[0][1] * v.y) + (m.mat2d[0][2] * v.z) + (m.mat2d[0][3] * v.w);
+	result.y = (m.mat2d[1][0] * v.x) + (m.mat2d[1][1] * v.y) + (m.mat2d[1][2] * v.z) + (m.mat2d[1][3] * v.w);
+	result.w = (m.mat2d[3][0] * v.x) + (m.mat2d[3][1] * v.y) + (m.mat2d[3][2] * v.z) + (m.mat2d[3][3] * v.w);
+	result.z = (m.mat2d[2][0] * v.x) + (m.mat2d[2][1] * v.y) + (m.mat2d[2][2] * v.z) + (m.mat2d[2][3] * v.w);
 
 
 

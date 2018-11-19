@@ -1,6 +1,7 @@
 
 Asset Tracker
 - handle tracker file errors, broken
+- handle large meshes by splitting them into multiple meshes 65k? gpu cards have a limit?
 - tracker keeps adding to tracker file
 - pak files/ get asset by pak file offset
 - get the entire asset system off strings, only the entry point of importing should be strings(or in editor asset importing)
