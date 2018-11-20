@@ -1,5 +1,10 @@
 
+Move all int types to own file
+String handling -> length strings- custom struct
+
+
 Asset Tracker
+- safer overwriting track file (write temp, then swap and rename) if overwriting fails, we lose everything
 - handle tracker file errors, broken
 - handle large meshes by splitting them into multiple meshes 65k? gpu cards have a limit?
 - tracker keeps adding to tracker file

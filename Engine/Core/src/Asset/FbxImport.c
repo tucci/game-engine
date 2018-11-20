@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "engine_platform.h"
+
 
 
 
@@ -37,17 +39,17 @@ void destroy_asset_importer(AssetImporter* importer) {
 static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry_Object* geo, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len) {
 
 
-	AssetID id;
-	id.id = next_asset_id(importer->tracker);
-	id.type = AssetType_StaticMesh;
+
+	
+	
 
 
 	char file_str[256];
 	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
 	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
 
-	track_asset(importer->tracker, id, file_str, str_size);
-
+	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	id.type = AssetType_StaticMesh;
 
 	FILE* file;
 	errno_t err;
@@ -156,9 +158,9 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 
 AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len) {
 
-	AssetID id;
-	id.id = next_asset_id(importer->tracker);
-	id.type = AssetType_StaticMesh;
+	
+	
+	
 
 	
 
@@ -166,8 +168,8 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
 	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
 
-	track_asset(importer->tracker, id, file_str, str_size);
-
+	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	id.type = AssetType_StaticMesh;
 
 	FILE* file;
 	errno_t err;
@@ -408,18 +410,16 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 
 }
 
-AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, char* filename, int filename_str_len) {
-	AssetID id;
-	id.id = next_asset_id(importer->tracker);
-	id.type = AssetType_Scene;
-
-
-
+//filename_str_len should not include the null terminator
+AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, const char* filename, int filename_str_len) {
+	
 	char file_str[256];
-	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
+	
+	uint32_t str_size = filename_str_len + 1 + ASSET_FILE_EXTENSION_LENGTH;
 	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
 
-	track_asset(importer->tracker, id, file_str, str_size);
+	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	id.type = AssetType_Scene;
 
 
 
@@ -1438,11 +1438,28 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 
 
 
-AssetID import_fbx(AssetImporter* importer, char* filename, bool y_is_up) {
+AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
+
+	
 	
 	AssetID scene_id;
-	scene_id.id = -1;// Underflows to max, this should alert to our map, that this is an error
-	scene_id.type = AssetType_None;
+	AssetID tracked_id = find_asset_by_name(importer->tracker, filename);
+	if (tracked_id.id == 0 && tracked_id.type == AssetType_None) {
+		// Asset not tracked
+		scene_id.id = 0;
+		scene_id.type = AssetType_None;
+	} else {
+		// Asset alredy being tracked
+		scene_id = tracked_id;
+		// If already being tracked, and we are not reimporting it, then just return what is already imported previously
+		if (!reimport) {
+			return scene_id;
+		}
+	}
+
+
+	
+	
 
 	
 	
@@ -1545,8 +1562,13 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool y_is_up) {
 	//// right now it is doing -4 to remove the .fbx extension
 	//uint32_t stripped_filename_length = strlen(filename) - 4;
 
-	char* stripped_filename = "Sink";
-	uint32_t stripped_filename_length = 5;
+	
+	const char* stripped_filename = platform_file_basename(filename, 0);
+	// does not include null terminator
+	uint32_t stripped_filename_length = strlen(stripped_filename);
+
+	
+	
 
 	importer->global_settings.up_axis = fbx_import.global_settings.up_axis;
 	importer->global_settings.up_axis_sign = fbx_import.global_settings.up_axis_sign;

@@ -3,6 +3,7 @@
 #include "Math/Math.h"
 
 // Makes casts easier to grep
+// Yes, we could use c++ style casts, but this codebase is trying to stay very c like
 #define cast(type) (type)
 
 
@@ -18,5 +19,10 @@
 
 #define CLAMP_MAX(x, max) MIN(x, max)
 #define CLAMP_MIN(x, min) MAX(x, min)
+
+
+
+
+
 
 

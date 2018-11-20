@@ -161,6 +161,8 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 }
 
 
+
+
 AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 	AssetID asset;
 	asset.id = 1;

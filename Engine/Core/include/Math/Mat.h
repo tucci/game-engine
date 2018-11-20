@@ -33,6 +33,7 @@ typedef union Mat4x4f {
 	// it is unsafe cause it returns a pointer and the caller can try to index higher indices then the matrix
 	// examle mat[2][5] is undefined
 	// it is assumed that the caller will provide indices between [0][0] and [3][3]
+	// while another solution would be to use a inner proxy class/struct. tbd
 	float* Mat4x4f::operator[](const int col_index) {
 		return this->mat2d[col_index];
 	}

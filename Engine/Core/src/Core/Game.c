@@ -105,38 +105,51 @@ void load_scene(Game* game, int scene_id) {
 	init_asset_importer(&importer, &asset_manager->asset_tracker);
 
 	
+	AssetID import_scene;
+	//import_scene = find_asset_by_name(importer.tracker, "mill.fbx.easset");
+	
+
+	// asset not found
+	//if (import_scene.id == 0) {
+		//import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", true);
+
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
+		//import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
+		//import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX");
+
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx");
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
+
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx");
+
+		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx");
+		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx");
+
+
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx");
+		import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
+
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx");
+
+
+		// TOO MUCH MEMORY here
+		// TODO: need to find a way for the importer memory to scale without having a fixed memory
+		//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx");
+	//}
+	
 
 
 	
-	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
 	
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", true);
-	//AssetID import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX", true);
-
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
-
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx", false);
-
-	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
-	//AssetID import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx", false);
-
-
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx", false);
-	AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
-
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx", false);
-
-
-	// TOO MUCH MEMORY here
-	// TODO: need to find a way for the importer memory to scale without having a fixed memory
-	//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx", false);
-
 	
+	
+	//AssetID import_scene;
+	//import_scene.id = 11;
+
 	
 
 	scene->sink = import_asset_scene_into_scene(game, import_scene.scene);
+
 
 
 	destroy_asset_importer(&importer);

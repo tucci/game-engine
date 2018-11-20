@@ -128,7 +128,7 @@ Vec3f quat_to_euler(const Quat& q) {
 
 // Euler angles in degrees
 Quat euler_to_quat(const Vec3f& euler) {
-	Quat result;
+	
 	
 
 	//float pitch = DEG2RAD(euler.z);
@@ -144,5 +144,5 @@ Quat euler_to_quat(const Vec3f& euler) {
 	return qz * qy * qx;
 
 
-	return result;
+	
 }

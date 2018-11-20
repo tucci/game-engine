@@ -192,8 +192,8 @@ void destroy_asset_importer(AssetImporter* importer);
 
 static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry_Object* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
 AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
-AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, char* filename, int filename_str_len);
-AssetID import_fbx(AssetImporter* importer, char* filename, bool y_is_up);
+AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, const char* filename, int filename_str_len);
+AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport);
 
 
 

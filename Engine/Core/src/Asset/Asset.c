@@ -3,6 +3,8 @@
 #include "Asset/Asset.h" 
 
 #include <stdio.h>
+#include <string.h>
+#include "engine_platform.h"
 
 #include "Common/common_macros.h"
 #include "debug_macros.h"
@@ -56,10 +58,6 @@ void init_asset_tracker(AssetTracker* tracker) {
 			
 		}
 
-	
-
-
-
 		err = fclose(file);
 		if (err == 0) {
 			debug_print("Closed %s\n", track_file);
@@ -69,44 +67,71 @@ void init_asset_tracker(AssetTracker* tracker) {
 		}
 
 	} else {
-		// File doesnt exist, create it for the first time
-
-
-		err = fopen_s(&file, track_file, "wb");
-
-		debug_print("First time writing to %s,", track_file);
-
-		if (err == 0) {
-			tracker->last_asset_id = 1;
-			tracker->assets_tracked = 0;
-
-			fwrite(cast(const void*) &tracker->last_asset_id, sizeof(tracker->last_asset_id), 1, file);
-			fwrite(cast(const void*) &tracker->assets_tracked, sizeof(tracker->assets_tracked), 1, file);
-		} else {
-			assert_fail();
-		}
-		
-		
-
-		err = fclose(file);
-		if (err == 0) {
-			debug_print("Finished writing to %s\n", track_file);
-		} else {
-			assert_fail();
-			debug_print("Cannot close to %s\n", track_file);
-		}
-
+		// File doesnt exist, don't do anything, the call to write_tracker_file, will create the file
 	}
+
+	
 
 }
 
 void destroy_asset_tracker(AssetTracker* tracker) {
-	update_tracker_file(tracker);
+	write_tracker_file(tracker);
 	map_destroy(&tracker->track_map);
 	arena_free(&tracker->mem);
 }
 
-void track_asset(AssetTracker* tracker, AssetID id, char* filename, uint32_t filename_length) {
+
+bool is_asset_tracked(AssetTracker* tracker, char* filename) {
+	AssetID id = find_asset_by_name(tracker, filename);
+
+	if (id.id == 0 && id.type == AssetType_None) {
+		// Asset is not tracked
+		return false;
+	}
+	// Asset is found and tracked
+	return true;
+}
+
+// filename should not include the .easset extension
+AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
+	
+	const char* base_file = platform_file_basename(filename, 0);
+	
+	int filename_len = strlen(base_file);
+	size_t map_size = tracker->track_map.size;
+	// Go over our track map, and look for filename
+	for (int i = 0; i < map_size; i++) {
+		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
+		// Check if this is a valid track data
+		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
+			if (strncmp(base_file, track_item.value.filename, filename_len) == 0) {
+				AssetID id;
+				id.id = track_item.key;
+				return id;
+			}
+			
+		}
+	}
+	// Not found
+	AssetID id;
+	id.id = 0;
+	id.type = AssetType_None;
+	return id;
+}
+
+// Tracking doesnt know anything about the asset type, it just tracks it, and provides the asset id
+AssetID track_asset(AssetTracker* tracker, char* filename, uint32_t filename_length) {
+
+
+	AssetID tracked_id = find_asset_by_name(tracker, filename);
+
+	// Asset is already tracked, just return the same id
+	if (tracked_id.id != 0) {
+		return tracked_id;
+	}
+
+	AssetID id;
+	id.id = next_asset_id(tracker);
 	MapResult<AssetTrackData> result = map_get(&tracker->track_map, id.id);
 
 	
@@ -124,16 +149,18 @@ void track_asset(AssetTracker* tracker, AssetID id, char* filename, uint32_t fil
 	track_data.filename = cast(char*) arena_alloc(&tracker->mem, filename_length);
 	snprintf(track_data.filename, filename_length, "%s", filename);
 
-	
+	// override or tracker this asset with the given id
 	map_put(&tracker->track_map, id.id, track_data);
 	
+	return id;
 }
 
-uint64_t next_asset_id(AssetTracker* tracker) {
+
+static uint64_t next_asset_id(AssetTracker* tracker) {
 	return tracker->last_asset_id++;
 }
 
-void update_tracker_file(AssetTracker* tracker) {
+void write_tracker_file(AssetTracker* tracker) {
 	// File doesnt exist, create it for the first time
 
 
@@ -214,11 +241,6 @@ void add_child_to_scene_node(AssetImport_SceneNode* node, AssetImport_SceneNode*
 }
 
 void set_scene_node_transform(AssetImport_SceneNode* node, Vec3f pos, Vec3f scale, Vec3f rot) {
-	//Transform transform;
-	//transform.position = pos;
-	//transform.scale = scale;
-	//transform.rotation = euler_to_quat(rot);
-	//node->transform = trs_mat_from_transform(&transform);
 
 	node->translation = pos;
 	node->scale = scale;

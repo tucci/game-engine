@@ -5,6 +5,10 @@
 #include "debug_macros.h"
 #include "Common/common_macros.h"
 
+
+
+
+
 // NOTE: The callee should handle case where the file cannot be opened or read
 char* file_to_str(const char* filename, StackAllocator* mem) {
 	char * buffer = 0;
@@ -44,3 +48,5 @@ char* file_to_str(const char* filename, StackAllocator* mem) {
 
 	return buffer;
 }
+
+

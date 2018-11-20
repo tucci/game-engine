@@ -152,6 +152,7 @@ typedef struct AssetTracker {
 	uint64_t last_asset_id = 1;
 	uint64_t assets_tracked;
 	CompactMap<AssetTrackData> track_map;
+	
 } AssetTracker;
 
 
@@ -159,10 +160,16 @@ typedef struct AssetTracker {
 
 void init_asset_tracker(AssetTracker* tracker);
 void destroy_asset_tracker(AssetTracker* tracker);
-void track_asset(AssetTracker* tracker, AssetID id, char* filename, uint32_t filename_length);
-uint64_t next_asset_id(AssetTracker* tracker);
 
-void update_tracker_file(AssetTracker* tracker);
+// trying to look for assets by name is very slow
+// find_asset_by_name and is_asset_tracked both do the same thing
+// is_asset_tracked is just a convience function over find_asset_by_name
+bool is_asset_tracked(AssetTracker* tracker, char* filename);
+AssetID find_asset_by_name(AssetTracker* tracker, const char* filename);
+AssetID track_asset(AssetTracker* tracker, char* filename, uint32_t filename_length);
+static uint64_t next_asset_id(AssetTracker* tracker);
+
+void write_tracker_file(AssetTracker* tracker);
 
 
 void init_scene_node(AssetImport_SceneNode* node, uint64_t id, char* name, uint32_t name_length);

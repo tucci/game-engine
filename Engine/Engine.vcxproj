@@ -113,7 +113,7 @@
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -155,7 +155,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>$(ProjectDir)\lib\glew210\lib\Release\x64;$(ProjectDir)\lib\sdl\lib\x64;$(LibraryPath);$(ProjectDir)\lib\zlib-1.2.11\lib\x64</AdditionalLibraryDirectories>
@@ -187,6 +187,7 @@
     <ClCompile Include="Core\src\Core\Engine.c" />
     <ClCompile Include="Core\src\Asset\AssetManager.c" />
     <ClCompile Include="Core\src\Asset\FbxImport.c" />
+    <ClCompile Include="Core\src\linux_engine_platform.c" />
     <ClCompile Include="Core\src\Main.c" />
     <ClCompile Include="Core\src\Math\Mat.cpp" />
     <ClCompile Include="Core\src\Math\Quaternion.cpp" />
@@ -197,6 +198,7 @@
     <ClCompile Include="Core\src\Core\Renderer\software_renderer\SoftwareRenderer.c" />
     <ClCompile Include="Core\src\test.c" />
     <ClCompile Include="Core\src\Util\Utils.cpp" />
+    <ClCompile Include="Core\src\win32_engine_platform.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\StackAllocator.h" />
@@ -216,6 +218,7 @@
     <ClInclude Include="Core\include\Core\Renderer\Renderer.h" />
     <ClInclude Include="Core\include\Core\Renderer\RenderInterface.h" />
     <ClInclude Include="Core\include\Asset\FbxImport.h" />
+    <ClInclude Include="Core\include\engine_platform.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="Core\include\Common\common_macros.h" />
     <ClInclude Include="Core\include\Common\LinearAllocator.h" />
