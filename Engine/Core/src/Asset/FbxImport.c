@@ -1563,7 +1563,7 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	//uint32_t stripped_filename_length = strlen(filename) - 4;
 
 	
-	const char* stripped_filename = platform_file_basename(filename, 0);
+	const char* stripped_filename = platform_file_basename(filename);
 	// does not include null terminator
 	uint32_t stripped_filename_length = strlen(stripped_filename);
 

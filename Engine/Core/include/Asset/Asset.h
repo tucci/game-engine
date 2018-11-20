@@ -146,6 +146,7 @@ typedef struct AssetTrackData {
 
 
 #define ASSET_TRACKER_FILE "Assets.trak"
+#define ASSET_TRACKER_TMP_SWAP_FILE "Assets.trak.tmp"
 
 typedef struct AssetTracker {
 	Arena mem;

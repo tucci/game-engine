@@ -95,7 +95,7 @@ bool is_asset_tracked(AssetTracker* tracker, char* filename) {
 // filename should not include the .easset extension
 AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
 	
-	const char* base_file = platform_file_basename(filename, 0);
+	const char* base_file = platform_file_basename(filename);
 	
 	int filename_len = strlen(base_file);
 	size_t map_size = tracker->track_map.size;
@@ -161,14 +161,21 @@ static uint64_t next_asset_id(AssetTracker* tracker) {
 }
 
 void write_tracker_file(AssetTracker* tracker) {
-	// File doesnt exist, create it for the first time
+	
 
+	// We are going to write the tracker data to a temp file first
+	// if the writing fails half way, we wont lose the old track data
+
+	// If we successfully write the track data, we will delete the old track file
+	// and rename the temp file to the new track file
+
+	// This prevents our track file from getting corrupted
 
 	FILE* file;
 	errno_t err;
-	const char* track_file = ASSET_TRACKER_FILE;
+	const char* track_temp_file = ASSET_TRACKER_TMP_SWAP_FILE;
 
-	err = fopen_s(&file, track_file, "wb");
+	err = fopen_s(&file, track_temp_file, "wb");
 
 	
 	if (err == 0) {
@@ -190,6 +197,8 @@ void write_tracker_file(AssetTracker* tracker) {
 				fwrite(cast(const void*) track_item.value.filename, track_item.value.filename_length, 1, file);
 			}
 		}
+
+		
 		
 
 	} else {
@@ -198,10 +207,17 @@ void write_tracker_file(AssetTracker* tracker) {
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", track_file);
+		debug_print("Finished writing to %s\n", track_temp_file);
+		// Delete the old file and rename swap file to the original asset track file
+		if (platform_pathfile_exists(ASSET_TRACKER_FILE)) {
+			platform_file_delete(ASSET_TRACKER_FILE);
+		} 
+		platform_file_rename(ASSET_TRACKER_TMP_SWAP_FILE, ASSET_TRACKER_FILE);
+		
+		
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", track_file);
+		debug_print("Cannot close to %s\n", track_temp_file);
 	}
 }
 
