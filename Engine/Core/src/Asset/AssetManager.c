@@ -52,8 +52,8 @@ void destroy_asset_manager(AssetManager* manager) {
 InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 
 	
-	MapResult<uint64_t> result = map_get(&manager->asset_id_map, id.id);
-	uint64_t index_to_asset_type_array;
+	MapResult<u64> result = map_get(&manager->asset_id_map, id.id);
+	u64 index_to_asset_type_array;
 	if (!result.found) {
 		// If it is not found, then it means this asset is not currently loaded into memory
 		// Load it into memory
@@ -97,8 +97,8 @@ StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id) {
 }
 
 static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file, void* buffer) {
-	fread(buffer, sizeof(uint32_t), 1, file);
-	uint32_t node_size = *cast(uint32_t*)buffer;
+	fread(buffer, sizeof(u32), 1, file);
+	u32 node_size = *cast(u32*)buffer;
 	
 
 
@@ -107,11 +107,11 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 
 
 
-	fread(buffer, sizeof(uint64_t), 1, file);
-	node.id = *cast(uint64_t*)buffer;
+	fread(buffer, sizeof(u64), 1, file);
+	node.id = *cast(u64*)buffer;
 
-	fread(buffer, sizeof(uint32_t), 1, file);
-	node.name_length = *cast(uint32_t*)buffer;
+	fread(buffer, sizeof(u32), 1, file);
+	node.name_length = *cast(u32*)buffer;
 
 	fread(buffer, node.name_length, 1, file);
 	node.name = cast(char*) arena_alloc(&manager->asset_mem, node.name_length + 1);
@@ -128,25 +128,25 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 	fread(buffer, sizeof(Vec3f), 1, file);
 	node.rotation = *cast(Vec3f*)buffer;
 
-	fread(buffer, sizeof(uint32_t), 1, file);
-	node.children_count = *cast(uint32_t*)buffer;
+	fread(buffer, sizeof(u32), 1, file);
+	node.children_count = *cast(u32*)buffer;
 
 	if (node.children_count > 0) {
 		node.children = cast(AssetImport_SceneNode*) arena_alloc(&manager->asset_mem, node.children_count * sizeof(AssetImport_SceneNode));
 		for (int i = 0; i < node.children_count; i++) {
-			fread(buffer, sizeof(uint64_t), 1, file);
-			uint64_t child_node_id = *cast(uint64_t*)buffer;
+			fread(buffer, sizeof(u64), 1, file);
+			u64 child_node_id = *cast(u64*)buffer;
 			node.children[i].id = child_node_id;
 		}
 	}
 
-	fread(buffer, sizeof(uint32_t), 1, file);
-	node.mesh_count = *cast(uint32_t*)buffer;
+	fread(buffer, sizeof(u32), 1, file);
+	node.mesh_count = *cast(u32*)buffer;
 	if (node.mesh_count > 0) {
-		node.meshes = cast(uint32_t*) arena_alloc(&manager->asset_mem, node.mesh_count * sizeof(uint32_t));
+		node.meshes = cast(u32*) arena_alloc(&manager->asset_mem, node.mesh_count * sizeof(u32));
 		for (int i = 0; i < node.mesh_count; i++) {
-			fread(buffer, sizeof(uint32_t), 1, file);
-			node.meshes[i] = *cast(uint32_t*)buffer;;
+			fread(buffer, sizeof(u32), 1, file);
+			node.meshes[i] = *cast(u32*)buffer;;
 		}
 	}
 
@@ -187,7 +187,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 	// first 8 bytes are the asset id
 	fread(buffer, 8, 1, file);
-	asset.id = *(uint64_t*)buffer;
+	asset.id = *(u64*)buffer;
 
 	// next 4 bytes are the asset type
 	fread(buffer, 4, 1, file);
@@ -213,26 +213,26 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			
 			
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->node_count = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->node_count = *cast(u32*)buffer;
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->mesh_count = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->mesh_count = *cast(u32*)buffer;
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->material_count = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->material_count = *cast(u32*)buffer;
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->light_count = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->light_count = *cast(u32*)buffer;
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->camera_count = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->camera_count = *cast(u32*)buffer;
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->anim_count= *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->anim_count= *cast(u32*)buffer;
 
-			fread(buffer, sizeof(uint32_t), 1, file);
-			scene->texture_count = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			scene->texture_count = *cast(u32*)buffer;
 
 			if (scene->mesh_count > 0) {
 				scene->mesh_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->mesh_count);
@@ -241,8 +241,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->mesh_infos[i].type = AssetType_StaticMesh;
 
 
-					fread(buffer, sizeof(uint64_t), 1, file);
-					scene->mesh_infos[i].id = *cast(uint64_t*)buffer;
+					fread(buffer, sizeof(u64), 1, file);
+					scene->mesh_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
 					import_asset_by_id(manager, scene->mesh_infos[i]);
@@ -255,8 +255,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					
 					scene->material_infos[i].type = AssetType_Material;
 
-					fread(buffer, sizeof(uint64_t), 1, file);
-					scene->material_infos[i].id = *cast(uint64_t*)buffer;
+					fread(buffer, sizeof(u64), 1, file);
+					scene->material_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
 					import_asset_by_id(manager, scene->material_infos[i]);
@@ -269,8 +269,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					
 					scene->light_infos[i].type = AssetType_Light;
 
-					fread(buffer, sizeof(uint64_t), 1, file);
-					scene->light_infos[i].id = *cast(uint64_t*)buffer;
+					fread(buffer, sizeof(u64), 1, file);
+					scene->light_infos[i].id = *cast(u64*)buffer;
 
 					
 					// TODO: push this to a import queue on a seperate thread
@@ -284,8 +284,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					
 					scene->camera_infos[i].type = AssetType_Camera;
 					
-					fread(buffer, sizeof(uint64_t), 1, file);
-					scene->camera_infos[i].id = *cast(uint64_t*)buffer;
+					fread(buffer, sizeof(u64), 1, file);
+					scene->camera_infos[i].id = *cast(u64*)buffer;
 					
 					// TODO: push this to a import queue on a seperate thread
 					import_asset_by_id(manager, scene->camera_infos[i]);
@@ -299,8 +299,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->animation_infos[i].type = AssetType_Animation;
 
 
-					fread(buffer, sizeof(uint64_t), 1, file);
-					scene->animation_infos[i].id = *cast(uint64_t*)buffer;
+					fread(buffer, sizeof(u64), 1, file);
+					scene->animation_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
 					import_asset_by_id(manager, scene->animation_infos[i]);
@@ -313,8 +313,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					
 					scene->texture_infos[i].type = AssetType_Texture;
 
-					fread(buffer, sizeof(uint64_t), 1, file);
-					scene->texture_infos[i].id = *cast(uint64_t*)buffer;
+					fread(buffer, sizeof(u64), 1, file);
+					scene->texture_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
 					import_asset_by_id(manager, scene->texture_infos[i]);

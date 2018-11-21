@@ -21,19 +21,19 @@ typedef struct AssetManager {
 	Arena asset_mem;
 	AssetID* assets;
 	AssetTracker asset_tracker;
-	CompactMap<uint64_t> asset_id_map;
+	CompactMap<u64> asset_id_map;
 
 	// TODO: lights/cameras arent really assets, and should be removed from the manager, we can probably move them into scene	
 
 	
 
-	uint64_t _scene_count;
-	uint64_t _static_mesh_count;
-	uint64_t _material_count;
-	uint64_t _light_count;
-	uint64_t _camera_count;
-	uint64_t _anim_count;
-	uint64_t _texture_count;
+	u64 _scene_count;
+	u64 _static_mesh_count;
+	u64 _material_count;
+	u64 _light_count;
+	u64 _camera_count;
+	u64 _anim_count;
+	u64 _texture_count;
 
 	AssetImport_Scene** _scenes;
 	StaticMesh** _static_meshes;

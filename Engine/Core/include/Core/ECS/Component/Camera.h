@@ -36,9 +36,9 @@ void init_camera_params(Camera* camera, float near, float far, float fov, float 
 
 
 typedef struct CameraManager {
-	CompactMap<uint64_t> id_map;
+	CompactMap<u64> id_map;
 	Camera* cameras;
-	uint64_t count;
+	u64 count;
 } CameraManager;
 
 

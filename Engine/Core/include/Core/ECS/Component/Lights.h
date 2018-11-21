@@ -36,9 +36,9 @@ typedef struct Light {
 } Light;
 
 typedef struct LightManager {
-	CompactMap<uint64_t> id_map;
+	CompactMap<u64> id_map;
 	Light* lights;
-	uint64_t count;
+	u64 count;
 } LightManager;
 
 

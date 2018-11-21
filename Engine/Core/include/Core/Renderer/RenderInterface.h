@@ -38,7 +38,7 @@ typedef struct RenderResource {
 	// TODO: eventually move the type into the higher 8 bits of the handle,
 	// and use lower 24bits of the handle as an index to an array
 	RenderResourceType type;
-	uint32_t handle;
+	u32 handle;
 } RenderResource;
 
 // the world of objects we need to render and states

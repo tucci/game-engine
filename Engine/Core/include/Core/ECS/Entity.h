@@ -1,12 +1,12 @@
 #pragma once
 
-#define NO_ENTITY_ID (uint64_t)0
+#define NO_ENTITY_ID (u64)0
 
-#include <stdint.h>
+#include "types.h"
 
 typedef struct Entity {
 	// TODO: implement generation index
-	uint64_t id;
+	u64 id;
 	Entity() {
 		id = NO_ENTITY_ID;
 	}

@@ -39,7 +39,7 @@ void push_light(Renderer* renderer, Light light);
 
 // NOTE: these create the resources on the gpu
 RenderResource create_frame_buffer(Renderer* renderer);
-RenderResource create_render_target(Renderer* renderer, uint32_t width, uint32_t height);
+RenderResource create_render_target(Renderer* renderer, u32 width, u32 height);
 RenderResource create_vertex_decl(Renderer* renderer);
 RenderResource create_vertex_buffer(Renderer* renderer);
 RenderResource create_index_buffer(Renderer* renderer);

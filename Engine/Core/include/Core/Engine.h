@@ -2,7 +2,7 @@
 
 #include <SDL.h>
 #include <stdio.h>
-#include <stdint.h>
+#include "types.h"
 #include <stdbool.h>
 
 #include "Core/Game.h"
@@ -76,7 +76,7 @@ typedef enum WindowEventKind {
 } WindowEventKind;
 
 typedef struct WindowEventData {
-	uint32_t window_id;
+	u32 window_id;
 	int data1;
 	int data2;
 
@@ -103,18 +103,18 @@ typedef struct Event {
 
 typedef struct Clock {
 
-	uint64_t ticks;
-	uint64_t delta_ticks;
+	u64 ticks;
+	u64 delta_ticks;
 
 	double seconds;
 	float delta_seconds;
 
-	uint64_t milliseconds;
+	u64 milliseconds;
 	int delta_milliseconds;
 	
 
-	uint64_t ticks_per_sec;
-	uint64_t sdl_start_ticks;
+	u64 ticks_per_sec;
+	u64 sdl_start_ticks;
 
 } Clock;
 

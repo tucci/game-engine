@@ -14,9 +14,9 @@ typedef struct Render {
 }Render;
 
 typedef struct RenderManager {
-	CompactMap<uint64_t> id_map;
+	CompactMap<u64> id_map;
 	Render* renders;
-	uint64_t count;
+	u64 count;
 } RenderManager;
 
 

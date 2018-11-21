@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL.h>
-#include <stdint.h>
+#include "types.h"
 
 typedef enum WindowFlag {
 	// NOTE:(steven) These flags try to have the same values as the flags from SDL_WindowFlags
@@ -18,12 +18,12 @@ typedef enum WindowFlag {
 } WindowFlag;
 
 typedef struct Window {
-	uint32_t window_id;
+	u32 window_id;
 
 	const char* title;
 	Vec2i pos;
 	Vec2i size;
-	uint32_t flags;
+	u32 flags;
 
 	SDL_Window* sdl_window;
 	SDL_WindowFlags sdl_window_flags;

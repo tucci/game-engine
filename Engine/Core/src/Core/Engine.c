@@ -473,7 +473,7 @@ static bool init_asset_manager(Engine* engine) {
 }
 
 static void update_clock(Engine* engine) {
-	uint64_t ticks = SDL_GetPerformanceCounter() - engine->clock.sdl_start_ticks;
+	u64 ticks = SDL_GetPerformanceCounter() - engine->clock.sdl_start_ticks;
 	engine->clock.delta_ticks = (int)(ticks - engine->clock.ticks);
 	engine->clock.ticks = ticks;
 

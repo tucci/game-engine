@@ -581,7 +581,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	return handle;
 }
 
-RenderResource gl_create_rbo(OpenGLRenderer* opengl, uint32_t width, uint32_t height) {
+RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 	RenderResource handle;
 	handle.type = RenderResourceType_RENDER_TARGET;
 	

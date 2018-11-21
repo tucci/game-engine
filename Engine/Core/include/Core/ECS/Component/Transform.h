@@ -89,8 +89,8 @@ Mat4x4f inline rotate(float rads, const Vec3f& axis) {
 }
 
 typedef struct TransformManager {
-	uint64_t count;
-	CompactMap<uint64_t> id_map;
+	u64 count;
+	CompactMap<u64> id_map;
 	
 	char** names;
 	Vec3f* positions;

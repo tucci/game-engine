@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h.>
+#include "types.h"
 #include "Math/Math.h"
 #include "debug_macros.h"
 // TODO: move our malloc to use our custom allocator?
@@ -10,14 +10,14 @@
 
 template <typename V>
 struct CompactMapItem {
-	uint64_t key;
+	u64 key;
 	V value;
 };
 
 template <typename V>
 struct MapResult {
 	bool found;
-	uint64_t key;
+	u64 key;
 	V value;
 };
 
@@ -29,8 +29,8 @@ struct CompactMap {
 	size_t item_count; // Amount of items hashed inside the map
 	size_t tomestones; // Amount of tomestombs in the map
 	size_t size;// Note: map size should be a power of 2
-	uint64_t empty_ref = 0;
-	//V& operator[] (uint64_t index);
+	u64 empty_ref = 0;
+	//V& operator[] (u64 index);
 	CompactMap() {
 		//this->map = NULL;
 		//this->size = 0;
@@ -46,18 +46,18 @@ struct CompactMap {
 //
 //// Can also use the [] operator
 //template <typename V>
-//V& map_get(CompactMap<V>* map, uint64_t key);
+//V& map_get(CompactMap<V>* map, u64 key);
 //
 //template <typename V>
-//void map_put(CompactMap<V>* map, uint64_t key, V val);
+//void map_put(CompactMap<V>* map, u64 key, V val);
 //
 //template <typename V>
 //void map_grow(CompactMap<V>* map, size_t new_size);
 //
-//static uint64_t MurmurHash3Mixer(uint64_t key);
+//static u64 MurmurHash3Mixer(u64 key);
 //
 
-static uint64_t MurmurHash3Mixer(uint64_t key) {
+static u64 MurmurHash3Mixer(u64 key) {
 	key ^= (key >> 33);
 	key *= 0xff51afd7ed558ccd;
 	key ^= (key >> 33);
@@ -89,7 +89,7 @@ void map_destroy(CompactMap<V>* map) {
 }
 
 template <typename V>
-MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
+MapResult<V> map_get(CompactMap<V>* map, u64 key) {
 	assert(map != NULL);
 	assert(map->map != NULL);
 	assert(key != 0);
@@ -123,7 +123,7 @@ MapResult<V> map_get(CompactMap<V>* map, uint64_t key) {
 }
 
 template <typename V>
-void map_put(CompactMap<V>* map, uint64_t key, V val) {
+void map_put(CompactMap<V>* map, u64 key, V val) {
 	assert(map != NULL);
 	// Note keys cant be 0
 	assert(key != 0);
@@ -193,7 +193,7 @@ void map_grow(CompactMap<V>* map, size_t new_size) {
 #pragma warning ("If Type V is a pointer type, you must free any internal data before calling map_remove")
 //If Type V is a pointer type, you must free any internal data before calling map_remove
 template <typename V>
-void map_remove(CompactMap<V>* map, uint64_t key) {
+void map_remove(CompactMap<V>* map, u64 key) {
 	assert(map != NULL);
 	assert(key != 0);
 	assert(key != TOMBSTONE);
@@ -221,10 +221,10 @@ void map_remove(CompactMap<V>* map, uint64_t key) {
 }
 
 //template <typename V>
-//V& CompactMap<V>::operator[] (uint64_t index) {
+//V& CompactMap<V>::operator[] (u64 index) {
 //	return map_get(this, index);
 //}
 
-//template struct CompactMap<uint64_t>;
+//template struct CompactMap<u64>;
 
 

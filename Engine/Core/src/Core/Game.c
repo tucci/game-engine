@@ -468,7 +468,7 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 			add_component(manager, parent_entity, ComponentType_Render);
 			set_render_visibility(manager, parent_entity, true);
 
-			uint32_t index = parent_node->meshes[i];
+			u32 index = parent_node->meshes[i];
 			AssetID mesh_id = scene->mesh_infos[index];
 			set_static_mesh(manager, parent_entity, mesh_id.mesh);
 

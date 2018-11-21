@@ -255,18 +255,18 @@ void inline test_arena(void) {
 }
 
 void inline test_map(void) {
-	CompactMap<uint64_t> map;
+	CompactMap<u64> map;
 	map_init(&map);
-	map_put(&map, 1, (uint64_t)1);
-	map_put(&map, 2, (uint64_t)2);
-	map_put(&map, 3, (uint64_t)3);
-	map_put(&map, 4, (uint64_t)4);
-	map_put(&map, 5, (uint64_t)5);
-	map_put(&map, 6, (uint64_t)6);
-	map_put(&map, 7, (uint64_t)7);
-	map_put(&map, 8, (uint64_t)8);
-	map_put(&map, 9, (uint64_t)9);
-	map_put(&map, 10, (uint64_t)10);
+	map_put(&map, 1, (u64)1);
+	map_put(&map, 2, (u64)2);
+	map_put(&map, 3, (u64)3);
+	map_put(&map, 4, (u64)4);
+	map_put(&map, 5, (u64)5);
+	map_put(&map, 6, (u64)6);
+	map_put(&map, 7, (u64)7);
+	map_put(&map, 8, (u64)8);
+	map_put(&map, 9, (u64)9);
+	map_put(&map, 10, (u64)10);
 
 	map_remove(&map, 2);
 	map_remove(&map, 5);
@@ -274,7 +274,7 @@ void inline test_map(void) {
 
 	
 	
-	MapResult<uint64_t> t1 = map_get(&map, 1);
+	MapResult<u64> t1 = map_get(&map, 1);
 	t1 = map_get(&map, 2);
 	t1 = map_get(&map, 3);
 	t1 = map_get(&map, 4);
@@ -286,16 +286,16 @@ void inline test_map(void) {
 	t1 = map_get(&map, 10);
 	t1 = map_get(&map, 32);
 
-	map_put(&map, 11, (uint64_t)11);
-	map_put(&map, 12, (uint64_t)12);
-	map_put(&map, 13, (uint64_t)13);
-	map_put(&map, 14, (uint64_t)14);
-	map_put(&map, 15, (uint64_t)14);
-	map_put(&map, 16, (uint64_t)14);
-	map_put(&map, 17, (uint64_t)14);
-	map_put(&map, 18, (uint64_t)14);
-	map_put(&map, 19, (uint64_t)14);
-	map_put(&map, 20, (uint64_t)14);
+	map_put(&map, 11, (u64)11);
+	map_put(&map, 12, (u64)12);
+	map_put(&map, 13, (u64)13);
+	map_put(&map, 14, (u64)14);
+	map_put(&map, 15, (u64)14);
+	map_put(&map, 16, (u64)14);
+	map_put(&map, 17, (u64)14);
+	map_put(&map, 18, (u64)14);
+	map_put(&map, 19, (u64)14);
+	map_put(&map, 20, (u64)14);
 
 
 	

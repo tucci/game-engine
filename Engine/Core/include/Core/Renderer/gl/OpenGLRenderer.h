@@ -105,7 +105,7 @@ RenderResource gl_create_vbo(OpenGLRenderer* opengl);
 RenderResource gl_create_ebo(OpenGLRenderer* opengl);
 RenderResource gl_create_vao(OpenGLRenderer* opengl);
 RenderResource gl_create_fbo(OpenGLRenderer* opengl);
-RenderResource gl_create_rbo(OpenGLRenderer* opengl, uint32_t width, uint32_t height);
+RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height);
 
 
 

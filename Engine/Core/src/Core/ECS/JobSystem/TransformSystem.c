@@ -27,7 +27,7 @@ void job_update_basis_vectors(EntityManager* manager) {
 
 static void world_transform(TransformManager* tm, Mat4x4f* parent, Entity e) {
 
-	MapResult<uint64_t> result = map_get(&tm->id_map, e.id);
+	MapResult<u64> result = map_get(&tm->id_map, e.id);
 	assert(result.found);
 	if (!result.found) {}
 	int index = result.value;
@@ -36,10 +36,10 @@ static void world_transform(TransformManager* tm, Mat4x4f* parent, Entity e) {
 	Entity child = tm->first_child[index];
 	while (child.id != NO_ENTITY_ID) {
 		world_transform(tm, &tm->world[index], child);
-		MapResult<uint64_t> result = map_get(&tm->id_map, child.id);
+		MapResult<u64> result = map_get(&tm->id_map, child.id);
 		assert(result.found);
 		if (!result.found) {}
-		uint64_t child_index = result.value;
+		u64 child_index = result.value;
 		child = tm->next_sibling[child_index];
 	}
 }
@@ -49,7 +49,7 @@ static Mat4x4f get_world_transform(EntityManager* manager, Entity e) {
 	TransformManager* tm = &manager->transform_manager;
 	
 	
-	uint64_t index = get_index_for_entity(manager, e, &manager->transform_manager.id_map);
+	u64 index = get_index_for_entity(manager, e, &manager->transform_manager.id_map);
 	Entity parent_entity = tm->parent[index];
 	// If this entity has no parent, then we'll just use the current local matrix
 	if (parent_entity.id == NO_ENTITY_ID) {
@@ -106,9 +106,9 @@ void job_compute_world_matrices(EntityManager* manager) {
 		//
 		//	// If we do have a parent
 		//	// Then get the index into the world matrix of the parent entity
-		//	MapResult<uint64_t> result = map_get(&tm->id_map, parent_id.id);
+		//	MapResult<u64> result = map_get(&tm->id_map, parent_id.id);
 		//	assert(result.found);
-		//	uint64_t parent_index = result.value;
+		//	u64 parent_index = result.value;
 		
 		//
 		//	 

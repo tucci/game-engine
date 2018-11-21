@@ -39,9 +39,9 @@ typedef struct StaticMesh {
 bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
 
 typedef struct StaticMeshManager {
-	CompactMap<uint64_t> id_map;
-	uint64_t* meshes;
-	uint64_t count;
+	CompactMap<u64> id_map;
+	u64* meshes;
+	u64 count;
 } StaticMeshManager;
 
 

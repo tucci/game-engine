@@ -31,23 +31,23 @@ void init_asset_tracker(AssetTracker* tracker) {
 		void* buffer[256];
 		
 		fread(buffer, sizeof(tracker->last_asset_id), 1, file);
-		tracker->last_asset_id = *cast(uint64_t*)buffer;
+		tracker->last_asset_id = *cast(u64*)buffer;
 
 		fread(buffer, sizeof(tracker->assets_tracked), 1, file);
-		tracker->assets_tracked = *cast(uint64_t*)buffer;
+		tracker->assets_tracked = *cast(u64*)buffer;
 
 
 		for (int i = 0; i < tracker->assets_tracked; i++) {
 			AssetTrackData track_data;
 
 			// Read the id
-			fread(buffer, sizeof(uint64_t), 1, file);
+			fread(buffer, sizeof(u64), 1, file);
 			AssetID id;
-			id.id = *cast(uint64_t*)buffer;
+			id.id = *cast(u64*)buffer;
 
 			// Read the filename length
-			fread(buffer, sizeof(uint32_t), 1, file);
-			track_data.filename_length = *cast(uint32_t*)buffer;
+			fread(buffer, sizeof(u32), 1, file);
+			track_data.filename_length = *cast(u32*)buffer;
 
 
 			// Read the filename str, and copy it our own memory storage
@@ -120,7 +120,7 @@ AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
 }
 
 // Tracking doesnt know anything about the asset type, it just tracks it, and provides the asset id
-AssetID track_asset(AssetTracker* tracker, char* filename, uint32_t filename_length) {
+AssetID track_asset(AssetTracker* tracker, char* filename, u32 filename_length) {
 
 
 	AssetID tracked_id = find_asset_by_name(tracker, filename);
@@ -156,7 +156,7 @@ AssetID track_asset(AssetTracker* tracker, char* filename, uint32_t filename_len
 }
 
 
-static uint64_t next_asset_id(AssetTracker* tracker) {
+static u64 next_asset_id(AssetTracker* tracker) {
 	return tracker->last_asset_id++;
 }
 
@@ -222,7 +222,7 @@ void write_tracker_file(AssetTracker* tracker) {
 }
 
 
-void init_scene_node(AssetImport_SceneNode* node, uint64_t id, char* name, uint32_t name_length) {
+void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_length) {
 	node->id = id;
 	node->name = name;
 	node->name_length = name_length;
@@ -234,7 +234,7 @@ void init_scene_node(AssetImport_SceneNode* node, uint64_t id, char* name, uint3
 	node->meshes = NULL;
 }
 
-void set_scene_node_name(AssetImport_SceneNode* node, char* name, uint32_t name_length) {
+void set_scene_node_name(AssetImport_SceneNode* node, char* name, u32 name_length) {
 	node->name = name;
 	node->name_length = name_length;
 }

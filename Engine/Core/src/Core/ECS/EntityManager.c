@@ -59,12 +59,12 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 	
 	
 	// Get index of the entity we are trying to remove
-	MapResult<uint64_t> result = map_get(&manager->entity_index_map, entity.id);
+	MapResult<u64> result = map_get(&manager->entity_index_map, entity.id);
 	if (!result.found) {
 		// This entity has already been deleted 
 		return;
 	}
-	uint64_t index = result.value;
+	u64 index = result.value;
 	
 	Entity last_entity_in_list_to_swap_with = manager->entity_list[manager->entity_count - 1];
 	// Place the last entity in the entity list at the index we are removing from
@@ -181,11 +181,11 @@ void destroy_entity_manager(EntityManager* manager) {
 
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 
-	MapResult<uint64_t> result = map_get(&manager->transform_manager.id_map, entity.id);
+	MapResult<u64> result = map_get(&manager->transform_manager.id_map, entity.id);
 	if (!result.found) { return; }
 	
 	
-	uint64_t index = result.value;
+	u64 index = result.value;
 
 	Entity* first_child = &manager->transform_manager.first_child[index];
 	if (first_child->id == NO_ENTITY_ID) {
@@ -194,9 +194,9 @@ void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 	} else {
 		// This entity already has a first child so we need to look at the siblings
 
-		MapResult<uint64_t> child_result = map_get(&manager->transform_manager.id_map, first_child->id);
+		MapResult<u64> child_result = map_get(&manager->transform_manager.id_map, first_child->id);
 		if (!child_result.found) { return; }
-		uint64_t first_child_index = child_result.value;
+		u64 first_child_index = child_result.value;
 
 		
 
@@ -214,20 +214,20 @@ void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 		next_sibling->id = child.id;
 		
 	}
-	MapResult<uint64_t> child_result = map_get(&manager->transform_manager.id_map, child.id);
+	MapResult<u64> child_result = map_get(&manager->transform_manager.id_map, child.id);
 	if (!child_result.found) {
 		return;
 	}
 
 	// Assign the child, the parent entity
-	uint64_t child_index = child_result.value;
+	u64 child_index = child_result.value;
 	
 	manager->transform_manager.parent[child_index] = entity;
 }
 
 
-uint64_t get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<uint64_t>* map) {
-	MapResult<uint64_t> result = map_get(map, entity.id);
+u64 get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<u64>* map) {
+	MapResult<u64> result = map_get(map, entity.id);
 	assert(result.found);
 	if (!result.found) {}
 	int index = result.value;

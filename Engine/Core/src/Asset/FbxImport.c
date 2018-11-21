@@ -45,7 +45,7 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 
 
 	char file_str[256];
-	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
+	u32 str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
 	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
 
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
@@ -165,7 +165,7 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	
 
 	char file_str[256];
-	uint32_t str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
+	u32 str_size = filename_str_len + ASSET_FILE_EXTENSION_LENGTH;
 	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
 
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
@@ -263,7 +263,7 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 
 	
 
-	uint32_t node_size =
+	u32 node_size =
 		+ sizeof(node->id)
 		+ sizeof(node->name_length)
 		+ node->name_length
@@ -271,13 +271,13 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 		+ sizeof(node->scale)
 		+ sizeof(node->rotation)
 		+ sizeof(node->children_count)
-		+ node->children_count * sizeof(uint64_t)
+		+ node->children_count * sizeof(u64)
 		+ sizeof(node->mesh_count)
-		+ node->mesh_count * sizeof(uint32_t);
+		+ node->mesh_count * sizeof(u32);
 
 
 	// Node size
-	fwrite(cast(const void*) &node_size, sizeof(uint32_t), 1, file);
+	fwrite(cast(const void*) &node_size, sizeof(u32), 1, file);
 	
 	// Node id
 	fwrite(cast(const void*) &node->id, sizeof(node->id), 1, file);
@@ -415,7 +415,7 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, co
 	
 	char file_str[256];
 	
-	uint32_t str_size = filename_str_len + 1 + ASSET_FILE_EXTENSION_LENGTH;
+	u32 str_size = filename_str_len + 1 + ASSET_FILE_EXTENSION_LENGTH;
 	snprintf(file_str, str_size, "%s%s", filename, ASSET_FILE_EXTENSION);
 
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
@@ -533,8 +533,8 @@ static inline int fbx_convert_type_array_char_to_size(char type) {
 	switch (type) {
 		case 'd': {return sizeof(double);}
 		case 'f': {return sizeof(float);}
-		case 'l': {return sizeof(int64_t);}
-		case 'i': {return sizeof(int32_t);}
+		case 'l': {return sizeof(s64);}
+		case 'i': {return sizeof(s32);}
 		case 'b': {return 1;}
 		default:  {assert_fail(); return 0; }
 	}
@@ -557,7 +557,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 		if (strcmp(obj_node->name, "Geometry") == 0) {
 
 			assert(obj_node->properties[0].type_code == 'L');
-			uint64_t id = obj_node->properties[0].primative.L_data;
+			u64 id = obj_node->properties[0].primative.L_data;
 
 			FBX_Object object;
 			object.type = FBX_Object_Type_Geometry;
@@ -628,7 +628,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 
 				} else if ((strcmp(geo_node->name, "PolygonVertexIndex") == 0)) {
 					// parse indices
-					int32_t* indices = geo_node->properties->array.i_data;
+					s32* indices = geo_node->properties->array.i_data;
 					const int array_count = geo_node->properties->array.array_length;
 
 
@@ -766,7 +766,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 						if (strcmp(uv_node_child->name, "UVIndex") == 0) {
 							// Parse normals
 
-							int32_t* uv_indices = uv_node_child->properties->array.i_data;
+							s32* uv_indices = uv_node_child->properties->array.i_data;
 							const int uv_indices_count = uv_node_child->properties->array.array_length / 3;
 							object.geo->uv_index_count = uv_indices_count;
 							object.geo->uv_indices = NULL;
@@ -799,7 +799,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 		else if (strcmp(obj_node->name, "Model") == 0) {
 
 			assert(obj_node->properties[0].type_code == 'L');
-			uint64_t id = obj_node->properties[0].primative.L_data;
+			u64 id = obj_node->properties[0].primative.L_data;
 
 			
 
@@ -885,8 +885,8 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 		const int num_properties = connection_node->num_properties;
 
 		char* connection_type = connection_node->properties[0].special.str_data;
-		uint64_t child_object_id = connection_node->properties[1].primative.L_data;
-		uint64_t parent_object_id = connection_node->properties[2].primative.L_data;
+		u64 child_object_id = connection_node->properties[1].primative.L_data;
+		u64 parent_object_id = connection_node->properties[2].primative.L_data;
 
 		if (strcmp(connection_type, "OO") == 0) {
 			// object to object connection
@@ -1004,7 +1004,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 						parent_scene_node->name_length);
 
 					sb_push(fbx_import->export_scene.mesh_infos, asset_id);
-					uint32_t last_index = sb_count(fbx_import->export_scene.mesh_infos) - 1;
+					u32 last_index = sb_count(fbx_import->export_scene.mesh_infos) - 1;
 
 					
 					
@@ -1191,20 +1191,20 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 
 	long rollback = ftell(file);
 	fread(buffer, 4, 1, file);
-	node.end_offset = *cast(uint32_t*)buffer;
+	node.end_offset = *cast(u32*)buffer;
 
 	if (node.end_offset == 0) {
 		fseek(file, rollback, SEEK_SET);
 		return node;
 	}
 	fread(buffer, 4, 1, file);
-	node.num_properties = *cast(uint32_t*)buffer;
+	node.num_properties = *cast(u32*)buffer;
 
 	fread(buffer, 4, 1, file);
-	node.property_list_length = *cast(uint32_t*)buffer;
+	node.property_list_length = *cast(u32*)buffer;
 
 	fread(buffer, 1, 1, file);
-	node.name_length = *cast(uint8_t*)buffer;
+	node.name_length = *cast(u8*)buffer;
 
 	node.name = cast(char*)stack_alloc(&importer->stack, node.name_length + 1, 1);
 	fread(node.name, node.name_length, 1, file);
@@ -1271,7 +1271,7 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 
 				case 'I': {
 					fread(buffer, 4, 1, file);
-					int32_t value = *cast(int32_t*)buffer;
+					s32 value = *cast(s32*)buffer;
 					node.properties[i].primative.I_data = value;
 					break;
 				}
@@ -1291,27 +1291,27 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 				}
 				case 'L': {
 					fread(buffer, 8, 1, file);
-					int64_t value = *cast(int64_t*)buffer;
+					s64 value = *cast(s64*)buffer;
 					node.properties[i].primative.L_data = value;
 					break;
 				}
 						  // Array types
 				case 'd': case 'f': case 'l': case 'i': case 'b': {
-					uint32_t type_size = fbx_convert_type_array_char_to_size(type);
+					u32 type_size = fbx_convert_type_array_char_to_size(type);
 
 					fread(buffer, 4, 1, file);
-					node.properties[i].array.array_length = *cast(uint32_t*)buffer;
+					node.properties[i].array.array_length = *cast(u32*)buffer;
 
 					fread(buffer, 4, 1, file);
-					uint32_t encoding = *cast(uint32_t*)buffer;
+					u32 encoding = *cast(u32*)buffer;
 					assert(encoding == 1 || encoding == 0);
 					node.properties[i].array.encoding = encoding;
 
 
 					fread(buffer, 4, 1, file);
-					node.properties[i].array.compressed_length = *cast(uint32_t*)buffer;
+					node.properties[i].array.compressed_length = *cast(u32*)buffer;
 
-					uint32_t array_size_in_bytes = node.properties[i].array.array_length * type_size;
+					u32 array_size_in_bytes = node.properties[i].array.array_length * type_size;
 					switch (encoding) {
 						case 0: {
 
@@ -1321,7 +1321,7 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 							break;
 						}
 						case 1: {
-							uint32_t compressed_size_in_bytes = node.properties[i].array.compressed_length;
+							u32 compressed_size_in_bytes = node.properties[i].array.compressed_length;
 							z_stream infstream;
 							infstream.zalloc = Z_NULL;
 							infstream.zfree = Z_NULL;
@@ -1359,7 +1359,7 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 						  // Special types
 				case 'R': {
 					fread(buffer, 4, 1, file);
-					uint32_t length = *cast(uint32_t*)buffer;
+					u32 length = *cast(u32*)buffer;
 
 					node.properties[i].special.length = length;
 					node.properties[i].special.raw_binary_data = stack_alloc(&importer->stack, length + 1, 1);
@@ -1370,7 +1370,7 @@ static FBX_Node fbx_parse_node(AssetImporter* importer, void* buffer, FILE* file
 
 				case 'S': {
 					fread(buffer, 4, 1, file);
-					uint32_t length = *cast(uint32_t*)buffer;
+					u32 length = *cast(u32*)buffer;
 					node.properties[i].special.length = length;
 					node.properties[i].special.str_data = cast(char*)stack_alloc(&importer->stack, length + 1, 1);
 					fread(node.properties[i].special.str_data, length, 1, file);
@@ -1560,12 +1560,12 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	//char* stripped_filename = filename;
 	//// TODO: implement something more generic
 	//// right now it is doing -4 to remove the .fbx extension
-	//uint32_t stripped_filename_length = strlen(filename) - 4;
+	//u32 stripped_filename_length = strlen(filename) - 4;
 
 	
 	const char* stripped_filename = platform_file_basename(filename);
 	// does not include null terminator
-	uint32_t stripped_filename_length = strlen(stripped_filename);
+	u32 stripped_filename_length = strlen(stripped_filename);
 
 	
 	

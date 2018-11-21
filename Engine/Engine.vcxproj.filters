@@ -554,6 +554,9 @@
     <ClInclude Include="Core\include\engine_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Core\include\types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />

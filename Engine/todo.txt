@@ -1,19 +1,18 @@
 
-Move all int types to own file
+
 String handling -> length strings- custom struct
+
+see if we can not convert quat to rotation matrices, but instead just straight multiply the point with the quat
 
 
 Asset Tracker
-- safer overwriting track file (write temp, then swap and rename) if overwriting fails, we lose everything
-- handle tracker file errors, broken
+
 - handle large meshes by splitting them into multiple meshes 65k? gpu cards have a limit?
-- tracker keeps adding to tracker file
 - pak files/ get asset by pak file offset
 - get the entire asset system off strings, only the entry point of importing should be strings(or in editor asset importing)
 - figure out how to handle LOD
 		
 FBX
-- fbx hardcoded asset name
 - make sure uvs,textures, normals are properly imported
 - update in game mesh when fbx file updates (sync when edits)
 - import materials, textures, lights, all the other objects

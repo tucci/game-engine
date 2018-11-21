@@ -2,7 +2,7 @@
 
 
 
-#include <stdint.h>
+#include "types.h"
 
 #include "zlib.h"
 
@@ -44,7 +44,7 @@ typedef struct FBX_Model_Object {
 	Vec3f local_rotation;
 	Vec3f local_scaling;
 
-	uint64_t name_length;
+	u64 name_length;
 	char* name;
 	
 } FBX_Model_Object;
@@ -86,7 +86,7 @@ typedef struct FBX_Property {
 	char type_code;
 	union {
 		struct {
-			int32_t length;
+			s32 length;
 			union {
 				void* raw_binary_data;
 				char* str_data;
@@ -95,26 +95,26 @@ typedef struct FBX_Property {
 
 		struct {
 			union {
-				int16_t Y_data;
+				s16 Y_data;
 				char C_data;
 				float F_data;
 				double D_data;
-				int32_t I_data;
-				int64_t L_data;
+				s32 I_data;
+				s64 L_data;
 			};
 		} primative;
 
 		struct {
-			uint32_t array_length;
-			uint32_t encoding;
-			uint32_t compressed_length;
+			u32 array_length;
+			u32 encoding;
+			u32 compressed_length;
 			union {
 				void* v_data;// used for generic allocation without knowing the type ahead of time
 				char* b_data;
 				float* f_data;
 				double* d_data;
-				int32_t* i_data;
-				int64_t* l_data;
+				s32* i_data;
+				s64* l_data;
 			};
 		} array;
 
@@ -129,16 +129,16 @@ typedef struct FBX_Property {
 
 
 typedef struct FBX_Node {
-	uint32_t end_offset;
-	uint32_t num_properties;
-	uint32_t property_list_length;
-	uint8_t name_length;
+	u32 end_offset;
+	u32 num_properties;
+	u32 property_list_length;
+	u8 name_length;
 	char* name;
 	FBX_Property* properties;
 
 
 
-	uint32_t child_count;
+	u32 child_count;
 
 	FBX_Node* first_child;
 	FBX_Node* next_sibling;
@@ -167,7 +167,7 @@ typedef struct AssetImportGlobalSettings {
 typedef struct AssetImporter {
 	Arena mem;
 	StackAllocator stack;
-	int32_t stack_allocs_count;
+	s32 stack_allocs_count;
 	// The tracker is usually owned by the asset manager, and is passed to this
 	AssetTracker* tracker;
 

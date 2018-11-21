@@ -292,13 +292,13 @@ void entity_add_mesh_component(StaticMeshManager* manager, Entity entity) {
 
 void entity_remove_mesh_component(StaticMeshManager* manager, Entity entity) {
 	// See if this entity even has a mesh
-	MapResult<uint64_t> result = map_get(&manager->id_map, entity.id);
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
 	if (!result.found) return;
 
-	uint64_t index = result.value;
+	u64 index = result.value;
 	// Get the last mesh in the list to swap with
-	uint64_t last = manager->meshes[manager->count - 1];
+	u64 last = manager->meshes[manager->count - 1];
 	// swap the last mesh at the current index we are removing from
 	manager->meshes[index] = last;
 	manager->count--;

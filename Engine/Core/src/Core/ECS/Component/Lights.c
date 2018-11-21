@@ -21,11 +21,11 @@ void entity_add_light_component(LightManager* manager, Entity entity) {
 
 void entity_remove_light_component(LightManager* manager, Entity entity) {
 	
-	MapResult<uint64_t> result = map_get(&manager->id_map, entity.id);
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
 	if (!result.found) return;
 
-	uint64_t index = result.value;
+	u64 index = result.value;
 	// Get the last in the list to swap with
 	Light last = manager->lights[manager->count - 1];
 	// swap the last at the current index we are removing from

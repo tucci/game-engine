@@ -48,10 +48,10 @@ typedef struct EntityManager {
 	Arena arena;
 	StackAllocator stack_mem;
 
-	uint64_t entitys_created;
-	uint64_t entity_count;
+	u64 entitys_created;
+	u64 entity_count;
 	Entity* entity_list;
-	CompactMap<uint64_t> entity_index_map;
+	CompactMap<u64> entity_index_map;
 	
 	
 } EntityManager;
@@ -69,5 +69,5 @@ void remove_component(EntityManager* manager, Entity entity, ComponentType type)
 
 
 // quick helper function so we dont have to keep writing this below
-uint64_t get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<uint64_t>* map);
+u64 get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<u64>* map);
 

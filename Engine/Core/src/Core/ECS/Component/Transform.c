@@ -60,11 +60,11 @@ void entity_add_transform_component(TransformManager* manager, Entity entity) {
 }
 
 void entity_remove_transform_component(TransformManager* manager, Entity entity) {
-	MapResult<uint64_t> result = map_get(&manager->id_map, entity.id);
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
 	if (!result.found) return;
 
-	uint64_t index = result.value;
+	u64 index = result.value;
 
 	char* last_name = manager->names[manager->count - 1];
 	// Get the last in the list to swap with
