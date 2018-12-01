@@ -92,7 +92,7 @@ RenderResource create_index_buffer(Renderer* renderer) {
 	return handle;
 }
 
-RenderResource create_texture(Renderer* renderer, SimpleTexture* texture, bool mipmap) {
+RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipmap) {
 	RenderResource handle;
 	
 	switch (renderer->type) {

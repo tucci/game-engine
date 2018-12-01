@@ -34,6 +34,8 @@ void init_asset_manager(AssetManager* manager) {
 
 	manager->_scenes = NULL;
 	manager->_static_meshes = NULL;
+	manager->_materials = NULL;
+	manager->_textures = NULL;
 	
 }
 
@@ -43,9 +45,11 @@ void destroy_asset_manager(AssetManager* manager) {
 	destroy_asset_tracker(&manager->asset_tracker);
 	sb_free(manager->assets);
 
-
 	// Clear all the internal data if needed, if it is not allocated with the arena
+	sb_free(manager->_scenes);
 	sb_free(manager->_static_meshes);
+	sb_free(manager->_materials);
+	sb_free(manager->_textures);
 }
 
 
@@ -131,6 +135,9 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 	fread(buffer, sizeof(u32), 1, file);
 	node.children_count = *cast(u32*)buffer;
 
+	node.texture_count = 0;
+	node.textures = NULL;
+
 	if (node.children_count > 0) {
 		node.children = cast(AssetImport_SceneNode*) arena_alloc(&manager->asset_mem, node.children_count * sizeof(AssetImport_SceneNode));
 		for (int i = 0; i < node.children_count; i++) {
@@ -140,6 +147,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 		}
 	}
 
+	// Read meshes
 	fread(buffer, sizeof(u32), 1, file);
 	node.mesh_count = *cast(u32*)buffer;
 	if (node.mesh_count > 0) {
@@ -150,6 +158,18 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 		}
 	}
 
+	// Read textures
+	fread(buffer, sizeof(u32), 1, file);
+	node.texture_count = *cast(u32*)buffer;
+	if (node.texture_count > 0) {
+		node.textures= cast(u32*) arena_alloc(&manager->asset_mem, node.texture_count* sizeof(u32));
+		for (int i = 0; i < node.texture_count; i++) {
+			fread(buffer, sizeof(u32), 1, file);
+			node.textures[i] = *cast(u32*)buffer;;
+		}
+	}
+
+	// Recursivly parse the child nodes
 	if (node.children_count > 0) {
 		for (int i = 0; i < node.children_count; i++) {
 			node.children[i] = parse_scene_node(manager, file, buffer);
@@ -165,7 +185,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 
 AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 	AssetID asset;
-	asset.id = 1;
+	asset.id = 0;
 	asset.type = AssetType_None;
 	
 	FILE* file;
@@ -294,7 +314,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->anim_count > 0) {
 				scene->animation_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->anim_count);
-				for (int i = 0; i < scene->camera_count; i++) {
+				for (int i = 0; i < scene->anim_count; i++) {
 					
 					scene->animation_infos[i].type = AssetType_Animation;
 
@@ -309,7 +329,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->texture_count > 0) {
 				scene->texture_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->texture_count);
-				for (int i = 0; i < scene->camera_count; i++) {
+				for (int i = 0; i < scene->texture_count; i++) {
 					
 					scene->texture_infos[i].type = AssetType_Texture;
 
@@ -397,6 +417,138 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			fread(mesh->normal, vertex_size, 1, file);
 			fread(mesh->texcoords, vertex_size, 1, file);
 			//fread(mesh->lightmap_texcoords, vertex_size, 1, file);
+			
+			break;
+		}
+		case AssetType_Material: {
+			Material* material = cast(Material*)arena_alloc(&manager->asset_mem, sizeof(Material));
+			init_material_defaults(material);
+			sb_push(manager->_materials, material);
+
+			
+			// Add this asset to the id map
+			// map the asset id to the index in the material array
+			map_put(&manager->asset_id_map, asset.id, manager->_material_count);
+			manager->_material_count++;
+
+			// Read name
+			fread(buffer, sizeof(s32), 1, file);
+			s32 name_length = *cast(s32*)buffer;
+			fread(buffer, name_length, 1, file);
+			char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length);
+			snprintf(name, name_length, "%s", buffer);
+
+			// Read shading model
+			fread(buffer, sizeof(material->shading_model), 1, file);
+			material->shading_model = *cast(MaterialShadingModel*)buffer;
+
+			// TODO: our serialized material is basically the fbx material, eventually we should use our own
+			fread(buffer, sizeof(double), 1, file);// emissive factor
+			fread(buffer, sizeof(double), 1, file);// ambient factor
+			fread(buffer, sizeof(double), 1, file);// diffuse factor
+			fread(buffer, sizeof(double), 1, file);// transparency factor
+			fread(buffer, sizeof(double), 1, file);// reflaction factor
+			fread(buffer, sizeof(double), 1, file);// specular factor
+			fread(buffer, sizeof(double), 1, file);// shininess exponent
+
+			fread(buffer, sizeof(Vec3f), 1, file);// emissive color
+			material->emissive_color = *cast(Vec3f*)buffer;
+			fread(buffer, sizeof(Vec3f), 1, file);// ambient color
+			fread(buffer, sizeof(Vec3f), 1, file);// diffuse color
+			material->albedo_color = *cast(Vec3f*)buffer;
+			fread(buffer, sizeof(Vec3f), 1, file);// transparent color
+			fread(buffer, sizeof(Vec3f), 1, file);// reflection color
+			fread(buffer, sizeof(Vec3f), 1, file);// specular color
+			
+			
+			// Read layered texture count
+			fread(buffer, sizeof(s32), 1, file);
+			s32 layered_texture_count = *cast(s32*)buffer;
+			// A texture could have many layered textures
+			for (s32 i = 0; i < layered_texture_count; i++) {
+				// texture type
+				fread(buffer, sizeof(TextureType), 1, file);
+				TextureType texture_type = *cast(TextureType*)buffer;
+				// inner texture count
+				fread(buffer, sizeof(s32), 1, file);
+				s32 texture_count = *cast(s32*)buffer;
+				for (s32 j = 0; j < texture_count; j++) {
+					// Read the texture asset ids
+					fread(buffer, sizeof(AssetID), 1, file);
+					AssetID texture_id = *cast(AssetID*)buffer;
+					set_texture_type_and_id(material, texture_type, texture_id.texture, j);
+					// TODO: push onto import queue
+					import_asset_by_id(manager, texture_id);
+				}
+
+			}
+			
+
+
+			break;
+		}
+		case AssetType_Texture: {
+			Texture2D* texture = cast(Texture2D*)arena_alloc(&manager->asset_mem, sizeof(Texture2D));
+			sb_push(manager->_textures, texture);
+			
+			// Add this asset to the id map
+			// map the asset id to the index in the texture array
+			map_put(&manager->asset_id_map, asset.id, manager->_texture_count);
+			manager->_texture_count++;
+			
+			
+			
+			// Read name
+			fread(buffer, sizeof(s32), 1, file);
+			s32 name_length = *cast(s32*)buffer;
+			fread(buffer, name_length, 1, file);
+			char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length);
+			snprintf(name, name_length, "%s", buffer);
+			
+			
+			
+			
+			// Read filename
+			fread(buffer, sizeof(s32), 1, file);
+			s32 filename_length = *cast(s32*)buffer;
+			fread(buffer, filename_length, 1, file);
+			char* filename = cast(char*) arena_alloc(&manager->asset_mem, filename_length);
+			snprintf(filename, filename_length, "%s", buffer);
+			
+			
+			
+			// Read relative filename
+			fread(buffer, sizeof(s32), 1, file);
+			s32 relative_filename_length = *cast(s32*)buffer;
+			fread(buffer, relative_filename_length, 1, file);
+			char* relative_filename = cast(char*) arena_alloc(&manager->asset_mem, relative_filename_length);
+			snprintf(relative_filename, relative_filename_length, "%s", buffer);
+
+
+
+
+
+
+			fread(buffer, sizeof(Vec3f), 1, file);
+			Vec3f translation = *cast(Vec3f*)buffer;
+			
+			fread(buffer, sizeof(Vec2f), 1, file);
+			texture->uv_translation = *cast(Vec2f*)buffer;
+			
+			fread(buffer, sizeof(Vec2f), 1, file);
+			texture->uv_scaling = *cast(Vec2f*)buffer;
+			
+			fread(buffer, sizeof(float), 1, file);
+			texture->uv_rotation = *cast(float*)buffer;
+			
+			bool loaded = load_texture(relative_filename, texture, &manager->asset_mem, false);
+			if (loaded) {
+			
+				
+			} else {
+				// Handle texture failure
+				assert_fail();
+			}
 			
 			break;
 		}

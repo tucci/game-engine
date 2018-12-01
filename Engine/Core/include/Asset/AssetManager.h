@@ -3,7 +3,12 @@
 #include "Asset/Asset.h"
 
 #include "Core/ECS/Component/StaticMesh.h"
+#include "Core/Material.h"
+#include "Core/TextureData.h"
 #include "Common/Arena.h"
+
+
+
 
 
 
@@ -37,11 +42,11 @@ typedef struct AssetManager {
 
 	AssetImport_Scene** _scenes;
 	StaticMesh** _static_meshes;
-	//Material** _materials;
+	Material** _materials;
 	//Light** _lights;
 	//Camera** _cameras;
 	//Animation** _anims;
-	//Texture** _textures;
+	Texture2D** _textures;
 	
 
 

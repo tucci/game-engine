@@ -62,7 +62,7 @@ typedef struct SoftwareRenderer {
 
 	SoftwareRendererShader shader;
 	ObjModel model;
-	SimpleTexture texture;
+	Texture2D texture;
 
 } SoftwareRenderer;
 

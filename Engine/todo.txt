@@ -2,10 +2,10 @@
 
 String handling -> length strings- custom struct
 
-see if we can not convert quat to rotation matrices, but instead just straight multiply the point with the quat
 
 
 Asset Tracker
+- be able to copy external easset files that have external ids. Discovery of easset files currently not tracked
 
 - handle large meshes by splitting them into multiple meshes 65k? gpu cards have a limit?
 - pak files/ get asset by pak file offset

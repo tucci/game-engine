@@ -342,7 +342,7 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 
 
 
-RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture, bool mipmap) {
+RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap) {
 	RenderResource handle;
 	handle.type = RenderResourceType_TEXTURE;
 

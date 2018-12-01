@@ -32,7 +32,7 @@ static Vec4f vertex_shader(SoftwareRendererShader* shader, int face_id, int vert
 static bool fragment_shader(SoftwareRendererShader* shader, Vec3f bary, Vec4f frag_coord, Vec4f* output_color) {
 	
 	//SDL_Surface* surface = shader->texture->surface;
-	SimpleTexture* texture = shader->texture;
+	Texture2D* texture = shader->texture;
 	
 	Vec2f uv = {
 		bary.x * shader->uv[0].u + bary.y * shader->uv[1].u + bary.z * shader->uv[2].u,

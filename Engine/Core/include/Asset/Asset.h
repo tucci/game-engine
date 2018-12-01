@@ -104,6 +104,11 @@ typedef struct AssetImport_SceneNode {
 	u32 mesh_count;
 	u32* meshes;
 
+	u32 texture_count;
+	u32* textures;
+
+	
+
 } AssetSceneNode;
 
 
@@ -127,6 +132,8 @@ typedef struct AssetImport_Scene {
 	AssetID* camera_infos;
 	AssetID* animation_infos;
 	AssetID* texture_infos;
+
+	
 
 } AssetScene;
 

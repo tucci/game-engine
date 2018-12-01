@@ -10,6 +10,7 @@
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
 #include "Core/ECS/Component/StaticMesh.h"
+#include "Core/Material.h"
 
 
 
@@ -22,7 +23,7 @@
 
 
 
-typedef struct FBX_Geometry_Object {
+typedef struct FBX_Geometry {
 	
 
 	int vertex_count;
@@ -37,28 +38,96 @@ typedef struct FBX_Geometry_Object {
 
 	Vec3i* indices;
 	Vec3i* uv_indices;
-}FBX_Geometry_Object;
+}FBX_Geometry;
 
-typedef struct FBX_Model_Object {
+typedef struct FBX_Model {
 	Vec3f local_translation;
 	Vec3f local_rotation;
 	Vec3f local_scaling;
 
-	u64 name_length;
+	s32 name_length;
 	char* name;
 	
-} FBX_Model_Object;
+} FBX_Model;
+
+
+
+typedef struct FBX_Material {
+	MaterialShadingModel shading_model;
+
+	s32 name_length;
+	char* name;
+
+	double emissive_factor;
+	double ambient_factor;
+	double diffuse_factor;
+	double transparency_factor;
+	double reflection_factor;
+	double specular_factor;
+	double shininess_exponent;
+
+	Vec3f emissive_color;
+	Vec3f ambient_color;
+	Vec3f diffuse_color;
+	Vec3f transparent_color;
+	Vec3f reflection_color;
+	Vec3f specular_color;
+	
+
+} FBX_Material;
+
+
+
+typedef struct FBX_Texture {
+	s32 name_length;
+	s32 filename_length;
+	s32 relative_filename_length;
+
+	char* name;
+	char* filename;
+	char* relative_filename;
+
+
+	
+	Vec3f translation;
+
+	// uv transforms
+	Vec2f uv_translation;
+	Vec2f uv_scaling;
+	float uv_rotation;
+
+
+} FBX_Texture;
+
+typedef struct FBX_LayeredTexture {
+	char* name;
+	s32 name_length;
+
+	TextureType texture_type;
+
+	s32 layered_texture;
+	s32 blend_modes;
+	double alphas;
+} FBX_LayeredTexture;
+
+
 
 typedef enum FBX_Object_Type {
 	FBX_Object_Type_Geometry,
 	FBX_Object_Type_Model,
+	FBX_Object_Type_Material,
+	FBX_Object_Type_Texture,
+	FBX_Object_Type_LayeredTexture
 } FBX_Object_Type;
 
 typedef struct FBX_Object {
 	FBX_Object_Type type;
 	union {
-		FBX_Geometry_Object* geo;
-		FBX_Model_Object* model;
+		FBX_Geometry* geometry;
+		FBX_Model* model;
+		FBX_Material* material;
+		FBX_Texture* texture;
+		FBX_LayeredTexture* layered_texture;
 	};
 	
 
@@ -125,6 +194,7 @@ typedef struct FBX_Property {
 
 
 
+
 #define FBX_NULL_RECORD "\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
 
@@ -146,7 +216,7 @@ typedef struct FBX_Node {
 } FBX_Node;
 
 
-typedef struct AssetImportGlobalSettings {
+typedef struct FBXGlobalSettings {
 	int up_axis;
 	int up_axis_sign;
 
@@ -171,7 +241,8 @@ typedef struct AssetImporter {
 	// The tracker is usually owned by the asset manager, and is passed to this
 	AssetTracker* tracker;
 
-	AssetImportGlobalSettings global_settings;
+	// TODO: remove the fbx global settings, and have our own custom settings data. for we are just using this to hold the axis data
+	FBXGlobalSettings global_settings;
 } AssetImporter;
 
 
@@ -181,6 +252,7 @@ typedef struct FBX_ImportData {
 	AssetImport_Scene export_scene;
 	CompactMap<FBX_Object> fbx_object_map;
 	CompactMap<AssetImport_SceneNode*> scene_node_cache_map;
+	AssetSceneNode** material_node_cache;
 	FBX_GlobalSettings global_settings;
 } FBX_ImportData;
 
@@ -190,7 +262,10 @@ void destroy_asset_importer(AssetImporter* importer);
 
 
 
-static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry_Object* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
+
+static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
+static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportData* import_data,AssetImport_SceneNode* material, char* filename, int filename_str_len);
+static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Texture* texture, char* filename, int filename_str_len);
 AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, char* filename, int filename_str_len);
 AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, const char* filename, int filename_str_len);
 AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport);

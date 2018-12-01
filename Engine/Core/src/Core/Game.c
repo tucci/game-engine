@@ -113,21 +113,21 @@ void load_scene(Game* game, int scene_id) {
 	//if (import_scene.id == 0) {
 		//import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", true);
 
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
-		//import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
+		import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
+	//import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
 		//import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX");
 
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx");
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", true);
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx");
 
-		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx");
-		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx");
+		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx", false);
 
 
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx");
-		import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx", false);
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx");
 

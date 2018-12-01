@@ -96,7 +96,7 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl);
 
 // TODO: shadowmaps, textures, hdr texture, cubemap should all be implemented into one function
 // gl_create_texture, with a paramter that specifcies what type it is
-RenderResource gl_create_texture(OpenGLRenderer* opengl, SimpleTexture* texture, bool mipmap);
+RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap);
 RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, unsigned int height);
 RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_texture, GLenum format, GLint internalformat);
 RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, unsigned int height, bool mipmap);

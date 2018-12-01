@@ -10,7 +10,7 @@
 // The purpose of this software renderer was to be as a learning experience and not actual real world use
 typedef struct SoftwareRendererShader {
 	ObjModel* model;
-	SimpleTexture* texture;
+	Texture2D* texture;
 	Mat4x4f* transform;
 	Vec4f pos[3];
 	Vec2f uv[3];

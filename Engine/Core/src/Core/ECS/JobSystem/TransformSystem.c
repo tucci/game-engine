@@ -82,6 +82,7 @@ void job_compute_world_matrices(EntityManager* manager) {
 	for (int i = 0; i < tm->count; i++) {
 		Mat4x4f t = translate(tm->positions[i]);
 		tm->local[i] = t * tm->local[i];
+		
 	}
 
 	// Go through each entity's transform

@@ -44,7 +44,7 @@ RenderResource create_vertex_decl(Renderer* renderer);
 RenderResource create_vertex_buffer(Renderer* renderer);
 RenderResource create_index_buffer(Renderer* renderer);
 // When we create a texture, we copy the texture to the gpu memory
-RenderResource create_texture(Renderer* renderer, SimpleTexture* texture, bool mipmap);
+RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipmap);
 // TODO: implement generic shader abstraction filenames
 RenderResource create_shader(Renderer* renderer, const char* vertex_file, const char* fragment_file);
 

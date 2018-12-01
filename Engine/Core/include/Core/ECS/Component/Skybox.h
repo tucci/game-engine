@@ -6,12 +6,12 @@
 #include "Core/ECS/Component/StaticMesh.h"
 
 typedef struct Skybox {
-	SimpleTexture front;
-	SimpleTexture back;
-	SimpleTexture left;
-	SimpleTexture right;
-	SimpleTexture top;
-	SimpleTexture bottom;
+	Texture2D front;
+	Texture2D back;
+	Texture2D left;
+	Texture2D right;
+	Texture2D top;
+	Texture2D bottom;
 	StaticMesh cube;
 } Skybox;
 

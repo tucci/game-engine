@@ -232,6 +232,8 @@ void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_l
 	node->next_sibling = NULL;
 	node->mesh_count = 0;
 	node->meshes = NULL;
+	node->texture_count = 0;
+	node->textures = NULL;
 }
 
 void set_scene_node_name(AssetImport_SceneNode* node, char* name, u32 name_length) {
