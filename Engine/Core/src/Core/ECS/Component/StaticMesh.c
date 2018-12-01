@@ -287,7 +287,7 @@ void destroy_static_mesh_manager(StaticMeshManager* manager) {
 void entity_add_mesh_component(StaticMeshManager* manager, Entity entity) {
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
-	stb_sb_push(manager->meshes, -1);
+	stb_sb_push(manager->meshes, 0);
 }
 
 void entity_remove_mesh_component(StaticMeshManager* manager, Entity entity) {

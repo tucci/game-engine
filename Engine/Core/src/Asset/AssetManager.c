@@ -140,7 +140,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 
 	if (node.children_count > 0) {
 		node.children = cast(AssetImport_SceneNode*) arena_alloc(&manager->asset_mem, node.children_count * sizeof(AssetImport_SceneNode));
-		for (int i = 0; i < node.children_count; i++) {
+		for (u32 i = 0; i < node.children_count; i++) {
 			fread(buffer, sizeof(u64), 1, file);
 			u64 child_node_id = *cast(u64*)buffer;
 			node.children[i].id = child_node_id;
@@ -152,7 +152,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 	node.mesh_count = *cast(u32*)buffer;
 	if (node.mesh_count > 0) {
 		node.meshes = cast(u32*) arena_alloc(&manager->asset_mem, node.mesh_count * sizeof(u32));
-		for (int i = 0; i < node.mesh_count; i++) {
+		for (u32 i = 0; i < node.mesh_count; i++) {
 			fread(buffer, sizeof(u32), 1, file);
 			node.meshes[i] = *cast(u32*)buffer;;
 		}
@@ -163,7 +163,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 	node.texture_count = *cast(u32*)buffer;
 	if (node.texture_count > 0) {
 		node.textures= cast(u32*) arena_alloc(&manager->asset_mem, node.texture_count* sizeof(u32));
-		for (int i = 0; i < node.texture_count; i++) {
+		for (u32 i = 0; i < node.texture_count; i++) {
 			fread(buffer, sizeof(u32), 1, file);
 			node.textures[i] = *cast(u32*)buffer;;
 		}
@@ -171,7 +171,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 
 	// Recursivly parse the child nodes
 	if (node.children_count > 0) {
-		for (int i = 0; i < node.children_count; i++) {
+		for (u32 i = 0; i < node.children_count; i++) {
 			node.children[i] = parse_scene_node(manager, file, buffer);
 		}
 	}
@@ -256,7 +256,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->mesh_count > 0) {
 				scene->mesh_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->mesh_count);
-				for (int i = 0; i < scene->mesh_count; i++) {
+				for (u32 i = 0; i < scene->mesh_count; i++) {
 					
 					scene->mesh_infos[i].type = AssetType_StaticMesh;
 
@@ -271,7 +271,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->material_count > 0) {
 				scene->material_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->material_count);
-				for (int i = 0; i < scene->material_count; i++) {
+				for (u32 i = 0; i < scene->material_count; i++) {
 					
 					scene->material_infos[i].type = AssetType_Material;
 
@@ -285,7 +285,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->light_count > 0) {
 				scene->light_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->light_count);
-				for (int i = 0; i < scene->light_count; i++) {
+				for (u32 i = 0; i < scene->light_count; i++) {
 					
 					scene->light_infos[i].type = AssetType_Light;
 
@@ -300,7 +300,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->camera_count > 0) {
 				scene->camera_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->camera_count);
-				for (int i = 0; i < scene->camera_count; i++) {
+				for (u32 i = 0; i < scene->camera_count; i++) {
 					
 					scene->camera_infos[i].type = AssetType_Camera;
 					
@@ -314,7 +314,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->anim_count > 0) {
 				scene->animation_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->anim_count);
-				for (int i = 0; i < scene->anim_count; i++) {
+				for (u32 i = 0; i < scene->anim_count; i++) {
 					
 					scene->animation_infos[i].type = AssetType_Animation;
 
@@ -329,7 +329,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 			if (scene->texture_count > 0) {
 				scene->texture_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->texture_count);
-				for (int i = 0; i < scene->texture_count; i++) {
+				for (u32 i = 0; i < scene->texture_count; i++) {
 					
 					scene->texture_infos[i].type = AssetType_Texture;
 
@@ -512,8 +512,8 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			fread(buffer, sizeof(s32), 1, file);
 			s32 filename_length = *cast(s32*)buffer;
 			fread(buffer, filename_length, 1, file);
-			char* filename = cast(char*) arena_alloc(&manager->asset_mem, filename_length);
-			snprintf(filename, filename_length, "%s", buffer);
+			char* texture_filename = cast(char*) arena_alloc(&manager->asset_mem, filename_length);
+			snprintf(texture_filename, filename_length, "%s", buffer);
 			
 			
 			

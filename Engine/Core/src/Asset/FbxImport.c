@@ -586,14 +586,14 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 	// Mesh count
 	fwrite(cast(const void*) &node->mesh_count, sizeof(node->mesh_count), 1, file);
 	// texture indices to the scene texture list
-	for (int j = 0; j < node->mesh_count; j++) {
+	for (u32 j = 0; j < node->mesh_count; j++) {
 		fwrite(cast(const void*) &node->meshes[j], sizeof(node->meshes[j]), 1, file);
 	}
 
 	// Texture count
 	fwrite(cast(const void*) &node->texture_count, sizeof(node->texture_count), 1, file);
 	// texture indices to the scene texture list
-	for (int j = 0; j < node->texture_count; j++) {
+	for (u32 j = 0; j < node->texture_count; j++) {
 		fwrite(cast(const void*) &node->textures[j], sizeof(node->textures[j]), 1, file);
 	}
 
@@ -665,32 +665,32 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, co
 
 	// Write asset ids to file
 
-	for (int i = 0; i < scene->mesh_count; i++) {
+	for (u32 i = 0; i < scene->mesh_count; i++) {
 		AssetID asset = scene->mesh_infos[i];
 		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
 	}
 
-	for (int i = 0; i < scene->material_count; i++) {
+	for (u32 i = 0; i < scene->material_count; i++) {
 		AssetID asset = scene->material_infos[i];
 		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
 	}
 
-	for (int i = 0; i < scene->light_count; i++) {
+	for (u32 i = 0; i < scene->light_count; i++) {
 		AssetID asset = scene->light_infos[i];
 		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
 	}
 
-	for (int i = 0; i < scene->camera_count; i++) {
+	for (u32 i = 0; i < scene->camera_count; i++) {
 		AssetID asset = scene->camera_infos[i];
 		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
 	}
 
-	for (int i = 0; i < scene->anim_count; i++) {
+	for (u32 i = 0; i < scene->anim_count; i++) {
 		AssetID asset = scene->animation_infos[i];
 		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
 	}
 
-	for (int i = 0; i < scene->texture_count; i++) {
+	for (u32 i = 0; i < scene->texture_count; i++) {
 		AssetID asset = scene->texture_infos[i];
 		fwrite(cast(const void*) &asset.id, sizeof(asset.id), 1, file);
 	}

@@ -31,11 +31,12 @@ typedef struct Scene {
 	Camera* main_camera;
 	
 	HDR_SkyMap hdr_skymap;
-	SimpleTexture albedo_map;
-	SimpleTexture normal_map;
-	SimpleTexture metallic_map;
-	SimpleTexture roughness_map;
-	SimpleTexture ao_map;
+
+	Texture2D albedo_map;
+	Texture2D normal_map;
+	Texture2D metallic_map;
+	Texture2D roughness_map;
+	Texture2D ao_map;
 	
 	
 } Scene;

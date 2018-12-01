@@ -97,7 +97,7 @@ AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
 	
 	const char* base_file = platform_file_basename(filename);
 	
-	int filename_len = strlen(base_file);
+	size_t filename_len = strlen(base_file);
 	size_t map_size = tracker->track_map.size;
 	// Go over our track map, and look for filename
 	for (int i = 0; i < map_size; i++) {

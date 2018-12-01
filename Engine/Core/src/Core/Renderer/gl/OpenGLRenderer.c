@@ -480,7 +480,7 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 	} else {
 		// TODO: handle case when shader could not be loaded
 		debug_print("Shaders %s or %s could not be loaded\n", vertex_file, fragment_file);
-		handle.handle = -1;
+		handle.handle = 0;
 		return handle;
 	}
 
