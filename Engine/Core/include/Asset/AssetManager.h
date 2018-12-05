@@ -10,8 +10,6 @@
 
 
 
-
-
 typedef struct InternalAsset {
 	AssetID id;
 	union {

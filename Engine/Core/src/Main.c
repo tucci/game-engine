@@ -14,32 +14,40 @@
 
 
 
+#include "engine_platform.h"
 
 int main(int argc, char* argv[]) {
 
 
 
-
-
-
+	
+	
 
 
 #if 0
 	
 	
+	char buffer[260];
+
+	//FileHandle h = platform_create_file("test.txt");
+	//
+	//if (h.win_handle) {
+	//	platform_path(h, buffer, 256);
+	//	s64 fsize = platform_get_file_size(h);
+	//	platform_close_file(h);
+	//}
+	
 
 	
-	Texture2D td;
-	td.data = NULL;
-	td.uv_translation.x = 99999999999;
-	td.uv_translation.y = 99999999999;
-	td.uv_scaling.x = 99999999999;
-	td.uv_scaling.y = 99999999999;
-	td.uv_rotation = 99999999999;
-	td.width = 99999999999;
-	td.height = 99999999999;
-	td.channels = 99999999999;
-	td.depth = 99999999999;
+
+	IString path = IString("Assets\\test_fbx");
+	IString file = IString("cube_test.fbx");
+	bool x = platform_concat_path_and_filename(path, file, buffer, 260);
+	
+	//IString p = IString(platform_file_dirname(s.buf));
+	//bool result = platform_file_dirname(s.buf, buffer, 260);
+
+	
 	main_test();
 	
 #else

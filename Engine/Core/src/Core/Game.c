@@ -104,6 +104,7 @@ void load_scene(Game* game, int scene_id) {
 	AssetImporter importer;
 	init_asset_importer(&importer, &asset_manager->asset_tracker);
 
+	//remove_all_tracked_assets(importer.tracker);
 	
 	AssetID import_scene;
 	//import_scene = find_asset_by_name(importer.tracker, "mill.fbx.easset");
@@ -111,14 +112,14 @@ void load_scene(Game* game, int scene_id) {
 
 	// asset not found
 	//if (import_scene.id == 0) {
-		//import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", true);
+		//import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
 
-		import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
 	//import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
 		//import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX");
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", true);
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
+		import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx");
 
@@ -134,7 +135,7 @@ void load_scene(Game* game, int scene_id) {
 
 		// TOO MUCH MEMORY here
 		// TODO: need to find a way for the importer memory to scale without having a fixed memory
-		//AssetID import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx");
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx", false);
 	//}
 	
 

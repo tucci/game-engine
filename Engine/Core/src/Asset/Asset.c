@@ -92,19 +92,51 @@ bool is_asset_tracked(AssetTracker* tracker, char* filename) {
 	return true;
 }
 
-// filename should not include the .easset extension
-AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
-	
-	const char* base_file = platform_file_basename(filename);
-	
-	size_t filename_len = strlen(base_file);
+void remove_all_tracked_assets(AssetTracker* tracker) {
 	size_t map_size = tracker->track_map.size;
 	// Go over our track map, and look for filename
 	for (int i = 0; i < map_size; i++) {
 		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
 		// Check if this is a valid track data
 		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
-			if (strncmp(base_file, track_item.value.filename, filename_len) == 0) {
+			platform_file_delete(track_item.value.filename);
+			map_remove(&tracker->track_map, track_item.key);
+		}
+	}
+	tracker->last_asset_id = 1;
+	tracker->assets_tracked = 0;
+	write_tracker_file(tracker);
+	
+}
+
+// filename should not include the .easset extension
+AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
+	
+	char buffer[260];
+
+	convert_to_os_path(filename, buffer, 260);
+	
+	
+	size_t filename_len = strlen(buffer);
+	size_t map_size = tracker->track_map.size;
+	// Go over our track map, and look for filename
+	for (int i = 0; i < map_size; i++) {
+		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
+		// Check if this is a valid track data
+		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
+			// NOTE:
+			// a filename could be something like "example_file"
+			// but in the tracker the file is stored with the asset suffix
+			// so if example file was a mesh it would be stored as "example_file_mesh.easset"
+			// if we were to compare the given file to the tracker file it would never be equal
+			// "example_file" != "example_file_mesh.easset"
+			// so instead instead we do a subtring compare and ignore the suffix
+			// while this is very nasty, it works for now
+			// Once assets are put into pak files, and all string files are removed,
+			// we will never need to compare file strings anymore so we wont have to worry about it
+			// Usually in editor/debug mode we refer to assets by name
+			// while in production/game mode, we refer to assets by ids/offsets into the pak files
+			if (strncmp(buffer, track_item.value.filename, filename_len) == 0) {
 				AssetID id;
 				id.id = track_item.key;
 				return id;

@@ -209,7 +209,7 @@ void map_remove(CompactMap<V>* map, u64 key) {
 			// This slot cannot be used untill we rehash the table
 			map->map[hash_index].key = TOMBSTONE;
 			map->tomestones++;
-			
+			map->item_count--;
 			return;
 			
 		} else if (map->map[hash_index].key == 0) {

@@ -173,6 +173,7 @@ void destroy_asset_tracker(AssetTracker* tracker);
 // find_asset_by_name and is_asset_tracked both do the same thing
 // is_asset_tracked is just a convience function over find_asset_by_name
 bool is_asset_tracked(AssetTracker* tracker, char* filename);
+void remove_all_tracked_assets(AssetTracker* tracker);
 AssetID find_asset_by_name(AssetTracker* tracker, const char* filename);
 AssetID track_asset(AssetTracker* tracker, char* filename, u32 filename_length);
 static u64 next_asset_id(AssetTracker* tracker);
