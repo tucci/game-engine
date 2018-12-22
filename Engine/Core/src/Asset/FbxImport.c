@@ -33,7 +33,9 @@ void destroy_asset_importer(AssetImporter* importer) {
 
 static TextureType fbx_string_texture_type(const char* string) {
 	if (strcmp(string, "DiffuseColor") == 0) {
-		return TextureType_Diffuse;
+		return TextureType_Albedo;
+	} if (strcmp(string, "NormalMap") == 0) {
+		return TextureType_Normal;
 	} else {
 		// TODO: implement rest of texture types
 		DEBUG_BREAK;
@@ -216,7 +218,10 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 
 	FBX_Material* material = map_get(&fbx_import->fbx_object_map, material_node->id).value.material;
 
-	// TODO: come up with our own material format once we have that down. for now we are using the fbx lambert model for storing materials
+	// NOTE: Conversion between the fbx material format and our own material format
+	// since we are using a pbr material, a lot of the data coming from the fbx material will be lost or unused
+	// this conversion is more for getting the names and some simple diffuse colors and textures into the engine
+	// later on the material author can go into the editor and change the material accordingly
 	
 	// Write material name length
 	fwrite(cast(const void*) &material->name_length, sizeof(material->name_length), 1, file);
@@ -226,57 +231,82 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 
 	// Write shading model type
 	fwrite(cast(const void*) &material->shading_model, sizeof(material->shading_model), 1, file);
+
 	// Write factors
-	fwrite(cast(const void*) &material->emissive_factor, sizeof(material->emissive_factor), 1, file);
-	fwrite(cast(const void*) &material->ambient_factor, sizeof(material->ambient_factor), 1, file);
-	fwrite(cast(const void*) &material->diffuse_factor, sizeof(material->diffuse_factor), 1, file);
-	fwrite(cast(const void*) &material->transparency_factor, sizeof(material->transparency_factor), 1, file);
-	fwrite(cast(const void*) &material->reflection_factor, sizeof(material->reflection_factor), 1, file);
-	fwrite(cast(const void*) &material->specular_factor, sizeof(material->specular_factor), 1, file);
-	fwrite(cast(const void*) &material->shininess_exponent, sizeof(material->shininess_exponent), 1, file);
+	// NOTE: Since the fbx format is not using a metallic workflow, most of the data provided in the fbx format is not used
+	// however our material importer/exporter expects to see the metallic and roughness factors
+	// so when exporting, just use the default values of 0 for the metallic and roughness factors
+	float metallic_factor = 0.0f;
+	float roughness_factor = 0.0f;
+	float emissive_factor = (float)material->emissive_factor;
+	fwrite(cast(const void*) &metallic_factor, sizeof(metallic_factor), 1, file);
+	fwrite(cast(const void*) &roughness_factor, sizeof(roughness_factor), 1, file);
+	fwrite(cast(const void*) &emissive_factor, sizeof(emissive_factor), 1, file);
 
 	// Write colors
+	// NOTE: while diffuse and albedo are not really the same, we'll treat them the same here, and then the material author can fix it in the editor
+	Vec3f albedo_color = material->diffuse_color;
+	fwrite(cast(const void*) &albedo_color, sizeof(albedo_color), 1, file);
 	fwrite(cast(const void*) &material->emissive_color, sizeof(material->emissive_color), 1, file);
-	fwrite(cast(const void*) &material->ambient_color, sizeof(material->ambient_color), 1, file);
-	fwrite(cast(const void*) &material->diffuse_color, sizeof(material->diffuse_color), 1, file);
-	fwrite(cast(const void*) &material->transparent_color, sizeof(material->transparent_color), 1, file);
-	fwrite(cast(const void*) &material->reflection_color, sizeof(material->reflection_color), 1, file);
-	fwrite(cast(const void*) &material->specular_color, sizeof(material->specular_color), 1, file);
+	
+	
+	
 	
 	
 
-	// TODO: it might be that we might have just textures and no layered textures with inner textures. this needs to be tested
+
 	
-	// Write how many layered textures we have
-	fwrite(cast(const void*) &material_node->children_count, sizeof(material_node->children_count), 1, file);
-	// Each layered texture might have multiple textures
-	AssetImport_SceneNode* layered_texture_node = material_node->first_child;
-	while (layered_texture_node != NULL) {
+	
+	
+	AssetImport_SceneNode* child_texture_node = material_node->first_child;
+	
+	// Write the texture count
+	s32 texture_count = material_node->children_count;
+	fwrite(cast(const void*) &texture_count, sizeof(texture_count), 1, file);
+
+	while (child_texture_node != NULL) {
 		
-		// Get the associated layered texture for this object
-		FBX_LayeredTexture* layered_texture = map_get(&fbx_import->fbx_object_map, layered_texture_node->id).value.layered_texture;
+		//The child object could either be a texture or a layered texture
 
-		// Write the texture type
-		fwrite(cast(const void*) &layered_texture->texture_type, sizeof(layered_texture->texture_type), 1, file);
-
-		// Write how many inner textures we have
-		s32 texture_count = layered_texture_node->texture_count;
-		fwrite(cast(const void*) &texture_count, sizeof(texture_count), 1, file);
-
-		for (int j = 0; j < texture_count; j++) {
-
-			//FBX_Texture* texture = map_get(&fbx_import->fbx_object_map, layered_texture_node->id).value.layered_texture;
+		
+		FBX_Object obj_type = map_get(&fbx_import->fbx_object_map, child_texture_node->id).value;
+		if (obj_type.type == FBX_Object_Type_Texture) {
+			// this is a single texture object
+			FBX_Texture* t = obj_type.texture;
 			
-			u32 texture_index = layered_texture_node->textures[j];
-			AssetID texture_id = fbx_import->export_scene.texture_infos[texture_index];
 
+			// Write the texture type
+			fwrite(cast(const void*) &t->texture_type, sizeof(t->texture_type), 1, file);
+
+			
+			u32 texture_index = child_texture_node->textures[0];
+			AssetID texture_id = fbx_import->export_scene.texture_infos[texture_index];
 			// Write the texture asset id
 			fwrite(cast(const void*) &texture_id, sizeof(texture_id), 1, file);
+
+		} else if (obj_type.type == FBX_Object_Type_LayeredTexture) {
+			// TODO: support for layered material
+			// this is a layered texture that may have multiple textures that need to be merged/blended
+			FBX_LayeredTexture* lt = obj_type.layered_texture;
+			
+			// Write the texture type
+			fwrite(cast(const void*) &lt->texture_type, sizeof(lt->texture_type), 1, file);
+
+			// NOTE: since our material format does not handle layered textures yet, we'll just grab the first texture in the layer
+			// For now just grab the first index
+			u32 texture_index = child_texture_node->textures[0];
+			AssetID texture_id = fbx_import->export_scene.texture_infos[texture_index];
+			// Write the texture asset id
+			fwrite(cast(const void*) &texture_id, sizeof(texture_id), 1, file);
+
 		}
+		
+		child_texture_node = child_texture_node->next_sibling;
 
 
-		layered_texture_node = layered_texture_node->next_sibling;
+		
 	}
+	
 
 
 
@@ -303,17 +333,17 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	// + 1 file seperator
 	// + 3 _tx part
 	// + 1 for null terminator
-	u32 str_size = path.length + 1 + 3 + filename.length + ASSET_FILE_EXTENSION_LENGTH + 1;
+	u32 file_str_size = path.length + 1 + 3 + filename.length + ASSET_FILE_EXTENSION_LENGTH + 1;
 
 	// Alloc on stack to hold the path string
-	char* file_str = cast(char*) stack_alloc(&importer->stack, str_size, 1);
+	char* file_str = cast(char*) stack_alloc(&importer->stack, file_str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, str_size, "%s_tx%s", filename.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, file_str_size, "%s_tx%s", filename.buf, ASSET_FILE_EXTENSION);
 
 	IString file_with_ext(file_str);
-	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
+	platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
 
-	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	AssetID id = track_asset(importer->tracker, file_str, file_str_size);
 	id.type = AssetType_Texture;
 
 	FILE* file;
@@ -361,6 +391,50 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	fwrite(cast(const void*) &texture->uv_translation, sizeof(texture->uv_translation), 1, file);
 	fwrite(cast(const void*) &texture->uv_scaling, sizeof(texture->uv_scaling), 1, file);
 	fwrite(cast(const void*) &texture->uv_rotation, sizeof(texture->uv_rotation), 1, file);
+
+
+	// Write texture payload
+	Texture2D txt_tmp;
+	txt_tmp.width = 0;
+	txt_tmp.height = 0;
+	txt_tmp.channels = 0;
+	txt_tmp.depth = 0;
+	txt_tmp.data = NULL;
+
+	// Read texture file and export back to custom format
+	// for now it's simply just a memcpy
+
+	platform_concat_path_and_filename(path, IString(texture->relative_filename, texture->relative_filename_length), file_str, file_str_size);
+	
+	bool loaded = load_texture(file_str, &txt_tmp, &importer->stack, false);
+	
+
+
+	fwrite(cast(const void*) &txt_tmp.width, sizeof(txt_tmp.width), 1, file);
+	fwrite(cast(const void*) &txt_tmp.height, sizeof(txt_tmp.height), 1, file);
+	fwrite(cast(const void*) &txt_tmp.channels, sizeof(txt_tmp.channels), 1, file);
+	fwrite(cast(const void*) &txt_tmp.depth, sizeof(txt_tmp.depth), 1, file);
+	
+	s32 txt_size = txt_tmp.width * txt_tmp.height * txt_tmp.channels;
+	fwrite(cast(const void*) txt_tmp.data, txt_size, 1, file);
+	
+
+	if (loaded) {
+		// free texture data from stack
+		stack_pop(&importer->stack);
+	}
+	
+
+	
+
+	
+	
+
+
+	
+
+	
+	
 
 	
 	err = fclose(file);
@@ -501,8 +575,13 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 		+ sizeof(node->rotation)
 		+ sizeof(node->children_count)
 		+ node->children_count * sizeof(u64)
+
 		+ sizeof(node->mesh_count)
 		+ node->mesh_count * sizeof(u32)
+
+		+ sizeof(node->material_count)
+		+ node->material_count * sizeof(u32)
+
 		+ sizeof(node->texture_count)
 		+ node->texture_count * sizeof(u32);
 
@@ -626,6 +705,13 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 	// texture indices to the scene texture list
 	for (u32 j = 0; j < node->mesh_count; j++) {
 		fwrite(cast(const void*) &node->meshes[j], sizeof(node->meshes[j]), 1, file);
+	}
+
+	// Material count
+	fwrite(cast(const void*) &node->material_count, sizeof(node->material_count), 1, file);
+	// material indices to the scene texture list
+	for (u32 j = 0; j < node->material_count; j++) {
+		fwrite(cast(const void*) &node->materials[j], sizeof(node->materials[j]), 1, file);
 	}
 
 	// Texture count
@@ -809,16 +895,25 @@ static inline MaterialShadingModel fbx_shading_string_to_type(const char * strin
 static void fbx_process_material_nodes(AssetImporter* importer, FBX_ImportData* fbx_import) {
 	s32 count = sb_count(fbx_import->material_node_cache);
 
+	// Pre alloocate the material infos array
 	fbx_import->export_scene.material_count = count;
 	sb_add(fbx_import->export_scene.material_infos, count);
 	
 	IString path(fbx_import->import_path, fbx_import->import_path_length);
 
 	for (int i = 0; i < count; i++) {
+		// Get the material node from the cache
 		AssetImport_SceneNode* material_node = fbx_import->material_node_cache[i];
+
 		IString mat_name(material_node->name, material_node->name_length);
+		// Convert the fbx material to our custom material format
 		AssetID material_id = fbx_convert_mat_and_export(importer, fbx_import, material_node, path, mat_name);
+		// Add the material id the scene's list of material id
 		fbx_import->export_scene.material_infos[i] = material_id;
+
+		// Add the material index to the node's material array
+		sb_push(material_node->materials, i);
+		material_node->material_count++;
 		
 	}
 
@@ -1308,8 +1403,12 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 					object.texture->filename = texture_node->properties[0].special.str_data;
 				}
 				else if (strcmp(texture_node->name, "RelativeFilename") == 0) {
-					object.texture->relative_filename_length = texture_node->properties[0].special.length;
-					object.texture->relative_filename = texture_node->properties[0].special.str_data;
+					// NOTE: the provided relative path may not actually be relative
+					// so we need to get the base file name ourselves
+					const char* basename = platform_file_basename(texture_node->properties[0].special.str_data);
+					// cast away const
+					object.texture->relative_filename = cast(char*)basename;
+					object.texture->relative_filename_length = strlen(object.texture->relative_filename);
 				}
 
 				else if (strcmp(texture_node->name, "ModelUVTranslation") == 0) {
@@ -1576,10 +1675,9 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					break;
 				}
 				case FBX_Object_Type_Material: {
+
+
 					FBX_Material* material = child_object.material;
-					
-				
-					
 					MapResult<AssetImport_SceneNode*> result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
 					
 					if (result.found) {
@@ -1711,20 +1809,21 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 			switch (child_object.type) {
 				case FBX_Object_Type_LayeredTexture: {
-					TextureType texture_type = fbx_string_texture_type(connection_node->properties[3].special.str_data);
-
-					// Add this layered texture to the parent material
-					FBX_LayeredTexture* layered_texture = child_object.layered_texture;
-					layered_texture->texture_type = texture_type;
+					
 					
 
 
-					MapResult<AssetImport_SceneNode*> result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
+					MapResult<AssetImport_SceneNode*> lt_result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
 
 
-					if (result.found) {
-						child_scene_node = result.value;
+					if (lt_result.found) {
+						child_scene_node = lt_result.value;
 					} else {
+						TextureType texture_type = fbx_string_texture_type(connection_node->properties[3].special.str_data);
+						// Add this layered texture to the parent material
+						FBX_LayeredTexture* layered_texture = child_object.layered_texture;
+						layered_texture->texture_type = texture_type;
+
 						child_scene_node = cast(AssetImport_SceneNode*) stack_alloc(&importer->stack, sizeof(AssetImport_SceneNode), 4);
 						fbx_import->export_scene.node_count++;
 						map_put(&fbx_import->scene_node_cache_map, child_object_id, child_scene_node);
@@ -1733,6 +1832,42 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					
 
 					add_child_to_scene_node(parent_scene_node, child_scene_node);
+					break;
+				}
+				case FBX_Object_Type_Texture: {
+					
+
+					MapResult<AssetImport_SceneNode*> t_result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
+
+
+					if (t_result.found) {
+						child_scene_node = t_result.value;
+					} else {
+						TextureType texture_type = fbx_string_texture_type(connection_node->properties[3].special.str_data);
+						FBX_Texture* texture = child_object.texture;
+						texture->texture_type = texture_type;
+
+						child_scene_node = cast(AssetImport_SceneNode*) stack_alloc(&importer->stack, sizeof(AssetImport_SceneNode), 4);
+						fbx_import->export_scene.node_count++;
+						map_put(&fbx_import->scene_node_cache_map, child_object_id, child_scene_node);
+						init_scene_node(child_scene_node, child_object_id, texture->name, texture->name_length);
+						add_child_to_scene_node(parent_scene_node, child_scene_node);
+
+
+						IString tx_name(texture->name, texture->name_length);
+						// Create texture asset 
+						AssetID asset_id = fbx_convert_texture_and_export(importer, texture, path, tx_name);
+
+
+						// push the texture to the scene for reference
+						sb_push(fbx_import->export_scene.texture_infos, asset_id);
+						u32 texture_index = sb_count(fbx_import->export_scene.texture_infos) - 1;
+						fbx_import->export_scene.texture_count++;
+
+						// add this asset texture id to the parent node
+						child_scene_node->texture_count++;
+						sb_push(child_scene_node->textures, texture_index);
+					}
 					break;
 				}
 			}
@@ -2242,8 +2377,6 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	//// right now it is doing -4 to remove the .fbx extension
 	//u32 stripped_filename_length = strlen(filename) - 4;
 
-
-	
 	
 	
 	
@@ -2292,6 +2425,7 @@ cleanup_import_data:
 		if (node.key != 0) {
 			sb_free(node.value->meshes);
 			sb_free(node.value->textures);
+			sb_free(node.value->materials);
 		}
 	}
 	

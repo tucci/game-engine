@@ -15,6 +15,8 @@ typedef struct InternalAsset {
 	union {
 		AssetImport_Scene* scene;
 		StaticMesh* mesh;
+		Material* material;
+		Texture2D* texture;
 	};
 } InternalAsset;
 
@@ -22,6 +24,7 @@ typedef struct InternalAsset {
 
 typedef struct AssetManager {
 	Arena asset_mem;
+	StackAllocator stack;
 	AssetID* assets;
 	AssetTracker asset_tracker;
 	CompactMap<u64> asset_id_map;
@@ -57,9 +60,14 @@ void destroy_asset_manager(AssetManager* manager);
 
 InternalAsset get_asset_by_id(AssetManager* manager, AssetID id);
 StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id);
+Material* get_material_by_id(AssetManager* manager, MaterialID id);
 
 void import_pak_file(AssetManager* manager, char* pak_file);
 
 
-AssetID import_asset_by_name(AssetManager* manager, char* filename);
-void import_asset_by_id(AssetManager* manager, AssetID id);
+AssetID load_asset_by_name(AssetManager* manager, char* filename);
+void load_asset_by_id(AssetManager* manager, AssetID id);
+
+
+MaterialID create_material(AssetManager* manager, IString path, IString name, Material* mat);
+TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture);

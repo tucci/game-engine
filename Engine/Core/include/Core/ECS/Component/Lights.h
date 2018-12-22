@@ -6,6 +6,10 @@
 #include "Common/Map.h"
 #include "Core/ECS/Entity.h"
 
+typedef struct LightID {
+	u64 id;
+} LightID;
+
 typedef enum LightType {
 	LightType_None, // Used when trying to get a light that doesnt exist
 	LightType_DirectionalLight,

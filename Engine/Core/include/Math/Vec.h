@@ -7,7 +7,10 @@
 
 #include "Math/Math.h"
 
-
+// Disable non standard extension
+// eventually we'll fix this, but just hide the warnings
+// it makes it hard to find other warnings
+#pragma warning(disable : 4201)
 typedef union Vec2i {
 	struct {
 		int x;

@@ -2,6 +2,7 @@
 
 #include "Common/Map.h"
 #include "Core/ECS/Entity.h"
+#include "Asset/Asset.h"
 
 typedef struct Render {
 	Entity entity_ref;
@@ -10,6 +11,7 @@ typedef struct Render {
 		entity_ref = e; 
 		visible = visibility;
 	}
+	MaterialID material_id;
 
 }Render;
 

@@ -29,6 +29,10 @@ bool load_texture(const char* filename, Texture2D* texture, Arena* mem, bool fli
 
 	int image_size = texture->width * texture->height * texture->channels;
 
+	if (image_size == 0) {
+		return false;
+	}
+
 	texture->data = cast(unsigned char*) arena_alloc(mem, image_size);
 
 	int req_format = texture->channels;
@@ -49,7 +53,7 @@ bool load_texture(const char* filename, Texture2D* texture, Arena* mem, bool fli
 	memcpy(texture->data, data, texture->width * texture->height * texture->channels);
 	// Free the original data, we have the image in our own memory
 	stbi_image_free(data);
-	return 1;
+	return true;
 }
 
 // Returns 1 if loaded successfully, 0 if failed
@@ -71,6 +75,10 @@ bool load_texture(const char* filename, Texture2D* texture, StackAllocator* mem,
 
 	int image_size = texture->width * texture->height * texture->channels;
 
+	if (image_size == 0) {
+		return false;
+	}
+
 	texture->data = cast(unsigned char*) stack_alloc(mem, image_size, 4);
 
 	int req_format = texture->channels;
@@ -91,7 +99,7 @@ bool load_texture(const char* filename, Texture2D* texture, StackAllocator* mem,
 	memcpy(texture->data, data, texture->width * texture->height * texture->channels);
 	// Free the original data, we have the image in our own memory
 	stbi_image_free(data);	
-	return 1;
+	return true;
 }
 
 bool load_hdr_texture(const char* filename, HDRTexture* texture, StackAllocator* mem, bool flip) {
@@ -102,6 +110,9 @@ bool load_hdr_texture(const char* filename, HDRTexture* texture, StackAllocator*
 
 	size_t image_size = texture->width * texture->height * texture->channels * sizeof(float);
 
+	if (image_size == 0) {
+		return false;
+	}
 
 	texture->data = cast(float*) stack_alloc(mem, image_size, 4);
 
@@ -117,7 +128,6 @@ bool load_hdr_texture(const char* filename, HDRTexture* texture, StackAllocator*
 		return false;
 	}
 	
-
 	// Move the image to our own memory space, we want the data to live in our allocator
 	memcpy(texture->data, data, image_size);
 	// Free the original data, we have the image in our own memory

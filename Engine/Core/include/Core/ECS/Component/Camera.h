@@ -11,20 +11,23 @@
 
 struct EntityManager;
 
+typedef struct CameraID {
+	u64 id;
+} CameraID;
 
 typedef struct Camera {
 	
 	//Transform transform;
 	Entity entity_ref;
-	float near;
-	float far;
+	float near_clip;
+	float far_clip;
 	float fov;
 	float aspect_ratio;
 	Mat4x4f view_mat;
 	Camera(Entity ref) {
 		entity_ref = ref;
-		near = 0.0001f;
-		far = 100.0f;
+		near_clip = 0.0001f;
+		far_clip = 100.0f;
 		fov = 90.0f;
 		aspect_ratio = 1.0f;
 		view_mat = Mat4x4f();
@@ -32,7 +35,7 @@ typedef struct Camera {
 } Camera;
 
 
-void init_camera_params(Camera* camera, float near, float far, float fov, float aspect_ratio);
+void init_camera_params(Camera* camera, float near_clip, float far_clip, float fov, float aspect_ratio);
 
 
 typedef struct CameraManager {

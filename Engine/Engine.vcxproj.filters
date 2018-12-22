@@ -563,6 +563,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="todo.txt" />
+    <Text Include="Core\include\Common\stb_image_write.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\shaders\textured.vs" />

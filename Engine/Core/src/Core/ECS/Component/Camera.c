@@ -8,13 +8,13 @@
 
 
 void init_camera_params(Camera* camera,
-	float near,
-	float far,
+	float near_clip,
+	float far_clip,
 	float fov,
 	float aspect_ratio) {
 
-	camera->near = near;
-	camera->far = far;
+	camera->near_clip = near_clip;
+	camera->far_clip = far_clip;
 
 	camera->fov = fov;
 	camera->aspect_ratio = aspect_ratio;

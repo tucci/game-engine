@@ -8,10 +8,14 @@
 #include "Core/ECS/Entity.h"
 #include "Common/Map.h"
 
+typedef struct StaticMeshID {
+	u64 id;
+} StaticMeshID;
 
 
 typedef struct StaticMesh {
 	
+	StaticMeshID id;
 	int vertex_count;
 	int index_count;
 	

@@ -168,7 +168,7 @@ void software_render(SoftwareRenderer* r) {
 
 	Mat4x4f view_mat = camera.view_mat;
 	view_mat = transpose(view_mat);
-	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f projection_mat = perspective(camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
 	Mat4x4f mvp_mat = model_mat * view_mat * projection_mat;
 
 
@@ -284,7 +284,7 @@ void software_debug_render(SoftwareRenderer* r) {
 
 	Mat4x4f view_mat = camera.view_mat;
 	view_mat = transpose(view_mat);
-	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f projection_mat = perspective(camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
 	// TODO: this is in the wrong order
 	Mat4x4f mvp_mat = model_mat * view_mat * projection_mat;
 

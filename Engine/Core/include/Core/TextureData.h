@@ -9,8 +9,13 @@
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
 
+typedef struct TextureID {
+	u64 id;
+} TextureID;
+
 
 typedef struct Texture2D {
+	TextureID id;
 	s32 width;
 	s32 height;
 	s32 channels;

@@ -343,6 +343,8 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 
 
 RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap) {
+	
+	
 	RenderResource handle;
 	handle.type = RenderResourceType_TEXTURE;
 
@@ -620,7 +622,7 @@ void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f u
 	Camera camera = *opengl->render_world->camera;
 	Mat4x4f model_mat;
 	Mat4x4f view_mat = camera.view_mat;
-	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f projection_mat = perspective(camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
 
 	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
 
@@ -869,7 +871,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	Camera camera = *opengl->render_world->camera;
 	Mat4x4f model_mat;
 	Mat4x4f view_mat = camera.view_mat;
-	Mat4x4f projection_mat = perspective(camera.near, camera.far, camera.fov, camera.aspect_ratio);
+	Mat4x4f projection_mat = perspective(camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
 	
 	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
 	
@@ -1023,14 +1025,14 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 
 	Mat4x4f view_mat = camera->view_mat;
-	Mat4x4f projection_mat = perspective(camera->near, camera->far, camera->fov, camera->aspect_ratio);
+	Mat4x4f projection_mat = perspective(camera->near_clip, camera->far_clip, camera->fov, camera->aspect_ratio);
 	Mat4x4f pv_mat;
 	
 	
 	if (light_pass) {
 		// While a directional light has no position, we treat the direction like a postion, where the direction of the light is the vector to the origin
 		view_mat = look_at(Vec3f(0, 0, 0), test_light.direction, Vec3f_Up);
-		projection_mat = ortho(-camera->far, camera->far, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
+		projection_mat = ortho(-camera->far_clip, camera->far_clip, viewport_size.y * 0.01f, -viewport_size.y* 0.01f, viewport_size.x* 0.01f, -viewport_size.x* 0.01f);
 		pv_mat = projection_mat * view_mat;
 		opengl->render_world->light_space_mat = pv_mat;
 	} else {
@@ -1057,69 +1059,81 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), uniform3f_pack(cam_pos));
 	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), uniform3f_pack(test_light.direction));
-	if (!light_pass) {
-		glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->render_world->light_space_mat.mat1d);
+
 
 		
 
-		GLuint uniform_index = glGetUniformLocation(current_shader, "shadowMap");
-
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
-		glUniform1i(uniform_index, 0);
-
-		
-		uniform_index = glGetUniformLocation(current_shader, "albedo_map");
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->albedo_map_res.handle]);
-		glUniform1i(uniform_index, 1);
-
-		uniform_index = glGetUniformLocation(current_shader, "normal_map");
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->normal_map_res.handle]);
-		glUniform1i(uniform_index, 2);
-
-
-		uniform_index = glGetUniformLocation(current_shader, "metallic_map");
-		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->metallic_map_res.handle]);
-		glUniform1i(uniform_index, 3);
-
-		uniform_index = glGetUniformLocation(current_shader, "roughness_map");
-		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->roughness_map_res.handle]);
-		glUniform1i(uniform_index, 4);
-
-		uniform_index = glGetUniformLocation(current_shader, "ao_map");
-		glActiveTexture(GL_TEXTURE5);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->ao_map_res.handle]);
-		glUniform1i(uniform_index, 5);
-
-		uniform_index = glGetUniformLocation(current_shader, "irradiance_map");
-		glActiveTexture(GL_TEXTURE6);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->irradiance_map_res.handle]);
-		glUniform1i(uniform_index, 6);
-
-		uniform_index = glGetUniformLocation(current_shader, "prefilter_map");
-		glActiveTexture(GL_TEXTURE7);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->prefiler_map_res.handle]);
-		glUniform1i(uniform_index, 7);
-
-		uniform_index = glGetUniformLocation(current_shader, "brdf_lut");
-		glActiveTexture(GL_TEXTURE8);
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->brdf_lut_res.handle]);
-		glUniform1i(uniform_index, 8);
-
-
-	}
-
-		
-
+	// TODO: better render loop
+	// right now it's doing a lot gl states changes
 	for (int i = 0; i < opengl->render_world->render_mesh_count; i++) {
 		RenderMesh render_mesh = opengl->render_world->render_mesh_list[i];
 		
 		StaticMesh* mesh = render_mesh.mesh;
 		Mat4x4f* world_mat = render_mesh.world;
+		Material* material = render_mesh.material;
+
+		
+		
+		if (!light_pass) {
+			glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->render_world->light_space_mat.mat1d);
+			GLuint uniform_index = glGetUniformLocation(current_shader, "shadowMap");
+
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
+			glUniform1i(uniform_index, 0);
+
+			
+
+			MapResult<RenderMaterialResource*> result_handle = map_get(&opengl->render_world->material_res_map, material->id.id);
+			RenderMaterialResource* material_handle = result_handle.value;
+
+			
+			// Set material textures
+			uniform_index = glGetUniformLocation(current_shader, "albedo_map");
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->albedo.handle]);
+			glUniform1i(uniform_index, 1);
+
+			uniform_index = glGetUniformLocation(current_shader, "normal_map");
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->normal.handle]);
+			glUniform1i(uniform_index, 2);
+
+
+			uniform_index = glGetUniformLocation(current_shader, "metallic_map");
+			glActiveTexture(GL_TEXTURE3);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->metallic.handle]);
+			glUniform1i(uniform_index, 3);
+			
+			uniform_index = glGetUniformLocation(current_shader, "roughness_map");
+			glActiveTexture(GL_TEXTURE4);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->roughness.handle]);
+			glUniform1i(uniform_index, 4);
+			
+			uniform_index = glGetUniformLocation(current_shader, "ao_map");
+			glActiveTexture(GL_TEXTURE5);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->ao.handle]);
+			glUniform1i(uniform_index, 5);
+
+			uniform_index = glGetUniformLocation(current_shader, "irradiance_map");
+			glActiveTexture(GL_TEXTURE6);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->irradiance_map_res.handle]);
+			glUniform1i(uniform_index, 6);
+
+
+			uniform_index = glGetUniformLocation(current_shader, "prefilter_map");
+			glActiveTexture(GL_TEXTURE7);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->prefiler_map_res.handle]);
+			glUniform1i(uniform_index, 7);
+
+			uniform_index = glGetUniformLocation(current_shader, "brdf_lut");
+			glActiveTexture(GL_TEXTURE8);
+			glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->brdf_lut_res.handle]);
+			glUniform1i(uniform_index, 8);
+
+
+		}
+
 		
 		if (mesh->vertex_count == 0) { continue; }
 		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);

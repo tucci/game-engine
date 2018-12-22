@@ -174,7 +174,7 @@ static bool init_engine_memory(Engine* engine);
 
 static bool init_display(Engine* engine);
 static bool init_window(Engine* engine);
-static bool init_renderer(Engine* engine);
+static bool init_backend_renderer(Engine* engine);
 static bool init_keys(Engine* engine);
 static bool init_event_queue(Engine* engine);
 static bool init_clock(Engine* engine);

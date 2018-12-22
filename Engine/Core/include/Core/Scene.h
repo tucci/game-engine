@@ -32,11 +32,8 @@ typedef struct Scene {
 	
 	HDR_SkyMap hdr_skymap;
 
-	Texture2D albedo_map;
-	Texture2D normal_map;
-	Texture2D metallic_map;
-	Texture2D roughness_map;
-	Texture2D ao_map;
+
+
 	
 	
 } Scene;

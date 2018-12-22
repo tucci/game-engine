@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "engine_platform.h"
+
 
 #include "Common/common_macros.h"
 #include "debug_macros.h"
@@ -23,7 +23,7 @@ void init_asset_tracker(AssetTracker* tracker) {
 	// try reading first
 	// if the file doesnt exist, then we create it
 	err = fopen_s(&file, track_file, "rb");
-
+	
 
 	if (err == 0) {
 		// File exists
@@ -264,6 +264,8 @@ void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_l
 	node->next_sibling = NULL;
 	node->mesh_count = 0;
 	node->meshes = NULL;
+	node->material_count = 0;
+	node->materials = NULL;
 	node->texture_count = 0;
 	node->textures = NULL;
 }

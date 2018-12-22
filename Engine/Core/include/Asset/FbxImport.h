@@ -14,8 +14,7 @@
 
 
 
-#define ASSET_FILE_EXTENSION ".easset"
-#define ASSET_FILE_EXTENSION_LENGTH 7
+
 
 
 
@@ -82,6 +81,7 @@ typedef struct FBX_Texture {
 	s32 name_length;
 	s32 filename_length;
 	s32 relative_filename_length;
+	TextureType texture_type;
 
 	char* name;
 	char* filename;
@@ -102,11 +102,10 @@ typedef struct FBX_Texture {
 typedef struct FBX_LayeredTexture {
 	char* name;
 	s32 name_length;
-
-	TextureType texture_type;
-
 	s32 layered_texture;
 	s32 blend_modes;
+
+	TextureType texture_type;
 	double alphas;
 } FBX_LayeredTexture;
 

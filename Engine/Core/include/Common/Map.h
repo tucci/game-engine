@@ -190,7 +190,6 @@ void map_grow(CompactMap<V>* map, size_t new_size) {
 }
 
 
-#pragma warning ("If Type V is a pointer type, you must free any internal data before calling map_remove")
 //If Type V is a pointer type, you must free any internal data before calling map_remove
 template <typename V>
 void map_remove(CompactMap<V>* map, u64 key) {

@@ -18,10 +18,15 @@ void import_pak_file(AssetManager* manager, char* pak_file) {
 
 void init_asset_manager(AssetManager* manager) {
 	arena_init(&manager->asset_mem);
+	size_t stack_size = MEGABYTES(1);
+	void* start = arena_alloc(&manager->asset_mem, stack_size);
+	stack_alloc_init(&manager->stack, start, stack_size);
 	map_init(&manager->asset_id_map);
 	map_grow(&manager->asset_id_map, 16);
 
 	init_asset_tracker(&manager->asset_tracker);
+
+	
 	manager->assets = NULL;
 
 	manager->_scene_count = 0;
@@ -41,6 +46,7 @@ void init_asset_manager(AssetManager* manager) {
 
 void destroy_asset_manager(AssetManager* manager) {
 	arena_free(&manager->asset_mem);
+	stack_reset(&manager->stack);
 	map_destroy(&manager->asset_id_map);
 	destroy_asset_tracker(&manager->asset_tracker);
 	sb_free(manager->assets);
@@ -66,7 +72,7 @@ InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 			// This id is currently not being tracked and is probably an error
 			assert_fail();
 		} else {
-			import_asset_by_name(manager, track_result.value.filename);
+			load_asset_by_name(manager, track_result.value.filename);
 			result = map_get(&manager->asset_id_map, id.id);
 			index_to_asset_type_array = result.value;
 		}
@@ -87,6 +93,12 @@ InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 		case AssetType_StaticMesh:
 			asset.mesh = manager->_static_meshes[index_to_asset_type_array];
 			break;
+		case AssetType_Material:
+			asset.material = manager->_materials[index_to_asset_type_array];
+			break;
+		case AssetType_Texture:
+			asset.texture = manager->_textures[index_to_asset_type_array];
+			break;
 	}
 
 	return asset;
@@ -98,6 +110,14 @@ StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id) {
 	asset_id.mesh = id;
 	InternalAsset mesh = get_asset_by_id(manager, asset_id);
 	return mesh.mesh;
+}
+
+Material* get_material_by_id(AssetManager* manager, MaterialID id) {
+	AssetID asset_id;
+	asset_id.type = AssetType_Material;
+	asset_id.material = id;
+	InternalAsset mat = get_asset_by_id(manager, asset_id);
+	return mat.material;
 }
 
 static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file, void* buffer) {
@@ -135,6 +155,8 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 	fread(buffer, sizeof(u32), 1, file);
 	node.children_count = *cast(u32*)buffer;
 
+	node.material_count = 0;
+	node.materials = NULL;
 	node.texture_count = 0;
 	node.textures = NULL;
 
@@ -158,6 +180,18 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 		}
 	}
 
+	// Read materials
+	fread(buffer, sizeof(u32), 1, file);
+	node.material_count = *cast(u32*)buffer;
+	if (node.material_count > 0) {
+		node.materials = cast(u32*) arena_alloc(&manager->asset_mem, node.material_count * sizeof(u32));
+		for (u32 i = 0; i < node.material_count; i++) {
+			fread(buffer, sizeof(u32), 1, file);
+			node.materials[i] = *cast(u32*)buffer;;
+		}
+	}
+
+
 	// Read textures
 	fread(buffer, sizeof(u32), 1, file);
 	node.texture_count = *cast(u32*)buffer;
@@ -167,6 +201,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 			fread(buffer, sizeof(u32), 1, file);
 			node.textures[i] = *cast(u32*)buffer;;
 		}
+		
 	}
 
 	// Recursivly parse the child nodes
@@ -183,13 +218,22 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 
 
 
-AssetID import_asset_by_name(AssetManager* manager, char* filename) {
+AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 	AssetID asset;
 	asset.id = 0;
+	asset.status = AssetStatus_Unloaded;
 	asset.type = AssetType_None;
 	
 	FILE* file;
 	errno_t err;
+
+	
+	char buf[260];
+	IString ifilename(filename);
+	platform_file_dirname(ifilename, buf, 260);
+	IString path(buf);
+
+	
 
 	// TODO: use memory mapped files
 	err = fopen_s(&file, filename, "rb");
@@ -220,7 +264,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			
 
 			AssetImport_Scene* scene = cast(AssetImport_Scene*)arena_alloc(&manager->asset_mem, sizeof(AssetImport_Scene));
-			
+			scene->id = asset.scene;
 			// Add this scene to the scene assets
 			sb_push(manager->_scenes, scene);
 			
@@ -265,7 +309,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->mesh_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
-					import_asset_by_id(manager, scene->mesh_infos[i]);
+					load_asset_by_id(manager, scene->mesh_infos[i]);
 				}
 			}
 
@@ -279,7 +323,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->material_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
-					import_asset_by_id(manager, scene->material_infos[i]);
+					load_asset_by_id(manager, scene->material_infos[i]);
 				}
 			}
 
@@ -294,7 +338,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 
 					
 					// TODO: push this to a import queue on a seperate thread
-					import_asset_by_id(manager, scene->light_infos[i]);
+					load_asset_by_id(manager, scene->light_infos[i]);
 				}
 			}
 
@@ -308,7 +352,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->camera_infos[i].id = *cast(u64*)buffer;
 					
 					// TODO: push this to a import queue on a seperate thread
-					import_asset_by_id(manager, scene->camera_infos[i]);
+					load_asset_by_id(manager, scene->camera_infos[i]);
 				}
 			}
 
@@ -323,7 +367,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->animation_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
-					import_asset_by_id(manager, scene->animation_infos[i]);
+					load_asset_by_id(manager, scene->animation_infos[i]);
 				}
 			}
 
@@ -337,7 +381,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 					scene->texture_infos[i].id = *cast(u64*)buffer;
 
 					// TODO: push this to a import queue on a seperate thread
-					import_asset_by_id(manager, scene->texture_infos[i]);
+					//load_asset_by_id(manager, scene->texture_infos[i]);
 				}
 			}
 			scene->root = cast(AssetImport_SceneNode*)arena_alloc(&manager->asset_mem, sizeof(AssetImport_SceneNode));
@@ -354,6 +398,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			
 			
 			StaticMesh* mesh = cast(StaticMesh*)arena_alloc(&manager->asset_mem, sizeof(StaticMesh));
+			mesh->id = asset.mesh;
 			sb_push(manager->_static_meshes, mesh);
 
 			// Add this asset to the id map
@@ -421,8 +466,10 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			break;
 		}
 		case AssetType_Material: {
+
 			Material* material = cast(Material*)arena_alloc(&manager->asset_mem, sizeof(Material));
 			init_material_defaults(material);
+			material->id = asset.material;
 			sb_push(manager->_materials, material);
 
 			
@@ -442,46 +489,70 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			fread(buffer, sizeof(material->shading_model), 1, file);
 			material->shading_model = *cast(MaterialShadingModel*)buffer;
 
-			// TODO: our serialized material is basically the fbx material, eventually we should use our own
-			fread(buffer, sizeof(double), 1, file);// emissive factor
-			fread(buffer, sizeof(double), 1, file);// ambient factor
-			fread(buffer, sizeof(double), 1, file);// diffuse factor
-			fread(buffer, sizeof(double), 1, file);// transparency factor
-			fread(buffer, sizeof(double), 1, file);// reflaction factor
-			fread(buffer, sizeof(double), 1, file);// specular factor
-			fread(buffer, sizeof(double), 1, file);// shininess exponent
+			
+			// Read metallic factor
+			fread(buffer, sizeof(material->metallic_factor), 1, file);
+			material->metallic_factor = *cast(float*)buffer;
 
-			fread(buffer, sizeof(Vec3f), 1, file);// emissive color
-			material->emissive_color = *cast(Vec3f*)buffer;
-			fread(buffer, sizeof(Vec3f), 1, file);// ambient color
-			fread(buffer, sizeof(Vec3f), 1, file);// diffuse color
+			// Read roughness factor
+			fread(buffer, sizeof(material->roughness_factor), 1, file);
+			material->roughness_factor = *cast(float*)buffer;
+
+			// Read emissive factor
+			fread(buffer, sizeof(material->emissive_factor), 1, file);
+			material->emissive_factor = *cast(float*)buffer;
+			
+			
+			// albedo color
+			fread(buffer, sizeof(Vec3f), 1, file);
 			material->albedo_color = *cast(Vec3f*)buffer;
-			fread(buffer, sizeof(Vec3f), 1, file);// transparent color
-			fread(buffer, sizeof(Vec3f), 1, file);// reflection color
-			fread(buffer, sizeof(Vec3f), 1, file);// specular color
+			// emissive color
+			fread(buffer, sizeof(Vec3f), 1, file);
+			material->emissive_color = *cast(Vec3f*)buffer;
+
 			
 			
+			
+			
+
 			// Read layered texture count
 			fread(buffer, sizeof(s32), 1, file);
 			s32 layered_texture_count = *cast(s32*)buffer;
-			// A texture could have many layered textures
 			for (s32 i = 0; i < layered_texture_count; i++) {
 				// texture type
 				fread(buffer, sizeof(TextureType), 1, file);
 				TextureType texture_type = *cast(TextureType*)buffer;
-				// inner texture count
-				fread(buffer, sizeof(s32), 1, file);
-				s32 texture_count = *cast(s32*)buffer;
-				for (s32 j = 0; j < texture_count; j++) {
-					// Read the texture asset ids
-					fread(buffer, sizeof(AssetID), 1, file);
-					AssetID texture_id = *cast(AssetID*)buffer;
-					set_texture_type_and_id(material, texture_type, texture_id.texture, j);
-					// TODO: push onto import queue
-					import_asset_by_id(manager, texture_id);
-				}
+				// Read asset id
+				fread(buffer, sizeof(AssetID), 1, file);
+				AssetID texture_id = *cast(AssetID*)buffer;
+				
+
+				// TODO: push onto import queue
+				load_asset_by_id(manager, texture_id);
+
+				// Once the dependant texture is loaded, we need update the internal pointer to the texture inside the material
+				InternalAsset asset = get_asset_by_id(manager, texture_id);
+				update_material_with_texture_data(material, texture_type, texture_id.texture, asset.texture, 0);
+
+				// NOTE: our material doesnt support layerted materials yet
+				
+
+				//// inner texture count
+				//fread(buffer, sizeof(s32), 1, file);
+				//s32 texture_count = *cast(s32*)buffer;
+				//for (s32 j = 0; j < texture_count; j++) {
+				//	// Read the texture asset ids
+				//	fread(buffer, sizeof(AssetID), 1, file);
+				//	AssetID texture_id = *cast(AssetID*)buffer;
+				//	set_texture_type_and_id(material, texture_type, texture_id.texture, j);
+				//	// TODO: push onto import queue
+				//	import_asset_by_id(manager, texture_id);
+				//}
 
 			}
+
+			
+			
 			
 
 
@@ -494,6 +565,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			// Add this asset to the id map
 			// map the asset id to the index in the texture array
 			map_put(&manager->asset_id_map, asset.id, manager->_texture_count);
+			texture->id = asset.texture;
 			manager->_texture_count++;
 			
 			
@@ -503,7 +575,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			s32 name_length = *cast(s32*)buffer;
 			fread(buffer, name_length, 1, file);
 			char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length);
-			snprintf(name, name_length, "%s", buffer);
+			snprintf(name, name_length + 1, "%s", buffer);
 			
 			
 			
@@ -513,7 +585,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			s32 filename_length = *cast(s32*)buffer;
 			fread(buffer, filename_length, 1, file);
 			char* texture_filename = cast(char*) arena_alloc(&manager->asset_mem, filename_length);
-			snprintf(texture_filename, filename_length, "%s", buffer);
+			snprintf(texture_filename, filename_length + 1, "%s", buffer);
 			
 			
 			
@@ -522,7 +594,7 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			s32 relative_filename_length = *cast(s32*)buffer;
 			fread(buffer, relative_filename_length, 1, file);
 			char* relative_filename = cast(char*) arena_alloc(&manager->asset_mem, relative_filename_length);
-			snprintf(relative_filename, relative_filename_length, "%s", buffer);
+			snprintf(relative_filename, relative_filename_length + 1, "%s", buffer);
 
 
 
@@ -541,15 +613,32 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 			fread(buffer, sizeof(float), 1, file);
 			texture->uv_rotation = *cast(float*)buffer;
 			
-			bool loaded = load_texture(relative_filename, texture, &manager->asset_mem, false);
-			if (loaded) {
-			
-				
+			// Read texture width,height, channels
+			fread(buffer, sizeof(texture->width), 1, file);
+			texture->width = *cast(s32*)buffer;
+
+			fread(buffer, sizeof(texture->height), 1, file);
+			texture->height= *cast(s32*)buffer;
+
+			fread(buffer, sizeof(texture->channels), 1, file);
+			texture->channels = *cast(s32*)buffer;
+
+			fread(buffer, sizeof(texture->depth), 1, file);
+			texture->depth = *cast(s32*)buffer;
+
+			// Calculate image size based on dimensions
+			size_t image_size = texture->width * texture->height * texture->channels;
+
+			if (image_size > 0) {
+				// Allocate space for the texture
+				texture->data = (unsigned char*)arena_alloc(&manager->asset_mem, image_size);
+				// read texture image from file to the texture struct
+				fread(texture->data, image_size, 1, file);
 			} else {
-				// Handle texture failure
-				assert_fail();
+				// TODO: handle empty textures
 			}
 			
+
 			break;
 		}
 	}
@@ -570,8 +659,120 @@ AssetID import_asset_by_name(AssetManager* manager, char* filename) {
 }
 
 
-void import_asset_by_id(AssetManager* manager, AssetID id) {
+void load_asset_by_id(AssetManager* manager, AssetID id) {
 	MapResult<AssetTrackData> result = map_get(&manager->asset_tracker.track_map, id.id);
 	if (!result.found) { assert_fail(); }
-	import_asset_by_name(manager, result.value.filename);
+	
+	load_asset_by_name(manager, result.value.filename);
+}
+
+
+MaterialID create_material(AssetManager* manager, IString path, IString name, Material* mat) {
+	
+
+	// Get the size of the full path
+	// + 1 file seperator
+	// + 4 _mat part
+	// + 1 for null terminator
+	u32 str_size = path.length + 1 + 4 + name.length + ASSET_FILE_EXTENSION_LENGTH + 1;
+
+
+	// Alloc on stack to hold the path string
+	char* file_str = cast(char*) stack_alloc(&manager->stack, str_size, 1);
+	// Generate the file part with the extension
+	snprintf(file_str, str_size, "%s_mat%s", name.buf, ASSET_FILE_EXTENSION);
+
+	IString file_with_ext(file_str);
+	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
+
+
+	// Track the material asset into our system
+	AssetID id = track_asset(&manager->asset_tracker, file_str, str_size);
+	id.type = AssetType_Material;
+
+	FILE* file;
+	errno_t err;
+
+	err = fopen_s(&file, file_str, "wb");  // write binary
+										   // Write the material asset to disk
+	if (err == 0) {
+		debug_print("Writing to %s,", file_str);
+	} else {
+		assert_fail();
+		debug_print("Fail writing to %s,", file_str);
+	}
+	
+
+
+	// Write asset id
+	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
+
+	// Write type of asset
+	AssetType type = AssetType_Material;
+	fwrite(cast(const void*) &type, sizeof(type), 1, file);
+
+
+
+	
+	// Write material name length
+	fwrite(cast(const void*) &name.length, sizeof(name.length), 1, file);
+	//// Write material name 
+	fwrite(cast(const void*) name.buf, name.length, 1, file);
+
+
+	// Write shading model type
+	fwrite(cast(const void*) &mat->shading_model, sizeof(mat->shading_model), 1, file);
+
+	// Write factors
+	fwrite(cast(const void*) &mat->metallic_factor, sizeof(mat->metallic_factor), 1, file);
+	fwrite(cast(const void*) &mat->roughness_factor, sizeof(mat->roughness_factor), 1, file);
+	fwrite(cast(const void*) &mat->emissive_factor, sizeof(mat->emissive_factor), 1, file);
+
+
+	// Write colors
+	fwrite(cast(const void*) &mat->albedo_color, sizeof(mat->albedo_color), 1, file);
+	fwrite(cast(const void*) &mat->emissive_color, sizeof(mat->emissive_color), 1, file);
+
+
+	s32 texture_count = 5;
+	// Write texture count
+	fwrite(cast(const void*) &texture_count, sizeof(texture_count), 1, file);
+
+	// Write the texture type and ids
+	
+	fwrite(cast(const void*) TextureType_Albedo, sizeof(TextureType_Albedo), 1, file);
+	fwrite(cast(const void*) &mat->albedo->id, sizeof(mat->albedo->id), 1, file);
+		
+	fwrite(cast(const void*) TextureType_Normal, sizeof(TextureType_Normal), 1, file);
+	fwrite(cast(const void*) &mat->normal->id, sizeof(mat->normal->id), 1, file);
+
+	fwrite(cast(const void*) TextureType_Metal, sizeof(TextureType_Metal), 1, file);
+	fwrite(cast(const void*) &mat->metal->id, sizeof(mat->metal->id), 1, file);
+
+	fwrite(cast(const void*) TextureType_Roughness, sizeof(TextureType_Roughness), 1, file);
+	fwrite(cast(const void*) &mat->roughness->id, sizeof(mat->roughness->id), 1, file);
+
+	fwrite(cast(const void*) TextureType_AO, sizeof(TextureType_AO), 1, file);
+	fwrite(cast(const void*) &mat->ao->id, sizeof(mat->ao->id), 1, file);
+
+
+
+	err = fclose(file);
+	if (err == 0) {
+		debug_print("Finished writing to %s\n", file_str);
+	} else {
+		assert_fail();
+		debug_print("Cannot close to %s\n", file_str);
+	}
+
+
+	stack_pop(&manager->stack);
+
+
+	return id.material;
+
+}
+
+TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture) {
+	// TODO: implement texture creating
 }

@@ -192,8 +192,8 @@ void inline test_ecs(void) {
 	Camera* camera = get_camera(&manager, e1);
 
 	camera->fov = 100;
-	camera->near = 1;
-	camera->far = 200;
+	camera->near_clip = 1;
+	camera->far_clip = 200;
 	camera->aspect_ratio = 2;
 
 	

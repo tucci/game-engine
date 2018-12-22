@@ -1,7 +1,50 @@
 #pragma once
 
 #include "Core/Renderer/Renderer.h"
+#include "Common/stretchy_buffer.h"
 
+
+void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window) {
+	switch (renderer->type) {
+		case BackenedRenderer_Software: {
+			//MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
+			//return init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
+			break;
+		}
+		case BackenedRenderer_OpenGL: {
+			map_init(&renderer->render_world.material_res_map);
+			map_grow(&renderer->render_world.material_res_map, 8);
+
+			renderer->render_world.resources = NULL;
+			renderer->render_world.resources_count = 0;
+
+			renderer->render_world.material_res = NULL;
+			renderer->render_world.material_res_count = 0;
+
+			init_opengl_renderer(sdl_window, &renderer->opengl, &renderer->render_world);
+			break;
+		}
+		default:
+			break;
+	}
+
+}
+
+void destory_backend_renderer(Renderer* renderer) {
+	switch (renderer->type) {
+		case BackenedRenderer_Software: {
+			
+			break;
+		}
+		case BackenedRenderer_OpenGL: {
+			map_destroy(&renderer->render_world.material_res_map);
+			destroy_opengl_renderer(&renderer->opengl);
+			break;
+		}
+		default:
+			break;
+	}
+}
 
 void push_render_object(Renderer* renderer, RenderMesh desc) {
 	renderer->render_world.render_mesh_list[renderer->render_world.render_mesh_count] = desc;
@@ -90,6 +133,41 @@ RenderResource create_index_buffer(Renderer* renderer) {
 	}
 	handle.type = RenderResourceType_INDEX_BUFFER;
 	return handle;
+}
+
+
+bool is_material_loaded(Renderer* renderer, MaterialID id) {
+	MapResult<RenderMaterialResource*> result = map_get(&renderer->render_world.material_res_map, id.id);
+	return result.found;
+}
+
+RenderMaterialResource create_material(Renderer* renderer, Material* material) {
+	
+
+	
+	RenderMaterialResource material_handle;
+	if (material->albedo != NULL) {
+		material_handle.albedo = create_texture(renderer, material->albedo, false);
+	}
+	if (material->normal != NULL) {
+		material_handle.normal = create_texture(renderer, material->normal, false);
+	}
+	if (material->metal != NULL) {
+		material_handle.metallic = create_texture(renderer, material->metal, false);
+	}
+	if (material->roughness != NULL) {
+		material_handle.roughness = create_texture(renderer, material->roughness, false);
+	}
+	if (material->ao!= NULL) {
+		material_handle.ao = create_texture(renderer, material->ao, false);
+	}
+	
+	sb_push(renderer->render_world.material_res, material_handle);
+
+	RenderMaterialResource* handle = &sb_last(renderer->render_world.material_res);
+
+	map_put(&renderer->render_world.material_res_map, material->id.id, handle);
+	return material_handle;
 }
 
 RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipmap) {

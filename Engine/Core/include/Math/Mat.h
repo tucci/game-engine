@@ -49,8 +49,8 @@ bool mat4x4f_invert(const Mat4x4f& m, Mat4x4f* invOut);
 Mat4x4f operator*(const Mat4x4f& m1, const Mat4x4f& m2);
 
 Vec4f operator*(const Mat4x4f& m, const Vec4f& v);
-Mat4x4f perspective(float near, float far, float fov_deg, float aspect_ratio);
-Mat4x4f ortho(float near, float far, float top, float bottom, float right, float left);
+Mat4x4f perspective(float near_clip, float far_clip, float fov_deg, float aspect_ratio);
+Mat4x4f ortho(float near_clip, float far_clip, float top, float bottom, float right, float left);
 Mat4x4f look_at(const Vec3f& eye, const Vec3f& to, const Vec3f& up);
 Mat4x4f viewport(int x, int y, int w, int h, float normalized_near, float normalized_far);
 

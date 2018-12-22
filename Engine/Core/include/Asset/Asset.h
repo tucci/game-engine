@@ -1,10 +1,22 @@
 #pragma once
 
+#include "engine_platform.h"
 #include "types.h"
+
 #include "Common/Arena.h"
+
 #include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
+#include "Core/Material.h"
+#include "Core/TextureData.h"
+#include "Core/ECS/Component/Lights.h"
+#include "Core/ECS/Component/Camera.h"
+
 //#include "Math/Mat.h"
+
+
+#define ASSET_FILE_EXTENSION ".easset"
+#define ASSET_FILE_EXTENSION_LENGTH 7
 
 
 typedef enum AssetType {
@@ -18,39 +30,29 @@ typedef enum AssetType {
 	AssetType_Texture,
 } AssetType;
 
+typedef enum AssetStatus {
+	AssetStatus_Unloaded,
+	AssetStatus_Queued,
+	AssetStatus_Loaded
+} AssetStatus;
+
 
 
 typedef struct SceneID {
 	u64 id;
 } SceneId;
 
-typedef struct StaticMeshID {
-	u64 id;
-} StaticMeshID;
 
-typedef struct MaterialID {
-	u64 id;
-} MaterialID;
-
-typedef struct LightID {
-	u64 id;
-} LightID;
-
-typedef struct CameraID {
-	u64 id;
-} CameraID;
 
 typedef struct AnimationID {
 	u64 id;
 } AnimationID;
 
-typedef struct TextureID {
-	u64 id;
-} TextureID;
 
 
 typedef struct AssetID {
 	AssetType type;
+	AssetStatus status;
 	union {
 		u64 id;
 		SceneID scene;
@@ -104,6 +106,9 @@ typedef struct AssetImport_SceneNode {
 	u32 mesh_count;
 	u32* meshes;
 
+	u32 material_count;
+	u32* materials;
+
 	u32 texture_count;
 	u32* textures;
 
@@ -114,10 +119,10 @@ typedef struct AssetImport_SceneNode {
 
 
 typedef struct AssetImport_Scene {
+	SceneId id;
 	AssetImport_SceneNode* root;
 
 	u32 node_count;
-
 	u32 mesh_count;
 	u32 material_count;
 	u32 light_count;
@@ -138,11 +143,7 @@ typedef struct AssetImport_Scene {
 } AssetScene;
 
 
-typedef enum AssetStatus {
-	AssetStatus_Unloaded,
-	AssetStatus_Queued,
-	AssetStatus_Loaded
-} AssetStatus;
+
 
 
 

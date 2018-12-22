@@ -104,7 +104,7 @@ void load_scene(Game* game, int scene_id) {
 	AssetImporter importer;
 	init_asset_importer(&importer, &asset_manager->asset_tracker);
 
-	//remove_all_tracked_assets(importer.tracker);
+	remove_all_tracked_assets(importer.tracker);
 	
 	AssetID import_scene;
 	//import_scene = find_asset_by_name(importer.tracker, "mill.fbx.easset");
@@ -112,14 +112,16 @@ void load_scene(Game* game, int scene_id) {
 
 	// asset not found
 	//if (import_scene.id == 0) {
-		//import_scene = import_fbx(&importer, "Assets/BB8 New/test3.FBX", false);
+		import_scene = import_fbx(&importer, "Assets/BB8 New/test3.fbx", false);
+
+	
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
 	//import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
 		//import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX");
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", true);
-		import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
+		//import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
 
 		//import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx");
 
@@ -209,11 +211,11 @@ void load_scene(Game* game, int scene_id) {
 
 
 
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
-	load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
+	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
 
 
 
@@ -246,11 +248,11 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-roughness.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-ao.png", &scene->ao_map, &game->game_memory, false);
 
-	renderer->render_world.albedo_map_res = create_texture(renderer, &scene->albedo_map, true);
-	renderer->render_world.normal_map_res = create_texture(renderer, &scene->normal_map, true);
-	renderer->render_world.metallic_map_res = create_texture(renderer, &scene->metallic_map, true);
-	renderer->render_world.roughness_map_res = create_texture(renderer, &scene->roughness_map, true);
-	renderer->render_world.ao_map_res = create_texture(renderer, &scene->ao_map, true);
+	//renderer->render_world.albedo_map_res = create_texture(renderer, &scene->albedo_map, true);
+	//renderer->render_world.normal_map_res = create_texture(renderer, &scene->normal_map, true);
+	//renderer->render_world.metallic_map_res = create_texture(renderer, &scene->metallic_map, true);
+	//renderer->render_world.roughness_map_res = create_texture(renderer, &scene->roughness_map, true);
+	//renderer->render_world.ao_map_res = create_texture(renderer, &scene->ao_map, true);
 
 
 	// Pop textures, we already have them on the gpu
@@ -446,7 +448,7 @@ void game_update(Game* game) {
 static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
 
 	AssetImport_SceneNode* children = parent_node->children;
-	for (int i = 0; i < parent_node->children_count; i++) {
+	for (u32 i = 0; i < parent_node->children_count; i++) {
 		AssetImport_SceneNode* child_node = &children[i];
 		Entity child_entity = create_entity(manager);
 
@@ -464,17 +466,35 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 	}
 
 	if (parent_node->mesh_count > 0) {
-		for (int i = 0; i < parent_node->mesh_count; i++) {
+		for (u32 i = 0; i < parent_node->mesh_count; i++) {
 			add_component(manager, parent_entity, ComponentType_StaticMesh);
 			add_component(manager, parent_entity, ComponentType_Render);
 			set_render_visibility(manager, parent_entity, true);
 
-			u32 index = parent_node->meshes[i];
-			AssetID mesh_id = scene->mesh_infos[index];
+
+			u32 mesh_index = parent_node->meshes[i];
+			AssetID mesh_id = scene->mesh_infos[mesh_index];
 			set_static_mesh(manager, parent_entity, mesh_id.mesh);
+
+			// TODO: What happens when the mesh has multiple child nodes, does that mean is has multiple materials?
+			//assert(parent_node->children_count < 2);
+			// Get material for this mesh
+			AssetImport_SceneNode* child_node = &parent_node->children[i];
+			if (child_node->material_count > 0) {
+				u32 mat_index = child_node->materials[0];
+				AssetID material_id = scene->material_infos[mat_index];
+				set_render_material(manager, parent_entity, material_id.material);
+			} else {
+				
+				DEBUG_BREAK;
+				// use default material
+				//set_render_material(manager)
+				
+			}
 
 		}
 	}
+
 }
 
 Entity import_asset_scene_into_scene(Game* game, SceneID id) {

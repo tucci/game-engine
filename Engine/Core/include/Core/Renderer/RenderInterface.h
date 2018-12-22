@@ -9,13 +9,9 @@
 #include "Math/Mat.h"
 #include "Math/Vec.h"	
 
-typedef struct RenderMesh {
-	int material_id;
-	StaticMesh* mesh;
-	Mat4x4f* world;
-} RenderMesh;
 
-// Concept take and slightly modifief from the stingray engine blog
+
+// Concept take and slightly modified from the stingray engine blog
 //https://bitsquid.blogspot.com/2017/02/stingray-renderer-walkthrough-2.html
 typedef enum RenderResourceType {
 	RenderResourceType_TEXTURE,
@@ -41,6 +37,25 @@ typedef struct RenderResource {
 	u32 handle;
 } RenderResource;
 
+// A render material resource is simply just a collection of texture render resources
+typedef struct RenderMaterialResource {
+	RenderResource albedo;
+	RenderResource normal;
+	RenderResource metallic;
+	RenderResource roughness;
+	RenderResource ao;
+} RenderMaterialResource;
+
+
+typedef struct RenderMesh {
+	StaticMesh* mesh;
+	Mat4x4f* world;
+	Material* material;
+	
+} RenderMesh;
+
+
+
 // the world of objects we need to render and states
 typedef struct RenderWorld {
 	// TODO: we probably want to hold the meshes by materials first for easier sorting?
@@ -52,6 +67,14 @@ typedef struct RenderWorld {
 	Vec3f cam_pos;
 	Light test_light;
 	HDR_SkyMap* skymap;
+
+
+	u32 resources_count;
+	RenderResource* resources;
+	
+	u32 material_res_count;
+	RenderMaterialResource* material_res;
+	CompactMap<RenderMaterialResource*> material_res_map;
 
 	// Shadow map
 	Mat4x4f light_space_mat;
@@ -83,13 +106,6 @@ typedef struct RenderWorld {
 	RenderResource skybox_vbo_res;
 	RenderResource skybox_ebo_res;
 
-
-	RenderResource albedo_map_res;
-	RenderResource normal_map_res;
-	RenderResource metallic_map_res;
-	RenderResource roughness_map_res;
-	RenderResource ao_map_res;
-
 	RenderResource texture_shader_res;
 
 	RenderResource VAO;
@@ -102,3 +118,5 @@ typedef struct RenderWorld {
 	RenderResource debug_grid_vbo_res;
 
 } RenderWorld;
+
+

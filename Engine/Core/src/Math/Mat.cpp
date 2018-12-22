@@ -222,20 +222,20 @@ Vec4f operator*(const Mat4x4f& m, const Vec4f& v) {
 
 
 
-Mat4x4f perspective(float near, float far, float fov_deg, float aspect_ratio) {
+Mat4x4f perspective(float near_clip, float far_clip, float fov_deg, float aspect_ratio) {
 
 	Mat4x4f mat;
 
 
-	float depth = near - far;
+	float depth = near_clip - far_clip;
 	float inverse_depth = 1 / depth;
 
 	float f = 1 / tanf_(fov_deg * 0.5f * PI / 180.0f);
 
 	mat.mat2d[0][0] = f / aspect_ratio;
 	mat.mat2d[1][1] = f;
-	mat.mat2d[2][2] = (far + near) * inverse_depth;
-	mat.mat2d[3][2] = (2 * (far * near)) * inverse_depth;
+	mat.mat2d[2][2] = (far_clip + near_clip) * inverse_depth;
+	mat.mat2d[3][2] = (2 * (far_clip * near_clip)) * inverse_depth;
 	mat.mat2d[2][3] = -1;
 	mat.mat2d[3][3] = 0;
 
@@ -244,13 +244,13 @@ Mat4x4f perspective(float near, float far, float fov_deg, float aspect_ratio) {
 
 
 
-Mat4x4f ortho(float near, float far, float top, float bottom, float right, float left) {
+Mat4x4f ortho(float near_clip, float far_clip, float top, float bottom, float right, float left) {
 
 	Mat4x4f mat;
 
 	float rl = right - left;
 	float tb = top - bottom;
-	float fn = far - near;
+	float fn = far_clip - near_clip;
 
 	float inverse_rl = 1 / rl;
 	float inverse_tb = 1 / tb;
@@ -265,7 +265,7 @@ Mat4x4f ortho(float near, float far, float top, float bottom, float right, float
 
 	mat.mat2d[3][0] = -(right + left) * inverse_rl;
 	mat.mat2d[3][1] = -(top + bottom) * inverse_tb;
-	mat.mat2d[3][2] = -(far + near) * inverse_fn;
+	mat.mat2d[3][2] = -(far_clip + near_clip) * inverse_fn;
 
 
 
