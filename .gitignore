@@ -15,6 +15,11 @@
 # Intel VTune Amplifier XE Results 
 Engine/My Amplifier Results - Engine/
 
+# Internal engine files that are build every run
+
+*.trak
+*.easset
+
 Engine/Assets/textures
 Engine/*.fbx
 Engine/*.FBX
