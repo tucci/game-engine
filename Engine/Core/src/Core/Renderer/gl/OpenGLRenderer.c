@@ -343,8 +343,6 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 
 
 RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap) {
-	
-	
 	RenderResource handle;
 	handle.type = RenderResourceType_TEXTURE;
 
@@ -1060,35 +1058,34 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), uniform3f_pack(cam_pos));
 	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), uniform3f_pack(test_light.direction));
 
-
 		
 
-	// TODO: better render loop
-	// right now it's doing a lot gl states changes
 	for (int i = 0; i < opengl->render_world->render_mesh_count; i++) {
 		RenderMesh render_mesh = opengl->render_world->render_mesh_list[i];
 		
 		StaticMesh* mesh = render_mesh.mesh;
 		Mat4x4f* world_mat = render_mesh.world;
-		Material* material = render_mesh.material;
 
+		Material* material = render_mesh.material;
 		
+		//render_mesh.material->
 		
+		if (mesh->vertex_count == 0) { continue; }
+
 		if (!light_pass) {
 			glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->render_world->light_space_mat.mat1d);
+
+			MapResult<RenderMaterialResource*> result_handle = map_get(&opengl->render_world->material_res_map, material->id.id);
+			RenderMaterialResource* material_handle = result_handle.value;
+
+
 			GLuint uniform_index = glGetUniformLocation(current_shader, "shadowMap");
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
 			glUniform1i(uniform_index, 0);
 
-			
 
-			MapResult<RenderMaterialResource*> result_handle = map_get(&opengl->render_world->material_res_map, material->id.id);
-			RenderMaterialResource* material_handle = result_handle.value;
-
-			
-			// Set material textures
 			uniform_index = glGetUniformLocation(current_shader, "albedo_map");
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->albedo.handle]);
@@ -1104,12 +1101,12 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->metallic.handle]);
 			glUniform1i(uniform_index, 3);
-			
+
 			uniform_index = glGetUniformLocation(current_shader, "roughness_map");
 			glActiveTexture(GL_TEXTURE4);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->roughness.handle]);
 			glUniform1i(uniform_index, 4);
-			
+
 			uniform_index = glGetUniformLocation(current_shader, "ao_map");
 			glActiveTexture(GL_TEXTURE5);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->ao.handle]);
@@ -1120,7 +1117,6 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->irradiance_map_res.handle]);
 			glUniform1i(uniform_index, 6);
 
-
 			uniform_index = glGetUniformLocation(current_shader, "prefilter_map");
 			glActiveTexture(GL_TEXTURE7);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->prefiler_map_res.handle]);
@@ -1130,12 +1126,9 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			glActiveTexture(GL_TEXTURE8);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->brdf_lut_res.handle]);
 			glUniform1i(uniform_index, 8);
-
-
 		}
 
-		
-		if (mesh->vertex_count == 0) { continue; }
+
 		glUniformMatrix4fv(glGetUniformLocation(current_shader, "model"), 1, GL_FALSE, world_mat->mat1d);
 		glBufferData(GL_ARRAY_BUFFER,
 			mesh->vertex_count * sizeof(Vec3f)
