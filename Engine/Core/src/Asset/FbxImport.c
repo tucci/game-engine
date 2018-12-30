@@ -1277,7 +1277,6 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 						const int num_properties = property_node->num_properties;
 						FBX_Property* p = &property_node->properties[0];
 						
-						debug_print("Material property %s\n", p->special.str_data);
 						if (strcmp(p->special.str_data, "EmissiveColor") == 0) {
 							assert(num_properties > 4);
 							object.material->emissive_color.x = (float)property_node->properties[num_properties - 3].primative.D_data;
@@ -1386,8 +1385,6 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 						const int num_properties = property_node->num_properties;
 						FBX_Property* p = &property_node->properties[0];
 
-						debug_print("Texture property %s\n", p->special.str_data);
-
 						
 						if (strcmp(p->special.str_data, "Translation") == 0) {
 							
@@ -1472,7 +1469,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 			}
 		} else {
 			//get mats and other objects
-			debug_print("OBJECT TYPE %s\n", obj_node->name);
+			//debug_print("OBJECT TYPE %s\n", obj_node->name);
 		}
 
 		

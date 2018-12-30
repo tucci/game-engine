@@ -70,4 +70,4 @@ void load_asset_by_id(AssetManager* manager, AssetID id);
 
 
 MaterialID create_material(AssetManager* manager, IString path, IString name, Material* mat);
-TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture);
+//TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture);

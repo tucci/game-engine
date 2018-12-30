@@ -19,6 +19,7 @@
 
 
 
+
 #include "debug_macros.h"
 
 
@@ -30,11 +31,13 @@
 #define MAX_EVENTS 32
 
 
+#define ENGINE_MODE_EDITOR 1
 
 
 
-
-
+typedef struct EditorData {
+	HWND editor_hwnd;
+};
 
 
 typedef enum EventKind {
@@ -122,9 +125,6 @@ typedef struct Clock {
 
 
 
-
-
-
 typedef struct Engine {
 
 	// Exposed subsystems that the game can query, though should not modify
@@ -136,6 +136,7 @@ typedef struct Engine {
 	EntityManager entity_manager;
 	AssetManager asset_manager;
 	Renderer renderer;
+	EditorData editor;
 	
 	
 	

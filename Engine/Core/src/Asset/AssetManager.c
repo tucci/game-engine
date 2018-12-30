@@ -773,6 +773,7 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 
 }
 
-TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture) {
-	// TODO: implement texture creating
-}
+//TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture) {
+//	// TODO: implement texture creating
+//	
+//}

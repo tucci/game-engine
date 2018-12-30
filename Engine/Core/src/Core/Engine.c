@@ -1,5 +1,8 @@
 #pragma once
 
+#include "SDL_syswm.h"
+
+
 #include "Core/Engine.h"
 #include "Common/common_macros.h"
 
@@ -310,71 +313,79 @@ static bool init_display(Engine* engine) {
 
 
 static bool init_window(Engine* engine) {
-    
+
+	SDL_Window* sdl_window;
 	
+    
+
 	engine->window.flags = 0;
-    
 	engine->window.flags |= WindowFlag_Resizable;
-    
+
+#if ENGINE_MODE_EDITOR
+	engine->window.flags |= SDL_WINDOW_FULLSCREEN;
+	engine->window.flags |= SDL_WINDOW_MAXIMIZED;
+	engine->window.flags |= SDL_WINDOW_BORDERLESS;
+#endif
+	
+
 	// TODO: game crashes when we do full screen
 	//engine->window.flags |= WindowFlag_Fullscreen;
-    
-    
-    
 	if (engine->renderer.type == BackenedRenderer_OpenGL) {
 		engine->window.flags |= WindowFlag_OpenGL;
 	}
-	
-	
-	
-    
-    
-    
+
+
 	SDL_WindowFlags sdl_flags = cast(SDL_WindowFlags) engine->window.flags;
-    
-    
-	SDL_Window* sdl_window;
-    
 	const char* title = WINDOW_TITLE;
 	// by setting the x,y at SDL_WINDOWPOS_CENTERED, it doesnt give the actual x,y pos values. 
 	// SDL_WINDOWPOS_CENTERED is a flag used by SDL_CreateWindow to set the actual pos values
 	// Once SDL_CreateWindow is called, we can get the x,y pos by calling SDL_GetWindowPosition
 	// Note these are not the actual pos values yet
-	int x = SDL_WINDOWPOS_CENTERED;
-	int y = SDL_WINDOWPOS_CENTERED;
-    
+
+	/*int x = SDL_WINDOWPOS_CENTERED;
+	int y = SDL_WINDOWPOS_CENTERED;*/
+
+	int x = 0;
+	int y = 0;
+
 	int w = DEFAULT_WINDOW_SIZE_X;
 	int h = DEFAULT_WINDOW_SIZE_Y;
-    
+
 	sdl_window = SDL_CreateWindow(
 		title,
 		x, y,
 		w, h,
 		sdl_flags
-        );
-    
-	// Now the actual pos values can be set by calling SDL_GetWindowPosition
-	SDL_GetWindowPosition(sdl_window, &x, &y);
-	assert(x > 0 && x != SDL_WINDOWPOS_CENTERED);
-	assert(y > 0 && y != SDL_WINDOWPOS_CENTERED);
-    
-    
+	);
+
+	
+
+	u32 winid = SDL_GetWindowID(sdl_window);
+
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(sdl_window, &wmInfo);
+	HWND hwnd = wmInfo.info.win.window;
+
+	debug_print("%d\n", (u32)hwnd);
+
+	debug_print("the window id is %d\n", winid);
+	
+	
     
 	if (!sdl_window) {
 		debug_print("Could not create window, SDl_Error %s", SDL_GetError());
-        
 		return false;
 	}
-    
-	engine->window.title = title;
 	
-	engine->window.pos = Vec2i(x, y);
-	engine->window.size = Vec2i(w, h);
+
+	engine->window.title = SDL_GetWindowTitle(sdl_window);
+	SDL_GetWindowPosition(sdl_window, &engine->window.pos.x, &engine->window.pos.y);
+	SDL_GetWindowSize(sdl_window, &engine->window.size.x, &engine->window.size.y);
 	engine->window.sdl_window = sdl_window;
-	engine->window.sdl_window_flags = sdl_flags;
+	engine->window.sdl_window_flags = (SDL_WindowFlags) SDL_GetWindowFlags(sdl_window);
     
-	
-    
+
 	return true;
 }
 
@@ -703,9 +714,11 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		engine->renderer.opengl.draw_lines = !engine->renderer.opengl.draw_lines;
 	}
     
+#if !ENGINE_MODE_EDITOR
 	if (engine->input.keys[SDL_SCANCODE_ESCAPE].just_pressed) {
 		engine->quit = true;
 	}
+#endif
     
     
     

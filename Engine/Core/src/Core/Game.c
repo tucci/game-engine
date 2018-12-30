@@ -171,16 +171,6 @@ void load_scene(Game* game, int scene_id) {
 	light.dir_light.color = Vec3f(1, 1, 1);;
 	set_light(entity_manager, scene->entity_test_light, light);
 
-	
-	
-
-	
-	
-	
-
-	
-
-	
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
 	load_hdr_skymap(&scene->hdr_skymap, &game->stack, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
@@ -196,71 +186,17 @@ void load_scene(Game* game, int scene_id) {
 	//load_texture("Assets/textures/rust_iron/rustediron2_metallic.png", &scene->metallic_map, &game->game_memory, false);
 	//load_texture("Assets/textures/rust_iron/rustediron2_roughness.png", &scene->roughness_map, &game->game_memory, false);
 	//load_texture("Assets/textures/rust_iron/rustediron2_ao.png", &scene->ao_map, &game->game_memory, false);
-
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-normal2.png", &scene->normal_map, &game->stack, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-albedo.png", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-metalness.png", &scene->metallic_map, &game->stack, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-roughness3.png", &scene->roughness_map, &game->stack, false);
-	//load_texture("Assets/textures/granite_smooth/granitesmooth1-ao.png", &scene->ao_map, &game->stack, false);
-
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_basecolor.png", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_normal.png", &scene->normal_map, &game->stack, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_metallic.png", &scene->metallic_map, &game->stack, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_roughness.png", &scene->roughness_map, &game->stack, false);
-	//load_texture("Assets/textures/gold-scuffed/gold-scuffed_ao.png", &scene->ao_map, &game->stack, false);
-
-
-
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-albedo.png", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-normal.png", &scene->normal_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-metalness.png", &scene->metallic_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-roughness.png", &scene->roughness_map, &game->stack, false);
-	//load_texture("Assets/textures/paint_cement/wornpaintedcement-ao.png", &scene->ao_map, &game->stack, false);
-
-
-
-	
-
-	
-	//load_texture("Assets/textures/plastic/scuffed-plastic4-alb.png", &scene->albedo_map, &game->stack, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-normal.png", &scene->normal_map, &game->stack, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-metal.png", &scene->metallic_map, &game->stack, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-rough.png", &scene->roughness_map, &game->stack, false);
-	//load_texture("Assets/textures/plastic/scuffed-plastic-ao.png", &scene->ao_map, &game->stack, false);
-
-	
-
-	
-
-
-
-	//load_texture("Assets/textures/mahogfloor/mahogfloor_basecolor.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/mahogfloor/mahogfloor_normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/mahogfloor/mahogfloor_metal.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/mahogfloor/mahogfloor_roughness.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/mahogfloor/mahogfloor_AO.png", &scene->ao_map, &game->game_memory, false);
-
-	
-
-	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-albedo.png", &scene->albedo_map, &game->game_memory, false);
-	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-normal.png", &scene->normal_map, &game->game_memory, false);
-	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-metalness.png", &scene->metallic_map, &game->game_memory, false);
-	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-roughness.png", &scene->roughness_map, &game->game_memory, false);
-	//load_texture("Assets/textures/bamboo-wood/bamboo-wood-semigloss-ao.png", &scene->ao_map, &game->game_memory, false);
-
 	//renderer->render_world.albedo_map_res = create_texture(renderer, &scene->albedo_map, true);
 	//renderer->render_world.normal_map_res = create_texture(renderer, &scene->normal_map, true);
 	//renderer->render_world.metallic_map_res = create_texture(renderer, &scene->metallic_map, true);
 	//renderer->render_world.roughness_map_res = create_texture(renderer, &scene->roughness_map, true);
 	//renderer->render_world.ao_map_res = create_texture(renderer, &scene->ao_map, true);
-
-
 	// Pop textures, we already have them on the gpu
-	stack_pop(&game->stack);
-	stack_pop(&game->stack);
-	stack_pop(&game->stack);
-	stack_pop(&game->stack);
-	stack_pop(&game->stack);
+	//stack_pop(&game->stack);
+	//stack_pop(&game->stack);
+	//stack_pop(&game->stack);
+	//stack_pop(&game->stack);
+	//stack_pop(&game->stack);
 
 		
 }
@@ -380,57 +316,58 @@ void game_update(Game* game) {
 	set_position(entity_manager, scene->sink, sink_pos + sink_dir);
 
 
-	Quat old_rot = rotation(entity_manager, scene->sink);
-	Quat new_test_rot;
-
-
-
-	if (input->mouse.mouse_button_left.down) {
-
-		new_test_rot *= quat_from_axis_angle(Vec3f_Up, 5.0f);
-
-	}
-
-	if (input->mouse.mouse_button_right.down) {
-		new_test_rot *= quat_from_axis_angle(Vec3f_Up, -5.0f);
-	}
-	set_rotation(entity_manager, scene->sink, new_test_rot * old_rot);
+	//Quat old_rot = rotation(entity_manager, scene->sink);
+	//Quat new_test_rot;
+	//
+	//
+	//
+	//if (input->mouse.mouse_button_left.down) {
+	//	//new_test_rot *= quat_from_axis_angle(Vec3f_Up, 5.0f);
+	//
+	//}
+	//
+	//if (input->mouse.mouse_button_right.down) {
+	//	//new_test_rot *= quat_from_axis_angle(Vec3f_Up, -5.0f);
+	//}
+	////set_rotation(entity_manager, scene->sink, new_test_rot * old_rot);
 
 	
 
 
 	set_light(entity_manager, scene->entity_test_light, light);
 
+	if (input->mouse.mouse_button_right.down) {
+		Vec2i delta_pos = input->mouse.delta_pos;
 
-	
-	Vec2i delta_pos = input->mouse.delta_pos;
-	
-	// See world/local rotation
-	// Rotate camera around world first
-	Quat old_cam_rot = rotation(entity_manager, scene->entity_main_camera);
-	Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -delta_pos.x * 0.25f) * old_cam_rot;
-	
-	
+		// See world/local rotation
+		// Rotate camera around world first
+		Quat old_cam_rot = rotation(entity_manager, scene->entity_main_camera);
+		Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -delta_pos.x * 0.25f) * old_cam_rot;
 
-	
-	
 
-	// Create a test rotation to see if we want to rotate
-	// We want to check first if this rotation causes the view to go over the clamp
-	// if it does, then we wont add this rotation
-	// if it doesnt, then we set the new camera rotation to the test rotation
-	Quat test_new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -delta_pos.y * 0.25f);
-	
 
-	// TODO: fix clamping issue
-	// Get the euler angle so we can see if we want to clamp the rotation
-	// Vec3f euler = quat_to_euler(test_new_cam_rot);
-	//// hard coded clamp between -89 and 89 degrees in radians
-	//if (euler.x > -89.0f && euler.x < 89.0f) {
+
+
+
+		// Create a test rotation to see if we want to rotate
+		// We want to check first if this rotation causes the view to go over the clamp
+		// if it does, then we wont add this rotation
+		// if it doesnt, then we set the new camera rotation to the test rotation
+		Quat test_new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -delta_pos.y * 0.25f);
+
+
+		// TODO: fix clamping issue
+		// Get the euler angle so we can see if we want to clamp the rotation
+		// Vec3f euler = quat_to_euler(test_new_cam_rot);
+		//// hard coded clamp between -89 and 89 degrees in radians
+		//if (euler.x > -89.0f && euler.x < 89.0f) {
 		new_cam_rot = test_new_cam_rot;
-	//}
+		//}
 
-	set_rotation(entity_manager, scene->entity_main_camera, new_cam_rot);
+		set_rotation(entity_manager, scene->entity_main_camera, new_cam_rot);
+	}
+	
+
 	
 	
 
