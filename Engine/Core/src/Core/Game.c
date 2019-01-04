@@ -381,6 +381,120 @@ void game_update(Game* game) {
 }
 
 
+// NOTE: since this function is only executed in editor mode, we dont have to #if editor mode everytime in this function, it is already given
+void editor_update(Game* game) {
+
+	Input* input = game->engineAPI.input;
+	GameTimer* timer = game->engineAPI.game_loop;
+	EntityManager* entity_manager = game->engineAPI.entity_manager;
+	Scene* scene = game->loaded_scene;
+	Renderer* renderer = game->engineAPI.renderer;
+	Window* window = game->engineAPI.window;
+	EditorData* editor = game->engineAPI.editor;
+
+	float delta_time = timer->delta_time;
+	Camera* camera = get_camera(entity_manager, scene->entity_main_camera);
+
+
+
+	
+
+	// Capture scolling to move camera forward and back
+	if (input->mouse.scroll.y != 0) {
+		Vec3f new_cam_direction = (delta_time * -forward(entity_manager, scene->entity_main_camera));
+
+		float cam_move_scale = 10 * input->mouse.scroll.y;
+		Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
+		set_position(entity_manager, scene->entity_main_camera, cam_pos + (cam_move_scale * new_cam_direction));
+	}
+
+	
+
+	//if (input->mouse.mouse_button_right.just_pressed) {
+	//
+	//}
+	//if (input->mouse.mouse_button_right.just_released) {
+	//
+	//}
+	
+	int x = input->mouse.pos.x;
+	int y = input->mouse.pos.y;
+
+	int gx = input->mouse.global_pos.x;
+	int gy = input->mouse.global_pos.y;
+
+	int sx = window->size.x;
+	int sy = window->size.y;
+
+	Vec2i delta_pos = input->mouse.delta_pos;
+
+
+
+	debug_print("mouse pos %d,%d\t, delta pos %d,%d\tglobal mos pos %d,%d, window size %d,%d\n", x, y, delta_pos.x, delta_pos.y, gx, gy, sx, sy);
+
+
+
+	// Only apply editor movement if right mouse button is clicked
+	if (input->mouse.mouse_button_right.down) {
+		//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
+		SDL_ShowCursor(SDL_DISABLE);
+
+		SDL_SetRelativeMouseMode(SDL_TRUE);
+		//SDL_CaptureMouse(SDL_TRUE);
+
+		Vec2i rel_pos = Vec2i(0,0);
+		
+
+		SDL_GetRelativeMouseState(&rel_pos.x, &rel_pos.y);
+
+
+		// TODO: remove need for sdl specific scan codes. convert to our own input api
+
+		Vec3f new_cam_direction;
+
+		// Since the camera always looks down -z
+		if (input->keys[SDL_SCANCODE_W].down) { new_cam_direction += (delta_time * -forward(entity_manager, scene->entity_main_camera)); }
+		if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction += (delta_time * forward(entity_manager, scene->entity_main_camera)); }
+
+		if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction += (delta_time * right(entity_manager, scene->entity_main_camera)); }
+		if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction += (delta_time * -right(entity_manager, scene->entity_main_camera)); }
+
+		if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction += (delta_time * up(entity_manager, scene->entity_main_camera)); }
+		if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
+
+		float cam_move_scale = 10;
+		Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
+		set_position(entity_manager, scene->entity_main_camera, cam_pos + (cam_move_scale * new_cam_direction));
+
+		// Prevent rotation jump, when the delta between the last time the right mouse was down and now
+		if (editor->was_last_frame_using_right_click) {
+			
+			// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
+			float sensitivity = 0.25f;
+			Quat old_cam_rot = rotation(entity_manager, scene->entity_main_camera);
+			Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
+			new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
+			
+			set_rotation(entity_manager, scene->entity_main_camera, new_cam_rot);
+		}
+
+		// Keep the mouse in the center of the window.
+		SDL_WarpMouseInWindow(window->sdl_window, window->size.x / 2, window->size.y / 2);
+		editor->was_last_frame_using_right_click = true;
+
+	} else {
+		//SDL_SetWindowGrab(window->sdl_window, SDL_FALSE);
+		SDL_ShowCursor(SDL_ENABLE);
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		//SDL_CaptureMouse(SDL_FALSE);
+		
+		editor->was_last_frame_using_right_click = false;
+	}
+
+	
+
+}
+
 
 static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
 

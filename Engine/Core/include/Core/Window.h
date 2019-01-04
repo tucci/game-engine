@@ -9,6 +9,7 @@ typedef enum WindowFlag {
 	WindowFlag_Fullscreen = 1 << 0,
 	WindowFlag_OpenGL = 1 << 1,
 	WindowFlag_Hidden = 1 << 3,
+	WindowFlag_Borderless = 1 << 4,
 	WindowFlag_Resizable = 1 << 5,
 	WindowFlag_Minimized = 1 << 6,
 	WindowFlag_Maximized = 1 << 7,
@@ -29,3 +30,7 @@ typedef struct Window {
 	SDL_WindowFlags sdl_window_flags;
 
 } Window;
+
+inline SDL_WindowFlags convert_to_sdl_flags(u32 flags) {
+	return (SDL_WindowFlags) flags;
+}

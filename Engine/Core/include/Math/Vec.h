@@ -233,6 +233,10 @@ float dot(const Vec3f& v1, const Vec3f& v2);
 Vec3f cross(const Vec3f& v1, const Vec3f& v2);
 
 
+Vec2i operator-(const Vec2i& v1, const Vec2i& v2);// Subtraction
+float magnitude(const Vec2i& vec);
+
+
 Vec3f angle_axis_rotate(const Vec3f& v, const Vec3f& n, float rads);
 Vec3f euler_to_vector(const Vec3f& euler_angles);
 

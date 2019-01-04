@@ -224,6 +224,7 @@
     <ClInclude Include="Core\include\Core\Renderer\Renderer.h" />
     <ClInclude Include="Core\include\Core\Renderer\RenderInterface.h" />
     <ClInclude Include="Core\include\Asset\FbxImport.h" />
+    <ClInclude Include="Core\include\Editor\EditorInterface.h" />
     <ClInclude Include="Core\include\engine_platform.h" />
     <ClInclude Include="Core\include\types.h" />
     <ClInclude Include="Core\Window.h" />

@@ -24,6 +24,11 @@ typedef struct Mouse {
 	Vec2i pos;
 	Vec2i delta_pos;
 
+	Vec2i global_pos;
+	Vec2i global_delta_pos;
+
+	Vec2i scroll;
+
 	ButtonState mouse_button_left;
 	ButtonState mouse_button_middle;
 	ButtonState mouse_button_right;

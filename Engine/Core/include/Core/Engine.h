@@ -1,6 +1,8 @@
 #pragma once
 
 #include <SDL.h>
+#include <SDL_syswm.h>
+
 #include <stdio.h>
 #include "types.h"
 #include <stdbool.h>
@@ -15,12 +17,15 @@
 
 #include "Core/ECS/EntityManager.h"
 
-
-
-
-
-
 #include "debug_macros.h"
+
+
+
+
+
+#include "Editor/EditorInterface.h"
+
+
 
 
 // TODO: move these to a config file
@@ -31,13 +36,11 @@
 #define MAX_EVENTS 32
 
 
-#define ENGINE_MODE_EDITOR 1
 
 
 
-typedef struct EditorData {
-	HWND editor_hwnd;
-};
+
+
 
 
 typedef enum EventKind {
@@ -47,6 +50,8 @@ typedef enum EventKind {
 	EventKind_Mouse_Button_Down,
 	EventKind_Mouse_Button_Up,
 	EventKind_Mouse_Move,
+	EventKind_Mouse_Global_Move,
+	EventKind_Mouse_Scroll,
 	EventKind_Window_Moved,
 	EventKind_Window_Resized,
 	EventKind_Window_Minimized,
@@ -54,6 +59,7 @@ typedef enum EventKind {
 	EventKind_Window_Restored,
 	EventKind_Window_Shown,
 	EventKind_Window_Hidden,
+	EventKind_Window_Closed,
 	EventKind_Window_Enter_Mouse_Focus,
 	EventKind_Window_Lose_Mouse_Focus,
 	EventKind_Window_Enter_Keyboard_Focus,
@@ -69,9 +75,17 @@ typedef struct MouseButtonEvent {
 	Vec2i pos;
 } MouseButtonEvent;
 
+typedef struct MouseScrollEvent {
+	s32 x_scroll;
+	s32 y_scroll;
+} MouseScrollEvent;
+
 typedef struct MouseMoveEvent {
 	Vec2i pos;
 	Vec2i delta_pos;
+
+	Vec2i global_pos;
+	Vec2i global_delta_pos;
 } MouseMoveEvent;
 
 typedef enum WindowEventKind {
@@ -94,6 +108,7 @@ typedef union EventData {
 	KeyEvent key_event;
 	MouseButtonEvent mouse_button_event;
 	MouseMoveEvent mouse_move_event;
+	MouseScrollEvent mouse_scroll_event;
 	WindowEvent window_event;
 	EventData() {};
 } EventData;
@@ -136,9 +151,9 @@ typedef struct Engine {
 	EntityManager entity_manager;
 	AssetManager asset_manager;
 	Renderer renderer;
+
 	EditorData editor;
-	
-	
+
 	
 	
 

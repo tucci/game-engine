@@ -126,23 +126,19 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind_Mouse_Move: {
-				
-                
-                
-				
-				//engine->input.mouse.delta_pos = cast(Vec2i){ event.event.mouse_move_event.pos.x - engine->input.mouse.pos.x, event.event.mouse_move_event.pos.y - engine->input.mouse.pos.y};
 				engine->input.mouse.pos = event.event.mouse_move_event.pos;
 				engine->input.mouse.delta_pos = event.event.mouse_move_event.delta_pos;
-                
-				/*debug_print("Mouse move: Pos<%d,%d>\tDelta<%d,%d>\n",
-     engine->input.mouse.pos.x,
-     engine->input.mouse.pos.y,
-     engine->input.mouse.delta_pos.x,
-     engine->input.mouse.delta_pos.y);*/
-                
 				break;
 			}
-            
+			case EventKind_Mouse_Global_Move: {
+				engine->input.mouse.global_pos = event.event.mouse_move_event.global_pos;
+				engine->input.mouse.global_delta_pos = event.event.mouse_move_event.global_delta_pos;
+				break;
+			}
+			case EventKind_Mouse_Scroll: {
+				engine->input.mouse.scroll = Vec2i(event.event.mouse_scroll_event.x_scroll, event.event.mouse_scroll_event.y_scroll);
+				break;
+			}
 			case EventKind_Window_Moved: {
 				debug_print("Window move: Pos<%d,%d>\n",
                             event.event.window_event.data.data1,
@@ -153,6 +149,7 @@ static void process_event_queue(Engine* engine) {
 				engine->window.pos.y = event.event.window_event.data.data2;
 				break;
 			}
+			
             
 			case EventKind_Window_Resized: {
 				debug_print("Window resized: winId: %d, Size<%d,%d>\n",
@@ -208,6 +205,15 @@ static void process_event_queue(Engine* engine) {
                             );
 				engine->window.window_id = event.event.window_event.data.window_id;
 				engine->window.flags |= WindowFlag_Hidden;
+				break;
+			}
+
+			case EventKind_Window_Closed: {
+				debug_print("Window closed, winId:%d\n",
+					event.event.window_event.data.window_id
+				);
+				engine->window.window_id = event.event.window_event.data.window_id;
+				engine->quit = true;
 				break;
 			}
 			case EventKind_Window_Enter_Mouse_Focus: {
@@ -318,13 +324,25 @@ static bool init_window(Engine* engine) {
 	
     
 
+	
+
+	SDL_SetHint(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, "1");
+
+	int x = SDL_WINDOWPOS_CENTERED;
+	int y = SDL_WINDOWPOS_CENTERED;
+
+	int w = DEFAULT_WINDOW_SIZE_X;
+	int h = DEFAULT_WINDOW_SIZE_Y;
+
 	engine->window.flags = 0;
 	engine->window.flags |= WindowFlag_Resizable;
 
 #if ENGINE_MODE_EDITOR
-	engine->window.flags |= SDL_WINDOW_FULLSCREEN;
-	engine->window.flags |= SDL_WINDOW_MAXIMIZED;
-	engine->window.flags |= SDL_WINDOW_BORDERLESS;
+	
+		//engine->window.flags |= SDL_WINDOW_INPUT_GRABBED;
+	engine->window.flags |= WindowFlag_Fullscreen;
+	engine->window.flags |= WindowFlag_Maximized;
+	engine->window.flags |= WindowFlag_Borderless;
 #endif
 	
 
@@ -335,7 +353,7 @@ static bool init_window(Engine* engine) {
 	}
 
 
-	SDL_WindowFlags sdl_flags = cast(SDL_WindowFlags) engine->window.flags;
+	SDL_WindowFlags sdl_flags = convert_to_sdl_flags(engine->window.flags);
 	const char* title = WINDOW_TITLE;
 	// by setting the x,y at SDL_WINDOWPOS_CENTERED, it doesnt give the actual x,y pos values. 
 	// SDL_WINDOWPOS_CENTERED is a flag used by SDL_CreateWindow to set the actual pos values
@@ -344,12 +362,10 @@ static bool init_window(Engine* engine) {
 
 	/*int x = SDL_WINDOWPOS_CENTERED;
 	int y = SDL_WINDOWPOS_CENTERED;*/
+	
+	
 
-	int x = 0;
-	int y = 0;
-
-	int w = DEFAULT_WINDOW_SIZE_X;
-	int h = DEFAULT_WINDOW_SIZE_Y;
+	
 
 	sdl_window = SDL_CreateWindow(
 		title,
@@ -386,6 +402,21 @@ static bool init_window(Engine* engine) {
 	engine->window.sdl_window_flags = (SDL_WindowFlags) SDL_GetWindowFlags(sdl_window);
     
 
+
+	//SDL_SetWindowGrab(sdl_window, SDL_TRUE);
+
+#if ENGINE_MODE_EDITOR
+	//SDL_SetRelativeMouseMode(SDL_TRUE);
+	//SDL_CaptureMouse(SDL_TRUE);
+
+
+#else
+	// TODO: this is a temp fix. we need to manually warp the mouse
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+	SDL_CaptureMouse(SDL_TRUE);
+#endif
+
+
 	return true;
 }
 
@@ -398,9 +429,8 @@ static bool init_backend_renderer(Engine* engine) {
 
 
 static bool init_keys(Engine* engine) {
-	// TODO: this is a temp fix. we need to manually warp the mouse
-	SDL_SetRelativeMouseMode(SDL_TRUE);
-	SDL_CaptureMouse(SDL_TRUE);
+
+	
 	// Init mouse buttons
 	reset_button_state(&engine->input.mouse.mouse_button_left);
 	reset_button_state(&engine->input.mouse.mouse_button_middle);
@@ -415,6 +445,8 @@ static bool init_keys(Engine* engine) {
 
 static bool init_event_queue(Engine* engine) {
 	engine->event_count = 0;
+	// We want to be able to handle SDL_SYSWMEVENT manually
+	SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
 	return true;
 }
 
@@ -496,11 +528,19 @@ static void process_inputs(Engine* engine) {
 	for (int c = 0; c < SDL_NUM_SCANCODES; c++) {
 		post_update_button_state(&engine->input.keys[c]);
 	}
+	// Reset scroll
+	engine->input.mouse.scroll = Vec2i(0, 0);
     
 	// Handle mouse seperatly
 	{
 		int x, y;
+		int gx, gy;
+
+		SDL_GetGlobalMouseState(&gx, &gy);
 		SDL_GetMouseState(&x, &y);
+		//debug_print("mouse pos %d,%d\tglobal mos pos %d,%d\n", x, y, gx, gy);
+
+		
         
 		Event event;
 		event.kind = EventKind_Mouse_Move;
@@ -515,8 +555,24 @@ static void process_inputs(Engine* engine) {
 		} else {
 			push_to_event_queue(engine, event);
 		}
+
+		Event event2;
+		event2.kind = EventKind_Mouse_Global_Move;
+		event2.event.mouse_move_event.global_pos= Vec2i(gx, gy);
+		event2.event.mouse_move_event.global_delta_pos = Vec2i(gx - engine->input.mouse.global_pos.x, gy - engine->input.mouse.global_pos.y);
+
+
+		// if last delta == 0 && new delta  == 0, skip. dont send events if the mouse hasnt moved since last time we polled
+		if ((engine->input.mouse.global_delta_pos.x == 0 && engine->input.mouse.global_delta_pos.y == 0)
+			&& (event2.event.mouse_move_event.global_delta_pos.x == 0 && event2.event.mouse_move_event.global_delta_pos.y == 0)) {
+			// Do nothing. We could flip the condition, but this reads more clear
+		} else {
+			push_to_event_queue(engine, event2);
+		}
 		
 	}
+
+	
 	
 	
 	SDL_Event sdl_event;
@@ -532,6 +588,17 @@ static void process_inputs(Engine* engine) {
     push_to_event_queue(engine, event);
     break;
    }*/
+			case SDL_MOUSEWHEEL: {
+				
+				Event event;
+				event.kind = EventKind_Mouse_Scroll;
+				event.event.mouse_scroll_event.x_scroll = sdl_event.wheel.x;
+				event.event.mouse_scroll_event.y_scroll = sdl_event.wheel.y;
+
+				debug_print("Scroll %d, %d\n", sdl_event.wheel.x, sdl_event.wheel.y);
+				push_to_event_queue(engine, event);
+				break;
+			}
             
 			case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP: {
                 
@@ -589,6 +656,7 @@ static void process_inputs(Engine* engine) {
 					case SDL_WINDOWEVENT_HIDDEN: {event.kind = EventKind_Window_Hidden;	break; }
 					case SDL_WINDOWEVENT_ENTER: {event.kind = EventKind_Window_Enter_Mouse_Focus;	break; }
 					case SDL_WINDOWEVENT_LEAVE: {event.kind = EventKind_Window_Lose_Mouse_Focus;	break; }
+					case SDL_WINDOWEVENT_CLOSE: {event.kind = EventKind_Window_Closed;	break; }
 					case SDL_WINDOWEVENT_FOCUS_GAINED: {event.kind = EventKind_Window_Enter_Keyboard_Focus;	break; }
 					case SDL_WINDOWEVENT_FOCUS_LOST: {event.kind = EventKind_Window_Lose_Keyboard_Focus;	break; }
 					default: {
@@ -605,6 +673,44 @@ static void process_inputs(Engine* engine) {
             
 			case SDL_QUIT: {
 				engine->quit = true;
+				debug_print("Engine quit\n");
+				break;
+			}
+
+
+			// Handle windows specifc events
+			case SDL_SYSWMEVENT: {
+				SDL_SysWMmsg* sysmsg = sdl_event.syswm.msg;
+				switch (sysmsg->subsystem) {
+					
+					// Handle windows specific events
+					case SDL_SYSWM_WINDOWS: {
+						switch (sysmsg->msg.win.msg) {
+							case WM_CLOSE: {
+								debug_print("win_close \n");
+								engine->quit = true;
+								break;
+							}
+							case WM_QUIT: {
+								debug_print("win_quit \n");
+								engine->quit = true;
+								break;
+							}
+							case WM_DESTROY: {
+								debug_print("win_destroy\n");
+								engine->quit = true;
+								break;
+							}
+							
+						}
+					
+						
+						
+
+						break;
+					}
+				}
+				
 				break;
 			}
             
@@ -637,7 +743,8 @@ static bool load_game(Engine* engine, const char* game_file) {
 		&engine->game_loop,
 		&engine->entity_manager,
 		&engine->renderer,
-		&engine->asset_manager
+		&engine->asset_manager,
+		&engine->editor
 	};
 	
     
@@ -714,22 +821,35 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		engine->renderer.opengl.draw_lines = !engine->renderer.opengl.draw_lines;
 	}
     
-#if !ENGINE_MODE_EDITOR
+#if ENGINE_MODE_EDITOR
+
+	// Editor upate
+	editor_update(&engine->loaded_game);
+
+	
+#else
+
 	if (engine->input.keys[SDL_SCANCODE_ESCAPE].just_pressed) {
 		engine->quit = true;
 	}
+
+	// Game specific update
+	game_update(&engine->loaded_game);
 #endif
     
     
     
 	
-    
-	// Game specific update
-	game_update(&engine->loaded_game);
+	
+
     
 	EntityManager* entity_manager = &engine->entity_manager;
 	Renderer* renderer = &engine->renderer;
 	AssetManager* asset_manager = &engine->asset_manager;
+	Vec2i window_size = engine->window.size;
+
+
+	
     
     
 	job_update_basis_vectors(entity_manager);
@@ -740,6 +860,8 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	// You go through all the entites, and push them to the render state
 	for (int i = 0; i < entity_manager->camera_manager.count; i++) {
 		Camera* cam = &entity_manager->camera_manager.cameras[i];
+		// Update camera aspect ratios
+		cam->aspect_ratio = (float)window_size.x / (float)window_size.y;
 		Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
 		Vec3f cam_pos = position(entity_manager, e);
 		push_camera(renderer, cam, cam_pos);

@@ -278,6 +278,7 @@ Vec3f cross(const Vec3f& v1, const Vec3f& v2) {
 
 
 
+
 Vec3f angle_axis_rotate(const Vec3f& v, const Vec3f& n, float rads) {
 	/*Vec3f result = v3_add(
 	v3_add(v3_multiply(cosf_(rads), v), v3_multiply(sinf_(rads), v3_cross(n, v))),
@@ -285,6 +286,19 @@ Vec3f angle_axis_rotate(const Vec3f& v, const Vec3f& n, float rads) {
 	Vec3f result = (cosf_(rads) * v) + (sinf_(rads) * cross(n, v)) + (((1 - cosf_(rads)) * dot(n, v)) * n);
 	return result;
 
+}
+
+Vec2i operator-(const Vec2i& v1, const Vec2i& v2) { // Subtraction 
+	Vec2i result;
+	result.x = v1.x - v2.x;
+	result.y = v1.y - v2.y;
+	return result;
+}
+
+float magnitude(const Vec2i& vec) {
+	float result;
+	result = sqrtf_((vec.x * vec.x) + (vec.y * vec.y));
+	return result;
 }
 
 

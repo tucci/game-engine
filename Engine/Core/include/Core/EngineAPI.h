@@ -8,6 +8,11 @@
 #include "Core/Renderer/Renderer.h"
 #include "Asset/AssetManager.h"
 
+#include "Editor/EditorInterface.h"
+
+
+
+
 
 
 // The API we expose to the underlying game
@@ -22,5 +27,7 @@ typedef struct EngineAPI {
 	EntityManager* entity_manager;
 	Renderer* renderer;
 	AssetManager* asset_manager;
+	EditorData* editor;
+	
 } EngineAPI;
 
