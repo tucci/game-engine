@@ -224,19 +224,19 @@ void game_update(Game* game) {
 	Camera* camera = get_camera(entity_manager, scene->entity_main_camera);
 
 
-	// TODO: remove need for sdl specific scan codes. convert to our own input api
+
 	
 	Vec3f new_cam_direction;
 	
-	// Since the camera always looks down -z
-	if (input->keys[SDL_SCANCODE_W].down) {new_cam_direction += (delta_time * -forward(entity_manager, scene->entity_main_camera));}
-	if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction += (delta_time * forward(entity_manager, scene->entity_main_camera)); }
+	if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, scene->entity_main_camera)); }
+	if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, scene->entity_main_camera)); }
 
-	if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction += (delta_time * right(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction += (delta_time * -right(entity_manager, scene->entity_main_camera)); }
+	if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, scene->entity_main_camera)); }
+	if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, scene->entity_main_camera)); }
 
-	if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction += (delta_time * up(entity_manager, scene->entity_main_camera)); }
-	if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
+
+	if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, scene->entity_main_camera)); }
+	if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
 
 	float cam_move_scale = 10;
 	Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
@@ -251,14 +251,15 @@ void game_update(Game* game) {
 
 	Vec3f new_mesh_scale = Vec3f(0, 0, 0);
 
-	if (input->keys[SDL_SCANCODE_PAGEUP].down) {
+
+	if (is_key_down(input, KEYCODE_PAGEUP)) {
 		
 		new_mesh_scale.x += delta_time * 1;
 		new_mesh_scale.y += delta_time * 1;
 		new_mesh_scale.z += delta_time * 1;
 	}
 
-	if (input->keys[SDL_SCANCODE_PAGEDOWN].down) {
+	if (is_key_down(input, KEYCODE_PAGEDOWN)) {
 		new_mesh_scale.x -= delta_time * 1;
 		new_mesh_scale.y -= delta_time * 1;
 		new_mesh_scale.z -= delta_time * 1;
@@ -287,13 +288,15 @@ void game_update(Game* game) {
 
 	
 	
-	if (input->keys[SDL_SCANCODE_LEFT].down) {
+	
+	if (is_key_down(input, KEYCODE_LEFT)) {
 		light.dir_light.direction.z -= delta_time * 0.5f;
 		
 		
 	}
 
-	if (input->keys[SDL_SCANCODE_RIGHT].down) {
+	
+	if (is_key_down(input, KEYCODE_RIGHT)) {
 		light.dir_light.direction.z += delta_time * 0.5f;
 	}
 
@@ -301,14 +304,14 @@ void game_update(Game* game) {
 	Vec3f sink_dir;
 	Vec3f sink_pos = position(entity_manager, scene->sink);
 
-	if (input->keys[SDL_SCANCODE_UP].down) {
+	if (is_key_down(input, KEYCODE_UP)) {
 		light.dir_light.direction.x += delta_time * 0.5f;
 
 	
 		sink_dir += (delta_time * forward(entity_manager, scene->sink));
 	}
 
-	if (input->keys[SDL_SCANCODE_DOWN].down) {
+	if (is_key_down(input, KEYCODE_DOWN)) {
 		light.dir_light.direction.x -= delta_time * 0.5f;
 		sink_dir += (delta_time * -forward(entity_manager, scene->sink));
 	}
@@ -398,24 +401,24 @@ void editor_update(Game* game) {
 
 
 	
+	Vec2i scroll = get_scroll_delta(input);
+	
 
 	// Capture scolling to move camera forward and back
-	if (input->mouse.scroll.y != 0) {
+	if (scroll.y != 0) {
 		Vec3f new_cam_direction = (delta_time * -forward(entity_manager, scene->entity_main_camera));
 
-		float cam_move_scale = 10 * input->mouse.scroll.y;
+		// TODO: make this configurable
+		float scroll_scale = 10.0f;
+
+		float cam_move_scale = scroll_scale * scroll.y;
 		Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
 		set_position(entity_manager, scene->entity_main_camera, cam_pos + (cam_move_scale * new_cam_direction));
 	}
 
 	
 
-	//if (input->mouse.mouse_button_right.just_pressed) {
-	//
-	//}
-	//if (input->mouse.mouse_button_right.just_released) {
-	//
-	//}
+	
 	
 	int x = input->mouse.pos.x;
 	int y = input->mouse.pos.y;
@@ -434,8 +437,9 @@ void editor_update(Game* game) {
 
 
 
+	
 	// Only apply editor movement if right mouse button is clicked
-	if (input->mouse.mouse_button_right.down) {
+	if (is_mouse_down(input, MouseButton_Right)) {
 		//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
 		SDL_ShowCursor(SDL_DISABLE);
 
@@ -452,15 +456,17 @@ void editor_update(Game* game) {
 
 		Vec3f new_cam_direction;
 
+		
 		// Since the camera always looks down -z
-		if (input->keys[SDL_SCANCODE_W].down) { new_cam_direction += (delta_time * -forward(entity_manager, scene->entity_main_camera)); }
-		if (input->keys[SDL_SCANCODE_S].down) { new_cam_direction += (delta_time * forward(entity_manager, scene->entity_main_camera)); }
+		if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, scene->entity_main_camera)); }
+		if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, scene->entity_main_camera)); }
 
-		if (input->keys[SDL_SCANCODE_D].down) { new_cam_direction += (delta_time * right(entity_manager, scene->entity_main_camera)); }
-		if (input->keys[SDL_SCANCODE_A].down) { new_cam_direction += (delta_time * -right(entity_manager, scene->entity_main_camera)); }
+		if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, scene->entity_main_camera)); }
+		if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, scene->entity_main_camera)); }
 
-		if (input->keys[SDL_SCANCODE_LSHIFT].down) { new_cam_direction += (delta_time * up(entity_manager, scene->entity_main_camera)); }
-		if (input->keys[SDL_SCANCODE_LCTRL].down) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
+		
+		if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, scene->entity_main_camera)); }
+		if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
 
 		float cam_move_scale = 10;
 		Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);

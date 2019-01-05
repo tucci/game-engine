@@ -628,14 +628,14 @@ static void process_inputs(Engine* engine) {
 			}
             
 			case SDL_KEYDOWN: case SDL_KEYUP: {
-				SDL_Scancode keycode = sdl_event.key.keysym.scancode;
-                
-				if (keycode) {
+				SDL_Scancode scancode = sdl_event.key.keysym.scancode;
+
+				
+				if (scancode) {
 					Event event;
 					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
-					event.event.key_event.key = keycode;
+					event.event.key_event.key = scancode;
 					push_to_event_queue(engine, event);
-                    
 				}
 				break;
 			}
