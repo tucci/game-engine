@@ -25,10 +25,12 @@
 
 
 #include "debug_macros.h"
+#include "Logger.h"
 
 void attach_engine_subsytems(Game* game, EngineAPI api) {
 	game->engineAPI = api;
 	
+	LOG_INFO(0, "Attaching engine subsystems");
 	assert(api.input != NULL);
 	assert(api.display != NULL);
 	assert(api.game_loop != NULL);
@@ -43,12 +45,11 @@ void on_game_start(Game* game) {
 	mem_size = game->arena.end - cast(char*) mem_block;
 	stack_alloc_init(&game->stack, mem_block, mem_size);
 	game->loaded_scene = cast(Scene*) stack_alloc(&game->stack, sizeof(Scene), 4);
-
-
 	load_scene(game, 1);
+	
 }
 void on_game_quit(Game* game) {
-	
+	LOG_INFO(0, "Unattaching game");
 
 	unload_scene(game, game->loaded_scene);
 
@@ -61,13 +62,6 @@ void load_scene(Game* game, int scene_id) {
 	
 	
 	
-
-
-
-	
-	
-	
-	
 	EngineAPI* api = &game->engineAPI;
 	EntityManager* entity_manager = api->entity_manager;
 	Renderer* renderer = api->renderer;
@@ -75,6 +69,8 @@ void load_scene(Game* game, int scene_id) {
 
 	Scene* scene = game->loaded_scene;
 	assert(scene != NULL);
+	scene->scene_id = scene_id;
+	LOG_INFO(0, "Loading scene %d", scene_id);
 
 	
 
@@ -204,6 +200,7 @@ void load_scene(Game* game, int scene_id) {
 
 void unload_scene(Game* game, Scene* scene) {
 	
+	LOG_INFO(0, "Unloading scene %d", scene->scene_id);
 }
 
 
@@ -349,7 +346,7 @@ void game_update(Game* game) {
 
 
 
-
+		
 
 
 		// Create a test rotation to see if we want to rotate
@@ -433,7 +430,7 @@ void editor_update(Game* game) {
 
 
 
-	debug_print("mouse pos %d,%d\t, delta pos %d,%d\tglobal mos pos %d,%d, window size %d,%d\n", x, y, delta_pos.x, delta_pos.y, gx, gy, sx, sy);
+	//debug_print("mouse pos %d,%d\t, delta pos %d,%d\tglobal mos pos %d,%d, window size %d,%d\n", x, y, delta_pos.x, delta_pos.y, gx, gy, sx, sy);
 
 
 
@@ -569,11 +566,13 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 	add_component(manager, root, ComponentType_Transform);
 
 	
+	
 	set_name(manager, root, scene->root->name);
 	set_position(manager, root, scene->root->translation);
 	set_scale(manager, root, scene->root->scale);
 	set_rotation(manager, root, euler_to_quat(scene->root->rotation));
-
+	
+	
 	import_asset_scene_node(manager, scene, scene->root, root);
 	return root;
 }

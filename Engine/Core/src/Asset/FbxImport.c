@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "engine_platform.h"
+#include "Logger.h"
 
 
 
@@ -70,10 +71,10 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	err = fopen_s(&file, file_str, "wb");  // write binary
 
 	if (err == 0) {
-		debug_print("Writing to %s,", file_str);
+		LOG_INFO(0, "Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", file_str);
+		LOG_FATAL(0, "Fail writing to %s,", file_str);
 	}
 	//void* buffer[256];
 
@@ -156,10 +157,10 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", file_str);
+		LOG_INFO(0, "Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", file_str);
+		LOG_FATAL(0, "Cannot close to %s\n", file_str);
 	}
 
 
@@ -198,10 +199,10 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 
 	// Write the material asset to disk
 	if (err == 0) {
-		debug_print("Writing to %s,", file_str);
+		LOG_INFO(0, "Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", file_str);
+		LOG_FATAL(0, "Fail writing to %s,", file_str);
 	}
 	//void* buffer[256];
 
@@ -312,10 +313,10 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", file_str);
+		LOG_INFO(0, "Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", file_str);
+		LOG_FATAL(0, "Cannot close to %s\n", file_str);
 	}
 
 
@@ -352,10 +353,10 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	err = fopen_s(&file, file_str, "wb");  // write binary
 
 	if (err == 0) {
-		debug_print("Writing to %s,", file_str);
+		LOG_INFO(0, "Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", file_str);
+		LOG_FATAL(0, "Fail writing to %s,", file_str);
 	}
 	//void* buffer[256];
 
@@ -439,10 +440,10 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", file_str);
+		LOG_INFO(0, "Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", file_str);
+		LOG_FATAL(0, "Cannot close to %s\n", file_str);
 	}
 
 
@@ -480,10 +481,10 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	err = fopen_s(&file, file_str, "wb");  // write binary
 
 	if (err == 0) {
-		debug_print("Writing to %s,", file_str);
+		LOG_INFO(0, "Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", file_str);
+		LOG_FATAL(0, "Fail writing to %s,", file_str);
 	}
 	//void* buffer[256];
 
@@ -548,10 +549,10 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", file_str);
+		LOG_INFO(0, "Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", file_str);
+		LOG_FATAL(0, "Cannot close to %s\n", file_str);
 	}
 		
 
@@ -670,7 +671,7 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 		export_pos = export_pos * importer->global_settings.unit_scale_factor;;
 		export_scale = export_scale  * importer->global_settings.unit_scale_factor;
 		
-		debug_print("root object\n");
+		
 	}
 
 
@@ -680,10 +681,10 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 		parent_is_root = false;
 	}
 	
-	debug_print("%s, POS:[%f, %f, %f]\tROT:[%f, %f, %f]\tSCALE:[%f,%f,%f]\n", node->name,
-		export_pos.x, export_pos.y, export_pos.z,
-		export_rotation.x, export_rotation.y, export_rotation.z,
-		export_scale.x, export_scale.y, export_scale.z);
+	//debug_print("%s, POS:[%f, %f, %f]\tROT:[%f, %f, %f]\tSCALE:[%f,%f,%f]\n", node->name,
+	//	export_pos.x, export_pos.y, export_pos.z,
+	//	export_rotation.x, export_rotation.y, export_rotation.z,
+	//	export_scale.x, export_scale.y, export_scale.z);
 	
 
 	fwrite(cast(const void*) &export_pos, sizeof(node->translation), 1, file);
@@ -774,10 +775,10 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IS
 	err = fopen_s(&file, file_str, "wb");  // write binary
 
 	if (err == 0) {
-		debug_print("Writing to %s,", file_str);
+		LOG_INFO(0, "Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", file_str);
+		LOG_FATAL(0, "Fail writing to %s,", file_str);
 	}
 	//void* buffer[256];
 
@@ -838,10 +839,10 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IS
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", file_str);
+		LOG_INFO(0,"Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", file_str);
+		LOG_FATAL(0, "Cannot close to %s\n", file_str);
 	}
 
 	stack_pop(&importer->stack);
@@ -2326,9 +2327,9 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
-		debug_print("Opening fbx %s,", filename);
+		LOG_INFO(0, "Opening fbx %s,", filename);
 	} else {
-		debug_print("Cannot open fbx%s\n", filename);
+		LOG_FATAL(0, "Cannot open fbx%s\n", filename);
 		goto cleanup_import_data;
 	}
 
@@ -2342,14 +2343,14 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	fread(buffer, 4, 1, file);
 	unsigned int version = *(cast(unsigned int*)buffer);
 	if (version < 7100) {
-		debug_print("FBX Version %d not supported\n", version);
+		LOG_WARN(0, "FBX Version %d not supported\n", version);
 		if (file) {
 
 			err = fclose(file);
 			if (err == 0) {
-				debug_print("Closed obj %s\n", filename);
+				LOG_INFO(0, "Closed obj %s\n", filename);
 			} else {
-				debug_print("Cannot close obj %s\n", filename);
+				LOG_FATAL(0, "Cannot close obj %s\n", filename);
 			}
 		}
 		goto cleanup_import_data;
@@ -2390,12 +2391,12 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	importer->global_settings.original_unit_scale_factor = fbx_import.global_settings.original_unit_scale_factor;
 
 
-	debug_print("\n\nUp axis [%d, %d]\nFront axis[%d, %d]\nCoord Axis[%d, %d]\nOriginal Up Axis[%d, %d]\nScale Factor[%f, %f]\n\n",
-		importer->global_settings.up_axis, importer->global_settings.up_axis_sign,
-		importer->global_settings.front_axis, importer->global_settings.front_axis_sign,
-		importer->global_settings.coord_axis, importer->global_settings.coord_axis_sign,
-		importer->global_settings.original_up_axis, importer->global_settings.original_up_axis_sign,
-		importer->global_settings.unit_scale_factor, importer->global_settings.original_unit_scale_factor);
+	//debug_print("\n\nUp axis [%d, %d]\nFront axis[%d, %d]\nCoord Axis[%d, %d]\nOriginal Up Axis[%d, %d]\nScale Factor[%f, %f]\n\n",
+	//	importer->global_settings.up_axis, importer->global_settings.up_axis_sign,
+	//	importer->global_settings.front_axis, importer->global_settings.front_axis_sign,
+	//	importer->global_settings.coord_axis, importer->global_settings.coord_axis_sign,
+	//	importer->global_settings.original_up_axis, importer->global_settings.original_up_axis_sign,
+	//	importer->global_settings.unit_scale_factor, importer->global_settings.original_unit_scale_factor);
 	
 	scene_id = export_asset_scene(importer, &fbx_import.export_scene, path, stripped_filename);
 	
@@ -2410,9 +2411,9 @@ cleanup_import_data:
 
 		err = fclose(file);
 		if (err == 0) {
-			debug_print("Closed obj %s\n", filename);
+			LOG_INFO(0, "Closed obj %s\n", filename);
 		} else {
-			debug_print("Cannot close obj %s\n", filename);
+			LOG_FATAL(0, "Cannot close obj %s\n", filename);
 		}
 	}
 

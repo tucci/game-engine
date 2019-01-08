@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "Logger.h"
 
 
 
@@ -45,6 +46,7 @@ void init_asset_manager(AssetManager* manager) {
 }
 
 void destroy_asset_manager(AssetManager* manager) {
+	LOG_INFO(0, "Destroying asset manager subsystems");
 	arena_free(&manager->asset_mem);
 	stack_reset(&manager->stack);
 	map_destroy(&manager->asset_id_map);
@@ -240,9 +242,9 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
-		debug_print("Opening asset file %s,", filename);
+		LOG_INFO(0, "Opening asset file %s,", filename);
 	} else {
-		debug_print("Cannot open asset file %s\n", filename);
+		LOG_FATAL(0, "Cannot open asset file %s\n", filename);
 		return asset;
 	}
 
@@ -647,9 +649,9 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 		err = fclose(file);
 		if (err == 0) {
-			debug_print("Closed asset file %s\n", filename);
+			LOG_INFO(0, "Closed asset file %s\n", filename);
 		} else {
-			debug_print("Cannot close asset file %s\n", filename);
+			LOG_FATAL(0, "Cannot close asset file %s\n", filename);
 		}
 	}
 
@@ -696,10 +698,10 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 	err = fopen_s(&file, file_str, "wb");  // write binary
 										   // Write the material asset to disk
 	if (err == 0) {
-		debug_print("Writing to %s,", file_str);
+		LOG_INFO(0, "Writing to %s,", file_str);
 	} else {
 		assert_fail();
-		debug_print("Fail writing to %s,", file_str);
+		LOG_FATAL(0, "Fail writing to %s,", file_str);
 	}
 	
 
@@ -759,10 +761,10 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", file_str);
+		LOG_INFO(0, "Finished writing to %s\n", file_str);
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", file_str);
+		LOG_FATAL(0, "Cannot close to %s\n", file_str);
 	}
 
 

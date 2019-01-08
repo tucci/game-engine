@@ -42,3 +42,14 @@ bool platform_pathfile_exists(const char* path);
 
 
 
+s64 platform_get_pid();
+s64 platform_get_thread_id();
+
+
+// Platform implemented vscprintf
+int p_vscprintf(const char * format, va_list pargs);
+// Platform implemented scprintf
+int p_scprintf(const char *format, ...);
+
+// Platform implemented vsprintf_s
+int p_vsprintf_s(char *buffer, size_t numberOfElements, const char *format, va_list vlist);

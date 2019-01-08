@@ -7,6 +7,7 @@
 #include "Common/common_macros.h"
 #include "Math/Math.h"
 #include "Util/Utils.h"
+#include "Logger.h"
 
 
 #define uniform3f_pack(vec) vec.x, vec.y, vec.z
@@ -479,7 +480,7 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 		return handle;
 	} else {
 		// TODO: handle case when shader could not be loaded
-		debug_print("Shaders %s or %s could not be loaded\n", vertex_file, fragment_file);
+		LOG_FATAL(0, "Shaders %s or %s could not be loaded\n", vertex_file, fragment_file);
 		handle.handle = 0;
 		return handle;
 	}

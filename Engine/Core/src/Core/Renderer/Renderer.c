@@ -2,6 +2,7 @@
 
 #include "Core/Renderer/Renderer.h"
 #include "Common/stretchy_buffer.h"
+#include "Logger.h"
 
 
 void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window) {
@@ -31,6 +32,7 @@ void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window) {
 }
 
 void destory_backend_renderer(Renderer* renderer) {
+	LOG_INFO(0, "Destroying renderer");
 	switch (renderer->type) {
 		case BackenedRenderer_Software: {
 			

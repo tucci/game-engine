@@ -13,6 +13,7 @@
 #include "Core/ECS/JobSystem/StaticMeshSystem.h"
 #include "Core/ECS/JobSystem/LightSystem.h"
 #include "Core/ECS/JobSystem/RenderSystem.h"
+#include "Logger.h"
 
 
 
@@ -22,6 +23,7 @@ static void update_button_state(ButtonState* button_state, bool down_now) {
 	button_state->down = down_now;
 	button_state->just_pressed = down_now && !was_down;
 	button_state->just_released = !down_now && was_down;
+	
 }
 
 static void reset_button_state(ButtonState* button_state) {
@@ -263,7 +265,7 @@ static void process_event_queue(Engine* engine) {
 
 
 static bool init_engine_memory(Engine* engine) {
-    
+	LOG_INFO(0, "Starting up memory subsystems");
 	//size_t size = ENGINE_MEMORY;
 	//
 	//// Align the memory size to 64 bits
@@ -288,10 +290,11 @@ static bool init_engine_memory(Engine* engine) {
 
 
 static bool init_display(Engine* engine) {
+	LOG_INFO(0, "Starting up display subsystem");
 	// Grab the dpi from the display
 	float dpi;
 	if (SDL_GetDisplayDPI(0, &dpi, NULL, NULL) != 0) {
-		debug_print("SDL_GetDisplayDPI, SDl_Error %s", SDL_GetError());
+		LOG_WARN(0, "SDL_GetDisplayDPI, SDl_Error %s", SDL_GetError());
 		return false;
 	}
 	assert(dpi > 0);
@@ -300,7 +303,7 @@ static bool init_display(Engine* engine) {
     
 	SDL_DisplayMode mode;
 	if (SDL_GetCurrentDisplayMode(0, &mode) != 0) {
-		debug_print("SDL_GetCurrentDisplayMode, SDl_Error %s", SDL_GetError());
+		LOG_WARN(0, "SDL_GetCurrentDisplayMode, SDl_Error %s", SDL_GetError());
 		return false;
 	}
     
@@ -319,7 +322,7 @@ static bool init_display(Engine* engine) {
 
 
 static bool init_window(Engine* engine) {
-
+	LOG_INFO(0, "Starting up window subsystem");
 	SDL_Window* sdl_window;
 	
     
@@ -340,9 +343,9 @@ static bool init_window(Engine* engine) {
 #if ENGINE_MODE_EDITOR
 	
 		//engine->window.flags |= SDL_WINDOW_INPUT_GRABBED;
-	engine->window.flags |= WindowFlag_Fullscreen;
-	engine->window.flags |= WindowFlag_Maximized;
-	engine->window.flags |= WindowFlag_Borderless;
+	//engine->window.flags |= WindowFlag_Fullscreen;
+	//engine->window.flags |= WindowFlag_Maximized;
+	//engine->window.flags |= WindowFlag_Borderless;
 #endif
 	
 
@@ -390,7 +393,7 @@ static bool init_window(Engine* engine) {
 	
     
 	if (!sdl_window) {
-		debug_print("Could not create window, SDl_Error %s", SDL_GetError());
+		LOG_FATAL(0, "Could not create window, SDl_Error %s", SDL_GetError());
 		return false;
 	}
 	
@@ -421,6 +424,7 @@ static bool init_window(Engine* engine) {
 }
 
 static bool init_backend_renderer(Engine* engine) {
+	LOG_INFO(0, "Starting up renderer");
 	init_backend_renderer(&engine->renderer, engine->window.sdl_window);	
 	return true;
 }
@@ -444,6 +448,7 @@ static bool init_keys(Engine* engine) {
 }
 
 static bool init_event_queue(Engine* engine) {
+	LOG_INFO(0, "Starting up event subsystem");
 	engine->event_count = 0;
 	// We want to be able to handle SDL_SYSWMEVENT manually
 	SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
@@ -453,7 +458,7 @@ static bool init_event_queue(Engine* engine) {
 
 
 static bool init_clock(Engine* engine) {
-    
+	LOG_INFO(0, "Starting up clock subsystem");
 	engine->clock.ticks_per_sec = SDL_GetPerformanceFrequency();
 	engine->clock.sdl_start_ticks = SDL_GetPerformanceCounter();
 	engine->clock.ticks = 0;
@@ -495,6 +500,7 @@ static bool init_ecs(Engine* engine) {
 }
 
 static bool init_asset_manager(Engine* engine) {
+	LOG_INFO(0, "Starting up asset manager subsystem");
 	init_asset_manager(&engine->asset_manager);
 	return true;
 }
@@ -520,7 +526,7 @@ static void update_clock(Engine* engine) {
     
 }
 
-static void process_inputs(Engine* engine) {
+static void poll_inputs(Engine* engine) {
 	post_update_button_state(&engine->input.mouse.mouse_button_left);
 	post_update_button_state(&engine->input.mouse.mouse_button_middle);
 	post_update_button_state(&engine->input.mouse.mouse_button_right);
@@ -722,7 +728,8 @@ static bool load_game(Engine* engine, const char* game_file) {
     
     
 	
-	debug_print("Loading Game\n");
+	LOG_INFO(0, "Loading Game");
+	
 	
     
 	// Init some memory for our game
@@ -757,13 +764,15 @@ static bool load_game(Engine* engine, const char* game_file) {
 
 bool init_engine(Engine* engine) {
     
+	_init_logger();
+
 	if (SDL_Init(SDL_INIT_EVERYTHING)) {
-		debug_print("Could not init SDL: %s \n", SDL_GetError());
+		LOG_FATAL(0, "Could not init SDL: %s", SDL_GetError());
 		exit(-1);
 	}
     
 	if (!init_engine_memory(engine)) {
-		debug_print("Engine failed to allocate memory at startup");
+		LOG_FATAL(0, "Engine failed to allocate memory at startup");
 		return false;
 	}
     
@@ -794,17 +803,17 @@ bool init_engine(Engine* engine) {
 
 bool destroy_engine(Engine* engine) {
     
-	
 	on_game_quit(&engine->loaded_game);
+	LOG_INFO(0, "Destroying engine subsystems");
 	destroy_entity_manager(&engine->entity_manager);
 	destroy_asset_manager(&engine->asset_manager);
 	destory_backend_renderer(&engine->renderer);
    
-	
+	LOG_INFO(0, "Destroying other subsytems");
 	SDL_DestroyWindow(engine->window.sdl_window);
 	SDL_Quit();
     
-    
+	_destory_logger();
 	return true;
 }
 
@@ -935,7 +944,7 @@ void game_loop(Engine* engine) {
 		engine->game_loop.accumulator += delta_time;
         
 		// Process inputs once per frame
-		process_inputs(engine);
+		poll_inputs(engine);
 		process_event_queue(engine);
         
 		

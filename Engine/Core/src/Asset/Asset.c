@@ -8,6 +8,7 @@
 
 #include "Common/common_macros.h"
 #include "debug_macros.h"
+#include "Logger.h"
 
 void init_asset_tracker(AssetTracker* tracker) {
 	map_init(&tracker->track_map);
@@ -60,10 +61,10 @@ void init_asset_tracker(AssetTracker* tracker) {
 
 		err = fclose(file);
 		if (err == 0) {
-			debug_print("Closed %s\n", track_file);
+			LOG_INFO(0,"Closed %s\n", track_file);
 		} else {
 			assert_fail();
-			debug_print("Cannot close to %s\n", track_file);
+			LOG_FATAL(0, "Cannot close to %s\n", track_file);
 		}
 
 	} else {
@@ -239,7 +240,7 @@ void write_tracker_file(AssetTracker* tracker) {
 
 	err = fclose(file);
 	if (err == 0) {
-		debug_print("Finished writing to %s\n", track_temp_file);
+		LOG_INFO(0, "Finished writing to %s\n", track_temp_file);
 		// Delete the old file and rename swap file to the original asset track file
 		if (platform_pathfile_exists(ASSET_TRACKER_FILE)) {
 			platform_file_delete(ASSET_TRACKER_FILE);
@@ -249,7 +250,7 @@ void write_tracker_file(AssetTracker* tracker) {
 		
 	} else {
 		assert_fail();
-		debug_print("Cannot close to %s\n", track_temp_file);
+		LOG_FATAL(0, "Cannot close to %s\n", track_temp_file);
 	}
 }
 
@@ -297,6 +298,5 @@ void set_scene_node_transform(AssetImport_SceneNode* node, Vec3f pos, Vec3f scal
 	node->translation = pos;
 	node->scale = scale;
 	node->rotation = rot;
-
 }
 

@@ -131,4 +131,34 @@ bool platform_pathfile_exists(const char* path) {
 	return PathFileExists(path);
 }
 
+s64 platform_get_pid() {
+	DWORD pid = GetCurrentProcessId();
+	return pid;
+}
+
+s64 platform_get_thread_id() {
+	DWORD pid = GetCurrentThreadId();
+	return pid;
+}
+
+int p_vscprintf(const char * format, va_list pargs) {
+	int count = _vscprintf(format, pargs);
+	return count;
+}
+
+int p_scprintf(const char *format, ...) {
+	
+	va_list args;
+	va_start(args, format);
+	int count = p_vscprintf(format, args);
+	va_end(args);
+	return count;
+}
+
+int p_vsprintf_s(char *buffer, size_t numberOfElements, const char *format, va_list vlist) {
+	int result = vsprintf_s(buffer, numberOfElements, format, vlist);
+	return result;
+}
+
+
 #endif
