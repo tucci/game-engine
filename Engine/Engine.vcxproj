@@ -114,6 +114,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -185,6 +186,7 @@
     <ClCompile Include="Core\src\Core\ECS\JobSystem\StaticMeshSystem.c" />
     <ClCompile Include="Core\src\Core\ECS\JobSystem\TransformSystem.c" />
     <ClCompile Include="Core\src\Core\Game.c" />
+    <ClCompile Include="Core\src\Core\Input.c" />
     <ClCompile Include="Core\src\Core\Renderer\Renderer.c" />
     <ClCompile Include="Core\src\Core\Scene.c" />
     <ClCompile Include="Core\src\Core\ECS\Component\StaticMesh.c" />
@@ -193,6 +195,7 @@
     <ClCompile Include="Core\src\Asset\AssetManager.c" />
     <ClCompile Include="Core\src\Asset\FbxImport.c" />
     <ClCompile Include="Core\src\linux_engine_platform.c" />
+    <ClCompile Include="Core\src\Logger.c" />
     <ClCompile Include="Core\src\Main.c" />
     <ClCompile Include="Core\src\Math\Mat.cpp" />
     <ClCompile Include="Core\src\Math\Quaternion.cpp" />
@@ -226,6 +229,7 @@
     <ClInclude Include="Core\include\Asset\FbxImport.h" />
     <ClInclude Include="Core\include\Editor\EditorInterface.h" />
     <ClInclude Include="Core\include\engine_platform.h" />
+    <ClInclude Include="Core\include\Logger.h" />
     <ClInclude Include="Core\include\types.h" />
     <ClInclude Include="Core\Window.h" />
     <ClInclude Include="Core\include\Common\common_macros.h" />
