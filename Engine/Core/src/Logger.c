@@ -33,7 +33,7 @@ void _init_logger() {
 	err = fopen_s(&_logger.log_file, log_file_str, "w");
 
 	if (err == 0) {
-		debug_print("Opened log file\n,");
+		debug_print("Opened log file\n");
 	} else {
 		assert_fail();
 		debug_print("Fail opening log file\n");

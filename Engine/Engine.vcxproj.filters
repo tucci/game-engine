@@ -132,6 +132,9 @@
     <ClCompile Include="Core\src\Logger.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\src\Editor\EditorInterface.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec.h">

@@ -2,11 +2,35 @@
 
 
 #include "engine_platform.h"
+#include "Core/EngineAPI.h"
+
+
+#include "Core/ECS/Component/Primitives.h"
+
+#include "Core/ECS/JobSystem/TransformSystem.h"
+#include "Core/ECS/JobSystem/CameraSystem.h"
+#include "Core/ECS/JobSystem/StaticMeshSystem.h"
+#include "Core/ECS/JobSystem/LightSystem.h"
+#include "Core/ECS/JobSystem/RenderSystem.h"
+
 
 #define ENGINE_MODE_EDITOR 1
 
-typedef struct EditorData {
-	HWND editor_hwnd;
+#define EDITOR_MEMORY MEGABYTES(100)
 
+typedef struct EditorInterface {
 	bool was_last_frame_using_right_click;
-} EditorData;
+	EngineAPI api;
+	Arena arena;
+	StackAllocator stack;
+
+	Entity editor_camera;
+	HDR_SkyMap hdr_skymap;
+	
+} EditorInterface;
+
+bool init_editor_interface(EditorInterface* editor, EngineAPI api);
+void destroy_editor_interface(EditorInterface* editor);
+
+
+void editor_update(EditorInterface* editor);

@@ -5,18 +5,21 @@
 #include "types.h"
 
 
+struct FileHandle;
+struct SocketHandle;
+
+
+
 #ifdef _WIN32
-#include "Shlwapi.h"
-
-typedef struct FileHandle {
-	HANDLE win_handle;
-} FileHandle;
-
-
 #else
-typedef struct FileHandle {
-	int linux_handle;
-} FileHandle;
+//typedef struct FileHandle {
+//	int linux_handle;
+//} FileHandle;
+//
+//typedef struct SocketHandle {
+//	int socket;
+//} SocketHandle;
+
 #endif
 
 void convert_to_os_path(const char* path, char* output_buffer, s32 output_buffer_length);
@@ -50,6 +53,21 @@ s64 platform_get_thread_id();
 int p_vscprintf(const char * format, va_list pargs);
 // Platform implemented scprintf
 int p_scprintf(const char *format, ...);
-
 // Platform implemented vsprintf_s
 int p_vsprintf_s(char *buffer, size_t numberOfElements, const char *format, va_list vlist);
+
+
+// Platform sockets
+
+
+
+int sock_init();
+SocketHandle sock_create();
+void sock_bind(SocketHandle handle);
+void sock_listen(SocketHandle handle);
+void sock_accept(SocketHandle handle);
+int sock_close(SocketHandle handle);
+void sock_shutdown(SocketHandle handle);
+int sock_send(SocketHandle handle, char* buf, int len, int flags);
+int sock_recv(SocketHandle handle, char* buf, int len, int flags);
+

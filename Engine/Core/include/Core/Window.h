@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL.h>
+#include "Math/Vec.h"
 #include "types.h"
 
 typedef enum WindowFlag {

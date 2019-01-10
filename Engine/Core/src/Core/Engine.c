@@ -405,7 +405,8 @@ static bool init_window(Engine* engine) {
 	engine->window.sdl_window_flags = (SDL_WindowFlags) SDL_GetWindowFlags(sdl_window);
     
 
-
+	
+	
 	//SDL_SetWindowGrab(sdl_window, SDL_TRUE);
 
 #if ENGINE_MODE_EDITOR
@@ -724,25 +725,9 @@ static void poll_inputs(Engine* engine) {
 	}
 }
 
-static bool load_game(Engine* engine, const char* game_file) {
+static bool load_engine_into_mode(Engine* engine) {
     
     
-	
-	LOG_INFO(0, "Loading Game");
-	
-	
-    
-	// Init some memory for our game
-	// Load scene, get how much potential memory we would need from the scene
-	//MemoryEnginePartition game_partition = give_memory_partition(engine, GAME_MEMORY);
-    
-    
-	// Bootstrap loading
-	// Load game into it's own memory partition
-	
-	
-    
-	// Attach and expose our engine subsystems to the game
 	EngineAPI api = {
 		&engine->display,
 		&engine->window,
@@ -750,13 +735,21 @@ static bool load_game(Engine* engine, const char* game_file) {
 		&engine->game_loop,
 		&engine->entity_manager,
 		&engine->renderer,
-		&engine->asset_manager,
-		&engine->editor
+		&engine->asset_manager
 	};
-	
-    
+
+
 	attach_engine_subsytems(&engine->loaded_game, api);
+
+#if ENGINE_MODE_EDITOR
+	LOG_INFO(0, "Loading Engine Editor Interface");
+	if (!init_editor_interface(&engine->editor, api)) { return false; }
+#else
+	LOG_INFO(0, "Loading Game");
 	on_game_start(&engine->loaded_game);
+#endif
+
+
     
 	return true;
 }
@@ -792,8 +785,8 @@ bool init_engine(Engine* engine) {
 	if (!init_asset_manager(engine)) { return false; }
 	if (!init_backend_renderer(engine)) { return false; }
 	if (!init_game_loop(engine)) { return false; }
-	// TODO: Load game file here
-	if (!load_game(engine, "mygame.gamefile")) { return false; }
+
+	if (!load_engine_into_mode(engine)) { return false; }
 	
     
     
@@ -802,12 +795,20 @@ bool init_engine(Engine* engine) {
 }
 
 bool destroy_engine(Engine* engine) {
-    
+
+#if ENGINE_MODE_EDITOR
+	destroy_editor_interface(&engine->editor);
+#else
 	on_game_quit(&engine->loaded_game);
+#endif
+
+	
 	LOG_INFO(0, "Destroying engine subsystems");
 	destroy_entity_manager(&engine->entity_manager);
 	destroy_asset_manager(&engine->asset_manager);
 	destory_backend_renderer(&engine->renderer);
+
+
    
 	LOG_INFO(0, "Destroying other subsytems");
 	SDL_DestroyWindow(engine->window.sdl_window);
@@ -832,17 +833,14 @@ static void update_engine_state(Engine* engine, float delta_time) {
     
 #if ENGINE_MODE_EDITOR
 
+
 	// Editor upate
-	editor_update(&engine->loaded_game);
-
-	
+	editor_update(&engine->editor);
 #else
-
+	// Game update
 	if (engine->input.keys[SDL_SCANCODE_ESCAPE].just_pressed) {
 		engine->quit = true;
 	}
-
-	// Game specific update
 	game_update(&engine->loaded_game);
 #endif
     

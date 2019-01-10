@@ -117,7 +117,7 @@
       <ExceptionHandling>false</ExceptionHandling>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;glew32s.lib;zlibstat.lib;zlibwapi.lib;shlwapi.lib;Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -194,6 +194,7 @@
     <ClCompile Include="Core\src\Core\Engine.c" />
     <ClCompile Include="Core\src\Asset\AssetManager.c" />
     <ClCompile Include="Core\src\Asset\FbxImport.c" />
+    <ClCompile Include="Core\src\Editor\EditorInterface.c" />
     <ClCompile Include="Core\src\linux_engine_platform.c" />
     <ClCompile Include="Core\src\Logger.c" />
     <ClCompile Include="Core\src\Main.c" />

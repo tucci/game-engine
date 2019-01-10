@@ -1,5 +1,7 @@
 #pragma once
 
+
+// TODO: see if we can do opaque pointers
 #include "Core/Display.h"
 #include "Core/Window.h"
 #include "Core/Input.h"
@@ -8,7 +10,6 @@
 #include "Core/Renderer/Renderer.h"
 #include "Asset/AssetManager.h"
 
-#include "Editor/EditorInterface.h"
 
 
 
@@ -27,7 +28,5 @@ typedef struct EngineAPI {
 	EntityManager* entity_manager;
 	Renderer* renderer;
 	AssetManager* asset_manager;
-	EditorData* editor;
-	
 } EngineAPI;
 

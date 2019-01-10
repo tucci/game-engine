@@ -152,7 +152,7 @@ typedef struct Engine {
 	AssetManager asset_manager;
 	Renderer renderer;
 
-	EditorData editor;
+	EditorInterface editor;
 
 	
 	
@@ -186,8 +186,6 @@ static bool push_to_event_queue(Engine* engine, Event event);
 static void process_event_queue(Engine* engine);
 
 static bool init_engine_memory(Engine* engine);
-//MemoryEnginePartition give_memory_partition(Engine* engine, size_t size);
-
 static bool init_display(Engine* engine);
 static bool init_window(Engine* engine);
 static bool init_backend_renderer(Engine* engine);
@@ -198,11 +196,11 @@ static bool init_game_loop(Engine* engine);
 static bool init_debug(Engine* engine);
 static bool init_ecs(Engine* engine);
 static bool init_asset_manager(Engine* engine);
-static void update_clock(Engine* engine);
 
+static void update_clock(Engine* engine);
 static void poll_inputs(Engine* engine);
 
-static bool load_game(Engine* engine, const char* game_file);
+static bool load_engine_into_mode(Engine* engine);
 
 
 bool init_engine(Engine* engine);

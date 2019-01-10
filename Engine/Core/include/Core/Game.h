@@ -36,4 +36,3 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id);
 
 
 void game_update(Game* game);
-void editor_update(Game* game);
