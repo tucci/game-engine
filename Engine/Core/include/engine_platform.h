@@ -9,29 +9,13 @@ struct FileHandle;
 struct SocketHandle;
 
 
-
-#ifdef _WIN32
-#else
-//typedef struct FileHandle {
-//	int linux_handle;
-//} FileHandle;
-//
-//typedef struct SocketHandle {
-//	int socket;
-//} SocketHandle;
-
-#endif
-
 void convert_to_os_path(const char* path, char* output_buffer, s32 output_buffer_length);
 
-FileHandle platform_create_file(const char* filename);
-
-bool platform_close_file(FileHandle handle);
-
-u32 platform_path(FileHandle handle, char* path, u32 path_length);
-
-
-s64 platform_get_file_size(FileHandle handle);
+FileHandle* platform_create_filehandle(const char* filename);
+void platform_free_filehandle(FileHandle* handle);
+bool platform_close_file(FileHandle* handle);
+u32 platform_path(FileHandle* handle, char* path, u32 path_length);
+s64 platform_get_file_size(FileHandle* handle);
 
 
 const char* platform_file_basename(const char* filename);
@@ -58,16 +42,19 @@ int p_vsprintf_s(char *buffer, size_t numberOfElements, const char *format, va_l
 
 
 // Platform sockets
-
-
-
 int sock_init();
-SocketHandle sock_create();
-void sock_bind(SocketHandle handle);
-void sock_listen(SocketHandle handle);
-void sock_accept(SocketHandle handle);
-int sock_close(SocketHandle handle);
-void sock_shutdown(SocketHandle handle);
-int sock_send(SocketHandle handle, char* buf, int len, int flags);
-int sock_recv(SocketHandle handle, char* buf, int len, int flags);
+
+SocketHandle* sock_create_handle();
+void sock_free_handle(SocketHandle* handle);
+
+void sock_bind(SocketHandle* handle);
+void sock_listen(SocketHandle* handle);
+void sock_accept(SocketHandle* handle);
+int sock_close(SocketHandle* handle);
+void sock_shutdown(SocketHandle* handle);
+
+int sock_send(SocketHandle* handle, char* buf, int len, int flags);
+int sock_recv(SocketHandle* handle, char* buf, int len, int flags);
+
+u32 p_htonl(u32 hostlong);
 

@@ -2,10 +2,13 @@
 
 
 #include "engine_platform.h"
+#include "Editor/EditorCommands.h"
+
 #include "Core/EngineAPI.h"
 
 
 #include "Core/ECS/Component/Primitives.h"
+
 
 #include "Core/ECS/JobSystem/TransformSystem.h"
 #include "Core/ECS/JobSystem/CameraSystem.h"
@@ -24,13 +27,26 @@ typedef struct EditorInterface {
 	Arena arena;
 	StackAllocator stack;
 
+
+
 	Entity editor_camera;
 	HDR_SkyMap hdr_skymap;
+
+	SocketHandle* socket;
 	
 } EditorInterface;
+
+
+
+
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api);
 void destroy_editor_interface(EditorInterface* editor);
 
 
+void connect_editor_socket(EditorInterface* editor);
+void disconnect_editor_socket(EditorInterface* editor);
 void editor_update(EditorInterface* editor);
+
+void send_command_to_editor(EditorInterface* editor, EditorCommand command);
+

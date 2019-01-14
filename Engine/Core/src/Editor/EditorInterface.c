@@ -2,6 +2,8 @@
 
 #include "Editor/EditorInterface.h"
 
+#include "SDL_syswm.h"
+
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->api = api;
@@ -24,10 +26,16 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	create_skymap(api.renderer, &editor->hdr_skymap);
 	create_shadowmap(api.renderer);
 
+	
+
+	connect_editor_socket(editor);
+
 	return true;
 }
 
 void destroy_editor_interface(EditorInterface* editor) {
+	disconnect_editor_socket(editor);
+
 	arena_free(&editor->arena);
 }
 
@@ -39,6 +47,7 @@ void editor_update(EditorInterface* editor) {
 
 	Renderer* renderer = editor->api.renderer;
 	Window* window = editor->api.window;
+	
 	
 
 	float delta_time = timer->delta_time;
@@ -143,6 +152,100 @@ void editor_update(EditorInterface* editor) {
 		editor->was_last_frame_using_right_click = false;
 	}
 
+
+
+}
+
+void connect_editor_socket(EditorInterface* editor) {
+	int result = sock_init();
+	if (result != 0) {
+		// error
+		return;
+	}
+	
+	editor->socket = sock_create_handle();
+	sock_bind(editor->socket);
+	sock_listen(editor->socket);
+	sock_accept(editor->socket);
+
+	
+	Window* window = editor->api.window;
+
+	
+
+	
+
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(window->sdl_window, &wmInfo);
+	HWND hwnd = wmInfo.info.win.window;
+	debug_print("%d\n", (u32)hwnd);
+
+	EditorCommand command = cmd_send_window((u32)hwnd);
+	send_command_to_editor(editor, command);
+
+
+}
+
+void disconnect_editor_socket(EditorInterface* editor) {
+	sock_close(editor->socket);
+	sock_shutdown(editor->socket);
+	sock_free_handle(editor->socket);
+}
+
+
+// Includes the payload size and non payload size(ex command type)
+static size_t get_size_for_command(EditorCommandType type) {
+	// Add the base size starting the with the command type
+	size_t size = sizeof(EditorCommandType);
+	switch (type) {
+		case EditorCommand_NONE: {
+			size += 0;
+			break;
+		}
+		case EditorCommand_ESTABLISH_CONNECTION: {
+			size += sizeof(u32);
+			break;
+		}
+		
+	}
+
+	return size;
+}
+
+
+
+void send_command_to_editor(EditorInterface* editor, EditorCommand command) {
+
+	
+		
+
+	EditorCommandHeader header;
+	header.endianness = 1;
+	header.version = EDITOR_COMMAND_VESRSION;
+	header.message_size = get_size_for_command(command.type);
+	
+	
+	// NOTE: this assumes the size of header is already packed, padded, and aligned
+	size_t header_size = sizeof(header);
+	size_t command_size = header.message_size;
+
+	size_t buf_size = header_size + command_size;
+
+
+
+
+
+	char* buf = (char*)stack_alloc(&editor->stack, buf_size, 1);
+
+	
+	memcpy(buf, &header, header_size);
+	memcpy(buf + header_size, &command, command_size);
+	//snprintf(buf, 256, "%d", (u32)hwnd);s
+
+	sock_send(editor->socket, buf, buf_size, 0);
+
+	stack_pop(&editor->stack);
 
 
 }

@@ -12,10 +12,6 @@
 
 
 
-
-
-
-
 // The API we expose to the underlying game
 // NOTE: the api should be all ptrs to the underlying engine
 // Since we create a new struct everytime we load the game, we are sending a copy of this struct down

@@ -72,6 +72,8 @@ int main(int argc, char* argv[]) {
 
 #if 0
 	
+	
+	
 
 	//main_test();
 	
@@ -79,18 +81,12 @@ int main(int argc, char* argv[]) {
 #else
 					
 	Engine engine;
-	// Our edior only supports opengl rendering
 	engine.renderer.type = BackenedRenderer_OpenGL;
 	
 	
 	
 #if ENGINE_MODE_EDITOR
-	//if (argc > 1) {
-	//	int hwnd_int = atoi(argv[1]);
-	//	engine.editor.editor_hwnd = (HWND)hwnd_int;
-	//} else {
-	//	assert_fail();
-	//}
+	// Our edior only supports opengl rendering
 	engine.renderer.type = BackenedRenderer_OpenGL;
 #endif
 	

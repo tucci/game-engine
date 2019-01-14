@@ -135,6 +135,9 @@
     <ClCompile Include="Core\src\Editor\EditorInterface.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Core\src\Editor\EditorCommands.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Math\Vec.h">
@@ -573,6 +576,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Core\include\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Editor\EditorCommands.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

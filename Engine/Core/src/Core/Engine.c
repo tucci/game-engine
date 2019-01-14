@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SDL_syswm.h"
 
 
 #include "Core/Engine.h"
@@ -342,10 +341,10 @@ static bool init_window(Engine* engine) {
 
 #if ENGINE_MODE_EDITOR
 	
-		//engine->window.flags |= SDL_WINDOW_INPUT_GRABBED;
-	//engine->window.flags |= WindowFlag_Fullscreen;
-	//engine->window.flags |= WindowFlag_Maximized;
-	//engine->window.flags |= WindowFlag_Borderless;
+	//engine->window.flags |= SDL_WINDOW_INPUT_GRABBED;
+	engine->window.flags |= WindowFlag_Fullscreen;
+	engine->window.flags |= WindowFlag_Maximized;
+	engine->window.flags |= WindowFlag_Borderless;
 #endif
 	
 
@@ -378,17 +377,6 @@ static bool init_window(Engine* engine) {
 	);
 
 	
-
-	u32 winid = SDL_GetWindowID(sdl_window);
-
-	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
-	SDL_GetWindowWMInfo(sdl_window, &wmInfo);
-	HWND hwnd = wmInfo.info.win.window;
-
-	debug_print("%d\n", (u32)hwnd);
-
-	debug_print("the window id is %d\n", winid);
 	
 	
     
