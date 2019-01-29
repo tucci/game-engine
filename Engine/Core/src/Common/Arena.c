@@ -19,7 +19,7 @@ void arena_init(Arena* arena) {
 void arena_grow(Arena* arena, size_t min_size) {
 	
 	size_t size = ALIGN_UP(CLAMP_MIN(min_size, ARENA_BLOCK_SIZE), ARENA_ALIGNMENT);
-	arena->ptr = cast(char*) malloc(size);
+	arena->ptr = cast(char*) calloc(1, size);
 	assert(arena->ptr == ALIGN_DOWN_PTR(arena->ptr, ARENA_ALIGNMENT));
 	arena->end = arena->ptr + size;
 	stb_sb_push(arena->blocks, arena->ptr);

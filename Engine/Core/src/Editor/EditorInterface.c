@@ -14,6 +14,14 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	mem_size = editor->arena.end - cast(char*) mem_block;
 	stack_alloc_init(&editor->stack, mem_block, mem_size);
 
+
+
+	// Init networking interface
+	editor->ecq.packet_bytes_read = 0;
+	editor->ecq.command_expected_size = 0;
+	editor->ecq.packet_buffer = cast(char*)(stack_alloc(&editor->stack, MEGABYTES(10), 1));
+	
+
 	editor->editor_camera = create_entity(api.entity_manager);
 	add_component(api.entity_manager, editor->editor_camera , ComponentType_Transform);
 	add_component(api.entity_manager, editor->editor_camera , ComponentType_Camera);
@@ -35,7 +43,6 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 void destroy_editor_interface(EditorInterface* editor) {
 	disconnect_editor_socket(editor);
-
 	arena_free(&editor->arena);
 }
 
@@ -156,96 +163,266 @@ void editor_update(EditorInterface* editor) {
 
 }
 
+
+s32 editor_recv_callback(void* params) {
+
+	struct Params {
+		char* buf;
+		size_t buf_len;
+		void* params;
+	};
+
+	Params* p;
+	p = (Params*)params;
+	
+	EditorInterface* editor = (EditorInterface*)p->params;
+
+
+	char* buf = p->buf;
+	size_t buf_len = p->buf_len;
+
+	EditorCommandQueue* ecq = &editor->ecq;
+
+
+
+	
+	// Just keep reading bytes into our buffer then once we have enough bytes to know how big the message size is
+	// we'll be able to determine how big our message is
+	memcpy(ecq->packet_buffer + ecq->packet_bytes_read, buf, buf_len);
+	ecq->packet_bytes_read += buf_len;
+
+	if (ecq->packet_bytes_read > 16) {
+		// Since we know we've read more than the header, we can safely get the expected message size
+
+		//char* hbuf = editor->ecq.packet_buffer;
+		//EditorCommandHeader header;
+		//memcpy(header.magic, hbuf, 4);
+		//hbuf += 4;
+		//hbuf = read_s32(editor->ecq.packet_buffer, &header.version);
+		//hbuf = read_u64(editor->ecq.packet_buffer, &header.message_size);
+		
+		ecq->command_expected_size = (size_t)p_ntohll((*(u64*)(ecq->packet_buffer + 8)));
+	}
+
+	if (ecq->packet_bytes_read >= ecq->command_expected_size + 16) {
+		// We've read more data than we need for a command
+		// parse the entire buffer, and generate a command, and put it into the command queue
+		EditorCommandHeader header;
+
+		char* hbuf = ecq->packet_buffer;
+		// Read magic bytes
+		memcpy(header.magic, hbuf, MAGIC_BYTES_SIZE);
+		hbuf += MAGIC_BYTES_SIZE;
+
+		// Read version, and re read in the header message size
+		hbuf = read_s32(hbuf, &header.version);
+		hbuf = read_u64(hbuf, &header.message_size);
+
+		
+		// Parse command from buffer
+		EditorCommand command;
+
+		s32 cmd_type;
+		s32 undo_cmd_type;
+
+		hbuf = read_s32(hbuf, &cmd_type);
+		hbuf = read_s32(hbuf, &undo_cmd_type);
+		command.type = (EditorCommandType)cmd_type;
+		command.undo_type = (EditorCommandType)undo_cmd_type;
+		hbuf = read_u64(hbuf, &command.buffer_size);
+
+		command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+		memcpy(command.buffer, hbuf, command.buffer_size);
+		process_command(editor, command);
+		stack_pop(&editor->stack);
+		
+
+
+
+		// Reset packet reading
+		editor->ecq.packet_bytes_read = 0;
+		editor->ecq.command_expected_size = 0;
+	}
+
+
+	
+	
+
+
+	debug_print("recv callback");
+		
+		
+	return 0;
+}
+
 void connect_editor_socket(EditorInterface* editor) {
-	int result = sock_init();
+	int result = p_sock_init();
 	if (result != 0) {
 		// error
 		return;
 	}
 	
-	editor->socket = sock_create_handle();
-	sock_bind(editor->socket);
-	sock_listen(editor->socket);
-	sock_accept(editor->socket);
+	//editor->listen_socket = p_sock_create_handle();
+	//p_sock_bind(editor->listen_socket);
+	//p_sock_listen(editor->listen_socket);
+	//p_sock_accept(editor->listen_socket);
+	editor->listen_socket = p_setup_sockets_async(&editor_recv_callback, (void*)editor);
+	
 
 	
 	Window* window = editor->api.window;
-
-	
-
-	
-
-	SDL_SysWMinfo wmInfo;
-	SDL_VERSION(&wmInfo.version);
-	SDL_GetWindowWMInfo(window->sdl_window, &wmInfo);
-	HWND hwnd = wmInfo.info.win.window;
-	debug_print("%d\n", (u32)hwnd);
-
-	EditorCommand command = cmd_send_window((u32)hwnd);
-	send_command_to_editor(editor, command);
-
-
 }
 
 void disconnect_editor_socket(EditorInterface* editor) {
-	sock_close(editor->socket);
-	sock_shutdown(editor->socket);
-	sock_free_handle(editor->socket);
-}
+	p_sock_close(editor->listen_socket);
+	p_sock_shutdown(editor->listen_socket);
+	p_sock_free_handle(editor->listen_socket);
 
-
-// Includes the payload size and non payload size(ex command type)
-static size_t get_size_for_command(EditorCommandType type) {
-	// Add the base size starting the with the command type
-	size_t size = sizeof(EditorCommandType);
-	switch (type) {
-		case EditorCommand_NONE: {
-			size += 0;
-			break;
-		}
-		case EditorCommand_ESTABLISH_CONNECTION: {
-			size += sizeof(u32);
-			break;
-		}
-		
-	}
-
-	return size;
 }
 
 
 
-void send_command_to_editor(EditorInterface* editor, EditorCommand command) {
+
+
+static void send_command_to_editor(EditorInterface* editor, EditorCommand command) {
 
 	
 		
 
 	EditorCommandHeader header;
-	header.endianness = 1;
-	header.version = EDITOR_COMMAND_VESRSION;
-	header.message_size = get_size_for_command(command.type);
+	header.version = EDITOR_COMMAND_VERSION;
+	// NOTE: we explicity define the message size here. Using sizeof(command) works
+	// but in cases the compiler will put padding in cases when we add new data to the command struct
+	// better to explicity define the header size.
+	header.message_size = 
+		sizeof(command.type) // type
+		+ sizeof(command.undo_type) // undo type
+		+ sizeof(command.buffer_size)
+		+ command.buffer_size;
 	
 	
-	// NOTE: this assumes the size of header is already packed, padded, and aligned
-	size_t header_size = sizeof(header);
-	size_t command_size = header.message_size;
+	// NOTE: we explicity define the header size here. Using sizeof(header) works
+	// but in cases the compiler will put padding in cases when we add new data to the header struct
+	// better to explicity define the header size.
+	size_t header_size =
+		+ sizeof(header.magic)
+		+ sizeof(header.version)
+		+ sizeof(header.message_size);
 
-	size_t buf_size = header_size + command_size;
+	size_t msg_size = header.message_size;
+
+	size_t buf_size = header_size + msg_size;
 
 
 
 
 
-	char* buf = (char*)stack_alloc(&editor->stack, buf_size, 1);
+	char* buf_start = (char*)stack_alloc(&editor->stack, buf_size, 1);
+	char* buf = buf_start;
 
 	
-	memcpy(buf, &header, header_size);
-	memcpy(buf + header_size, &command, command_size);
-	//snprintf(buf, 256, "%d", (u32)hwnd);s
+	// Write header
+	char magic[MAGIC_BYTES_SIZE] = MAGIC_BYTES;
+	memcpy(buf, magic, MAGIC_BYTES_SIZE);
+	buf += MAGIC_BYTES_SIZE;
 
-	sock_send(editor->socket, buf, buf_size, 0);
+	buf = write_s32(buf, header.version);
+	buf = write_u64(buf, (u64)header.message_size);
 
+	// Write message
+	// NOTE: since we are using enum class/struct with a specified type of s32, this is safe
+	// without this, enums integral types are implementation defined.
+	buf = write_s32(buf, (s32)command.type);
+	buf = write_s32(buf, (s32)command.undo_type);
+	buf = write_u64(buf, (u64)command.buffer_size);
+	memcpy(buf, command.buffer, command.buffer_size);
+	
+	
+	// NOTE: if u make this async, then u can't pop the stack right away
+	p_sock_send(editor->listen_socket, buf_start, buf_size, 0);
 	stack_pop(&editor->stack);
 
+}
+
+static void process_command(EditorInterface* editor, EditorCommand command) {
+	switch (command.type) {
+		case EditorCommandType::REQUEST_ENGINE_CONNECT : {
+			SDL_SysWMinfo wmInfo;
+			SDL_VERSION(&wmInfo.version);
+			SDL_GetWindowWMInfo(editor->api.window->sdl_window, &wmInfo);
+			HWND hwnd = wmInfo.info.win.window;
+			debug_print("%d\n", (u64)hwnd);
+
+			cmd_request_engine_connect(editor, (u64)hwnd);
+			break;
+		}
+		case EditorCommandType::REQUEST_ENGINE_DISCONNECT: {
+			destroy_editor_interface(editor);
+			break;
+		}
+		default:
+			break;
+	}
 
 }
+
+
+static char* write_u32(char* buffer, u32 value) {
+	*(u32*)buffer = p_htonl(value);
+	return buffer + sizeof(u32);
+}
+
+static char* write_s32(char* buffer, s32 value) {
+	*(s32*)buffer = p_htonl(value);
+	return buffer + sizeof(s32);
+}
+
+static char* read_u32(char* buffer, u32* value) {
+	*value = p_ntohl(*(u32*)buffer);
+	return buffer + sizeof(u32);
+}
+
+static char* read_s32(char* buffer, s32* value) {
+	*value = p_ntohl(*(s32*)buffer);
+	return buffer + sizeof(s32);
+}
+
+static char* write_u64(char* buffer, u64 value) {
+	*(u64*)buffer = p_htonll(value);
+	return buffer + sizeof(u64);
+}
+
+static char* write_s64(char* buffer, s64 value) {
+	*(s64*)buffer = p_htonll(value);
+	return buffer + sizeof(s64);
+}
+
+static char* read_u64(char* buffer, u64* value) {
+	*value = p_ntohll(*(u64*)buffer);
+	return buffer + sizeof(u64);
+}
+
+static char* read_s64(char* buffer, s64* value) {
+	*value = p_ntohll(*(s64*)buffer);
+	return buffer + sizeof(s64);
+}
+
+
+static void cmd_request_engine_connect(EditorInterface* editor, u64 hwnd) {
+	EditorCommand command;
+	command.type = EditorCommandType::REQUEST_ENGINE_CONNECT;
+	command.undo_type = EditorCommandType::NONE;
+	command.buffer_size = sizeof(hwnd);
+	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+
+	char* buffer = command.buffer;
+	buffer = write_u64(command.buffer, hwnd);
+	
+
+	// NOTE: if u make sending commands async, than u can't pop stack right after calling it
+	send_command_to_editor(editor, command);
+	stack_pop(&editor->stack);
+
+	
+}
+

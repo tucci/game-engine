@@ -2,38 +2,42 @@
 
 #include "types.h"
 
-typedef enum EditorCommandType {
-	EditorCommand_NONE,
-	EditorCommand_ESTABLISH_CONNECTION
-} EditorCommandType;
 
 
-#define EDITOR_COMMAND_VESRSION 1
 
-typedef struct EditorCommandHeader {
-	// NOTE: if you change the size of the header, make sure you have everything padded
+#define EDITOR_COMMAND_VERSION 1
+
+#define MAGIC_BYTES_SIZE 4
+
+// 1 2 3 4 for big endian and
+// 4 3 2 1 for little endian
+#define MAGIC_BYTES {'1', '2', '3', '4'}
+
+enum struct EditorCommandType : s32 {
+	NONE,
+	REQUEST_ENGINE_CONNECT,
+	REQUEST_ENGINE_DISCONNECT
+};
+
+struct EditorCommandHeader {
 	// Header
-	s32 endianness;
+	// The magic bytes tells the parser what type of what this packet is for
+	// also can be used to check endianness
+	char magic[MAGIC_BYTES_SIZE];
 	s32 version;
 	//s32 compression;
-	s32 message_size;
-} EditorCommandHeader;
+	size_t message_size;
+};
 
-
-typedef struct EditorCommand {
+struct EditorCommand {
 
 	// Message
 	EditorCommandType type;
-	//s32 buffer_size;
-	//char* buffer;
-	union {
-		u32 hwnd;
-	};
-} EditorCommand;
+	EditorCommandType undo_type;
+	size_t buffer_size;
+	char* buffer;
+};
 
 
 
 
-EditorCommand cmd_send_window(u32 hwnd);
-
-static void write_int32(EditorCommand command, s32 value);

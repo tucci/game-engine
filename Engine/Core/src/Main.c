@@ -54,6 +54,18 @@ void SignalHandler(int signal) {
 }
 
 
+u32 MyThreadFunction(void* param) {
+
+	char* str = (char*)param;
+	
+	
+	for (int i = 0; i < 10; i++) {
+		debug_print("this is a thread test %s\n", str);
+	}
+
+	p_thread_exit();
+	return 0;
+}
 
 
 int main(int argc, char* argv[]) {
@@ -74,12 +86,34 @@ int main(int argc, char* argv[]) {
 	
 	
 	
-
+	char* p1 = "t1";
+	ThreadHandle* t = p_thread_create_handle(MyThreadFunction, p1);
+	
+	
+	char* p2 = "t2";
+	ThreadHandle* t2 = p_thread_create_handle(MyThreadFunction, p2);
+	
+	p_thread_resume(t);
+	p_thread_resume(t2);
+	
+	
+	
+	p_thread_wait_for(t, INFINITE);
+	
+	p_thread_wait_for(t2, INFINITE);
+	
+	p_thread_free_handle(t);
+	p_thread_free_handle(t2);
+	
+	//figure out other thread things we need? multi wait, join?
+	//figure out what u dont know about threads
+	
 	//main_test();
 	
 
 #else
-					
+	
+	
 	Engine engine;
 	engine.renderer.type = BackenedRenderer_OpenGL;
 	
