@@ -4,10 +4,10 @@
 
 #include "types.h"
 
-typedef struct Entity {
+struct Entity {
 	// TODO: implement generation index
 	u64 id;
 	Entity() {
 		id = NO_ENTITY_ID;
 	}
-} Entity;
+};

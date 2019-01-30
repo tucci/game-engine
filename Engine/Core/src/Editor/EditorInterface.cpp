@@ -8,6 +8,8 @@
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->api = api;
 
+	
+
 	arena_init(&editor->arena);
 	size_t mem_size = EDITOR_MEMORY;
 	void* mem_block = arena_alloc(&editor->arena, mem_size);
@@ -23,8 +25,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 
 	editor->editor_camera = create_entity(api.entity_manager);
-	add_component(api.entity_manager, editor->editor_camera , ComponentType_Transform);
-	add_component(api.entity_manager, editor->editor_camera , ComponentType_Camera);
+	add_component(api.entity_manager, editor->editor_camera , ComponentType::Transform);
+	add_component(api.entity_manager, editor->editor_camera , ComponentType::Camera);
 
 	set_camera_params(api.entity_manager, editor->editor_camera, 0.0001f, 100.0f, 90.0f, api.window->size.x / cast(float) api.window->size.y);
 	set_position(api.entity_manager, editor->editor_camera, Vec3f(0, 0, 0));
@@ -101,7 +103,7 @@ void editor_update(EditorInterface* editor) {
 
 
 	// Only apply editor movement if right mouse button is clicked
-	if (is_mouse_down(input, MouseButton_Right)) {
+	if (is_mouse_down(input, MouseButton::Right)) {
 		//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
 		SDL_ShowCursor(SDL_DISABLE);
 

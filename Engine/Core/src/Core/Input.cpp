@@ -26,19 +26,19 @@ bool is_mouse_down(Input* input, MouseButton which) {
 	
 	bool down = false;
 	switch (which) {
-		case MouseButton_None: {
+		case MouseButton::None: {
 			// do nothing
 			break;
 		}
-		case MouseButton_Left: {
+		case MouseButton::Left: {
 			down = input->mouse.mouse_button_left.down;
 			break;
 		}
-		case MouseButton_Middle: {
+		case MouseButton::Middle: {
 			down = input->mouse.mouse_button_middle.down;
 			break;
 		}
-		case MouseButton_Right: {
+		case MouseButton::Right: {
 			down = input->mouse.mouse_button_right.down;
 			break;
 		}
@@ -55,19 +55,19 @@ bool is_mouse_down(Input* input, MouseButton which) {
 bool is_mouse_released(Input* input, MouseButton which) {
 	bool released = false;
 	switch (which) {
-		case MouseButton_None: {
+		case MouseButton::None: {
 			// do nothing
 			break;
 		}
-		case MouseButton_Left: {
+		case MouseButton::Left: {
 			released = input->mouse.mouse_button_left.just_released;
 			break;
 		}
-		case MouseButton_Middle: {
+		case MouseButton::Middle: {
 			released = input->mouse.mouse_button_middle.just_released;
 			break;
 		}
-		case MouseButton_Right: {
+		case MouseButton::Right: {
 			released = input->mouse.mouse_button_right.just_released;
 			break;
 		}
@@ -84,19 +84,19 @@ bool is_mouse_released(Input* input, MouseButton which) {
 bool is_mouse_pressed(Input* input, MouseButton which) {
 	bool pressed = false;
 	switch (which) {
-		case MouseButton_None: {
+		case MouseButton::None: {
 			// do nothing
 			break;
 		}
-		case MouseButton_Left: {
+		case MouseButton::Left: {
 			pressed = input->mouse.mouse_button_left.just_pressed;
 			break;
 		}
-		case MouseButton_Middle: {
+		case MouseButton::Middle: {
 			pressed = input->mouse.mouse_button_middle.just_pressed;
 			break;
 		}
-		case MouseButton_Right: {
+		case MouseButton::Right: {
 			pressed = input->mouse.mouse_button_right.just_pressed;
 			break;
 		}

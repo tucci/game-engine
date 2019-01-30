@@ -22,7 +22,7 @@
 
 
 
-typedef struct FBX_Geometry {
+struct FBX_Geometry {
 	
 
 	int vertex_count;
@@ -37,9 +37,9 @@ typedef struct FBX_Geometry {
 
 	Vec3i* indices;
 	Vec3i* uv_indices;
-}FBX_Geometry;
+};
 
-typedef struct FBX_Model {
+struct FBX_Model {
 	Vec3f local_translation;
 	Vec3f local_rotation;
 	Vec3f local_scaling;
@@ -47,11 +47,11 @@ typedef struct FBX_Model {
 	s32 name_length;
 	char* name;
 	
-} FBX_Model;
+};
 
 
 
-typedef struct FBX_Material {
+struct FBX_Material {
 	MaterialShadingModel shading_model;
 
 	s32 name_length;
@@ -73,11 +73,11 @@ typedef struct FBX_Material {
 	Vec3f specular_color;
 	
 
-} FBX_Material;
+};
 
 
 
-typedef struct FBX_Texture {
+struct FBX_Texture {
 	s32 name_length;
 	s32 filename_length;
 	s32 relative_filename_length;
@@ -97,9 +97,9 @@ typedef struct FBX_Texture {
 	float uv_rotation;
 
 
-} FBX_Texture;
+};
 
-typedef struct FBX_LayeredTexture {
+struct FBX_LayeredTexture {
 	char* name;
 	s32 name_length;
 	s32 layered_texture;
@@ -107,19 +107,19 @@ typedef struct FBX_LayeredTexture {
 
 	TextureType texture_type;
 	double alphas;
-} FBX_LayeredTexture;
+};
 
 
 
-typedef enum FBX_Object_Type {
-	FBX_Object_Type_Geometry,
-	FBX_Object_Type_Model,
-	FBX_Object_Type_Material,
-	FBX_Object_Type_Texture,
-	FBX_Object_Type_LayeredTexture
-} FBX_Object_Type;
+enum class FBX_Object_Type {
+	Geometry,
+	Model,
+	Material,
+	Texture,
+	LayeredTexture
+};
 
-typedef struct FBX_Object {
+struct FBX_Object {
 	FBX_Object_Type type;
 	union {
 		FBX_Geometry* geometry;
@@ -130,9 +130,9 @@ typedef struct FBX_Object {
 	};
 	
 
-} FBX_Object;
+};
 
-typedef struct FBX_GlobalSettings {
+struct FBX_GlobalSettings {
 	int up_axis;
 	int up_axis_sign;
 	int front_axis;
@@ -146,11 +146,10 @@ typedef struct FBX_GlobalSettings {
 	double unit_scale_factor;
 	double original_unit_scale_factor;
 
+};
 
-}FBX_GlobalSettings;
 
-
-typedef struct FBX_Property {
+struct FBX_Property {
 	char type_code;
 	union {
 		struct {
@@ -188,7 +187,7 @@ typedef struct FBX_Property {
 
 	};
 
-} FBX_Property;
+};
 
 
 
@@ -197,7 +196,7 @@ typedef struct FBX_Property {
 #define FBX_NULL_RECORD "\0\0\0\0\0\0\0\0\0\0\0\0\0"
 
 
-typedef struct FBX_Node {
+struct FBX_Node {
 	u32 end_offset;
 	u32 num_properties;
 	u32 property_list_length;
@@ -212,10 +211,11 @@ typedef struct FBX_Node {
 	FBX_Node* first_child;
 	FBX_Node* next_sibling;
 
-} FBX_Node;
+};
 
 
-typedef struct FBXGlobalSettings {
+
+struct AssetImportGlobalSettings {
 	int up_axis;
 	int up_axis_sign;
 
@@ -231,9 +231,9 @@ typedef struct FBXGlobalSettings {
 
 	double unit_scale_factor;
 	double original_unit_scale_factor;
-} AssetImportGlobalSettings;
+};
 
-typedef struct AssetImporter {
+struct AssetImporter {
 	Arena mem;
 	StackAllocator stack;
 	s32 stack_allocs_count;
@@ -241,21 +241,20 @@ typedef struct AssetImporter {
 	AssetTracker* tracker;
 
 	// TODO: remove the fbx global settings, and have our own custom settings data. for we are just using this to hold the axis data
-	FBXGlobalSettings global_settings;
-} AssetImporter;
+	AssetImportGlobalSettings global_settings;
+};
 
 
 
-
-typedef struct FBX_ImportData {
+struct FBX_ImportData {
 	AssetImport_Scene export_scene;
 	CompactMap<FBX_Object> fbx_object_map;
 	CompactMap<AssetImport_SceneNode*> scene_node_cache_map;
-	AssetSceneNode** material_node_cache;
+	AssetImport_SceneNode** material_node_cache;
 	FBX_GlobalSettings global_settings;
 	const char* import_path;
 	s32 import_path_length;
-} FBX_ImportData;
+};
 
 
 void init_asset_importer(AssetImporter* importer, AssetTracker* tracker);

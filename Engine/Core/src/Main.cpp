@@ -2,7 +2,7 @@
 
 #include "Core/Engine.h"
 
-#include "test.c"
+#include "test.cpp"
 #include "Common/stretchy_buffer.h"
 
 #include "Common/common_macros.h"
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
 	
 	
 	Engine engine;
-	engine.renderer.type = BackenedRenderer_OpenGL;
+	engine.renderer.type = BackenedRendererType::OpenGL;
 	
 	
 	

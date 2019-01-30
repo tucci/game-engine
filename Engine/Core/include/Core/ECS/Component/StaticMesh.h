@@ -8,12 +8,12 @@
 #include "Core/ECS/Entity.h"
 #include "Common/Map.h"
 
-typedef struct StaticMeshID {
+struct StaticMeshID {
 	u64 id;
-} StaticMeshID;
+};
 
 
-typedef struct StaticMesh {
+struct StaticMesh {
 	
 	StaticMeshID id;
 	int vertex_count;
@@ -36,17 +36,17 @@ typedef struct StaticMesh {
 		color = NULL;
 		lightmap_texcoords = NULL;
 	}
-} StaticMesh;
+};
 
 
 
 bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllocator* memory);
 
-typedef struct StaticMeshManager {
+struct StaticMeshManager {
 	CompactMap<u64> id_map;
 	u64* meshes;
 	u64 count;
-} StaticMeshManager;
+};
 
 
 void init_static_mesh_manager(StaticMeshManager* manager);

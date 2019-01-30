@@ -7,12 +7,12 @@
 
 void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window) {
 	switch (renderer->type) {
-		case BackenedRenderer_Software: {
+		case BackenedRendererType::Software: {
 			//MemoryEnginePartition parition_start = give_memory_partition(engine, RENDERER_MEMORY);
 			//return init_software_renderer(engine->window.sdl_window, &engine->renderer.software_renderer, engine->window.size, parition_start.start_ptr, parition_start.partition_size);
 			break;
 		}
-		case BackenedRenderer_OpenGL: {
+		case BackenedRendererType::OpenGL: {
 			map_init(&renderer->render_world.material_res_map);
 			map_grow(&renderer->render_world.material_res_map, 8);
 
@@ -34,11 +34,11 @@ void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window) {
 void destory_backend_renderer(Renderer* renderer) {
 	LOG_INFO(0, "Destroying renderer");
 	switch (renderer->type) {
-		case BackenedRenderer_Software: {
+		case BackenedRendererType::Software: {
 			
 			break;
 		}
-		case BackenedRenderer_OpenGL: {
+		case BackenedRendererType::OpenGL: {
 			map_destroy(&renderer->render_world.material_res_map);
 			destroy_opengl_renderer(&renderer->opengl);
 			break;
@@ -76,12 +76,12 @@ RenderResource create_frame_buffer(Renderer* renderer) {
 	RenderResource handle;
 
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			handle = gl_create_fbo(&renderer->opengl);
 			break;
 	}
 
-	handle.type = RenderResourceType_FRAME_BUFFER;
+	handle.type = RenderResourceType::FRAME_BUFFER;
 	return handle;
 }
 
@@ -89,12 +89,12 @@ RenderResource create_render_target(Renderer* renderer, u32 width, u32 height) {
 	RenderResource handle;
 
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			handle = gl_create_rbo(&renderer->opengl, width, height);
 			break;
 	}
 
-	handle.type = RenderResourceType_RENDER_TARGET;
+	handle.type = RenderResourceType::RENDER_TARGET;
 	return handle;
 }
 
@@ -103,12 +103,12 @@ RenderResource create_vertex_decl(Renderer* renderer) {
 	RenderResource handle;
 	
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			handle = gl_create_vao(&renderer->opengl);
 			break;
 	}
 
-	handle.type = RenderResourceType_VERTEX_DECLARATION;
+	handle.type = RenderResourceType::VERTEX_DECLARATION;
 	return handle;
 }
 
@@ -117,11 +117,11 @@ RenderResource create_vertex_buffer(Renderer* renderer) {
 	RenderResource handle;
 	
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			handle = gl_create_vbo(&renderer->opengl);
 			break;
 	}
-	handle.type = RenderResourceType_VERTEX_BUFFER;
+	handle.type = RenderResourceType::VERTEX_BUFFER;
 	return handle;
 }
 
@@ -130,10 +130,10 @@ RenderResource create_index_buffer(Renderer* renderer) {
 	RenderResource handle;
 	
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			break;
 	}
-	handle.type = RenderResourceType_INDEX_BUFFER;
+	handle.type = RenderResourceType::INDEX_BUFFER;
 	return handle;
 }
 
@@ -176,12 +176,12 @@ RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipma
 	RenderResource handle;
 	
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			handle = gl_create_texture(&renderer->opengl, texture, mipmap);
 			break;
 	}
 	
-	handle.type = RenderResourceType_TEXTURE;
+	handle.type = RenderResourceType::TEXTURE;
 	return handle;
 }
 
@@ -190,11 +190,11 @@ RenderResource create_shader(Renderer* renderer, const char* vertex_file, const 
 	RenderResource handle;
 	
 	switch (renderer->type) {
-		case BackenedRenderer_OpenGL:
+		case BackenedRendererType::OpenGL:
 			handle = gl_create_shader(&renderer->opengl, vertex_file, fragment_file);
 			break;
 	}
-	handle.type = RenderResourceType_SHADER;
+	handle.type = RenderResourceType::SHADER;
 	return handle;
 }
 

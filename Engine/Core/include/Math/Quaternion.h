@@ -4,7 +4,7 @@
 #include "Math/Vec.h"
 #include "Math/Mat.h"
 
-typedef struct Quaternion {
+struct Quaternion {
 	
 	union {
 		struct {
@@ -20,7 +20,7 @@ typedef struct Quaternion {
 	Quaternion() : x(0), y(0), z(0), w(1) {};
 	Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {};
 	
-} Quaternion;
+};
 
 
 // Alias so that we dont have to type "Quaternion" everytime we want to use them

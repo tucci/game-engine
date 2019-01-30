@@ -6,28 +6,28 @@
 #include "Math/Vec.h"
 #include "Core/TextureData.h"
 
-typedef struct MaterialID {
+struct MaterialID {
 	u64 id;
-} MaterialID;
+};
 
-typedef enum MaterialShadingModel {
-	MaterialShadingModel_Unknown,
-	MaterialShadingModel_Phong,
-	MaterialShadingModel_Lambert,
+enum class MaterialShadingModel {
+	Unknown,
+	Phong,
+	Lambert,
 	// Our renderer is using the cook torrance model
-	MaterialShadingModel_CookTorrance
-} MaterialShadingModel;
+	CookTorrance
+};
 
-typedef enum TextureType {
-	TextureType_None,
-	TextureType_Albedo,
-	TextureType_Normal,
-	TextureType_Metal,
-	TextureType_Roughness,
-	TextureType_AO
-} TextureType;
+enum class TextureType {
+	None,
+	Albedo,
+	Normal,
+	Metal,
+	Roughness,
+	AO
+};
 
-typedef struct Material {
+struct Material {
 
 	MaterialID id;
 
@@ -46,11 +46,11 @@ typedef struct Material {
 	float metallic_factor;
 	float roughness_factor;
 	float emissive_factor;
-} Material;
+};
 
 static Material DEFAULT_MAT = {
 	0,
-	MaterialShadingModel_CookTorrance,
+	MaterialShadingModel::CookTorrance,
 	NULL,
 	NULL,
 	NULL,
@@ -64,7 +64,7 @@ static Material DEFAULT_MAT = {
 };
 
 inline void init_material_defaults(Material* material) {
-	material->shading_model = MaterialShadingModel_CookTorrance;
+	material->shading_model = MaterialShadingModel::CookTorrance;
 
 	// No texture ids
 	material->albedo = NULL;
@@ -85,27 +85,27 @@ static inline void update_material_with_texture_data(Material* material, Texture
 
 	// NEED TO FIGURE OUT HOW TO USE TEXTURE LAYERS
 	switch (type) {
-		case TextureType_Albedo: {
+		case TextureType::Albedo: {
 			material->albedo = texture;
 			material->albedo->id = id;
 			break;
 		}
-		case TextureType_Normal: {
+		case TextureType::Normal: {
 			material->normal = texture;
 			material->normal->id = id;
 			break;
 		}
-		case TextureType_Metal: {
+		case TextureType::Metal: {
 			material->metal = texture;
 			material->metal->id = id;
 			break;
 		}
-		case TextureType_Roughness: {
+		case TextureType::Roughness: {
 			material->roughness = texture;
 			material->roughness->id = id;
 			break;
 		}
-		case TextureType_AO: {
+		case TextureType::AO: {
 			material->ao = texture;
 			material->ao->id = id;
 			break;

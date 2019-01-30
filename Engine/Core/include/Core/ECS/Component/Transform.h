@@ -13,7 +13,7 @@ struct Entity;
 
 
 
-typedef struct Transform {
+struct Transform {
 	
 
 	Vec3f position;
@@ -34,7 +34,7 @@ typedef struct Transform {
 		this->right = Vec3f_Right;
 		this->rotation = Quat();
 	}
-} Transform;
+};
 
 void inline update_direction_vectors_for_transform(Transform& transform) {
 	transform.forward = transform.rotation * Vec3f_Forward;
@@ -88,7 +88,7 @@ Mat4x4f inline rotate(float rads, const Vec3f& axis) {
 	return result;
 }
 
-typedef struct TransformManager {
+struct TransformManager {
 	u64 count;
 	CompactMap<u64> id_map;
 	
@@ -109,7 +109,7 @@ typedef struct TransformManager {
 	//Entity* prev_sibling;
 
 	
-} TransformManager;
+};
 
 
 void init_transform_manager(TransformManager* manager);

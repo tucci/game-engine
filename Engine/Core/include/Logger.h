@@ -6,14 +6,14 @@
 #include <cstdarg>
 
 
-typedef enum LoggerVerbosity {
-	VERBOSITY_INFO,
-	VERBOSITY_WARN,
-	VERBOSITY_FATAL,
-	VERBOSITY_VERBOSE,
-} LoggerVerbosity;
+enum class LoggerVerbosity {
+	INFO,
+	WARN,
+	FATAL,
+	VERBOSE,
+};
 
-typedef struct LogItem {
+struct LogItem {
 	u64 time;
 	s32 tag;
 
@@ -31,10 +31,10 @@ typedef struct LogItem {
 
 	
 	
-} LogItem;
+};
 
 
-typedef struct Logger {
+struct Logger {
 	LogItem* info;
 	LogItem* warn;
 	LogItem* fatal;
@@ -51,7 +51,7 @@ typedef struct Logger {
 	Arena logger_mem;
 	StackAllocator stack;
 	
-} Logger;
+};
 
 
 
@@ -74,10 +74,10 @@ void _log(
 #if DEBUG
 
 #define LOG(log_type, tag, msg, ...) _log(tag, log_type, __FILE__, sizeof(__FILE__), __func__, sizeof(__func__), __LINE__, msg, __VA_ARGS__);
-#define LOG_INFO(tag, msg, ...) LOG(VERBOSITY_INFO, tag, msg, __VA_ARGS__)
-#define LOG_WARN(tag, msg, ...) LOG(VERBOSITY_WARN, tag, msg, __VA_ARGS__)
-#define LOG_FATAL(tag, msg, ...) LOG(VERBOSITY_FATAL, tag, msg, __VA_ARGS__)
-#define LOG_VERBOSE(tag, msg, ...) LOG(VERBOSITY_VERBOSE, tag, msg, __VA_ARGS__)
+#define LOG_INFO(tag, msg, ...) LOG(LoggerVerbosity::INFO, tag, msg, __VA_ARGS__)
+#define LOG_WARN(tag, msg, ...) LOG(LoggerVerbosity::WARN, tag, msg, __VA_ARGS__)
+#define LOG_FATAL(tag, msg, ...) LOG(LoggerVerbosity::FATAL, tag, msg, __VA_ARGS__)
+#define LOG_VERBOSE(tag, msg, ...) LOG(LoggerVerbosity::VERBOSE, tag, msg, __VA_ARGS__)
 
 
 #else

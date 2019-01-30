@@ -185,9 +185,9 @@ void inline test_ecs(void) {
 	Entity e4 = create_entity(&manager);
 	Entity e5 = create_entity(&manager);
 
-	add_component(&manager, e1, ComponentType_Camera); 
-	add_component(&manager, e2, ComponentType_Camera);
-	add_component(&manager, e3, ComponentType_Camera);
+	add_component(&manager, e1, ComponentType::Camera); 
+	add_component(&manager, e2, ComponentType::Camera);
+	add_component(&manager, e3, ComponentType::Camera);
 	
 	Camera* camera = get_camera(&manager, e1);
 
@@ -199,15 +199,15 @@ void inline test_ecs(void) {
 	
 
 
-	remove_component(&manager, e1, ComponentType_Camera);
-	add_component(&manager, e1, ComponentType_Camera);
+	remove_component(&manager, e1, ComponentType::Camera);
+	add_component(&manager, e1, ComponentType::Camera);
 
 
 	Entity test = create_entity(&manager);
-	add_component(&manager, test, ComponentType_Camera);
-	add_component(&manager, test, ComponentType_Transform);
-	add_component(&manager, test, ComponentType_StaticMesh);
-	add_component(&manager, test, ComponentType_Light);
+	add_component(&manager, test, ComponentType::Camera);
+	add_component(&manager, test, ComponentType::Transform);
+	add_component(&manager, test, ComponentType::StaticMesh);
+	add_component(&manager, test, ComponentType::Light);
 
 	destroy_entity(&manager, test);
 	

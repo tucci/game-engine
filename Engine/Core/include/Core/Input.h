@@ -4,23 +4,23 @@
 #include <stdbool.h>
 #include "Math/Vec.h"
 
-typedef enum MouseButton {
-	MouseButton_None,
-	MouseButton_Left,
-	MouseButton_Middle,
-	MouseButton_Right,
+enum class MouseButton {
+	None,
+	Left,
+	Middle,
+	Right,
 
-} MouseButton;
+};
 
-typedef struct ButtonState {
+struct ButtonState {
 	bool down;
 	bool just_pressed;
 	bool just_released;
-} ButtonState;
+};
 
 
 
-typedef struct Mouse {
+struct Mouse {
 	Vec2i pos;
 	Vec2i delta_pos;
 
@@ -33,21 +33,21 @@ typedef struct Mouse {
 	ButtonState mouse_button_middle;
 	ButtonState mouse_button_right;
 
-} Mouse;
+};
 
 
-typedef struct Input {
+struct Input {
 	Mouse mouse;
 	// Store scancodes, but when querying if a key is pressed we'll use keycodes
 	ButtonState keys[SDL_NUM_SCANCODES];
-} Input;
+};
 
 
 // Our keycodes are the same as the sdl keycodes for interop reasons
 // Why didn't we just use SDK_Keycodes?
 // Because it is nicer to have our own keycode enums so that in the future, if we want to remove sdl, we can still do it
 // and game code and other systems so have to edit all their SDLK_.... codes everywhere.
-typedef enum Keycode {
+enum Keycode {
 	
     KEYCODE_UNKNOWN = SDLK_UNKNOWN,
 
@@ -307,7 +307,7 @@ typedef enum Keycode {
     KEYCODE_AUDIOREWIND = SDLK_AUDIOREWIND,
     KEYCODE_AUDIOFASTFORWARD = SDLK_AUDIOFASTFORWARD,
 
-} Keycode;
+};
 
 
 static inline SDL_Keycode keycode_to_sdl_keycode(Keycode keycode) {

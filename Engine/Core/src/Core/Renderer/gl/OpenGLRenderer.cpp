@@ -345,7 +345,7 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 
 RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap) {
 	RenderResource handle;
-	handle.type = RenderResourceType_TEXTURE;
+	handle.type = RenderResourceType::TEXTURE;
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -368,7 +368,7 @@ RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, boo
 
 RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, unsigned int height) {
 	RenderResource handle;
-	handle.type = RenderResourceType_TEXTURE;
+	handle.type = RenderResourceType::TEXTURE;
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -396,7 +396,7 @@ RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_tex
 
 
 	RenderResource handle;
-	handle.type = RenderResourceType_TEXTURE;
+	handle.type = RenderResourceType::TEXTURE;
 
 	GLuint texture_id;
 
@@ -425,7 +425,7 @@ RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_tex
 
 RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, unsigned int height, bool mipmap) {
 	RenderResource  handle;
-	handle.type = RenderResourceType_TEXTURE;
+	handle.type = RenderResourceType::TEXTURE;
 
 	GLuint texture_id;
 
@@ -454,7 +454,7 @@ RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, uns
 
 RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file, const char* fragment_file) {
 	RenderResource handle;
-	handle.type = RenderResourceType_SHADER;
+	handle.type = RenderResourceType::SHADER;
 	GLShader shader;
 
 	// Alloc on stack
@@ -490,7 +490,7 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 
 RenderResource gl_create_vbo(OpenGLRenderer* opengl) {
 	RenderResource handle;
-	handle.type = RenderResourceType_VERTEX_BUFFER;
+	handle.type = RenderResourceType::VERTEX_BUFFER;
 	GLuint vbo_id;
 
 	// Generate vertex buffer object
@@ -512,7 +512,7 @@ RenderResource gl_create_vbo(OpenGLRenderer* opengl) {
 
 RenderResource gl_create_ebo(OpenGLRenderer* opengl) {
 	RenderResource handle;
-	handle.type = RenderResourceType_INDEX_BUFFER;
+	handle.type = RenderResourceType::INDEX_BUFFER;
 	GLuint ebo_id;
 
 	// Generate vertex buffer object
@@ -534,7 +534,7 @@ RenderResource gl_create_ebo(OpenGLRenderer* opengl) {
 
 RenderResource gl_create_vao(OpenGLRenderer* opengl) {
 	RenderResource handle;
-	handle.type = RenderResourceType_VERTEX_DECLARATION;
+	handle.type = RenderResourceType::VERTEX_DECLARATION;
 	GLuint vao_id;
 
 	// Generate the vertex array
@@ -556,7 +556,7 @@ RenderResource gl_create_vao(OpenGLRenderer* opengl) {
 
 RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	RenderResource handle;
-	handle.type = RenderResourceType_FRAME_BUFFER;
+	handle.type = RenderResourceType::FRAME_BUFFER;
 	GLuint fbo_id;
 
 
@@ -584,7 +584,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 
 RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 	RenderResource handle;
-	handle.type = RenderResourceType_RENDER_TARGET;
+	handle.type = RenderResourceType::RENDER_TARGET;
 	
 	GLuint rbo_id;
 

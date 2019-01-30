@@ -131,7 +131,7 @@ void _log(s32 tag, LoggerVerbosity verbosity,
 	
 	const char* log_type_str;
 	switch (verbosity) {
-		case VERBOSITY_INFO: {
+		case LoggerVerbosity::INFO: {
 			sb_push(_logger.info, item);
 			_logger.info_count++;
 			log_type_str = "[INFO]";
@@ -139,21 +139,21 @@ void _log(s32 tag, LoggerVerbosity verbosity,
 			break;
 		}
 
-		case VERBOSITY_WARN: {
+		case LoggerVerbosity::WARN: {
 			sb_push(_logger.warn, item);
 			_logger.warn_count++;
 			log_type_str = "[WARN]";
 			debug_print("%s %s\n", log_type_str, formatted_msg_buf);
 			break;
 		}
-		case VERBOSITY_FATAL: {
+		case LoggerVerbosity::FATAL: {
 			sb_push(_logger.fatal, item);
 			_logger.fatal_count++;
 			log_type_str = "[FATAL]";
 			debug_print("%s %s\n", log_type_str, formatted_msg_buf);
 			break;
 		}
-		case VERBOSITY_VERBOSE: {
+		case LoggerVerbosity::VERBOSE: {
 			sb_push(_logger.verbose, item);
 			_logger.verbose_count++;
 			log_type_str = "[VERBOSE]";

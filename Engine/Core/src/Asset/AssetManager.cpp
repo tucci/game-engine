@@ -89,16 +89,16 @@ InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 	asset.id = id;
 	switch (id.type) {
 
-		case AssetType_Scene:
+		case AssetType::Scene:
 			asset.scene = manager->_scenes[index_to_asset_type_array];
 			break;
-		case AssetType_StaticMesh:
+		case AssetType::StaticMesh:
 			asset.mesh = manager->_static_meshes[index_to_asset_type_array];
 			break;
-		case AssetType_Material:
+		case AssetType::Material:
 			asset.material = manager->_materials[index_to_asset_type_array];
 			break;
-		case AssetType_Texture:
+		case AssetType::Texture:
 			asset.texture = manager->_textures[index_to_asset_type_array];
 			break;
 	}
@@ -108,7 +108,7 @@ InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 
 StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id) {
 	AssetID asset_id;
-	asset_id.type = AssetType_StaticMesh;
+	asset_id.type = AssetType::StaticMesh;
 	asset_id.mesh = id;
 	InternalAsset mesh = get_asset_by_id(manager, asset_id);
 	return mesh.mesh;
@@ -116,7 +116,7 @@ StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id) {
 
 Material* get_material_by_id(AssetManager* manager, MaterialID id) {
 	AssetID asset_id;
-	asset_id.type = AssetType_Material;
+	asset_id.type = AssetType::Material;
 	asset_id.material = id;
 	InternalAsset mat = get_asset_by_id(manager, asset_id);
 	return mat.material;
@@ -223,8 +223,8 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 	AssetID asset;
 	asset.id = 0;
-	asset.status = AssetStatus_Unloaded;
-	asset.type = AssetType_None;
+	asset.status = AssetStatus::Unloaded;
+	asset.type = AssetType::None;
 	
 	FILE* file;
 	errno_t err;
@@ -262,7 +262,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 	switch (asset.type) {
 
-		case AssetType_Scene: {
+		case AssetType::Scene: {
 			
 
 			AssetImport_Scene* scene = cast(AssetImport_Scene*)arena_alloc(&manager->asset_mem, sizeof(AssetImport_Scene));
@@ -304,7 +304,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				scene->mesh_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->mesh_count);
 				for (u32 i = 0; i < scene->mesh_count; i++) {
 					
-					scene->mesh_infos[i].type = AssetType_StaticMesh;
+					scene->mesh_infos[i].type = AssetType::StaticMesh;
 
 
 					fread(buffer, sizeof(u64), 1, file);
@@ -319,7 +319,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				scene->material_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->material_count);
 				for (u32 i = 0; i < scene->material_count; i++) {
 					
-					scene->material_infos[i].type = AssetType_Material;
+					scene->material_infos[i].type = AssetType::Material;
 
 					fread(buffer, sizeof(u64), 1, file);
 					scene->material_infos[i].id = *cast(u64*)buffer;
@@ -333,7 +333,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				scene->light_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->light_count);
 				for (u32 i = 0; i < scene->light_count; i++) {
 					
-					scene->light_infos[i].type = AssetType_Light;
+					scene->light_infos[i].type = AssetType::Light;
 
 					fread(buffer, sizeof(u64), 1, file);
 					scene->light_infos[i].id = *cast(u64*)buffer;
@@ -348,7 +348,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				scene->camera_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->camera_count);
 				for (u32 i = 0; i < scene->camera_count; i++) {
 					
-					scene->camera_infos[i].type = AssetType_Camera;
+					scene->camera_infos[i].type = AssetType::Camera;
 					
 					fread(buffer, sizeof(u64), 1, file);
 					scene->camera_infos[i].id = *cast(u64*)buffer;
@@ -362,7 +362,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				scene->animation_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->anim_count);
 				for (u32 i = 0; i < scene->anim_count; i++) {
 					
-					scene->animation_infos[i].type = AssetType_Animation;
+					scene->animation_infos[i].type = AssetType::Animation;
 
 
 					fread(buffer, sizeof(u64), 1, file);
@@ -377,7 +377,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				scene->texture_infos = cast(AssetID*) arena_alloc(&manager->asset_mem, sizeof(AssetID) * scene->texture_count);
 				for (u32 i = 0; i < scene->texture_count; i++) {
 					
-					scene->texture_infos[i].type = AssetType_Texture;
+					scene->texture_infos[i].type = AssetType::Texture;
 
 					fread(buffer, sizeof(u64), 1, file);
 					scene->texture_infos[i].id = *cast(u64*)buffer;
@@ -393,7 +393,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 			break;
 		}
 
-		case AssetType_StaticMesh: {
+		case AssetType::StaticMesh: {
 
 			
 			
@@ -467,7 +467,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 			
 			break;
 		}
-		case AssetType_Material: {
+		case AssetType::Material: {
 
 			Material* material = cast(Material*)arena_alloc(&manager->asset_mem, sizeof(Material));
 			init_material_defaults(material);
@@ -560,7 +560,7 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 			break;
 		}
-		case AssetType_Texture: {
+		case AssetType::Texture: {
 			Texture2D* texture = cast(Texture2D*)arena_alloc(&manager->asset_mem, sizeof(Texture2D));
 			sb_push(manager->_textures, texture);
 			
@@ -690,7 +690,7 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 
 	// Track the material asset into our system
 	AssetID id = track_asset(&manager->asset_tracker, file_str, str_size);
-	id.type = AssetType_Material;
+	id.type = AssetType::Material;
 
 	FILE* file;
 	errno_t err;
@@ -710,7 +710,7 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
 	// Write type of asset
-	AssetType type = AssetType_Material;
+	AssetType type = AssetType::Material;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 
@@ -742,19 +742,19 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 
 	// Write the texture type and ids
 	
-	fwrite(cast(const void*) TextureType_Albedo, sizeof(TextureType_Albedo), 1, file);
+	fwrite(cast(const void*) TextureType::Albedo, sizeof(TextureType::Albedo), 1, file);
 	fwrite(cast(const void*) &mat->albedo->id, sizeof(mat->albedo->id), 1, file);
 		
-	fwrite(cast(const void*) TextureType_Normal, sizeof(TextureType_Normal), 1, file);
+	fwrite(cast(const void*) TextureType::Normal, sizeof(TextureType::Normal), 1, file);
 	fwrite(cast(const void*) &mat->normal->id, sizeof(mat->normal->id), 1, file);
 
-	fwrite(cast(const void*) TextureType_Metal, sizeof(TextureType_Metal), 1, file);
+	fwrite(cast(const void*) TextureType::Metal, sizeof(TextureType::Metal), 1, file);
 	fwrite(cast(const void*) &mat->metal->id, sizeof(mat->metal->id), 1, file);
 
-	fwrite(cast(const void*) TextureType_Roughness, sizeof(TextureType_Roughness), 1, file);
+	fwrite(cast(const void*) TextureType::Roughness, sizeof(TextureType::Roughness), 1, file);
 	fwrite(cast(const void*) &mat->roughness->id, sizeof(mat->roughness->id), 1, file);
 
-	fwrite(cast(const void*) TextureType_AO, sizeof(TextureType_AO), 1, file);
+	fwrite(cast(const void*) TextureType::AO, sizeof(TextureType::AO), 1, file);
 	fwrite(cast(const void*) &mat->ao->id, sizeof(mat->ao->id), 1, file);
 
 

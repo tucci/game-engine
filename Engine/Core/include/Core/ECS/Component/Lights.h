@@ -6,28 +6,28 @@
 #include "Common/Map.h"
 #include "Core/ECS/Entity.h"
 
-typedef struct LightID {
+struct LightID {
 	u64 id;
-} LightID;
+};
 
-typedef enum LightType {
-	LightType_None, // Used when trying to get a light that doesnt exist
-	LightType_DirectionalLight,
-	LightType_PointLight,
-} LightType;
+enum class LightType {
+	None, // Used when trying to get a light that doesnt exist
+	DirectionalLight,
+	PointLight,
+};
 
-typedef struct DirectionalLight {
+struct DirectionalLight {
 	Vec3f direction;
 	Vec3f color;
-} DirectionalLight;
+};
 
-typedef struct PointLight {
+struct PointLight {
 	Vec3f position;
 	Vec3f color;
-} PointLight;
+};
 
 
-typedef struct Light {
+struct Light {
 	LightType type;
 	union {
 		DirectionalLight dir_light;
@@ -37,13 +37,13 @@ typedef struct Light {
 		dir_light.direction = Vec3f(0, 0, 0);
 		dir_light.color = Vec3f(1, 1, 1);
 	};
-} Light;
+};
 
-typedef struct LightManager {
+struct LightManager {
 	CompactMap<u64> id_map;
 	Light* lights;
 	u64 count;
-} LightManager;
+};
 
 
 

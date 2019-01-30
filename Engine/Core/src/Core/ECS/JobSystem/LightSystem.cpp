@@ -7,7 +7,7 @@ Light get_light(EntityManager* manager, Entity entity) {
 	MapResult<u64> result = map_get(&manager->light_manager.id_map, entity.id);
 	if (!result.found) {
 		Light no_light;
-		no_light.type = LightType_None;
+		no_light.type = LightType::None;
 		return no_light;
 	}
 	u64 index = result.value;

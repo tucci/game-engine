@@ -19,7 +19,7 @@ typedef uint64_t u64;
 
 // The string struct does not own the underlying string ptr
 // Buf must be null terminated
-typedef struct IString {
+struct IString {
 	const size_t length;
 	const char* const buf;
 	// O(n) to init
@@ -36,4 +36,4 @@ typedef struct IString {
 		
 	}
 	
-}IString;
+};

@@ -13,51 +13,51 @@
 
 // Concept take and slightly modified from the stingray engine blog
 //https://bitsquid.blogspot.com/2017/02/stingray-renderer-walkthrough-2.html
-typedef enum RenderResourceType {
-	RenderResourceType_TEXTURE,
-	RenderResourceType_SHADER,
-	RenderResourceType_VERTEX_BUFFER,
-	RenderResourceType_INDEX_BUFFER,
-	RenderResourceType_VERTEX_DECLARATION,
-	RenderResourceType_RENDER_TARGET,
-	RenderResourceType_FRAME_BUFFER,
+enum class RenderResourceType {
+	TEXTURE,
+	SHADER,
+	VERTEX_BUFFER,
+	INDEX_BUFFER,
+	VERTEX_DECLARATION,
+	RENDER_TARGET,
+	FRAME_BUFFER,
 
-	RenderResourceType_DEPENDENT_RENDER_TARGET,
-	RenderResourceType_BACK_BUFFER_WRAPPER,
-	RenderResourceType_CONSTANT_BUFFER,
-	RenderResourceType_RAW_BUFFER,
-	RenderResourceType_BATCH_INFO,
-	RenderResourceType_NOT_INITIALIZED = 0xFFFFFFFF
-} RenderResourceType;
+	DEPENDENT_RENDER_TARGET,
+	BACK_BUFFER_WRAPPER,
+	CONSTANT_BUFFER,
+	RAW_BUFFER,
+	BATCH_INFO,
+	NOT_INITIALIZED = 0xFFFFFFFF
+};
 
-typedef struct RenderResource {
+struct RenderResource {
 	// TODO: eventually move the type into the higher 8 bits of the handle,
 	// and use lower 24bits of the handle as an index to an array
 	RenderResourceType type;
 	u32 handle;
-} RenderResource;
+};
 
 // A render material resource is simply just a collection of texture render resources
-typedef struct RenderMaterialResource {
+struct RenderMaterialResource {
 	RenderResource albedo;
 	RenderResource normal;
 	RenderResource metallic;
 	RenderResource roughness;
 	RenderResource ao;
-} RenderMaterialResource;
+};
 
 
-typedef struct RenderMesh {
+struct RenderMesh {
 	StaticMesh* mesh;
 	Mat4x4f* world;
 	Material* material;
 	
-} RenderMesh;
+};
 
 
 
 // the world of objects we need to render and states
-typedef struct RenderWorld {
+struct RenderWorld {
 	// TODO: we probably want to hold the meshes by materials first for easier sorting?
 	int render_mesh_count;
 	int render_mesh_capacity;
@@ -117,6 +117,6 @@ typedef struct RenderWorld {
 	RenderResource debug_grid_vao_res;
 	RenderResource debug_grid_vbo_res;
 
-} RenderWorld;
+};
 
 

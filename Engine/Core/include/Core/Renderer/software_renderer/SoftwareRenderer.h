@@ -17,10 +17,10 @@
 #include "Core/Renderer/software_renderer/SoftwareRendererShader.h"
 
 // TODO: move this to it's own place
-typedef struct BoundingBox2i {
+struct BoundingBox2i {
 	Vec2i min;
 	Vec2i max;
-} BoundingBox2i;
+};
 
 /// TODO: look into https://fgiesen.wordpress.com/2013/01/14/min-max-under-negation-and-an-aabb-trick/
 BoundingBox2i inline get_bounding_box_from_tri(Vec2f v0, Vec2f v1, Vec2f v2, float width, float height) {
@@ -46,7 +46,7 @@ float inline edge_function(Vec3f a, Vec3f b, Vec3f c) {
 
 // NOTE: Software renderer is deprecated and not updated anymore
 // this was built to learn a basic level of the graphics pipeline
-typedef struct SoftwareRenderer {
+struct SoftwareRenderer {
 	Scene* render_scene;
 
 	SDL_Renderer* renderer;
@@ -64,7 +64,7 @@ typedef struct SoftwareRenderer {
 	ObjModel model;
 	Texture2D texture;
 
-} SoftwareRenderer;
+};
 
 
 

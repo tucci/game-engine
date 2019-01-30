@@ -3,7 +3,7 @@
 #include "Math/Vec.h"
 
 // TODO: move to editor importer
-typedef struct ObjModel {
+struct ObjModel {
 	Vec4f* verts;
 	Vec2f* texcoords;
 	Vec3f* normals;
@@ -19,7 +19,7 @@ typedef struct ObjModel {
 	int face_count;
 	int tex_indice_count;
 	
-} ObjModel;
+};
 
 
 // NOTE: these are deprecated, use obj_to_static_mesh in static mesh to load into our arenas

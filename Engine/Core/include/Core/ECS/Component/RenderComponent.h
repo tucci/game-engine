@@ -4,7 +4,7 @@
 #include "Core/ECS/Entity.h"
 #include "Asset/Asset.h"
 
-typedef struct Render {
+struct Render {
 	Entity entity_ref;
 	bool visible;
 	Render(Entity e, bool visibility) {
@@ -13,13 +13,13 @@ typedef struct Render {
 	}
 	MaterialID material_id;
 
-}Render;
+};
 
-typedef struct RenderManager {
+struct RenderManager {
 	CompactMap<u64> id_map;
 	Render* renders;
 	u64 count;
-} RenderManager;
+};
 
 
 void init_render_manager(RenderManager* manager);

@@ -10,7 +10,7 @@
 
 
 
-typedef struct InternalAsset {
+struct InternalAsset {
 	AssetID id;
 	union {
 		AssetImport_Scene* scene;
@@ -18,11 +18,11 @@ typedef struct InternalAsset {
 		Material* material;
 		Texture2D* texture;
 	};
-} InternalAsset;
+};
 
 
 
-typedef struct AssetManager {
+struct AssetManager {
 	Arena asset_mem;
 	StackAllocator stack;
 	AssetID* assets;
@@ -51,7 +51,7 @@ typedef struct AssetManager {
 	
 
 
-} AssetManager;
+};
 
 
 

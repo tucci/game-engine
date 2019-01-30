@@ -13,7 +13,7 @@
 
 
 
-typedef struct Scene {
+struct Scene {
 	int scene_id;
 	
 
@@ -36,6 +36,6 @@ typedef struct Scene {
 
 	
 	
-} Scene;
+};
 
 

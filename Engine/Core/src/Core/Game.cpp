@@ -64,6 +64,7 @@ void load_scene(Game* game, int scene_id) {
 	
 	
 	EngineAPI* api = &game->engineAPI;
+	
 	EntityManager* entity_manager = api->entity_manager;
 	Renderer* renderer = api->renderer;
 	AssetManager* asset_manager = api->asset_manager;
@@ -74,13 +75,14 @@ void load_scene(Game* game, int scene_id) {
 	LOG_INFO(0, "Loading scene %d", scene_id);
 
 	
-
+	
 	// Camera loading
 	scene->entity_main_camera = create_entity(entity_manager);
-	add_component(entity_manager, scene->entity_main_camera, ComponentType_Transform);
-	add_component(entity_manager, scene->entity_main_camera, ComponentType_Camera);
+	add_component(entity_manager, scene->entity_main_camera, ComponentType::Transform);
+	add_component(entity_manager, scene->entity_main_camera, ComponentType::Camera);
 
 	Camera* cam = get_camera(entity_manager, scene->entity_main_camera);
+	
 	set_camera_params(entity_manager, scene->entity_main_camera, 0.0001f, 100.0f, 90.0f, api->window->size.x / cast(float) api->window->size.y);
 	set_position(entity_manager, scene->entity_main_camera, Vec3f(0, 0, 0));
 	scene->main_camera = get_camera(entity_manager, scene->entity_main_camera);
@@ -90,8 +92,8 @@ void load_scene(Game* game, int scene_id) {
 
 	// Mesh 1
 	//scene->entity_mesh_test = create_entity(entity_manager);
-	//add_component(entity_manager, scene->entity_mesh_test, ComponentType_Transform);
-	//add_component(entity_manager, scene->entity_mesh_test, ComponentType_StaticMesh);
+	//add_component(entity_manager, scene->entity_mesh_test, ComponentType::Transform);
+	//add_component(entity_manager, scene->entity_mesh_test, ComponentType::StaticMesh);
 
 	//StaticMesh* mesh1 = get_static_mesh(entity_manager, scene->entity_mesh_test);
 	//bool loaded = obj_to_static_mesh("Assets/obj/african_head.obj", mesh1, &game->stack);
@@ -160,10 +162,10 @@ void load_scene(Game* game, int scene_id) {
 	
 
 	scene->entity_test_light = create_entity(entity_manager);
-	add_component(entity_manager, scene->entity_test_light, ComponentType_Light);
+	add_component(entity_manager, scene->entity_test_light, ComponentType::Light);
 
 	Light light;
-	light.type = LightType_DirectionalLight;
+	light.type = LightType::DirectionalLight;
 	light.dir_light.direction = Vec3f(0.00000000001f, -1.0f, 0.0f);;
 	light.dir_light.color = Vec3f(1, 1, 1);;
 	set_light(entity_manager, scene->entity_test_light, light);
@@ -224,6 +226,7 @@ void game_update(Game* game) {
 
 
 
+	
 	
 	Vec3f new_cam_direction;
 	
@@ -395,7 +398,7 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 
 
 
-		add_component(manager, child_entity, ComponentType_Transform);
+		add_component(manager, child_entity, ComponentType::Transform);
 		set_name(manager, child_entity, child_node->name);
 		set_position(manager, child_entity, child_node->translation);
 		set_scale(manager, child_entity, child_node->scale);
@@ -407,8 +410,8 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 
 	if (parent_node->mesh_count > 0) {
 		for (u32 i = 0; i < parent_node->mesh_count; i++) {
-			add_component(manager, parent_entity, ComponentType_StaticMesh);
-			add_component(manager, parent_entity, ComponentType_Render);
+			add_component(manager, parent_entity, ComponentType::StaticMesh);
+			add_component(manager, parent_entity, ComponentType::Render);
 			set_render_visibility(manager, parent_entity, true);
 
 
@@ -441,7 +444,7 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 
 	AssetID scene_id;
 	scene_id.id = id.id;
-	scene_id.type = AssetType_Scene;
+	scene_id.type = AssetType::Scene;
 	InternalAsset asset = get_asset_by_id(game->engineAPI.asset_manager, scene_id);
 	
 	AssetImport_Scene* scene = asset.scene;
@@ -449,7 +452,7 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 
 	
 	Entity root = create_entity(manager);
-	add_component(manager, root, ComponentType_Transform);
+	add_component(manager, root, ComponentType::Transform);
 
 	
 	

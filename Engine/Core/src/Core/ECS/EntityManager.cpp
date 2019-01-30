@@ -77,7 +77,7 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 
 	// Need to remove it from all the other components
 
-	for (int i = ComponentType_None; i < ComponentType_Count; i++) {
+	for (int i = (int)ComponentType::None; i < (int)ComponentType::Count; i++) {
 		ComponentType type = (ComponentType)i;
 		remove_component(manager, entity, type);
 	}
@@ -88,25 +88,25 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 
 void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 	switch (type) {
-		case ComponentType_Transform: {
+		case ComponentType::Transform: {
 			entity_add_transform_component(&manager->transform_manager, entity);
 			break;
 		}
-		case ComponentType_Camera: {
+		case ComponentType::Camera: {
 			entity_add_camera_component(&manager->camera_manager, entity);
 			
 			break;
 		}
-		case ComponentType_StaticMesh: {
+		case ComponentType::StaticMesh: {
 			entity_add_mesh_component(&manager->static_mesh_manger, entity);
 			break;
 		}
-		case ComponentType_Light: {
+		case ComponentType::Light: {
 			entity_add_light_component(&manager->light_manager, entity);
 			break;
 		}
 
-		case ComponentType_Render: {
+		case ComponentType::Render: {
 			entity_add_render_component(&manager->render_manager, entity);
 			break;
 		}
@@ -116,24 +116,24 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 
 void remove_component(EntityManager* manager, Entity entity, ComponentType type) {
 	switch (type) {
-		case ComponentType_Transform: {
+		case ComponentType::Transform: {
 			entity_remove_transform_component(&manager->transform_manager, entity);
 			break;
 		}
-		case ComponentType_Camera: {
+		case ComponentType::Camera: {
 			entity_remove_camera_component(&manager->camera_manager, entity);
 			break;
 		}
-		case ComponentType_StaticMesh: {
+		case ComponentType::StaticMesh: {
 			entity_remove_mesh_component(&manager->static_mesh_manger, entity);
 			break;
 		}
-		case ComponentType_Light: {
+		case ComponentType::Light: {
 			entity_remove_light_component(&manager->light_manager, entity);
 			break;
 		}
 
-		case ComponentType_Render: {
+		case ComponentType::Render: {
 			entity_remove_render_component(&manager->render_manager, entity);
 			break;
 		}

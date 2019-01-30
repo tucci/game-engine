@@ -9,14 +9,14 @@
 
 
 
-typedef enum BackenedRendererType {
-	BackenedRenderer_Software,
-	BackenedRenderer_OpenGL
-} BackenedRendererType;
+enum class BackenedRendererType {
+	Software,
+	OpenGL
+};
 
 
 
-typedef struct Renderer {
+struct Renderer {
 	BackenedRendererType type;
 	union {
 		SoftwareRenderer software_renderer;
@@ -26,7 +26,7 @@ typedef struct Renderer {
 	RenderWorld render_world;
 	Renderer() {};
 
-} Renderer;
+};
 
 
 void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window);

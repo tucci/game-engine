@@ -13,7 +13,7 @@
 #define GAME_MEMORY MEGABYTES(200)
 
 
-typedef struct Game {
+struct Game {
 	// Reference to underlying engine api subsystems the game might need
 	EngineAPI engineAPI;
 
@@ -22,7 +22,7 @@ typedef struct Game {
 	StackAllocator stack;
 	Scene* loaded_scene;
 	
-} Game;
+};
 
 
 void attach_engine_subsytems(Game* game, EngineAPI api);

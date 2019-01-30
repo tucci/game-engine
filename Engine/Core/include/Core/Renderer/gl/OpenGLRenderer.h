@@ -35,7 +35,7 @@
 #define RENDERER_MEMORY MEGABYTES(10)
 
 
-typedef struct OpenGLRenderer {
+struct OpenGLRenderer {
 
 	
 
@@ -88,7 +88,7 @@ typedef struct OpenGLRenderer {
 
 
 	
-} OpenGLRenderer;
+};
 
 
 void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap);

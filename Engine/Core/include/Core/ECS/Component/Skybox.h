@@ -5,7 +5,7 @@
 #include "Common/LinearAllocator.h"
 #include "Core/ECS/Component/StaticMesh.h"
 
-typedef struct Skybox {
+struct Skybox {
 	Texture2D front;
 	Texture2D back;
 	Texture2D left;
@@ -13,15 +13,15 @@ typedef struct Skybox {
 	Texture2D top;
 	Texture2D bottom;
 	StaticMesh cube;
-} Skybox;
+};
 
 
 
-typedef struct HDR_SkyMap {
+struct HDR_SkyMap {
 
 	HDRTexture map;
 	StaticMesh cube;
-} HDR_SkyMap;
+};
 
 
 void load_skybox(Skybox* skybox, StackAllocator* mem,

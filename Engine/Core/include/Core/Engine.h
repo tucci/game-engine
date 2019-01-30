@@ -37,89 +37,83 @@
 
 
 
+enum class EventKind {
+	None,
+	Key_Down,
+	Key_Up,
+	Mouse_Button_Down,
+	Mouse_Button_Up,
+	Mouse_Move,
+	Mouse_Global_Move,
+	Mouse_Scroll,
+	Window_Moved,
+	Window_Resized,
+	Window_Minimized,
+	Window_Maximized,
+	Window_Restored,
+	Window_Shown,
+	Window_Hidden,
+	Window_Closed,
+	Window_Enter_Mouse_Focus,
+	Window_Lose_Mouse_Focus,
+	Window_Enter_Keyboard_Focus,
+	Window_Lose_Keyboard_Focus,
+};
 
-
-
-
-
-
-typedef enum EventKind {
-	EventKind_None,
-	EventKind_Key_Down,
-	EventKind_Key_Up,
-	EventKind_Mouse_Button_Down,
-	EventKind_Mouse_Button_Up,
-	EventKind_Mouse_Move,
-	EventKind_Mouse_Global_Move,
-	EventKind_Mouse_Scroll,
-	EventKind_Window_Moved,
-	EventKind_Window_Resized,
-	EventKind_Window_Minimized,
-	EventKind_Window_Maximized,
-	EventKind_Window_Restored,
-	EventKind_Window_Shown,
-	EventKind_Window_Hidden,
-	EventKind_Window_Closed,
-	EventKind_Window_Enter_Mouse_Focus,
-	EventKind_Window_Lose_Mouse_Focus,
-	EventKind_Window_Enter_Keyboard_Focus,
-	EventKind_Window_Lose_Keyboard_Focus,
-} EventKind;
-
-typedef struct KeyEvent {
+struct KeyEvent {
 	int key;
-} KeyEvent;
+};
 
-typedef struct MouseButtonEvent {
+struct MouseButtonEvent {
 	MouseButton button;
 	Vec2i pos;
-} MouseButtonEvent;
+};
 
-typedef struct MouseScrollEvent {
+struct MouseScrollEvent {
 	s32 x_scroll;
 	s32 y_scroll;
-} MouseScrollEvent;
+};
 
-typedef struct MouseMoveEvent {
+struct MouseMoveEvent {
 	Vec2i pos;
 	Vec2i delta_pos;
 
 	Vec2i global_pos;
 	Vec2i global_delta_pos;
-} MouseMoveEvent;
+};
 
-typedef enum WindowEventKind {
+enum class WindowEventKind {
 	WindowEventKind_Moved
-} WindowEventKind;
+};
 
-typedef struct WindowEventData {
+struct WindowEventData {
 	u32 window_id;
 	int data1;
 	int data2;
 
-} WindowEventData;
+};
 
-typedef struct WindowEvent {
+struct WindowEvent {
 	WindowEventKind kind;
 	WindowEventData data;
-} WindowEvent;
+};
 
-typedef union EventData {
+union EventData {
 	KeyEvent key_event;
 	MouseButtonEvent mouse_button_event;
 	MouseMoveEvent mouse_move_event;
 	MouseScrollEvent mouse_scroll_event;
 	WindowEvent window_event;
 	EventData() {};
-} EventData;
+};
 
-typedef struct Event {
+struct Event {
 	EventKind kind;
 	EventData event;
 	
-} Event;
+};
 
-typedef struct Clock {
+struct Clock {
 
 	u64 ticks;
 	u64 delta_ticks;
@@ -134,13 +128,13 @@ typedef struct Clock {
 	u64 ticks_per_sec;
 	u64 sdl_start_ticks;
 
-} Clock;
+};
 
 
 
 
 
-typedef struct Engine {
+struct Engine {
 
 	// Exposed subsystems that the game can query, though should not modify
 	Display display;
@@ -151,7 +145,6 @@ typedef struct Engine {
 	EntityManager entity_manager;
 	AssetManager asset_manager;
 	Renderer renderer;
-
 	EditorInterface editor;
 
 	
@@ -177,7 +170,7 @@ typedef struct Engine {
 	Game loaded_game;	
 	
 	Engine() {};
-} Engine;
+};
 
 
 

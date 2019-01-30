@@ -85,7 +85,7 @@ void destroy_asset_tracker(AssetTracker* tracker) {
 bool is_asset_tracked(AssetTracker* tracker, char* filename) {
 	AssetID id = find_asset_by_name(tracker, filename);
 
-	if (id.id == 0 && id.type == AssetType_None) {
+	if (id.id == 0 && id.type == AssetType::None) {
 		// Asset is not tracked
 		return false;
 	}
@@ -148,7 +148,8 @@ AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
 	// Not found
 	AssetID id;
 	id.id = 0;
-	id.type = AssetType_None;
+	id.type = AssetType::None;
+	
 	return id;
 }
 

@@ -5,7 +5,7 @@
 #define ARENA_ALIGNMENT 8
 #define ARENA_BLOCK_SIZE (1024 * 1024)
 
-typedef struct Arena {
+struct Arena {
 	char *ptr;
 	char *end;
 	char **blocks;
@@ -14,7 +14,7 @@ typedef struct Arena {
 		end = 0;
 		blocks = 0;
 	}
-} Arena;
+};
 
 
 void arena_init(Arena* arena);

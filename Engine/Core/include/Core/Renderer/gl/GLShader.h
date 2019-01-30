@@ -6,11 +6,11 @@
 #include "glew.h"
 
 
-typedef struct GLShader {
+struct GLShader {
 	GLuint program;
 	GLuint vertex_shader;
 	GLuint fragment_shader;
-} GLShader;
+};
 
 
 void load_gl_shader(GLShader* shader, const char** vertex_code, const char** fragment_code);

@@ -9,12 +9,12 @@
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
 
-typedef struct TextureID {
+struct TextureID {
 	u64 id;
-} TextureID;
+};
 
 
-typedef struct Texture2D {
+struct Texture2D {
 	TextureID id;
 	s32 width;
 	s32 height;
@@ -28,10 +28,10 @@ typedef struct Texture2D {
 	float uv_rotation;
 
 	
-} Texture2D;
+};
 
 
-typedef struct HDRTexture {
+struct HDRTexture {
 	s32 width;
 	s32 height;
 	s32 channels;
@@ -43,7 +43,7 @@ typedef struct HDRTexture {
 	Vec2f uv_scaling;
 	float uv_rotation;
 
-} HDRTexture;
+};
 
 
 

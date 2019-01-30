@@ -64,35 +64,35 @@ static void process_event_queue(Engine* engine) {
 		
 		switch (event.kind) {
             
-			case EventKind_Key_Down:{
+			case EventKind::Key_Down:{
 				debug_print("Key Down: %d\n", event.event.key_event.key);
 				update_button_state(&engine->input.keys[event.event.key_event.key], true);
 				
 				break;
 			}
             
-			case EventKind_Key_Up: {
+			case EventKind::Key_Up: {
 				debug_print("Key Up: %d\n", event.event.key_event.key);
 				update_button_state(&engine->input.keys[event.event.key_event.key], false);
 				break;
 			}
-			case EventKind_Mouse_Button_Down: {
+			case EventKind::Mouse_Button_Down: {
 				debug_print("Mouse Button Down: Button:%d\tPos:<%d,%d>\n",
                             event.event.mouse_button_event.button,
                             event.event.mouse_button_event.pos.x,
                             event.event.mouse_button_event.pos.y);
                 
 				switch (event.event.mouse_button_event.button) {
-					case MouseButton_Left:
+					case MouseButton::Left:
                     update_button_state(&engine->input.mouse.mouse_button_left, true);
                     break;
-					case MouseButton_Right:
+					case MouseButton::Right:
                     update_button_state(&engine->input.mouse.mouse_button_right, true);
                     break;
-					case MouseButton_Middle:
+					case MouseButton::Middle:
                     update_button_state(&engine->input.mouse.mouse_button_middle, true);
                     break;
-					case MouseButton_None:
+					case MouseButton::None:
                     break;
 					default:
                     break;
@@ -103,20 +103,20 @@ static void process_event_queue(Engine* engine) {
 				
 				break;
 			}
-			case EventKind_Mouse_Button_Up: {
+			case EventKind::Mouse_Button_Up: {
 				debug_print("Mouse Button Up: Button%d\tPos:<%d,%d>\n",
                             event.event.mouse_button_event.button,
                             event.event.mouse_button_event.pos.x,
                             event.event.mouse_button_event.pos.y);
                 
 				switch (event.event.mouse_button_event.button) {
-					case MouseButton_Left:
+					case MouseButton::Left:
                     update_button_state(&engine->input.mouse.mouse_button_left, false);
                     break;
-					case MouseButton_Right:
+					case MouseButton::Right:
                     update_button_state(&engine->input.mouse.mouse_button_right, false);
                     break;
-					case MouseButton_Middle:
+					case MouseButton::Middle:
                     update_button_state(&engine->input.mouse.mouse_button_middle, false);
                     break;
 					default:
@@ -126,21 +126,21 @@ static void process_event_queue(Engine* engine) {
                 
 				break;
 			}
-			case EventKind_Mouse_Move: {
+			case EventKind::Mouse_Move: {
 				engine->input.mouse.pos = event.event.mouse_move_event.pos;
 				engine->input.mouse.delta_pos = event.event.mouse_move_event.delta_pos;
 				break;
 			}
-			case EventKind_Mouse_Global_Move: {
+			case EventKind::Mouse_Global_Move: {
 				engine->input.mouse.global_pos = event.event.mouse_move_event.global_pos;
 				engine->input.mouse.global_delta_pos = event.event.mouse_move_event.global_delta_pos;
 				break;
 			}
-			case EventKind_Mouse_Scroll: {
+			case EventKind::Mouse_Scroll: {
 				engine->input.mouse.scroll = Vec2i(event.event.mouse_scroll_event.x_scroll, event.event.mouse_scroll_event.y_scroll);
 				break;
 			}
-			case EventKind_Window_Moved: {
+			case EventKind::Window_Moved: {
 				debug_print("Window move: Pos<%d,%d>\n",
                             event.event.window_event.data.data1,
                             event.event.window_event.data.data2);
@@ -152,7 +152,7 @@ static void process_event_queue(Engine* engine) {
 			}
 			
             
-			case EventKind_Window_Resized: {
+			case EventKind::Window_Resized: {
 				debug_print("Window resized: winId: %d, Size<%d,%d>\n",
                             event.event.window_event.data.window_id,
                             event.event.window_event.data.data1,
@@ -166,7 +166,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
             
-			case EventKind_Window_Minimized: {
+			case EventKind::Window_Minimized: {
 				debug_print("Window minimized, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -176,7 +176,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
             
-			case EventKind_Window_Maximized: {
+			case EventKind::Window_Maximized: {
 				debug_print("Window maximized, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -186,21 +186,21 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
             
-			case EventKind_Window_Restored: {
+			case EventKind::Window_Restored: {
 				debug_print("Window restored, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
 				break;
 			}
             
-			case EventKind_Window_Shown: {
+			case EventKind::Window_Shown: {
 				debug_print("Window shown, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
 				break;
 			}
             
-			case EventKind_Window_Hidden: {
+			case EventKind::Window_Hidden: {
 				debug_print("Window hidden, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -209,7 +209,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 
-			case EventKind_Window_Closed: {
+			case EventKind::Window_Closed: {
 				debug_print("Window closed, winId:%d\n",
 					event.event.window_event.data.window_id
 				);
@@ -217,7 +217,7 @@ static void process_event_queue(Engine* engine) {
 				engine->quit = true;
 				break;
 			}
-			case EventKind_Window_Enter_Mouse_Focus: {
+			case EventKind::Window_Enter_Mouse_Focus: {
 				debug_print("Window enter mouse focus, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -226,7 +226,7 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
             
-			case EventKind_Window_Lose_Mouse_Focus: {
+			case EventKind::Window_Lose_Mouse_Focus: {
 				debug_print("Window lose mouse focus, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -234,7 +234,7 @@ static void process_event_queue(Engine* engine) {
 				engine->window.flags &= ~WindowFlag_Has_Mouse_Focus;
 				break;
 			}
-			case EventKind_Window_Enter_Keyboard_Focus: {
+			case EventKind::Window_Enter_Keyboard_Focus: {
 				debug_print("Window enter keyboard focus, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -242,7 +242,7 @@ static void process_event_queue(Engine* engine) {
 				engine->window.flags |= WindowFlag_Has_Keyboard_Focus;
 				break;
 			}
-			case EventKind_Window_Lose_Keyboard_Focus: {
+			case EventKind::Window_Lose_Keyboard_Focus: {
 				debug_print("Window lose keyboard focus, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -250,7 +250,7 @@ static void process_event_queue(Engine* engine) {
 				engine->window.flags &= ~WindowFlag_Has_Keyboard_Focus;
 				break;
 			}
-			case EventKind_None: {
+			case EventKind::None: {
 				break;
 			}
 			default:
@@ -342,15 +342,15 @@ static bool init_window(Engine* engine) {
 #if ENGINE_MODE_EDITOR
 	
 	//engine->window.flags |= SDL_WINDOW_INPUT_GRABBED;
-	engine->window.flags |= WindowFlag_Fullscreen;
-	engine->window.flags |= WindowFlag_Maximized;
-	engine->window.flags |= WindowFlag_Borderless;
+	//engine->window.flags |= WindowFlag_Fullscreen;
+	//engine->window.flags |= WindowFlag_Maximized;
+	//engine->window.flags |= WindowFlag_Borderless;
 #endif
 	
 
 	// TODO: game crashes when we do full screen
 	//engine->window.flags |= WindowFlag_Fullscreen;
-	if (engine->renderer.type == BackenedRenderer_OpenGL) {
+	if (engine->renderer.type == BackenedRendererType::OpenGL) {
 		engine->window.flags |= WindowFlag_OpenGL;
 	}
 
@@ -538,7 +538,7 @@ static void poll_inputs(Engine* engine) {
 		
         
 		Event event;
-		event.kind = EventKind_Mouse_Move;
+		event.kind = EventKind::Mouse_Move;
 		event.event.mouse_move_event.pos = Vec2i(x, y);
 		event.event.mouse_move_event.delta_pos  = Vec2i(x - engine->input.mouse.pos.x, y - engine->input.mouse.pos.y);
         
@@ -552,7 +552,7 @@ static void poll_inputs(Engine* engine) {
 		}
 
 		Event event2;
-		event2.kind = EventKind_Mouse_Global_Move;
+		event2.kind = EventKind::Mouse_Global_Move;
 		event2.event.mouse_move_event.global_pos= Vec2i(gx, gy);
 		event2.event.mouse_move_event.global_delta_pos = Vec2i(gx - engine->input.mouse.global_pos.x, gy - engine->input.mouse.global_pos.y);
 
@@ -577,7 +577,7 @@ static void poll_inputs(Engine* engine) {
 			// This mouse events dont capture when mouse deltas go to zero
 			/*case SDL_MOUSEMOTION: {
     Event event;
-    event.kind = EventKind_Mouse_Move;
+    event.kind = EventKind::Mouse_Move;
     event.event.mouse_move_event.pos = (Vec2i) { sdl_event.motion.x, sdl_event.motion.y };;
     event.event.mouse_move_event.delta_pos = (Vec2i) { sdl_event.motion.xrel, sdl_event.motion.yrel };
     push_to_event_queue(engine, event);
@@ -586,7 +586,7 @@ static void poll_inputs(Engine* engine) {
 			case SDL_MOUSEWHEEL: {
 				
 				Event event;
-				event.kind = EventKind_Mouse_Scroll;
+				event.kind = EventKind::Mouse_Scroll;
 				event.event.mouse_scroll_event.x_scroll = sdl_event.wheel.x;
 				event.event.mouse_scroll_event.y_scroll = sdl_event.wheel.y;
 
@@ -598,22 +598,22 @@ static void poll_inputs(Engine* engine) {
 			case SDL_MOUSEBUTTONDOWN: case SDL_MOUSEBUTTONUP: {
                 
 				MouseButton button;
-				button = MouseButton_None;
+				button = MouseButton::None;
                 
 				if (sdl_event.button.button == SDL_BUTTON_LEFT) {
 					//update_button_state(&engine->mouse.mouse_button_left, sdl_event.button.state == SDL_PRESSED);
-					button = MouseButton_Left;
+					button = MouseButton::Left;
 				} else if (sdl_event.button.button == SDL_BUTTON_MIDDLE) {
 					//update_button_state(&engine->mouse.mouse_button_middle, sdl_event.button.state == SDL_PRESSED);
-					button = MouseButton_Middle;
+					button = MouseButton::Middle;
 				} else if (sdl_event.button.button == SDL_BUTTON_RIGHT) {
 					//update_button_state(&engine->mouse.mouse_button_right, sdl_event.button.state == SDL_PRESSED);
-					button = MouseButton_Right;
+					button = MouseButton::Right;
 				}
                 
-				if (button != MouseButton_None) {
+				if (button != MouseButton::None) {
 					Event event;
-					event.kind = sdl_event.type == SDL_MOUSEBUTTONDOWN ? EventKind_Mouse_Button_Down : EventKind_Mouse_Button_Up;
+					event.kind = sdl_event.type == SDL_MOUSEBUTTONDOWN ? EventKind::Mouse_Button_Down : EventKind::Mouse_Button_Up;
 					event.event.mouse_button_event.button = button;
 					event.event.mouse_button_event.pos = Vec2i(sdl_event.button.x, sdl_event.button.y);
 					push_to_event_queue(engine, event);
@@ -628,7 +628,7 @@ static void poll_inputs(Engine* engine) {
 				
 				if (scancode) {
 					Event event;
-					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind_Key_Down : EventKind_Key_Up;
+					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind::Key_Down : EventKind::Key_Up;
 					event.event.key_event.key = scancode;
 					push_to_event_queue(engine, event);
 				}
@@ -642,20 +642,20 @@ static void poll_inputs(Engine* engine) {
 				event.event.window_event.data.data2 = sdl_event.window.data2;
                 
 				switch (sdl_event.window.event) {
-					case SDL_WINDOWEVENT_MOVED: {event.kind = EventKind_Window_Moved;	break; }
-					case SDL_WINDOWEVENT_RESIZED: {event.kind = EventKind_Window_Resized;	break; }
-					case SDL_WINDOWEVENT_MINIMIZED: {event.kind = EventKind_Window_Minimized;	break; }
-					case SDL_WINDOWEVENT_MAXIMIZED: {event.kind = EventKind_Window_Maximized;	break; }
-					case SDL_WINDOWEVENT_RESTORED: {event.kind = EventKind_Window_Restored;	break; }
-					case SDL_WINDOWEVENT_SHOWN: {event.kind = EventKind_Window_Shown;	break; }
-					case SDL_WINDOWEVENT_HIDDEN: {event.kind = EventKind_Window_Hidden;	break; }
-					case SDL_WINDOWEVENT_ENTER: {event.kind = EventKind_Window_Enter_Mouse_Focus;	break; }
-					case SDL_WINDOWEVENT_LEAVE: {event.kind = EventKind_Window_Lose_Mouse_Focus;	break; }
-					case SDL_WINDOWEVENT_CLOSE: {event.kind = EventKind_Window_Closed;	break; }
-					case SDL_WINDOWEVENT_FOCUS_GAINED: {event.kind = EventKind_Window_Enter_Keyboard_Focus;	break; }
-					case SDL_WINDOWEVENT_FOCUS_LOST: {event.kind = EventKind_Window_Lose_Keyboard_Focus;	break; }
+					case SDL_WINDOWEVENT_MOVED: {event.kind = EventKind::Window_Moved;	break; }
+					case SDL_WINDOWEVENT_RESIZED: {event.kind = EventKind::Window_Resized;	break; }
+					case SDL_WINDOWEVENT_MINIMIZED: {event.kind = EventKind::Window_Minimized;	break; }
+					case SDL_WINDOWEVENT_MAXIMIZED: {event.kind = EventKind::Window_Maximized;	break; }
+					case SDL_WINDOWEVENT_RESTORED: {event.kind = EventKind::Window_Restored;	break; }
+					case SDL_WINDOWEVENT_SHOWN: {event.kind = EventKind::Window_Shown;	break; }
+					case SDL_WINDOWEVENT_HIDDEN: {event.kind = EventKind::Window_Hidden;	break; }
+					case SDL_WINDOWEVENT_ENTER: {event.kind = EventKind::Window_Enter_Mouse_Focus;	break; }
+					case SDL_WINDOWEVENT_LEAVE: {event.kind = EventKind::Window_Lose_Mouse_Focus;	break; }
+					case SDL_WINDOWEVENT_CLOSE: {event.kind = EventKind::Window_Closed;	break; }
+					case SDL_WINDOWEVENT_FOCUS_GAINED: {event.kind = EventKind::Window_Enter_Keyboard_Focus;	break; }
+					case SDL_WINDOWEVENT_FOCUS_LOST: {event.kind = EventKind::Window_Lose_Keyboard_Focus;	break; }
 					default: {
-						event.kind = EventKind_None;
+						event.kind = EventKind::None;
 						break;
 					}
                     
@@ -953,14 +953,14 @@ void game_loop(Engine* engine) {
         
 		
 		switch (engine->renderer.type) {
-			case BackenedRenderer_Software: {
+			case BackenedRendererType::Software: {
 				software_render(&engine->renderer.software_renderer);
 				software_debug_render(&engine->renderer.software_renderer);
 				software_swap_buffer(&engine->renderer.software_renderer);
 				break;
 			}
             
-			case BackenedRenderer_OpenGL: {
+			case BackenedRendererType::OpenGL: {
 				opengl_render(&engine->renderer.opengl, engine->window.size, true);
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;

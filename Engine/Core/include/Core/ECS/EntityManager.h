@@ -18,23 +18,23 @@
 
 #define ECS_MEMORY MEGABYTES(40)
 
-typedef enum ComponentType {
-	ComponentType_None,
-	ComponentType_Transform,
-	ComponentType_Camera,
-	ComponentType_StaticMesh,
-	ComponentType_Light,
-	ComponentType_Render,
+enum class ComponentType {
+	None,
+	Transform,
+	Camera,
+	StaticMesh,
+	Light,
+	Render,
 
-	ComponentType_Count
-} ComponentType;
-
-
+	Count
+};
 
 
 
 
-typedef struct EntityManager {
+
+
+struct EntityManager {
 	
 	TransformManager transform_manager;
 	CameraManager camera_manager;
@@ -54,7 +54,7 @@ typedef struct EntityManager {
 	CompactMap<u64> entity_index_map;
 	
 	
-} EntityManager;
+};
 
 void init_entity_manager(EntityManager* manager);
 void destroy_entity_manager(EntityManager* manager);

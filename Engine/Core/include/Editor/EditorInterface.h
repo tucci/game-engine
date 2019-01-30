@@ -17,7 +17,7 @@
 #include "Core/ECS/JobSystem/RenderSystem.h"
 
 
-#define ENGINE_MODE_EDITOR 1
+#define ENGINE_MODE_EDITOR 0
 
 #define EDITOR_MEMORY MEGABYTES(100)
 

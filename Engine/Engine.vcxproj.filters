@@ -15,24 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Core\src\Common\LinearAllocator.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Common\StackAllocator.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Engine.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Game.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Scene.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\TextureData.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\src\Math\Mat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,97 +27,115 @@
     <ClCompile Include="Core\src\Util\Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\test.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\ObjFile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\Camera.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\Primitives.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\Skybox.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\StaticMesh.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Common\Map.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\EntityManager.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\JobSystem\TransformSystem.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Renderer\gl\GLShader.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Core\src\Core\Renderer\gl\OpenGLRenderer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\src\Core\Renderer\software_renderer\SoftwareRenderer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\Renderer\Renderer.c">
+    <ClCompile Include="Core\src\Asset\Asset.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Common\Arena.c">
+    <ClCompile Include="Core\src\Asset\AssetManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\Transform.c">
+    <ClCompile Include="Core\src\Asset\FbxImport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\Lights.c">
+    <ClCompile Include="Core\src\Common\Arena.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\JobSystem\CameraSystem.c">
+    <ClCompile Include="Core\src\Common\LinearAllocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\JobSystem\StaticMeshSystem.c">
+    <ClCompile Include="Core\src\Common\Map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\JobSystem\LightSystem.c">
+    <ClCompile Include="Core\src\Common\StackAllocator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Asset\FbxImport.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Asset\AssetManager.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\Lights.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Asset\Asset.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\Primitives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\Component\RenderComponent.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\RenderComponent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\ECS\JobSystem\RenderSystem.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\Skybox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\win32_engine_platform.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\StaticMesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\linux_engine_platform.c">
+    <ClCompile Include="Core\src\Core\ECS\Component\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Core\Input.c">
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\CameraSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Logger.c">
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\LightSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Editor\EditorInterface.c">
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\RenderSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Editor\EditorCommands.c">
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\StaticMeshSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\JobSystem\TransformSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\ECS\EntityManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\gl\GLShader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\gl\OpenGLRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Renderer\Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Engine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Core\TextureData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Editor\EditorCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Editor\EditorInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\linux_engine_platform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\ObjFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\src\win32_engine_platform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

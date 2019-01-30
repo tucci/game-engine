@@ -19,38 +19,38 @@
 #define ASSET_FILE_EXTENSION_LENGTH 7
 
 
-typedef enum AssetType {
-	AssetType_None,
-	AssetType_Scene,
-	AssetType_StaticMesh,
-	AssetType_Material,
-	AssetType_Light,
-	AssetType_Camera,
-	AssetType_Animation,
-	AssetType_Texture,
-} AssetType;
+enum class AssetType {
+	None,
+	Scene,
+	StaticMesh,
+	Material,
+	Light,
+	Camera,
+	Animation,
+	Texture,
+};
 
-typedef enum AssetStatus {
-	AssetStatus_Unloaded,
-	AssetStatus_Queued,
-	AssetStatus_Loaded
-} AssetStatus;
+enum class AssetStatus {
+	Unloaded,
+	Queued,
+	Loaded
+};
 
 
 
-typedef struct SceneID {
+struct SceneID {
 	u64 id;
-} SceneId;
+};
 
 
 
-typedef struct AnimationID {
+struct AnimationID {
 	u64 id;
-} AnimationID;
+};
 
 
 
-typedef struct AssetID {
+struct AssetID {
 	AssetType type;
 	AssetStatus status;
 	union {
@@ -63,21 +63,21 @@ typedef struct AssetID {
 		AnimationID animation;
 		TextureID texture;
 	};
-} AssetID;
+};
 
 
 
 
 
-typedef struct AssetImport_StaticMesh {
+struct AssetImport_StaticMesh {
 	Vec3f translation;
 	Vec3f rotation;
 	Vec3f scale;
 	StaticMesh mesh;
 
-} AssetImport_StaticMesh;
+};
 
-typedef struct AssetImport_SceneNode {
+struct AssetImport_SceneNode {
 	// NOTE: this id is not the same as asset ids
 	u64 id;
 	char* name;
@@ -114,12 +114,12 @@ typedef struct AssetImport_SceneNode {
 
 	
 
-} AssetSceneNode;
+};
 
 
 
-typedef struct AssetImport_Scene {
-	SceneId id;
+struct AssetImport_Scene {
+	SceneID id;
 	AssetImport_SceneNode* root;
 
 	u32 node_count;
@@ -140,29 +140,29 @@ typedef struct AssetImport_Scene {
 
 	
 
-} AssetScene;
+};
 
 
 
 
 
 
-typedef struct AssetTrackData {
+struct AssetTrackData {
 	u32 filename_length;
 	char* filename;
-} AssetTrackData;
+};
 
 
 #define ASSET_TRACKER_FILE "Assets.trak"
 #define ASSET_TRACKER_TMP_SWAP_FILE "Assets.trak.tmp"
 
-typedef struct AssetTracker {
+struct AssetTracker {
 	Arena mem;
 	u64 last_asset_id = 1;
 	u64 assets_tracked;
 	CompactMap<AssetTrackData> track_map;
 	
-} AssetTracker;
+};
 
 
 

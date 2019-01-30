@@ -11,11 +11,11 @@
 
 struct EntityManager;
 
-typedef struct CameraID {
+struct CameraID {
 	u64 id;
-} CameraID;
+};
 
-typedef struct Camera {
+struct Camera {
 	
 	//Transform transform;
 	Entity entity_ref;
@@ -32,17 +32,17 @@ typedef struct Camera {
 		aspect_ratio = 1.0f;
 		view_mat = Mat4x4f();
 	}
-} Camera;
+};
 
 
 void init_camera_params(Camera* camera, float near_clip, float far_clip, float fov, float aspect_ratio);
 
 
-typedef struct CameraManager {
+struct CameraManager {
 	CompactMap<u64> id_map;
 	Camera* cameras;
 	u64 count;
-} CameraManager;
+};
 
 
 

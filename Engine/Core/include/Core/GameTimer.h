@@ -1,6 +1,6 @@
 #pragma once
 
-typedef struct GameTimer {
+struct GameTimer {
 
 	bool cap_framerate;
 	int frame_count;
@@ -21,8 +21,17 @@ typedef struct GameTimer {
 	float accumulator;
 	// The current time for physics calculations since game start up
 	float physics_time;
+};
 
 
+inline float delta_time(GameTimer* gt) {
+	return gt->delta_time;
+}
 
+inline float get_time(GameTimer* gt) {
+	return gt->current_time;
+}
 
-} GameTimer;
+inline int get_fps(GameTimer* gt) {
+	return gt->fps;
+}

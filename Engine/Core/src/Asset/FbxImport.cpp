@@ -34,13 +34,13 @@ void destroy_asset_importer(AssetImporter* importer) {
 
 static TextureType fbx_string_texture_type(const char* string) {
 	if (strcmp(string, "DiffuseColor") == 0) {
-		return TextureType_Albedo;
+		return TextureType::Albedo;
 	} if (strcmp(string, "NormalMap") == 0) {
-		return TextureType_Normal;
+		return TextureType::Normal;
 	} else {
 		// TODO: implement rest of texture types
 		DEBUG_BREAK;
-		return TextureType_None;
+		return TextureType::None;
 	}
 }
 static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f rotation, IString path, IString filename){
@@ -63,7 +63,7 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 
 
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
-	id.type = AssetType_StaticMesh;
+	id.type = AssetType::StaticMesh;
 
 	FILE* file;
 	errno_t err;
@@ -83,7 +83,7 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
 	// Write type of asset
-	AssetType type = AssetType_StaticMesh;
+	AssetType type = AssetType::StaticMesh;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	// Write the transform
@@ -190,7 +190,7 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 
 	// Track the material asset into our system
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
-	id.type = AssetType_Material;
+	id.type = AssetType::Material;
 
 	FILE* file;
 	errno_t err;
@@ -211,7 +211,7 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
 	// Write type of asset
-	AssetType type = AssetType_Material;
+	AssetType type = AssetType::Material;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	
@@ -271,7 +271,7 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 
 		
 		FBX_Object obj_type = map_get(&fbx_import->fbx_object_map, child_texture_node->id).value;
-		if (obj_type.type == FBX_Object_Type_Texture) {
+		if (obj_type.type == FBX_Object_Type::Texture) {
 			// this is a single texture object
 			FBX_Texture* t = obj_type.texture;
 			
@@ -285,7 +285,7 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 			// Write the texture asset id
 			fwrite(cast(const void*) &texture_id, sizeof(texture_id), 1, file);
 
-		} else if (obj_type.type == FBX_Object_Type_LayeredTexture) {
+		} else if (obj_type.type == FBX_Object_Type::LayeredTexture) {
 			// TODO: support for layered material
 			// this is a layered texture that may have multiple textures that need to be merged/blended
 			FBX_LayeredTexture* lt = obj_type.layered_texture;
@@ -345,7 +345,7 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
 
 	AssetID id = track_asset(importer->tracker, file_str, file_str_size);
-	id.type = AssetType_Texture;
+	id.type = AssetType::Texture;
 
 	FILE* file;
 	errno_t err;
@@ -365,7 +365,7 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
 	// Write type of asset
-	AssetType type = AssetType_Texture;
+	AssetType type = AssetType::Texture;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	// Write name length
@@ -473,7 +473,7 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	
 
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
-	id.type = AssetType_StaticMesh;
+	id.type = AssetType::StaticMesh;
 
 	FILE* file;
 	errno_t err;
@@ -493,7 +493,7 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	// Write asset id
 	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
-	AssetType type = AssetType_StaticMesh;
+	AssetType type = AssetType::StaticMesh;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	fwrite(cast(const void*) &pos, sizeof(pos), 1, file);
@@ -761,7 +761,7 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IS
 
 
 	AssetID id = track_asset(importer->tracker, file_str, str_size);
-	id.type = AssetType_Scene;
+	id.type = AssetType::Scene;
 
 
 
@@ -786,7 +786,7 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IS
 	fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
 
 	// Write type
-	AssetType type = AssetType_Scene;
+	AssetType type = AssetType::Scene;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
 	
@@ -885,11 +885,11 @@ static inline int fbx_convert_type_array_char_to_size(char type) {
 
 static inline MaterialShadingModel fbx_shading_string_to_type(const char * string, s32 length) {
 	if (strcmp(string, "Phong") == 0) {
-		return MaterialShadingModel_Phong;
+		return MaterialShadingModel::Phong;
 	} else if( strcmp(string, "lambert") == 0){
-		return MaterialShadingModel_Lambert;
+		return MaterialShadingModel::Lambert;
 	} else {
-		return MaterialShadingModel_Unknown;
+		return MaterialShadingModel::Unknown;
 	}
 }
 
@@ -939,7 +939,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 			u64 id = obj_node->properties[0].primative.L_data;
 
 			FBX_Object object;
-			object.type = FBX_Object_Type_Geometry;
+			object.type = FBX_Object_Type::Geometry;
 			object.geometry = (FBX_Geometry*)stack_alloc(&importer->stack, sizeof(FBX_Geometry), 4);
 
 			
@@ -1183,7 +1183,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 			
 
 			FBX_Object object;
-			object.type = FBX_Object_Type_Model;
+			object.type = FBX_Object_Type::Model;
 			object.model = (FBX_Model*)stack_alloc(&importer->stack, sizeof(FBX_Model), 4);
 
 			object.model->name_length = obj_node->properties[1].special.length;
@@ -1255,7 +1255,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 
 
 			FBX_Object object;
-			object.type = FBX_Object_Type_Material;
+			object.type = FBX_Object_Type::Material;
 			object.material = (FBX_Material*)stack_alloc(&importer->stack, sizeof(FBX_Material), 4);
 
 			object.material->name_length = obj_node->properties[1].special.length;
@@ -1364,7 +1364,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 
 
 			FBX_Object object;
-			object.type = FBX_Object_Type_Texture;
+			object.type = FBX_Object_Type::Texture;
 			object.texture = (FBX_Texture*)stack_alloc(&importer->stack, sizeof(FBX_Texture), 4);
 
 			object.texture->name_length = obj_node->properties[1].special.length;
@@ -1438,7 +1438,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 
 
 			FBX_Object object;
-			object.type = FBX_Object_Type_LayeredTexture;
+			object.type = FBX_Object_Type::LayeredTexture;
 			object.layered_texture = (FBX_LayeredTexture*)stack_alloc(&importer->stack, sizeof(FBX_LayeredTexture), 4);
 
 			object.layered_texture->name_length = obj_node->properties[1].special.length;
@@ -1568,7 +1568,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					
 
 					switch (parent_object.type) {
-						case FBX_Object_Type_Model: {
+						case FBX_Object_Type::Model: {
 							// There is no transform data on the geometry nodes
 							// so we need to go into the parent object which is a model, in order to get the transform data.
 							FBX_Model* parent_model = parent_object.model;
@@ -1580,13 +1580,13 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 								parent_model->local_rotation);
 							break;
 						}
-						case FBX_Object_Type_Material: {
+						case FBX_Object_Type::Material: {
 							assert_fail();
 							// this should be done in the OP connection type
 							break;
 						}
 
-						case FBX_Object_Type_LayeredTexture: {
+						case FBX_Object_Type::LayeredTexture: {
 							FBX_LayeredTexture* parent_layered_texture = parent_object.layered_texture;
 							init_scene_node(parent_scene_node, parent_object_id, parent_layered_texture->name, parent_layered_texture->name_length);
 							break;
@@ -1609,7 +1609,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 			
 			switch (child_object.type) {
-				case FBX_Object_Type_Geometry: {
+				case FBX_Object_Type::Geometry: {
 					
 					FBX_Geometry* geo = child_object.geometry;
 					
@@ -1648,7 +1648,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 					break;
 				}
-				case FBX_Object_Type_Model: {
+				case FBX_Object_Type::Model: {
 					// This is a model which may have may a geometry as a child
 					// This may also be a link between a geometry and another parent model
 					AssetImport_SceneNode* child_scene_node;
@@ -1672,7 +1672,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 					break;
 				}
-				case FBX_Object_Type_Material: {
+				case FBX_Object_Type::Material: {
 
 
 					FBX_Material* material = child_object.material;
@@ -1699,7 +1699,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					
 					break;
 				}
-				case FBX_Object_Type_Texture: {
+				case FBX_Object_Type::Texture: {
 					// Add this texture to the parent layered texture
 					FBX_Texture* texture = child_object.texture;
 					
@@ -1735,7 +1735,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 				
 					break;
 				}
-				case FBX_Object_Type_LayeredTexture: {
+				case FBX_Object_Type::LayeredTexture: {
 					assert_fail();
 					// this should be done in the OP connection
 					break;
@@ -1788,7 +1788,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 				FBX_Object parent_object = parent_result.value;
 
 				switch (parent_object.type) {
-					case FBX_Object_Type_Material: {
+					case FBX_Object_Type::Material: {
 						FBX_Material* parent_material = parent_object.material;
 						init_scene_node(parent_scene_node, parent_object_id, parent_material->name, parent_material->name_length);
 						sb_push(fbx_import->material_node_cache, parent_scene_node);
@@ -1806,7 +1806,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 
 			switch (child_object.type) {
-				case FBX_Object_Type_LayeredTexture: {
+				case FBX_Object_Type::LayeredTexture: {
 					
 					
 
@@ -1832,7 +1832,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					add_child_to_scene_node(parent_scene_node, child_scene_node);
 					break;
 				}
-				case FBX_Object_Type_Texture: {
+				case FBX_Object_Type::Texture: {
 					
 
 					MapResult<AssetImport_SceneNode*> t_result = map_get(&fbx_import->scene_node_cache_map, child_object_id);
@@ -2256,10 +2256,10 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	
 	AssetID scene_id;
 	AssetID tracked_id = find_asset_by_name(importer->tracker, filename);
-	if (tracked_id.id == 0 && tracked_id.type == AssetType_None) {
+	if (tracked_id.id == 0 && tracked_id.type == AssetType::None) {
 		// Asset not tracked
 		scene_id.id = 0;
-		scene_id.type = AssetType_None;
+		scene_id.type = AssetType::None;
 	} else {
 		// Asset alredy being tracked
 		scene_id = tracked_id;
