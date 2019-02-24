@@ -17,19 +17,20 @@ Engine/My Amplifier Results - Engine/
 
 # Internal engine files that are build every run
 
+
+Engine/Engine/Assets/
+
 *.trak
 *.easset
 
-Engine/Assets/textures
-Engine/*.fbx
-Engine/*.FBX
+*./Assets/textures
 
 *.fbx
 *.FBX
 *.tif
 *.trak
 
-Engine/*.easset
+*.easset
 
 # Build results
 [Dd]ebug/
@@ -346,3 +347,6 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+
+
+Engine/Engine/log.txt
