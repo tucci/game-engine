@@ -3,6 +3,7 @@
 
 
 #include "types.h"
+#include "debug_macros.h"
 
 
 struct FileHandle;

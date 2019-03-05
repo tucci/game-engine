@@ -1,9 +1,13 @@
 #pragma once
 
+#include "debug_macros.h"
+#include "types.h"
+
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
-#include "types.h"
+
 #include <cstdarg>
+
 
 
 enum class LoggerVerbosity: u32 {

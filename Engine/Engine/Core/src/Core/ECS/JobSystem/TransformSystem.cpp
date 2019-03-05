@@ -85,19 +85,16 @@ void job_compute_world_matrices(EntityManager* manager) {
 		
 	}
 
-	// Go through each entity's transform
-	for (int i = 0; i < tm->count; i++) {
-		int index = i;
-		Entity e;
-		e.id = index + 1;
+	const int entity_count = manager->entity_count;
+
+	for (int i = 0; i < entity_count; i++) {
+		Entity entity = manager->entity_list[i];
+		//int index = get_index_for_entity(manager, entity, &manager->entity_index_map);;
 		// TODO: this is very slow and cache unfriendly
 		// A better solution woould be to sort the parent/dirty to the front of the array
 		// http://bitsquid.blogspot.com/2014/10/building-data-oriented-entity-system.html
-		
-		tm->world[index] = get_world_transform(manager, e);
-		
-		
-		
+		tm->world[i] = get_world_transform(manager, entity);
+
 		//// Get the parent of the current entity
 		//Entity parent_id = tm->parent[index];
 		//// If this entity has no parent, then we'll just use the current local matrix
@@ -110,7 +107,7 @@ void job_compute_world_matrices(EntityManager* manager) {
 		//	MapResult<u64> result = map_get(&tm->id_map, parent_id.id);
 		//	assert(result.found);
 		//	u64 parent_index = result.value;
-		
+
 		//
 		//	 
 		// The current problem with this is that, the parent world matrix might not have been already computed,
@@ -122,8 +119,15 @@ void job_compute_world_matrices(EntityManager* manager) {
 		//	e.id = index;
 		//	world_transform(tm, &parent_transform, e);
 		//}
+	}
+	
+
 		
-	}	
+		
+		
+		
+		
+	
 	
 }
 

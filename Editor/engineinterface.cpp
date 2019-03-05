@@ -22,6 +22,8 @@ void EngineInterface::init_engine_interface(QMainWindow* main_window, QWidget* g
 
     // Create a 4k buffer to hold data about incoming commands
     socket_buffer = QByteArray(4096, 0);
+    // Data buffer to use when writing data to a command buffer
+    cmd_data_buffer = QByteArray(4096, 0);
 
     engine_socket = new QTcpSocket(main_window);
 
@@ -31,6 +33,14 @@ void EngineInterface::init_engine_interface(QMainWindow* main_window, QWidget* g
     QObject::connect(engine_socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     QObject::connect(engine_socket, SIGNAL(bytesWritten(qint64)), this, SLOT(bytesWritten(qint64)));
     QObject::connect(engine_socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+
+
+
+
+    QObject::connect(scene_hierarchy, &DockSceneHierarchy::notify_entity_new, this,              &EngineInterface::cmd_request_editor_new_entity);
+    QObject::connect(scene_hierarchy, &DockSceneHierarchy::notify_entity_delete, this,           &EngineInterface::cmd_request_editor_delete_entity_list);
+    QObject::connect(scene_hierarchy, &DockSceneHierarchy::notify_entity_selection_change, this, &EngineInterface::cmd_request_editor_select_entity_list);
+    QObject::connect(scene_hierarchy, &DockSceneHierarchy::notify_entity_duplicate, this,        &EngineInterface::cmd_request_editor_duplicate_entity_list);
 
     engine_socket->connectToHost("127.0.0.1", 27016);
     if(!engine_socket->waitForConnected(5000)) {
@@ -74,7 +84,6 @@ void EngineInterface::disconnected()
 
 void EngineInterface::bytesWritten(qint64 bytes)
 {
-    qDebug() << bytes << " bytes written...";
 }
 
 void EngineInterface::readyRead()
@@ -115,12 +124,12 @@ void EngineInterface::readyRead()
     command.buffer = (char*)calloc(1, command.buffer_size);
     memcpy(command.buffer, buf, command.buffer_size);
 
-    qDebug() << "magic:" << magic
-             << ",version " << header.version
-             << ",msg_len " << header.message_size
-             << ",msg_type " << (int32_t)command.type
-             << ",msg_undo_type " << (int32_t)command.undo_type
-             << ",buffer size" << command.buffer_size;
+    qDebug() << "RECVCommand: magic:" << magic
+             << ",version:" << header.version
+             << ",msg_len:" << header.message_size
+             << ",msg_type:" << (int32_t)command.type
+             << ",msg_undo_type:" << (int32_t)command.undo_type
+             << ",buffer size:" << command.buffer_size;
 
     recv_command_from_engine(command);
 
@@ -142,7 +151,7 @@ void EngineInterface::recv_command_from_engine(const EditorCommand& command) {
             cmd_respond_engine_disconnect(command);
             break;
         }
-        case EditorCommandType::ENGINE_DATA: {
+        case EditorCommandType::EDITOR_GET_SCENE_HIERARCHY: {
             cmd_respond_engine_data(command);
             break;
         }
@@ -153,6 +162,38 @@ void EngineInterface::recv_command_from_engine(const EditorCommand& command) {
         case EditorCommandType::EDITOR_WINDOW_FOCUS_CHANGE: {
             cmd_respond_editor_window_focus_change(command);
             break;
+        }
+        case EditorCommandType::EDITOR_NEW_ENTITY: {
+            cmd_respond_editor_new_entity(command);
+            break;
+        }
+        case EditorCommandType::EDITOR_UNDO_NEW_ENTITY: {
+            assert(0);
+            break;
+        }
+        case EditorCommandType::EDITOR_DELETE_ENTITY_LIST: {
+            cmd_respond_editor_delete_entities(command);
+            break;
+        }
+        case EditorCommandType::EDITOR_UNDO_DELETE_ENTITY_LIST: {
+            break;
+        }
+        case EditorCommandType::EDITOR_SELECT_ENTITY_LIST: {
+            break;
+        }
+        case EditorCommandType::EDITOR_UNDO_SELECT_ENTITY_LIST: {
+            break;
+        }
+        case EditorCommandType::EDITOR_DUPLICATE_ENTITY_LIST: {
+            cmd_respond_editor_duplicate_entities(command);
+            break;
+        }
+        case EditorCommandType::EDITOR_UNDO_DUPLICATE_ENTITY_LIST: {
+            break;
+        }
+
+        default: {
+            assert(0);
         }
     }
 }
@@ -208,6 +249,13 @@ void EngineInterface::send_command_to_engine(const EditorCommand& command) {
     buf = write<uint64_t>(buf, (uint64_t)command.buffer_size);
     memcpy(buf, command.buffer, command.buffer_size);
     engine_socket->write(buf_start, buf_size);
+
+    qDebug() << "SENDCommand: magic:" << magic
+             << ",version:" << header.version
+             << ",msg_len:" << header.message_size
+             << ",msg_type:" << (int32_t)command.type
+             << ",msg_undo_type:" << (int32_t)command.undo_type
+             << ",buffer size:" << command.buffer_size;
 }
 
 void EngineInterface::cmd_request_engine_connect() {
@@ -224,8 +272,6 @@ void EngineInterface::cmd_respond_engine_connect(const EditorCommand& command) {
     uint64_t hwnd_int;
 
     read<>(command.buffer, &hwnd_int);
-
-    qDebug() << "hwnd" << hwnd_int;
     WId external_winid = (WId)hwnd_int;
     engine_window = QWindow::fromWinId(external_winid);
 
@@ -256,7 +302,7 @@ void EngineInterface::cmd_respond_engine_connect(const EditorCommand& command) {
     engine_widget->installEventFilter(main_window);
 
 
-	cmd_request_engine_data();
+    cmd_request_scene_hierarchy();
 }
 
 void EngineInterface::cmd_request_engine_disconnect() {
@@ -274,9 +320,9 @@ void EngineInterface::cmd_respond_engine_disconnect(const EditorCommand& command
 
 }
 
-void EngineInterface::cmd_request_engine_data() {
+void EngineInterface::cmd_request_scene_hierarchy() {
     EditorCommand command;
-    command.type = EditorCommandType::ENGINE_DATA;
+    command.type = EditorCommandType::EDITOR_GET_SCENE_HIERARCHY;
     command.undo_type = EditorCommandType::NONE;
     command.buffer_size = 0;
     command.buffer = nullptr;
@@ -409,38 +455,140 @@ void EngineInterface::cmd_respond_editor_window_focus_change(const EditorCommand
 
 
 
+void EngineInterface::cmd_respond_editor_new_entity(const EditorCommand& command) {
+
+
+    char* buffer = command.buffer;
+    u64 entity_id;
+    u64 name_length;
+    QString name;
+    buffer = read<>(buffer, &entity_id);
+    buffer = read<>(buffer, &name_length);
+
+    name = QString::fromLocal8Bit(buffer, name_length);
+    buffer += name_length;
+
+
+    //make the treevview do it's things
+    scene_hierarchy->respond_new_entity(entity_id, name);
+}
+
+void EngineInterface::cmd_respond_editor_delete_entities(const EditorCommand& command) {
+    QList<uint64_t> entities;
+
+    char* buffer = command.buffer;
+    u64 entity_count;
+
+
+    buffer = read<>(buffer, &entity_count);
+    entities.reserve(static_cast<int>(entity_count));
+    for (int i = 0; i < entity_count; i++) {
+        uint64_t entity_id;
+        buffer = read<>(buffer, &entity_id);
+        entities.push_back(entity_id);
+    }
+
+    qDebug() << "cmd_respond_editor_delete_entities " << entities;
+
+    scene_hierarchy->respond_delete_entitys(entities);
+}
+
+void EngineInterface::cmd_respond_editor_duplicate_entities(const EditorCommand& command) {
+    QList<uint64_t> entities;
+
+    char* buffer = command.buffer;
+    u64 entity_count;
+
+
+    buffer = read<>(buffer, &entity_count);
+    entities.reserve(static_cast<int>(entity_count));
+    for (int i = 0; i < entity_count; i++) {
+        uint64_t entity_id;
+        buffer = read<>(buffer, &entity_id);
+        entities.push_back(entity_id);
+    }
+
+    qDebug() << "cmd_respond_editor_duplicate_entities " << entities;
+
+    scene_hierarchy->respond_duplicate_entitys(entities);
+}
 
 
 
+void EngineInterface::cmd_request_editor_new_entity() {
 
 
+    EditorCommand command;
+    command.type = EditorCommandType::EDITOR_NEW_ENTITY;
+    command.undo_type = EditorCommandType::EDITOR_UNDO_NEW_ENTITY;
+    command.buffer_size = 0;
+    command.buffer = nullptr;
+    send_command_to_engine(command);
+
+}
+
+void EngineInterface::cmd_request_editor_delete_entity_list(const QList<uint64_t>& entities) {
+    qDebug() << "cmd_request_editor_delete_entites " << entities;
+    EditorCommand command;
+    command.type = EditorCommandType::EDITOR_DELETE_ENTITY_LIST;
+    command.undo_type = EditorCommandType::EDITOR_UNDO_DELETE_ENTITY_LIST;
+
+    command.buffer_size =
+            sizeof(uint64_t) + // length of array
+            sizeof(uint64_t) * static_cast<uint64_t>(entities.count()); // list of entities
+    command.buffer = cmd_data_buffer.data();
+
+    char* buffer = command.buffer;
+    u64 count = static_cast<uint64_t>(entities.count());
+    buffer = write<>(buffer, count);
+    for (uint64_t entity_id : entities) {
+        buffer = write<>(buffer, entity_id);
+    }
+
+    send_command_to_engine(command);
+}
 
 
+void EngineInterface::cmd_request_editor_select_entity_list(const QSet<uint64_t>& entities) {
+     qDebug() << "cmd_request_editor_select_entity_list " << entities;
 
+     EditorCommand command;
+     command.type = EditorCommandType::EDITOR_SELECT_ENTITY_LIST;
+     command.undo_type = EditorCommandType::EDITOR_UNDO_SELECT_ENTITY_LIST;
 
+     command.buffer_size =
+             sizeof(uint64_t) + // length of items in set
+             sizeof(uint64_t) * static_cast<uint64_t>(entities.count()); // list of entities
+     command.buffer = cmd_data_buffer.data();
 
+     char* buffer = command.buffer;
+     u64 count = static_cast<uint64_t>(entities.count());
+     buffer = write<>(buffer, count);
+     for (uint64_t entity_id : entities) {
+         buffer = write<>(buffer, entity_id);
+     }
 
+     send_command_to_engine(command);
+}
 
+void EngineInterface::cmd_request_editor_duplicate_entity_list(const QList<uint64_t>& entities) {
+    qDebug() << "cmd_request_editor_duplicate_entity_list " << entities;
+    EditorCommand command;
+    command.type = EditorCommandType::EDITOR_DUPLICATE_ENTITY_LIST;
+    command.undo_type = EditorCommandType::EDITOR_UNDO_DUPLICATE_ENTITY_LIST;
 
+    command.buffer_size =
+            sizeof(uint64_t) + // length of items in list
+            sizeof(uint64_t) * static_cast<uint64_t>(entities.count()); // list of entities
+    command.buffer = cmd_data_buffer.data();
 
+    char* buffer = command.buffer;
+    u64 count = static_cast<uint64_t>(entities.count());
+    buffer = write<>(buffer, count);
+    for (uint64_t entity_id : entities) {
+        buffer = write<>(buffer, entity_id);
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    send_command_to_engine(command);
+}
 

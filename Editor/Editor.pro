@@ -42,7 +42,7 @@ SOURCES += \
     dockentitydetails.cpp \
     consolelogitemdelegate.cpp \
     logitem.cpp \
-    checklist.cpp
+    checklist.cpp \
 
 HEADERS += \
         mainwindow.h \
@@ -57,7 +57,7 @@ HEADERS += \
     dockentitydetails.h \
     consolelogitemdelegate.h \
     logitem.h \
-    checklist.h
+    checklist.h \
 
 FORMS += \
         mainwindow.ui

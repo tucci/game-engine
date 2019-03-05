@@ -218,24 +218,17 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind::Window_Enter_Mouse_Focus: {
-				LOG_INFO("ENGINE", "Window enter mouse focus, winId:%d\n",
-                            event.event.window_event.data.window_id
-                            );
 				engine->window.window_id = event.event.window_event.data.window_id;
 				engine->window.flags |= WindowFlag_Has_Mouse_Focus;
 				break;
 			}
             
 			case EventKind::Window_Lose_Mouse_Focus: {
-				LOG_INFO("ENGINE", "Window lose mouse focus, winId:%d\n",
-                            event.event.window_event.data.window_id
-                            );
 				engine->window.window_id = event.event.window_event.data.window_id;
 				engine->window.flags &= ~WindowFlag_Has_Mouse_Focus;
 				break;
 			}
 			case EventKind::Window_Enter_Keyboard_Focus: {
-				LOG_INFO("ENGINE", "enter keyboard focus");
 				debug_print("Window enter keyboard focus, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -244,7 +237,6 @@ static void process_event_queue(Engine* engine) {
 				break;
 			}
 			case EventKind::Window_Lose_Keyboard_Focus: {
-				LOG_INFO("ENGINE", "Lose keyboard focus");
 				debug_print("Window lose keyboard focus, winId:%d\n",
                             event.event.window_event.data.window_id
                             );
@@ -344,9 +336,9 @@ static bool init_window(Engine* engine) {
 #if ENGINE_MODE_EDITOR
 	
 	//engine->window.flags |= SDL_WINDOW_INPUT_GRABBED;
-	engine->window.flags |= WindowFlag_Fullscreen;
-	engine->window.flags |= WindowFlag_Maximized;
-	engine->window.flags |= WindowFlag_Borderless;
+	//engine->window.flags |= WindowFlag_Fullscreen;
+	//engine->window.flags |= WindowFlag_Maximized;
+	//engine->window.flags |= WindowFlag_Borderless;
 #endif
 	
 

@@ -2,7 +2,8 @@
 
 
 #include "engine_platform.h"
-#include "Editor/EditorCommands.h"
+
+#include "EditorCommands.h"
 
 #include "Core/EngineAPI.h"
 #include "Logger.h"
@@ -69,6 +70,7 @@ void disconnect_editor_socket(EditorInterface* editor);
 static void attach_logger_to_editor(EditorInterface* editor);
 static void editor_logger_callback(void* data);
 
+void editor_select_entity(EditorInterface* editor, Entity entity);
 void editor_update(EditorInterface* editor);
 
 static void send_command_to_editor(EditorInterface* editor, EditorCommand command);
@@ -90,10 +92,20 @@ static char* read_s64(char* buffer, s64* value);
 static char* write_buf(char* dst_buffer, const char* src_buffer, size_t src_buf_size);
 
 
-static void cmd_request_engine_connect(EditorInterface* editor, u64 hwnd);
-static void cmd_respond_engine_data(EditorInterface* editor);
-static void cmd_send_log_to_editor(EditorInterface* editor, LogItem* item);
 
-static void cmd_editor_window_focus_change(EditorInterface* editor, bool has_focus);
+// Outgoing commands that the engine sends to the editor
+static void cmd_from_engine_send_logitem(EditorInterface* editor, LogItem* item);
+static void cmd_from_engine_window_focus_change(EditorInterface* editor, bool has_focus);
+
+// Incoming commands that the editor sent to the engine
+// The engine may send back another command indicating that it got the command, with any other data
+static void cmd_from_editor_request_engine_connect(EditorInterface* editor, EditorCommand* recv_command);
+static void cmd_from_editor_get_scene_hierarchy(EditorInterface* editor, EditorCommand* recv_command);
+static void cmd_from_editor_new_entity(EditorInterface* editor, EditorCommand* recv_command);
+static void cmd_from_editor_delete_entities(EditorInterface* editor, EditorCommand* recv_command);
+static void cmd_from_editor_select_entity_list(EditorInterface* editor, EditorCommand* recv_command);
+
+
+static void cmd_from_editor_duplicate_entity_list(EditorInterface* editor, EditorCommand* recv_command);
 
 

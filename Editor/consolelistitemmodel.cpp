@@ -6,6 +6,9 @@
 
 ConsoleFilterProxyModel::ConsoleFilterProxyModel(QObject* parent) : QSortFilterProxyModel (parent) {
     setDynamicSortFilter(true);
+    info_filter_on = true;
+    warning_filter_on = true;
+    error_filter_on = true;
 }
 
 
@@ -195,13 +198,8 @@ QVariant ConsoleListItemModel::data(const QModelIndex &index, int role) const
         else if (index.column() == TABLE_COLUMNS::MESSAGE) {
             return item.msg_str;
         }
-
-        //QVariant variant;
-        //variant.setValue(log_list.at(row_index));
-        //return variant;
-    } else {
-        return QVariant();
     }
+    return QVariant();
 }
 
 bool ConsoleListItemModel::insertRows(int row, int count, const QModelIndex &parent)

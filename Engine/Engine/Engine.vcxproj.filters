@@ -603,7 +603,6 @@
     <None Include="Assets\shaders\prefilter.fs" />
     <None Include="Assets\shaders\brdf.vs" />
     <None Include="Assets\shaders\brdf.fs" />
-    <None Include="..\..\..\..\..\Downloads\247_House 15_fbx.FBX" />
     <None Include="lib\glew210\doc\advanced.html" />
     <None Include="lib\glew210\doc\basic.html" />
     <None Include="lib\glew210\doc\build.html" />

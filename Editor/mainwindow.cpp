@@ -22,13 +22,6 @@ MainWindow::MainWindow(QWidget *parent) :
     game_widget->installEventFilter(this);
 
 
-
-
-
-
-
-
-
     menubar.init_editor_menubar(this);
     dock_scene_hierarchy = new DockSceneHierarchy(this);
     dock_entity_details = new DockEntityDetails(this);
@@ -86,6 +79,7 @@ MainWindow::MainWindow(QWidget *parent) :
     engine_process->start(program, args, QIODevice::ReadWrite);
     //engine_process->startDetached(program, args, working_dir);
     setFocus();
+    //engine_interface.init_engine_interface(this, game_widget, game_layout, dock_console, dock_scene_hierarchy);
 
 }
 
@@ -108,8 +102,8 @@ void MainWindow::process_started() {
 }
 
 void MainWindow::processOutput() {
-    //qInfo(engine_process->readAllStandardOutput());  // read normal output
-    //qInfo(engine_process->readAllStandardError()); // read error channel
+    qInfo(engine_process->readAllStandardOutput());  // read normal output
+    qInfo(engine_process->readAllStandardError()); // read error channel
 }
 
 void MainWindow::closeEvent (QCloseEvent *event) {

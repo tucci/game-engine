@@ -9,9 +9,11 @@
 #include <QStandardItemModel>
 #include <QHash>
 #include <QMenu>
+#include <QMimeData>
 
 #include "dockinterface.h"
-#include <customdockwidget.h>
+#include "customdockwidget.h"
+
 
 
 
@@ -19,14 +21,22 @@
 class SceneHierarchyProxyModel : public QSortFilterProxyModel {
     Q_OBJECT
 public:
-    SceneHierarchyProxyModel(QObject* parent = 0);
+    SceneHierarchyProxyModel(QObject* parent = nullptr);
 signals:
     void items_filtered(const QModelIndex& index) const;
 protected:
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
-
 };
 
+
+//class EntityItemModel : public QStandardItemModel {
+//
+//public:
+//    explicit EntityItemModel(QObject *parent = nullptr);
+//    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+//    QStringList mimeTypes() const override;
+//    QMimeData* mimeData(const QModelIndexList &indexes) const override;
+//};
 
 
 class DockSceneHierarchy : public DockInterface {
@@ -40,22 +50,45 @@ public:
 protected:
     bool eventFilter(QObject* o, QEvent* e) override;
 
+signals:
+    void notify_entity_new();
+    void notify_entity_delete(const QList<uint64_t>& entitys);
+    void notify_entity_selection_change(const QSet<uint64_t>& entities);
+    void notify_entity_duplicate(const QList<uint64_t>& entities);
+
+public slots:
+
+
+    void respond_new_entity(uint64_t entity_id, const QString& name);
+    void respond_delete_entitys(const QList<uint64_t>& entities);
+    void respond_duplicate_entitys(const QList<uint64_t>& entities);
+
 
 private slots:
     void after_items_filtered(const QModelIndex& index);
     void context_menu_event(const QPoint& point);
     void entity_selection_changed(const QItemSelection& selected, const QItemSelection& deselected);
+    void tree_layout_changed(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
 
 
-    void new_entity_from_editor();
+    void request_new_entity();
+
     void copy_entitys();
     void paste_entitys();
-    void duplicate_entitys();
+    void request_duplicate_entitys();
     void rename_entity();
-    void delete_entitys();
+    void request_delete_entitys();
 private:
+
+
+
+
+
+    QHash<uint64_t, QStandardItem*> weak_entity_map;
+
+    QSet<uint64_t> selected_entities;
     QList<uint64_t> entity_copy_list;
-    QHash<uint64_t, QStandardItem*> entity_map;
+
     SceneHierarchyProxyModel* proxy_model;
     QItemSelectionModel* selection_model;
     QStandardItemModel* scene_tree_model;

@@ -69,6 +69,12 @@ void destroy_editor_interface(EditorInterface* editor) {
 	arena_free(&editor->arena);
 }
 
+
+void editor_select_entity(EditorInterface* editor, Entity entity) {
+	
+
+}
+
 void editor_update(EditorInterface* editor) {
 
 	Input* input = editor->api.input;
@@ -83,12 +89,12 @@ void editor_update(EditorInterface* editor) {
 
 	if (window_has_focus(window) && editor->was_last_frame_using_right_click) {
 		if (!editor->did_last_frame_have_window_focus) {
-			cmd_editor_window_focus_change(editor, true);
+			cmd_from_engine_window_focus_change(editor, true);
 		}		
 		editor->did_last_frame_have_window_focus = true;
 	} else {
 		if (editor->did_last_frame_have_window_focus) {
-			cmd_editor_window_focus_change(editor, false);
+			cmd_from_engine_window_focus_change(editor, false);
 		}
 		editor->did_last_frame_have_window_focus = false;
 	}
@@ -340,7 +346,7 @@ static void editor_logger_callback(void* data) {
 	// Ugly and hardcoded, but we know that when the callback is being called, what the exact layout of the param struct is
 	memcpy(&param, data, sizeof(param));
 	
-	cmd_send_log_to_editor(param.editor, param.item);
+	cmd_from_engine_send_logitem(param.editor, param.item);
 	
 }
 
@@ -413,25 +419,51 @@ static void send_command_to_editor(EditorInterface* editor, EditorCommand comman
 static void process_command(EditorInterface* editor, EditorCommand command) {
 	switch (command.type) {
 		case EditorCommandType::ENGINE_CONNECT : {
-			SDL_SysWMinfo wmInfo;
-			SDL_VERSION(&wmInfo.version);
-			SDL_GetWindowWMInfo(editor->api.window->sdl_window, &wmInfo);
-			HWND hwnd = wmInfo.info.win.window;
-			debug_print("%d\n", (u64)hwnd);
-
-			cmd_request_engine_connect(editor, (u64)hwnd);
+			cmd_from_editor_request_engine_connect(editor, &command);
 			break;
 		}
 		case EditorCommandType::ENGINE_DISCONNECT: {
 			editor->connection_status = EditorConnectionStatus::Disconected;
 			break;
 		}
-		case EditorCommandType::ENGINE_DATA: {
-			cmd_respond_engine_data(editor);
+		case EditorCommandType::EDITOR_GET_SCENE_HIERARCHY: {
+			cmd_from_editor_get_scene_hierarchy(editor, &command);
 			break;
 		}
-		default:
+		case EditorCommandType::EDITOR_NEW_ENTITY: {
+			cmd_from_editor_new_entity(editor, &command);
 			break;
+		}
+		case EditorCommandType::EDITOR_UNDO_NEW_ENTITY: {
+			assert_fail();
+			break;
+		}
+		case EditorCommandType::EDITOR_DELETE_ENTITY_LIST: {
+			cmd_from_editor_delete_entities(editor, &command);
+			break;
+		}
+		case EditorCommandType::EDITOR_UNDO_DELETE_ENTITY_LIST: {
+			assert_fail();
+			break;
+		}
+		case EditorCommandType::EDITOR_SELECT_ENTITY_LIST: {
+			cmd_from_editor_select_entity_list(editor, &command);
+			break;
+		}
+		case EditorCommandType::EDITOR_UNDO_SELECT_ENTITY_LIST: {
+			break;
+		}
+		case EditorCommandType::EDITOR_DUPLICATE_ENTITY_LIST: {
+			cmd_from_editor_duplicate_entity_list(editor, &command);
+			break;
+		}
+		case EditorCommandType::EDITOR_UNDO_DUPLICATE_ENTITY_LIST: {
+			break;
+		}
+		default: {
+			assert_fail();
+			break;
+		}
 	}
 
 }
@@ -483,7 +515,91 @@ static char* write_buf(char* dst_buffer, const char* src_buffer, size_t src_buf_
 }
 
 
-static void cmd_request_engine_connect(EditorInterface* editor, u64 hwnd) {
+// Engine to editor commands
+static void cmd_from_engine_send_logitem(EditorInterface* editor, LogItem* item) {
+	EditorCommand command;
+	command.type = EditorCommandType::SEND_LOG_ITEM;
+	command.undo_type = EditorCommandType::NONE;
+	command.buffer_size =
+		sizeof(item->verbosity)
+		+ sizeof(item->time)
+		+ sizeof(item->thread_id)
+		+ sizeof(item->line)
+		// Tag string
+		+ sizeof(item->tag_length)
+		+ item->tag_length
+		// Function string
+		+ sizeof(item->function_length)
+		+ item->function_length
+		// Filename string
+		+ sizeof(item->filename_length)
+		+ item->filename_length
+		// Message string
+		+ sizeof(item->msg_length)
+		+ item->msg_length;
+
+	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+
+	char* buffer = command.buffer;
+	buffer = write_u32(buffer, (u32)item->verbosity);
+	buffer = write_u64(buffer, item->time);
+	
+	buffer = write_s32(buffer, item->thread_id);
+	buffer = write_s32(buffer, item->line);
+
+	// write tag name
+	buffer = write_s32(buffer, item->tag_length);
+	buffer = write_buf(buffer, item->tag, item->tag_length);
+
+	// write function name
+	buffer = write_u64(buffer, item->function_length);
+	buffer = write_buf(buffer, item->function, item->function_length);
+
+	// write filename name
+	buffer = write_u64(buffer, item->filename_length);
+	buffer = write_buf(buffer, item->filename, item->filename_length);
+	// write msg
+	buffer = write_u64(buffer, item->msg_length);
+	buffer = write_buf(buffer, item->msg, item->msg_length);
+	
+	send_command_to_editor(editor, command);
+	stack_pop(&editor->stack);
+}
+
+static void cmd_from_engine_window_focus_change(EditorInterface* editor, bool has_focus) {
+	EditorCommand command;
+	command.type = EditorCommandType::EDITOR_WINDOW_FOCUS_CHANGE;
+	command.undo_type = EditorCommandType::NONE;
+	command.buffer_size = sizeof(s32);
+		
+
+	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+
+	char* buffer = command.buffer;
+	s32 has_focus_int = has_focus ? 1 : 0;
+	buffer = write_s32(buffer, has_focus);
+	
+
+	send_command_to_editor(editor, command);
+	stack_pop(&editor->stack);
+
+}
+
+
+
+
+
+
+
+// Editor to engine commands
+static void cmd_from_editor_request_engine_connect(EditorInterface* editor, EditorCommand* recv_command) {
+
+	SDL_SysWMinfo wmInfo;
+	SDL_VERSION(&wmInfo.version);
+	SDL_GetWindowWMInfo(editor->api.window->sdl_window, &wmInfo);
+	HWND hwnd = wmInfo.info.win.window;
+	debug_print("%d\n", (u64)hwnd);
+
 	EditorCommand command;
 	command.type = EditorCommandType::ENGINE_CONNECT;
 	command.undo_type = EditorCommandType::NONE;
@@ -491,7 +607,7 @@ static void cmd_request_engine_connect(EditorInterface* editor, u64 hwnd) {
 	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
 
 	char* buffer = command.buffer;
-	buffer = write_u64(command.buffer, hwnd);
+	buffer = write_u64(command.buffer, (u64)hwnd);
 	
 
 	// NOTE: if u make sending commands async, than u can't pop stack right after calling it
@@ -502,10 +618,9 @@ static void cmd_request_engine_connect(EditorInterface* editor, u64 hwnd) {
 	
 }
 
-
-static void cmd_respond_engine_data(EditorInterface* editor) {
+static void cmd_from_editor_get_scene_hierarchy(EditorInterface* editor, EditorCommand* recv_command) {
 	EditorCommand command;
-	command.type = EditorCommandType::ENGINE_DATA;
+	command.type = EditorCommandType::EDITOR_GET_SCENE_HIERARCHY;
 	command.undo_type = EditorCommandType::NONE;
 	command.buffer_size = 0;
 	command.buffer = (char*)stack_alloc(&editor->stack, KILOBYTES(1), 1);
@@ -602,71 +717,117 @@ static void cmd_respond_engine_data(EditorInterface* editor) {
 	
 }
 
-static void cmd_send_log_to_editor(EditorInterface* editor, LogItem* item) {
+static void cmd_from_editor_new_entity(EditorInterface* editor, EditorCommand* recv_command) {
+	Entity entity = create_entity(editor->api.entity_manager, "Entity");
+
 	EditorCommand command;
-	command.type = EditorCommandType::SEND_LOG_ITEM;
-	command.undo_type = EditorCommandType::NONE;
-	command.buffer_size =
-		sizeof(item->verbosity)
-		+ sizeof(item->time)
-		+ sizeof(item->thread_id)
-		+ sizeof(item->line)
-		// Tag string
-		+ sizeof(item->tag_length)
-		+ item->tag_length
-		// Function string
-		+ sizeof(item->function_length)
-		+ item->function_length
-		// Filename string
-		+ sizeof(item->filename_length)
-		+ item->filename_length
-		// Message string
-		+ sizeof(item->msg_length)
-		+ item->msg_length;
+	command.type = EditorCommandType::EDITOR_NEW_ENTITY;
+	command.undo_type = EditorCommandType::EDITOR_UNDO_NEW_ENTITY;
+
+	String name = get_name(&editor->api.entity_manager->transform_manager, entity);
+	
+	command.buffer_size = sizeof(entity.id)
+		+ sizeof(name.length)
+		+ name.length;
+
 
 	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
 
 	char* buffer = command.buffer;
-	buffer = write_u32(buffer, (u32)item->verbosity);
-	buffer = write_u64(buffer, item->time);
-	
-	buffer = write_s32(buffer, item->thread_id);
-	buffer = write_s32(buffer, item->line);
+	buffer = write_u64(buffer, entity.id);
+	buffer = write_u64(buffer, name.length);
+	buffer = write_buf(buffer, name.buffer, name.length);
 
-	// write tag name
-	buffer = write_s32(buffer, item->tag_length);
-	buffer = write_buf(buffer, item->tag, item->tag_length);
-
-	// write function name
-	buffer = write_u64(buffer, item->function_length);
-	buffer = write_buf(buffer, item->function, item->function_length);
-
-	// write filename name
-	buffer = write_u64(buffer, item->filename_length);
-	buffer = write_buf(buffer, item->filename, item->filename_length);
-	// write msg
-	buffer = write_u64(buffer, item->msg_length);
-	buffer = write_buf(buffer, item->msg, item->msg_length);
-	
 	send_command_to_editor(editor, command);
 	stack_pop(&editor->stack);
 }
 
-static void cmd_editor_window_focus_change(EditorInterface* editor, bool has_focus) {
-	EditorCommand command;
-	command.type = EditorCommandType::EDITOR_WINDOW_FOCUS_CHANGE;
-	command.undo_type = EditorCommandType::NONE;
-	command.buffer_size = sizeof(s32);
-		
+static void cmd_from_editor_delete_entities(EditorInterface* editor, EditorCommand* recv_command) {
 
-	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
-
-	char* buffer = command.buffer;
-	s32 has_focus_int = has_focus ? 1 : 0;
-	buffer = write_s32(buffer, has_focus);
 	
+	char* buffer = recv_command->buffer;
+	u64 count;
+	buffer = read_u64(buffer, &count);
+	//LOG_INFO("ENGINE", "delete entity count %d", count);
+	for (int i = 0; i < count; i++) {
+		Entity entity;
+		buffer = read_u64(buffer, &entity.id);
+		//LOG_INFO("ENGINE", "entity id %d", entity.id);
+		destroy_entity(editor->api.entity_manager, entity);
+	}
 
+	
+	
+	EditorCommand command;
+	command.type = EditorCommandType::EDITOR_DELETE_ENTITY_LIST;
+	command.undo_type = EditorCommandType::EDITOR_UNDO_DELETE_ENTITY_LIST;
+	command.buffer_size = recv_command->buffer_size;
+	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+	
+	memcpy(command.buffer, recv_command->buffer, command.buffer_size);
 	send_command_to_editor(editor, command);
 	stack_pop(&editor->stack);
 
+}
+
+static void cmd_from_editor_select_entity_list(EditorInterface* editor, EditorCommand* recv_command) {
+	char* buffer = recv_command->buffer;
+	u64 count;
+	buffer = read_u64(buffer, &count);
+	for (int i = 0; i < count; i++) {
+		Entity entity;
+		buffer = read_u64(buffer, &entity.id);
+		editor_select_entity(editor, entity);
+	}
+
+
+
+	EditorCommand command;
+	command.type = EditorCommandType::EDITOR_SELECT_ENTITY_LIST;
+	command.undo_type = EditorCommandType::EDITOR_UNDO_SELECT_ENTITY_LIST;
+	command.buffer_size = recv_command->buffer_size;
+	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+
+	memcpy(command.buffer, recv_command->buffer, command.buffer_size);
+	send_command_to_editor(editor, command);
+	stack_pop(&editor->stack);
+}
+
+
+static void cmd_from_editor_duplicate_entity_list(EditorInterface* editor, EditorCommand* recv_command) {
+
+
+	EditorCommand command;
+	command.type = EditorCommandType::EDITOR_DUPLICATE_ENTITY_LIST;
+	command.undo_type = EditorCommandType::EDITOR_UNDO_DUPLICATE_ENTITY_LIST;
+	command.buffer_size = recv_command->buffer_size;
+	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+
+
+	char* read_buffer = recv_command->buffer;
+	char* write_buffer = command.buffer;
+
+	u64 count;
+	// Get the count for how many entities we need to duplicate
+	read_buffer = read_u64(read_buffer, &count);
+	// Write the count to the new duplicate entity list
+	write_buffer = write_u64(write_buffer, count);
+
+	EntityManager* em = editor->api.entity_manager;
+
+	for (int i = 0; i < count; i++) {
+		// Read the entity
+		Entity entity;
+		read_buffer = read_u64(read_buffer, &entity.id);
+		// Get the name of this entity, we'll want to duplicate the name for the new entity
+		String name = get_name(&em->transform_manager, entity);
+
+		// Create an entity with a new name
+		Entity duplicate_entity = create_entity(em, name);
+		// Write the new entity id to the output duplicate buffer
+		write_buffer = write_u64(write_buffer, duplicate_entity.id);	
+	}
+
+	send_command_to_editor(editor, command);
+	stack_pop(&editor->stack);
 }

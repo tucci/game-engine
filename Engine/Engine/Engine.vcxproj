@@ -103,7 +103,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include;$(ProjectDir)lib\zlib-1.2.11</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include;$(ProjectDir)..\..\Shared</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -150,7 +150,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include;$(ProjectDir)lib\zlib-1.2.11</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)lib\glew210\include\GL;$(ProjectDir)lib\sdl\include;$(ProjectDir)core\include;$(ProjectDir)lib\zlib-1.2.11;$(ProjectDir)..\..\Shared</AdditionalIncludeDirectories>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <CompileAs>CompileAsCpp</CompileAs>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -364,7 +364,6 @@
     <Text Include="todo.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\..\Downloads\247_House 15_fbx.FBX" />
     <None Include="Assets\shaders\brdf.fs" />
     <None Include="Assets\shaders\brdf.vs" />
     <None Include="Assets\shaders\debug.fs" />

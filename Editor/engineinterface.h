@@ -8,47 +8,12 @@
 #include <QTcpSocket>
 
 
+#include "../Engine2/Shared/EditorCommands.h"
+
 #include "dockscenehierarchy.h"
 #include "dockconsole.h"
 
 #include <stdint.h>
-
-#define EDITOR_COMMAND_VERSION 1
-
-#define MAGIC_BYTES_SIZE 4
-// 1 2 3 4 for big endian and
-// 4 3 2 1 for little endian
-#define MAGIC_BYTES {'1', '2', '3', '4'}
-
-enum struct EditorCommandType : int32_t {
-    NONE = 0,
-    ENGINE_CONNECT = 1,
-    ENGINE_DISCONNECT = 2,
-    ENGINE_DATA = 3,
-    SEND_LOG_ITEM = 4,
-    EDITOR_WINDOW_FOCUS_CHANGE = 5
-};
-
-
-struct EditorCommandHeader {
-    // Header
-    // The magic bytes tells the parser what type of what this packet is for
-    // also can be used to check endianness
-    char magic[MAGIC_BYTES_SIZE];
-
-    int32_t version;
-    //s32 compression;
-    size_t message_size;
-};
-
-struct EditorCommand {
-
-    // Message
-    EditorCommandType type;
-    EditorCommandType undo_type;
-    size_t buffer_size;
-    char* buffer;
-};
 
 
 class EngineInterface : public QObject {
@@ -68,6 +33,7 @@ private:
     QWidget* game_widget;
     QVBoxLayout* game_layout;
     QByteArray socket_buffer;
+    QByteArray cmd_data_buffer;
     QTcpSocket* engine_socket;
 
     DockSceneHierarchy* scene_hierarchy;
@@ -82,17 +48,25 @@ private:
     void cmd_request_engine_disconnect();
     void cmd_respond_engine_disconnect(const EditorCommand& command);
 
-    void cmd_request_engine_data();
+    void cmd_request_scene_hierarchy();
+
     void cmd_respond_engine_data(const EditorCommand& command);
-
     void cmd_respond_send_log_item(const EditorCommand& command);
-
     void cmd_respond_editor_window_focus_change(const EditorCommand& command);
+    void cmd_respond_editor_new_entity(const EditorCommand& command);
+    void cmd_respond_editor_delete_entities(const EditorCommand& command);
+    void cmd_respond_editor_duplicate_entities(const EditorCommand& command);
+
 private slots:
     void connected();
     void disconnected();
     void bytesWritten(qint64 bytes);
     void readyRead();
+
+    void cmd_request_editor_new_entity();
+    void cmd_request_editor_delete_entity_list(const QList<uint64_t>& entites);
+    void cmd_request_editor_select_entity_list(const QSet<uint64_t>& entities);
+    void cmd_request_editor_duplicate_entity_list(const QList<uint64_t>& entities);
 };
 
 

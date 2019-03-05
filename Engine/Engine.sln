@@ -5,6 +5,12 @@ VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "Engine\Engine.vcxproj", "{94A26C21-A73B-4BD7-A939-F20CEE85E1D5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71E55136-CFCE-410B-BBB4-1463E69B8498}"
+	ProjectSection(SolutionItems) = preProject
+		..\Shared\EditorCommands.h = ..\Shared\EditorCommands.h
+		..\Shared\types.h = ..\Shared\types.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
