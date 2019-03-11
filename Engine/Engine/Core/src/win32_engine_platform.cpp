@@ -24,6 +24,9 @@
 
 #define DEFAULT_PORT 27016
 #define DATA_BUFSIZE 8192
+
+#define IOCP_WORKER_THREAD_COUNT 1
+
 struct FileHandle {
 	HANDLE win_handle;
 };
@@ -594,6 +597,9 @@ static DWORD WINAPI ServerWorkerThread(LPVOID params) {
 			// Since WSASend() is not guaranteed to send all of the bytes requested,
 			// continue posting WSASend() calls until all received bytes are sent.
 			ZeroMemory(&(PerIoData->Overlapped), sizeof(OVERLAPPED));
+
+			
+
 			PerIoData->DataBuf.buf = PerIoData->Buffer + PerIoData->BytesSEND;
 			PerIoData->DataBuf.len = PerIoData->BytesRECV - PerIoData->BytesSEND;
 
@@ -609,6 +615,8 @@ static DWORD WINAPI ServerWorkerThread(LPVOID params) {
 
 			p->callback((void*)&callback_params);
 
+			
+
 			if (WSASend(socket_handle->accept_socket, &(PerIoData->DataBuf), 1, &SendBytes, 0, &(PerIoData->Overlapped), NULL) == SOCKET_ERROR) {
 				if (WSAGetLastError() != ERROR_IO_PENDING) {
 					printf("WSASend() failed with error %d\n", WSAGetLastError());
@@ -622,6 +630,7 @@ static DWORD WINAPI ServerWorkerThread(LPVOID params) {
 			// Now that there are no more bytes to send, post another WSARecv() request
 			Flags = 0;
 			ZeroMemory(&(PerIoData->Overlapped), sizeof(OVERLAPPED));
+			
 			PerIoData->DataBuf.len = DATA_BUFSIZE;
 			PerIoData->DataBuf.buf = PerIoData->Buffer;
 			if (WSARecv(socket_handle->accept_socket, &(PerIoData->DataBuf), 1, &RecvBytes, &Flags, &(PerIoData->Overlapped), NULL) == SOCKET_ERROR) {
@@ -648,7 +657,8 @@ SocketHandle* p_setup_sockets_async(s32 (*callback)(void*), void* params) {
 	// Get how many cores on this pc
 	SYSTEM_INFO sys_info;
 	GetSystemInfo(&sys_info);
-	int worker_thread_count = (int)sys_info.dwNumberOfProcessors;
+	//int worker_thread_count = (int)sys_info.dwNumberOfProcessors;
+	int worker_thread_count = IOCP_WORKER_THREAD_COUNT;
 
 	
 

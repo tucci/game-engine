@@ -73,6 +73,12 @@ void g_attach_logger_callback(void(*log_callback)(void*), void* callback_data) {
 	g_logger.log_callback_data = callback_data;
 }
 
+void g_detach_logger_callback() {
+	g_logger.log_callback = NULL;
+	g_logger.log_callback_data = NULL;
+}
+
+
 // We will copy the msg into our memory
 static const char* _log_cpy_str(const char* str, s32 msg_length) {
 	size_t str_size = msg_length + 1;

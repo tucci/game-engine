@@ -43,6 +43,8 @@ SOURCES += \
     consolelogitemdelegate.cpp \
     logitem.cpp \
     checklist.cpp \
+    treeitem.cpp \
+    treemodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -58,6 +60,8 @@ HEADERS += \
     consolelogitemdelegate.h \
     logitem.h \
     checklist.h \
+    treeitem.h \
+    treemodel.h
 
 FORMS += \
         mainwindow.ui

@@ -1,5 +1,6 @@
 #include "engineinterface.h"
 #include <QtEndian>
+#include <string.h>
 
 
 EngineInterface::EngineInterface() {
@@ -86,6 +87,8 @@ void EngineInterface::bytesWritten(qint64 bytes)
 {
 }
 
+
+
 void EngineInterface::readyRead()
 {
     // read the data from the socket
@@ -104,9 +107,13 @@ void EngineInterface::readyRead()
 
     // deserialze command header
     EditorCommandHeader header;
-    char magic[4];
-    memcpy(magic, buf, 4);
-    buf += 4;
+    buf = read<>(buf, &header.magic);
+    if (header.magic != MAGIC_BYTES) {
+        qDebug() << "INVALID MAGIC";
+        // Invalid data
+        // We don't know what this data is or who sent it
+        return;
+    }
     buf = read<>(buf, &header.version);
     buf = read<>(buf, &header.message_size);
 
@@ -124,7 +131,7 @@ void EngineInterface::readyRead()
     command.buffer = (char*)calloc(1, command.buffer_size);
     memcpy(command.buffer, buf, command.buffer_size);
 
-    qDebug() << "RECVCommand: magic:" << magic
+    qDebug() << "RECVCommand: magic:" << header.magic
              << ",version:" << header.version
              << ",msg_len:" << header.message_size
              << ",msg_type:" << (int32_t)command.type
@@ -201,6 +208,7 @@ void EngineInterface::recv_command_from_engine(const EditorCommand& command) {
 
 void EngineInterface::send_command_to_engine(const EditorCommand& command) {
     EditorCommandHeader header;
+    header.magic = MAGIC_BYTES;
     header.version = EDITOR_COMMAND_VERSION;
 
     // NOTE: we explicity define the message size here. Using sizeof(command) works
@@ -234,10 +242,7 @@ void EngineInterface::send_command_to_engine(const EditorCommand& command) {
 
 
     // Write header
-    char magic[MAGIC_BYTES_SIZE] = MAGIC_BYTES;
-    memcpy(buf, magic, MAGIC_BYTES_SIZE);
-    buf += MAGIC_BYTES_SIZE;
-
+    buf = write<int32_t>(buf, header.magic);
     buf = write<int32_t>(buf, header.version);
     buf = write<uint64_t>(buf, (uint64_t)header.message_size);
 
@@ -250,7 +255,7 @@ void EngineInterface::send_command_to_engine(const EditorCommand& command) {
     memcpy(buf, command.buffer, command.buffer_size);
     engine_socket->write(buf_start, buf_size);
 
-    qDebug() << "SENDCommand: magic:" << magic
+    qDebug() << "SENDCommand: magic:" << header.magic
              << ",version:" << header.version
              << ",msg_len:" << header.message_size
              << ",msg_type:" << (int32_t)command.type
@@ -335,6 +340,8 @@ void EngineInterface::cmd_respond_engine_data(const EditorCommand& command) {
     char* buffer = command.buffer;
     buffer = read<>(command.buffer, &entity_count);
 
+    QHash<uint64_t, QStandardItem*> startup_build_entity_map;
+
     qDebug() << "entity count" << entity_count;
     for (uint64_t i = 0; i < entity_count; i++) {
         uint64_t entity_id;
@@ -353,8 +360,7 @@ void EngineInterface::cmd_respond_engine_data(const EditorCommand& command) {
         qDebug() << "Entity " << entity_id << " " << name << "parent " << parent_entity_id << " children " << child_count;
 
 
-        scene_hierarchy->add_entity(entity_id, parent_entity_id == 0);
-        scene_hierarchy->set_entity_name(entity_id, name);
+        scene_hierarchy->add_entity(startup_build_entity_map, entity_id, parent_entity_id == 0, name);
 
         for (uint64_t j = 0; j < child_count; j++) {
 
@@ -362,8 +368,10 @@ void EngineInterface::cmd_respond_engine_data(const EditorCommand& command) {
             buffer = read<>(buffer, &child_entity_id);
             qDebug() << child_entity_id << ", ";
 
-            scene_hierarchy->add_entity(child_entity_id, false);
-            scene_hierarchy->add_entity_child(entity_id, child_entity_id);
+            scene_hierarchy->add_entity(startup_build_entity_map, child_entity_id, false, "");
+            scene_hierarchy->add_entity_child(startup_build_entity_map, entity_id, child_entity_id);
+
+
         }
 
 
@@ -502,7 +510,7 @@ void EngineInterface::cmd_respond_editor_duplicate_entities(const EditorCommand&
 
     buffer = read<>(buffer, &entity_count);
     entities.reserve(static_cast<int>(entity_count));
-    for (int i = 0; i < entity_count; i++) {
+    for (u64 i = 0; i < entity_count; i++) {
         uint64_t entity_id;
         buffer = read<>(buffer, &entity_id);
         entities.push_back(entity_id);

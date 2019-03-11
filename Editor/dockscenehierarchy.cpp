@@ -5,6 +5,7 @@
 #include <QKeyEvent>
 
 
+
 SceneHierarchyProxyModel::SceneHierarchyProxyModel(QObject* parent) : QSortFilterProxyModel (parent) {
     setDynamicSortFilter(true);
 }
@@ -34,109 +35,110 @@ bool SceneHierarchyProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex
 }
 
 
-//EntityItemModel::EntityItemModel(QObject *parent) : QStandardItemModel (parent) {
-//
-//}
-//
-//bool EntityItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) {
-//
-//    qDebug() << "drop mime data" << data;
-//    qDebug() << "action " << action;
-//    qDebug() << "row " << row << " col " << column;
-//    qDebug() << "parent " << parent;
-//
-//    auto formats = data->formats();
-//
-//    if (data->hasFormat("application/x-qabstractitemmodeldatalist")) {
-//        QByteArray encoded = data->data("application/x-qabstractitemmodeldatalist");
-//        QDataStream stream(&encoded, QIODevice::ReadOnly);
-//        while (!stream.atEnd())
-//        {
-//            int data_row, data_col;
-//            QMap<int,  QVariant> roleDataMap;
-//            stream >> data_row >> data_col >> roleDataMap;
-//
-//            auto new_item = index(data_row, data_col, parent);
-//            auto item_data = itemFromIndex(new_item);
-//
-//            auto new_item_data = item_data->data();
-//            auto new_item_text = item_data->text();
-//
-//            auto entity_id = new_item_data.toULongLong();
-//
-//            entity_map.insert(entity_id, item_data);
-//
-//            qDebug() << roleDataMap;
-//
-//
-//
-//
-//            /* do something with the data */
-//        }
-//
-//    }
-//
-//    if (data->hasFormat("application/entity_id.list")) {
-//        QByteArray encodedData = data->data("application/entity_id.list");
-//        QDataStream stream(&encodedData, QIODevice::ReadOnly);
-//        QVariantList newItems;
-//
-//        int rows = 0;
-//
-//        while (!stream.atEnd()) {
-//            QVariant entity_id_variant;
-//            stream >> entity_id_variant;
-//            auto entity_id = entity_id_variant.toULongLong();
-//
-//            auto old_item = entity_map.value(entity_id, nullptr);
-//
-//            auto old_data = old_item->data();
-//            auto text = old_item->text();
-//
-//            auto model_index = index(row, column, parent);
-//
-//            auto new_item = itemFromIndex(model_index);
-//            //entity_map.insert(entity_id, item);
-//
-//
-//            newItems << entity_id;
-//            ++rows;
-//        }
-//    }
-//
-//
-//    return QStandardItemModel::dropMimeData(data, action, row, column, parent);
-//}
+EntityItemModel::EntityItemModel(QObject *parent) : QStandardItemModel (parent) {
 
-//QStringList EntityItemModel::mimeTypes() const  {
-//    QStringList types;
-//    types << "application/entity_id.list";
-//    //return types;
-//
-//    return QStandardItemModel::mimeTypes();
-//}
-//
-//QMimeData* EntityItemModel::mimeData(const QModelIndexList &indexes) const {
-//
-//    QMimeData *mimeData = new QMimeData();
-//    QByteArray encodedData;
-//
-//    QDataStream stream(&encodedData, QIODevice::WriteOnly);
-//
-//    foreach (const QModelIndex &index, indexes) {
-//        if (index.isValid()) {
-//            //QString text = data(index, Qt::DisplayRole).toString();
-//            QStandardItem* item = itemFromIndex(index);
-//            QVariant entityid = item->data();
-//            stream << entityid;
-//          }
-//      }
-//
-//      mimeData->setData("application/entity_id.list", encodedData);
-//      //return mimeData;
-//
-//      return QStandardItemModel::mimeData(indexes);
-//}
+}
+
+bool EntityItemModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) {
+
+    qDebug() << "drop mime data" << data;
+    qDebug() << "action " << action;
+    qDebug() << "row " << row << " col " << column;
+    qDebug() << "parent " << parent;
+
+
+    auto formats = data->formats();
+
+    if (data->hasFormat("application/x-qabstractitemmodeldatalist")) {
+        QByteArray encoded = data->data("application/x-qabstractitemmodeldatalist");
+        QDataStream stream(&encoded, QIODevice::ReadOnly);
+        while (!stream.atEnd())
+        {
+            int data_row, data_col;
+            QMap<int,  QVariant> roleDataMap;
+            stream >> data_row >> data_col >> roleDataMap;
+
+            //QModelIndex new_item = index(data_row, data_col, parent);
+            //auto item_data = itemFromIndex(new_item);
+            //
+            //auto new_item_data = item_data->data();
+            //auto new_item_text = item_data->text();
+            //
+            //auto entity_id = new_item_data.toULongLong();
+            //
+            ////entity_map.insert(entity_id, item_data);
+
+            qDebug() << roleDataMap;
+
+
+
+
+            /* do something with the data */
+        }
+
+    }
+
+    //if (data->hasFormat("application/entity_id.list")) {
+    //    QByteArray encodedData = data->data("application/entity_id.list");
+    //    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    //    QVariantList newItems;
+    //
+    //    int rows = 0;
+    //
+    //    while (!stream.atEnd()) {
+    //        QVariant entity_id_variant;
+    //        stream >> entity_id_variant;
+    //        auto entity_id = entity_id_variant.toULongLong();
+    //
+    //        auto old_item = entity_map.value(entity_id, nullptr);
+    //
+    //        auto old_data = old_item->data();
+    //        auto text = old_item->text();
+    //
+    //        auto model_index = index(row, column, parent);
+    //
+    //        auto new_item = itemFromIndex(model_index);
+    //        //entity_map.insert(entity_id, item);
+    //
+    //
+    //        newItems << entity_id;
+    //        ++rows;
+    //    }
+    //}
+
+
+    return QStandardItemModel::dropMimeData(data, action, row, column, parent);
+}
+
+QStringList EntityItemModel::mimeTypes() const  {
+    QStringList types;
+    types << "application/entity_id.list";
+    //return types;
+
+    return QStandardItemModel::mimeTypes();
+}
+
+QMimeData* EntityItemModel::mimeData(const QModelIndexList &indexes) const {
+
+    QMimeData *mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    foreach (const QModelIndex &index, indexes) {
+        if (index.isValid()) {
+            //QString text = data(index, Qt::DisplayRole).toString();
+            QStandardItem* item = itemFromIndex(index);
+            QVariant entityid = item->data();
+            stream << entityid;
+          }
+      }
+
+      mimeData->setData("application/entity_id.list", encodedData);
+      //return mimeData;
+
+      return QStandardItemModel::mimeData(indexes);
+}
 
 DockSceneHierarchy::DockSceneHierarchy(QWidget* parent) : DockInterface (parent) {
     dock_widget = parent_window->findChild<CustomDockWidget*>("DockScene");
@@ -147,14 +149,18 @@ DockSceneHierarchy::DockSceneHierarchy(QWidget* parent) : DockInterface (parent)
 
 
     proxy_model = new SceneHierarchyProxyModel(this->parent_window);
-    scene_tree_model = new QStandardItemModel();
+    scene_tree_model = new EntityItemModel();
 
 
     proxy_model->setSourceModel(scene_tree_model);
     scene_tree_view->setModel(proxy_model);
     scene_tree_view->setContextMenuPolicy(Qt::CustomContextMenu);
+    scene_tree_view->setDefaultDropAction(Qt::MoveAction);
     scene_tree_view->setDragDropMode(QAbstractItemView::InternalMove);
     scene_tree_view->setAcceptDrops(true);
+    scene_tree_view->setDragEnabled(true);
+    scene_tree_view->setDropIndicatorShown(true);
+
     scene_tree_view->viewport()->installEventFilter(this);
     scene_tree_view->installEventFilter(this);
     scene_tree_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -165,10 +171,7 @@ DockSceneHierarchy::DockSceneHierarchy(QWidget* parent) : DockInterface (parent)
     connect(scene_tree_view, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(context_menu_event(const QPoint &)));
     connect(selection_model , SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(entity_selection_changed(const QItemSelection&,const QItemSelection&)));
     connect(scene_hierarchy_filter, &QLineEdit::textChanged, proxy_model, &SceneHierarchyProxyModel::setFilterWildcard);
-    connect(proxy_model, &SceneHierarchyProxyModel::items_filtered, this, &DockSceneHierarchy::after_items_filtered);
 
-    connect(proxy_model, SIGNAL(layoutChanged(const QList<QPersistentModelIndex>&, QAbstractItemModel::LayoutChangeHint)),
-            this, SLOT(tree_layout_changed(const QList<QPersistentModelIndex> &, QAbstractItemModel::LayoutChangeHint)));
 
 }
 
@@ -188,10 +191,12 @@ bool DockSceneHierarchy::eventFilter(QObject* o, QEvent* e) {
 
         if (event_type == QEvent::DragMove) {
             //qDebug() << "drag move event " << e;
+
         }
         if (event_type == QEvent::Drop) {
             QDropEvent* drop = static_cast<QDropEvent*>(e);
             qDebug() << "drop event " << e;
+
         }
     }
     if (o == scene_tree_view) {
@@ -276,10 +281,6 @@ void DockSceneHierarchy::create_context_menu() {
 
 }
 
-void DockSceneHierarchy::after_items_filtered(const QModelIndex& index) {
-    //scene_tree_view->setExpanded(index, true);
-    //scene_tree_view->expandAll();
-}
 
 void DockSceneHierarchy::context_menu_event(const QPoint& point) {
     paste_entity_action->setEnabled(entity_copy_list.count() > 0);
@@ -287,6 +288,7 @@ void DockSceneHierarchy::context_menu_event(const QPoint& point) {
 }
 
 void DockSceneHierarchy::entity_selection_changed(const QItemSelection& selected, const QItemSelection& deselected) {
+    qDebug() << "Entity selection changed";
      QItemSelection selected_source = proxy_model->mapSelectionToSource(selected);
      QItemSelection deselected_source = proxy_model->mapSelectionToSource(deselected);
 
@@ -305,7 +307,6 @@ void DockSceneHierarchy::entity_selection_changed(const QItemSelection& selected
         auto item = scene_tree_model->itemFromIndex(index);
         uint64_t entity_id = item->data().toULongLong();
         selected_entities.insert(entity_id);
-
     }
 
     for (const QModelIndex& index : deselected_items) {
@@ -319,54 +320,43 @@ void DockSceneHierarchy::entity_selection_changed(const QItemSelection& selected
     //foreach (const uint64_t entity_id, selected_entities) {
     //    qDebug() << entity_id;
     //}
-    emit notify_entity_selection_change(selected_entities);
-
-}
-
-void DockSceneHierarchy::tree_layout_changed(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint) {
-    qDebug() << "layout changed";
-    qDebug() << parents;
-
-
+    //emit notify_entity_selection_change(selected_entities);
 
 }
 
 
 
 
-QStandardItem* DockSceneHierarchy::add_entity(uint64_t entity_id, bool is_root) {
 
+void DockSceneHierarchy::add_entity(QHash<uint64_t, QStandardItem*>& startup_build_entity_map, uint64_t entity_id, bool is_root, const QString& name) {
 
-
-    QStandardItem* existing_item = weak_entity_map.value(entity_id, nullptr);
+    QStandardItem* existing_item = startup_build_entity_map.value(entity_id, nullptr);
 
     // If it doesn't exist in the map
     // then this is the first time we are adding it to the map
-    if (existing_item  == nullptr) {
+    if (existing_item == nullptr) {
 
         QStandardItem* entity_model_item = new QStandardItem();
         // Attach the entity id as the data
         entity_model_item->setData(entity_id);
+        entity_model_item->setText(name);
         // Add the item to the map, so that when we check next time
         // we can see if the model has already been created
-        weak_entity_map.insert(entity_id, entity_model_item);
+        startup_build_entity_map.insert(entity_id, entity_model_item);
+        entity_set.insert(entity_id);
+
         if (is_root) {
             scene_tree_model->appendRow(entity_model_item);
         }
-        return entity_model_item;
+    } else {
+        existing_item->setText(name);
     }
-    // This entity has already been created,
-    // but it's possible that the name hasn't been set yet
-    // this may be to do that when we are parsing the entity tree,
-    // we may know the entity id, but not the name yet
-    // once we know the name, we may to back patch it into the item
-    return existing_item;
 
 }
 
-void DockSceneHierarchy::add_entity_child(uint64_t entity_id, uint64_t child_entity_id) {
-    QStandardItem* existing_item = weak_entity_map.value(entity_id, nullptr);
-    QStandardItem* existing_child_item = weak_entity_map.value(child_entity_id, nullptr);
+void DockSceneHierarchy::add_entity_child(QHash<uint64_t, QStandardItem*>& startup_build_entity_map, uint64_t entity_id, uint64_t child_entity_id) {
+    QStandardItem* existing_item = startup_build_entity_map.value(entity_id, nullptr);
+    QStandardItem* existing_child_item = startup_build_entity_map.value(child_entity_id, nullptr);
 
     // If it doesn't exist in the map
     // then this is the first time we are adding it to the map
@@ -379,14 +369,6 @@ void DockSceneHierarchy::add_entity_child(uint64_t entity_id, uint64_t child_ent
 
 
 
-void DockSceneHierarchy::set_entity_name(uint64_t entity_id, const QString& name) {
-    QStandardItem* existing_item = weak_entity_map.value(entity_id, nullptr);
-    if (existing_item  == nullptr) {
-        assert(0);
-    } else {
-        existing_item->setText(name);
-    }
-}
 
 void DockSceneHierarchy::request_new_entity() {
     emit notify_entity_new();
@@ -397,33 +379,37 @@ void DockSceneHierarchy::respond_new_entity(uint64_t entity_id, const QString& n
     // Attach the entity id as the data
     entity_model_item->setData(entity_id);
     scene_tree_model->appendRow(entity_model_item);
-    weak_entity_map.insert(entity_id, entity_model_item);
+}
+
+void DockSceneHierarchy::recursive_respond_delete(uint64_t entity_id_to_delete, QModelIndex parent) {
+    auto row_count = scene_tree_model->rowCount(parent);
+    for(int r = 0; r < row_count; ++r) {
+        QModelIndex index = scene_tree_model->index(r, 0, parent);
+
+        if (index.isValid()) {
+
+            QStandardItem* item = scene_tree_model->itemFromIndex(index);
+            auto entity_id = item->data().toULongLong();
+
+            if (entity_id == entity_id_to_delete) {
+                scene_tree_model->removeRow(r, parent);
+                return;
+            }
+
+            if(scene_tree_model->hasChildren(index) ) {
+                recursive_respond_delete(entity_id_to_delete, index);
+            }
+        }
+
+    }
 }
 
 
 void DockSceneHierarchy::respond_delete_entitys(const QList<uint64_t>& entities) {
     qDebug() << "respond_delete_entitys " << entities;
     for (uint64_t entity_id : entities) {
-        QStandardItem* existing_item = weak_entity_map.value(entity_id, nullptr);
-        if(existing_item == nullptr) {
-            continue;
-        }
-
-        auto index = existing_item->index();
-        if (index.isValid()) {
-            QModelIndex index_parent = index.parent();
-            scene_tree_model->removeRow(index.row(), index_parent.isValid() ? index_parent : QModelIndex());
-            weak_entity_map.remove(entity_id);
-        }
+         recursive_respond_delete(entity_id);
     }
-
-
-
-    //QModelIndexList indexes = source.indexes();
-       //    QModelIndex model_index = indexes.first();
-       //    scene_tree_model->removeRow(model_index.row(), model_index.parent());
-       //    // Reupdate source
-       //    source = proxy_model->mapSelectionToSource(selection_model->selection());
 }
 
 void DockSceneHierarchy::respond_duplicate_entitys(const QList<uint64_t>& entities) {
@@ -432,21 +418,22 @@ void DockSceneHierarchy::respond_duplicate_entitys(const QList<uint64_t>& entiti
 
     for (uint64_t entity_id : entities) {
 
-        if (!weak_entity_map.contains(entity_id)) {
-            QStandardItem* entity_model_item = new QStandardItem("Entity " + QString::number(entity_id));
-            // Attach the entity id as the data
-            entity_model_item->setData(entity_id);
-            weak_entity_map.insert(entity_id, entity_model_item);
-            scene_tree_model->appendRow(entity_model_item);
+        if (entity_set.contains(entity_id)) {
+            qDebug() << "ENTITY ALREADY IN SET";
+            //__debugbreak();
+            continue;
         }
 
+        entity_set.insert(entity_id);
+
+        QStandardItem* entity_model_item = new QStandardItem("Entity " + QString::number(entity_id));
+        // Attach the entity id as the data
+        entity_model_item->setData(entity_id);
+        auto index = entity_model_item->index();
+        auto p_index =  QPersistentModelIndex(index);
+
+        scene_tree_model->appendRow(entity_model_item);
     }
-
-
-    //QStandardItem* entity_model_item = new QStandardItem(item->text() + " Copy");
-    //// Attach the entity id as the data
-    //entity_model_item->setData(entity_id);
-    //scene_tree_model->appendRow(entity_model_item);
 }
 
 
@@ -472,15 +459,10 @@ void DockSceneHierarchy::copy_entitys() {
 
 void DockSceneHierarchy::paste_entitys() {
     qDebug() << "paste entity";
-    for(uint64_t entity : entity_copy_list) {
-        //auto item = entity_map.value(entity);
-        //QStandardItem* entity_model_item = new QStandardItem(item->text() + " Copy");
-        //// Attach the entity id as the data
-        //entity_model_item->setData(entity);
-        //scene_tree_model->appendRow(entity_model_item);
-    }
-    emit notify_entity_duplicate(entity_copy_list);
 
+    if (entity_copy_list.count() == 0) {return;}
+
+    emit notify_entity_duplicate(entity_copy_list);
     entity_copy_list.clear();
 }
 
@@ -494,6 +476,8 @@ void DockSceneHierarchy::request_duplicate_entitys() {
     //QModelIndexList indexes = selection_model ->selectedIndexes();
     int count = indexes.count();
 
+    if (count == 0){return;}
+
     entitys_to_duplicate.reserve(count);
 
     for (auto const& index: indexes) {
@@ -501,11 +485,6 @@ void DockSceneHierarchy::request_duplicate_entitys() {
 
         uint64_t entity_id = item->data().toULongLong();
         entitys_to_duplicate.push_back(entity_id);
-
-        //QStandardItem* entity_model_item = new QStandardItem(item->text() + " Copy");
-        //// Attach the entity id as the data
-        //entity_model_item->setData(entity_id);
-        //scene_tree_model->appendRow(entity_model_item);
     }
 
     qDebug() << "request_duplicate_entitys " << entitys_to_duplicate;
@@ -541,8 +520,6 @@ void DockSceneHierarchy::request_delete_entitys() {
     for(QModelIndex const& index: indexes) {
         QStandardItem* item = scene_tree_model->itemFromIndex(index);
         uint64_t entity_id = item->data().toULongLong();
-
-
         entitys_to_delete.push_back(entity_id);
     }
     qDebug() << "request_delete_entitys " << entitys_to_delete;

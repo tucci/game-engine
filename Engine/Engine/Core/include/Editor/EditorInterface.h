@@ -45,6 +45,7 @@ struct EditorInterface {
 	StackAllocator stack;
 
 
+	CompactMap<bool> entity_set;
 
 	Entity editor_camera;
 	HDR_SkyMap hdr_skymap;
@@ -68,6 +69,7 @@ void connect_editor_socket(EditorInterface* editor);
 void disconnect_editor_socket(EditorInterface* editor);
 
 static void attach_logger_to_editor(EditorInterface* editor);
+static void detach_logger_to_editor(EditorInterface* editor);
 static void editor_logger_callback(void* data);
 
 void editor_select_entity(EditorInterface* editor, Entity entity);

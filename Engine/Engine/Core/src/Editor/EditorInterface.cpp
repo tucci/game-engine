@@ -7,6 +7,10 @@
 
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
+
+	//editor->entity_set
+	map_init(&editor->entity_set);
+
 	editor->api = api;
 	editor->connection_status = EditorConnectionStatus::None;
 	
@@ -65,6 +69,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 }
 
 void destroy_editor_interface(EditorInterface* editor) {
+	map_destroy(&editor->entity_set);
 	disconnect_editor_socket(editor);
 	arena_free(&editor->arena);
 }
@@ -260,9 +265,12 @@ s32 editor_recv_callback(void* params) {
 		EditorCommandHeader header;
 
 		char* hbuf = ecq->packet_buffer;
+
 		// Read magic bytes
-		memcpy(header.magic, hbuf, MAGIC_BYTES_SIZE);
-		hbuf += MAGIC_BYTES_SIZE;
+		hbuf = read_s32(hbuf, &header.magic);
+		
+		//memcpy(header.magic, hbuf, MAGIC_BYTES_SIZE);
+		//hbuf += MAGIC_BYTES_SIZE;
 
 		// Read version, and re read in the header message size
 		hbuf = read_s32(hbuf, &header.version);
@@ -319,6 +327,7 @@ void connect_editor_socket(EditorInterface* editor) {
 }
 
 void disconnect_editor_socket(EditorInterface* editor) {
+	detach_logger_to_editor(editor);
 	editor->connection_status = EditorConnectionStatus::Disconected;
 	p_sock_close(editor->listen_socket);
 	p_sock_shutdown(editor->listen_socket);
@@ -330,6 +339,11 @@ void disconnect_editor_socket(EditorInterface* editor) {
 static void attach_logger_to_editor(EditorInterface* editor) {
 	// pass the editor as a data param for the callback
 	g_attach_logger_callback(editor_logger_callback, (void*)editor);
+}
+
+
+static void detach_logger_to_editor(EditorInterface* editor) {
+	g_detach_logger_callback();
 }
 
 static void editor_logger_callback(void* data) {
@@ -394,9 +408,8 @@ static void send_command_to_editor(EditorInterface* editor, EditorCommand comman
 
 	
 	// Write header
-	char magic[MAGIC_BYTES_SIZE] = MAGIC_BYTES;
-	memcpy(buf, magic, MAGIC_BYTES_SIZE);
-	buf += MAGIC_BYTES_SIZE;
+	s32 magic = MAGIC_BYTES;
+	buf = write_s32(buf, magic);
 
 	buf = write_s32(buf, header.version);
 	buf = write_u64(buf, (u64)header.message_size);
@@ -794,6 +807,7 @@ static void cmd_from_editor_select_entity_list(EditorInterface* editor, EditorCo
 }
 
 
+
 static void cmd_from_editor_duplicate_entity_list(EditorInterface* editor, EditorCommand* recv_command) {
 
 
@@ -802,6 +816,7 @@ static void cmd_from_editor_duplicate_entity_list(EditorInterface* editor, Edito
 	command.undo_type = EditorCommandType::EDITOR_UNDO_DUPLICATE_ENTITY_LIST;
 	command.buffer_size = recv_command->buffer_size;
 	command.buffer = (char*)stack_alloc(&editor->stack, command.buffer_size, 1);
+	
 
 
 	char* read_buffer = recv_command->buffer;
@@ -822,9 +837,17 @@ static void cmd_from_editor_duplicate_entity_list(EditorInterface* editor, Edito
 		// Get the name of this entity, we'll want to duplicate the name for the new entity
 		String name = get_name(&em->transform_manager, entity);
 
+		
+		
 		// Create an entity with a new name
 		Entity duplicate_entity = create_entity(em, name);
 		// Write the new entity id to the output duplicate buffer
+		MapResult<bool> result = map_get(&editor->entity_set, duplicate_entity.id);
+		if (result.found) {
+			DEBUG_BREAK;
+		}
+	
+		map_put(&editor->entity_set, entity.id, true);
 		write_buffer = write_u64(write_buffer, duplicate_entity.id);	
 	}
 

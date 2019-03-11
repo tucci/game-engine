@@ -63,6 +63,7 @@ struct Logger {
 void g_init_logger();
 void g_destory_logger();
 void g_attach_logger_callback(void(*log_callback)(void*), void* log_callback_data);
+void g_detach_logger_callback();
 
 
 void _log(

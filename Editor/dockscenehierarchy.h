@@ -29,14 +29,14 @@ protected:
 };
 
 
-//class EntityItemModel : public QStandardItemModel {
-//
-//public:
-//    explicit EntityItemModel(QObject *parent = nullptr);
-//    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
-//    QStringList mimeTypes() const override;
-//    QMimeData* mimeData(const QModelIndexList &indexes) const override;
-//};
+class EntityItemModel : public QStandardItemModel {
+
+public:
+    explicit EntityItemModel(QObject *parent = nullptr);
+    bool dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList &indexes) const override;
+};
 
 
 class DockSceneHierarchy : public DockInterface {
@@ -44,9 +44,13 @@ class DockSceneHierarchy : public DockInterface {
 public:
     DockSceneHierarchy(QWidget* parent);
     ~DockSceneHierarchy() override;
-    QStandardItem* add_entity(uint64_t entity_id, bool is_root);
-    void add_entity_child(uint64_t entity_id, uint64_t child_entity_id);
-    void set_entity_name(uint64_t entity_id, const QString& name);
+
+
+
+
+    void add_entity(QHash<uint64_t, QStandardItem*>& startup_build_entity_map, uint64_t entity_id, bool is_root, const QString& name);
+    void add_entity_child(QHash<uint64_t, QStandardItem*>& startup_build_entity_map, uint64_t entity_id, uint64_t child_entity_id);
+
 protected:
     bool eventFilter(QObject* o, QEvent* e) override;
 
@@ -65,10 +69,8 @@ public slots:
 
 
 private slots:
-    void after_items_filtered(const QModelIndex& index);
     void context_menu_event(const QPoint& point);
     void entity_selection_changed(const QItemSelection& selected, const QItemSelection& deselected);
-    void tree_layout_changed(const QList<QPersistentModelIndex> &parents, QAbstractItemModel::LayoutChangeHint hint);
 
 
     void request_new_entity();
@@ -79,19 +81,13 @@ private slots:
     void rename_entity();
     void request_delete_entitys();
 private:
-
-
-
-
-
-    QHash<uint64_t, QStandardItem*> weak_entity_map;
-
+    QSet<uint64_t> entity_set;
     QSet<uint64_t> selected_entities;
     QList<uint64_t> entity_copy_list;
 
     SceneHierarchyProxyModel* proxy_model;
     QItemSelectionModel* selection_model;
-    QStandardItemModel* scene_tree_model;
+    EntityItemModel* scene_tree_model;
     QTreeView* scene_tree_view;
     QLineEdit* scene_hierarchy_filter;
 
@@ -107,11 +103,7 @@ private:
     QAction* delete_entity_action;
 
     void create_context_menu();
-
-
-
-
-
+    void recursive_respond_delete(uint64_t entity_id_to_delete, QModelIndex parent = QModelIndex());
 
 };
 

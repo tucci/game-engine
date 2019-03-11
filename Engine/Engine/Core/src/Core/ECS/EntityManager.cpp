@@ -30,8 +30,6 @@ Entity create_entity(EntityManager* manager, String name) {
 	map_put(&manager->entity_index_map, entity.id, manager->entity_count);
 	manager->entity_count++;
 
-
-
 	entity_add_transform_component(&manager->transform_manager, entity, name);
 	
 

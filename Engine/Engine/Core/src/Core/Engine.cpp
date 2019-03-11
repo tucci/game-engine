@@ -778,6 +778,10 @@ bool init_engine(Engine* engine) {
 
 bool destroy_engine(Engine* engine) {
 
+
+	LOG_INFO("ENGINE", "Destroying engine subsystems");
+
+
 #if ENGINE_MODE_EDITOR
 	destroy_editor_interface(&engine->editor);
 #else
@@ -785,14 +789,11 @@ bool destroy_engine(Engine* engine) {
 #endif
 
 	
-	LOG_INFO("ENGINE", "Destroying engine subsystems");
+	
 	destroy_entity_manager(&engine->entity_manager);
 	destroy_asset_manager(&engine->asset_manager);
 	destory_backend_renderer(&engine->renderer);
 
-
-   
-	LOG_INFO("ENGINE", "Destroying other subsytems");
 	SDL_DestroyWindow(engine->window.sdl_window);
 	SDL_Quit();
     
