@@ -15,6 +15,11 @@ struct CameraID {
 	u64 id;
 };
 
+enum class CameraProjection {
+	Perspective,
+	Orthographic
+};
+
 struct Camera {
 	
 	//Transform transform;
@@ -23,6 +28,14 @@ struct Camera {
 	float far_clip;
 	float fov;
 	float aspect_ratio;
+
+	CameraProjection projection;
+
+	float top;
+	float bottom;
+	float left;
+	float right;
+
 	Mat4x4f view_mat;
 	Camera(Entity ref) {
 		entity_ref = ref;
@@ -31,6 +44,10 @@ struct Camera {
 		fov = 90.0f;
 		aspect_ratio = 1.0f;
 		view_mat = Mat4x4f();
+		left = 0;
+		right = 100;
+		top = 0;
+		bottom = 100;
 	}
 };
 

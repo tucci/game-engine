@@ -16,15 +16,17 @@ void g_init_logger() {
 	void* stack_start = arena_alloc(&g_logger.logger_mem, stack_size);
 	stack_alloc_init(&g_logger.stack, stack_start, stack_size);
 
-	g_logger.info = NULL;
-	g_logger.warn = NULL;
-	g_logger.fatal = NULL;
-	g_logger.verbose = NULL;
-
-	g_logger.info_count = 0;
-	g_logger.warn_count = 0;
-	g_logger.fatal_count = 0;
-	g_logger.verbose_count = 0;
+	g_logger.logs = NULL;
+	g_logger.log_count = 0;
+	//g_logger.info = NULL;
+	//g_logger.warn = NULL;
+	//g_logger.fatal = NULL;
+	//g_logger.verbose = NULL;
+	//
+	//g_logger.info_count = 0;
+	//g_logger.warn_count = 0;
+	//g_logger.fatal_count = 0;
+	//g_logger.verbose_count = 0;
 	g_logger.inited = true;
 	g_logger.log_callback = NULL;
 
@@ -47,16 +49,17 @@ void g_destory_logger() {
 	// This is not neccessary since the stack is using the arena as its memory store
 	stack_reset(&g_logger.stack);
 
-	
-	sb_free(g_logger.info);
-	sb_free(g_logger.warn);
-	sb_free(g_logger.fatal);
-	sb_free(g_logger.verbose);
+	sb_free(g_logger.logs);
+	g_logger.log_count = 0;
+	//sb_free(g_logger.info);
+	//sb_free(g_logger.warn);
+	//sb_free(g_logger.fatal);
+	//sb_free(g_logger.verbose);
 
-	g_logger.info_count = 0;
-	g_logger.warn_count = 0;
-	g_logger.fatal_count = 0;
-	g_logger.verbose_count = 0;
+	//g_logger.info_count = 0;
+	//g_logger.warn_count = 0;
+	//g_logger.fatal_count = 0;
+	//g_logger.verbose_count = 0;
 
 	errno_t err;
 	err = fclose(g_logger.log_file);
@@ -154,32 +157,35 @@ void _log(const char* tag,
 
 	
 	const char* log_type_str;
+	sb_push(g_logger.logs, item);
+	g_logger.log_count++;
+
 	switch (verbosity) {
 		case LoggerVerbosity::INFO: {
-			sb_push(g_logger.info, item);
-			g_logger.info_count++;
+			//sb_push(g_logger.info, item);
+			//g_logger.info_count++;
 			log_type_str = "[INFO]";
 			debug_print("%s %s\n", log_type_str, formatted_msg_buf);
 			break;
 		}
 
 		case LoggerVerbosity::WARN: {
-			sb_push(g_logger.warn, item);
-			g_logger.warn_count++;
+			//sb_push(g_logger.warn, item);
+			//g_logger.warn_count++;
 			log_type_str = "[WARN]";
 			debug_print("%s %s\n", log_type_str, formatted_msg_buf);
 			break;
 		}
 		case LoggerVerbosity::FATAL: {
-			sb_push(g_logger.fatal, item);
-			g_logger.fatal_count++;
+			//sb_push(g_logger.fatal, item);
+			//g_logger.fatal_count++;
 			log_type_str = "[FATAL]";
 			debug_print("%s %s\n", log_type_str, formatted_msg_buf);
 			break;
 		}
 		case LoggerVerbosity::VERBOSE: {
-			sb_push(g_logger.verbose, item);
-			g_logger.verbose_count++;
+			//sb_push(g_logger.verbose, item);
+			//g_logger.verbose_count++;
 			log_type_str = "[VERBOSE]";
 			//debug_print("%s %s\n", "[VERBOSE]", formatted_msg_buf);
 			break;
@@ -235,4 +241,11 @@ void _log(const char* tag,
 	stack_pop(&g_logger.stack);
 
 	
+}
+
+LogList g_get_loglist() {
+	LogList list;
+	list.logs = g_logger.logs;
+	list.log_count = g_logger.log_count;
+	return list;
 }

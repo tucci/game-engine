@@ -156,7 +156,7 @@ void load_scene(Game* game, int scene_id) {
 
 	destroy_asset_importer(&importer);
 
-	Vec3f model_pos = position(entity_manager, scene->sink);
+	Vec3f model_pos = get_position(entity_manager, scene->sink);
 	set_position(entity_manager, scene->entity_main_camera, model_pos);
 	
 	
@@ -241,7 +241,7 @@ void game_update(Game* game) {
 	if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, scene->entity_main_camera)); }
 
 	float cam_move_scale = 10;
-	Vec3f cam_pos = position(entity_manager, scene->entity_main_camera);
+	Vec3f cam_pos = get_position(entity_manager, scene->entity_main_camera);
 	set_position(entity_manager, scene->entity_main_camera, cam_pos + (cam_move_scale * new_cam_direction));
 
 	//debug_print("POS [%f, %f, %f]\n", cam_pos.x, cam_pos.y, cam_pos.z);
@@ -304,7 +304,7 @@ void game_update(Game* game) {
 
 
 	Vec3f sink_dir;
-	Vec3f sink_pos = position(entity_manager, scene->sink);
+	Vec3f sink_pos = get_position(entity_manager, scene->sink);
 
 	if (is_key_down(input, KEYCODE_UP)) {
 		light.dir_light.direction.x += delta_time * 0.5f;
@@ -346,7 +346,7 @@ void game_update(Game* game) {
 
 		// See world/local rotation
 		// Rotate camera around world first
-		Quat old_cam_rot = rotation(entity_manager, scene->entity_main_camera);
+		Quat old_cam_rot = get_rotation(entity_manager, scene->entity_main_camera);
 		Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -delta_pos.x * 0.25f) * old_cam_rot;
 
 
@@ -402,7 +402,7 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 		//set_name(manager, child_entity, child_node->name);
 		set_position(manager, child_entity, child_node->translation);
 		set_scale(manager, child_entity, child_node->scale);
-		set_rotation(manager, child_entity, euler_to_quat(child_node->rotation));
+		set_rotation(manager, child_entity, euler_to_quat(child_node->get_rotation));
 		attach_child_entity(manager, parent_entity, child_entity);
 
 		import_asset_scene_node(manager, scene, child_node, child_entity);
@@ -457,7 +457,7 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 
 	set_position(manager, root, scene->root->translation);
 	set_scale(manager, root, scene->root->scale);
-	set_rotation(manager, root, euler_to_quat(scene->root->rotation));
+	set_rotation(manager, root, euler_to_quat(scene->root->get_rotation));
 
 	
 	import_asset_scene_node(manager, scene, scene->root, root);

@@ -71,7 +71,7 @@ struct AssetID {
 
 struct AssetImport_StaticMesh {
 	Vec3f translation;
-	Vec3f rotation;
+	Vec3f get_rotation;
 	Vec3f scale;
 	StaticMesh mesh;
 
@@ -87,7 +87,7 @@ struct AssetImport_SceneNode {
 	//Mat4x4f transform;
 	Vec3f translation;
 	Vec3f scale;
-	Vec3f rotation;
+	Vec3f get_rotation;
 
 	u32 children_count;
 	union {

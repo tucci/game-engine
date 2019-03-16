@@ -300,6 +300,6 @@ void set_scene_node_transform(AssetImport_SceneNode* node, Vec3f pos, Vec3f scal
 
 	node->translation = pos;
 	node->scale = scale;
-	node->rotation = rot;
+	node->get_rotation = rot;
 }
 

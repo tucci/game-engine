@@ -27,11 +27,19 @@ void set_camera_params(EntityManager* manager, Entity entity,
 	cam->aspect_ratio = aspect_ratio;
 }
 
+void set_camera_projection(EntityManager* manager, Entity entity, CameraProjection projection) {
+	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+
+	u64 index = result.value;
+	Camera* cam = &manager->camera_manager.cameras[index];
+	cam->projection = projection;
+}
+
 void job_compute_camera_view_matrices(EntityManager* manager) {
 	for (int i = 0; i < manager->camera_manager.count; i++) {
 		Camera* cam = &manager->camera_manager.cameras[i];
 		Entity e = manager->camera_manager.cameras[i].entity_ref;
-		Vec3f cam_pos = position(manager, e);
+		Vec3f cam_pos = get_position(manager, e);
 		// Since camera is looking now -z, we want to move in that direction instead
 		// so we need to flip the forward
 		Vec3f cam_forward = -forward(manager, e);

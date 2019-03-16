@@ -22,7 +22,7 @@ struct DirectionalLight {
 };
 
 struct PointLight {
-	Vec3f position;
+	Vec3f get_position;
 	Vec3f color;
 };
 

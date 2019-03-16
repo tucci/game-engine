@@ -7,6 +7,73 @@
 
 #include "Common/stretchy_buffer.h"
 
+void init_component_manager(ComponentManager* cpm) {
+	cpm->count = 0;
+	cpm->types = NULL;
+	map_init(&cpm->id_map);
+}
+
+void destroy_component_manager(ComponentManager* cpm) {
+	cpm->count = 0;
+	map_destroy(&cpm->id_map);
+}
+
+static void create_component_flag(ComponentManager* cpm, Entity entity) {
+	
+	ComponentType comp_type;
+	comp_type = ComponentType::None;
+	u64 count = stb_sb_count(cpm->types);
+	if (count == cpm->count) {
+		stb_sb_push(cpm->types, comp_type);
+	} else {
+		cpm->types[cpm->count] = comp_type;
+	}
+	map_put(&cpm->id_map, entity.id, cpm->count);
+	cpm->count++;
+}
+
+static void remove_component_flag(ComponentManager* cpm, Entity entity) {
+	// Get index of the entity we are trying to remove
+	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
+	if (!result.found) {
+		// This entity has already been deleted 
+		return;
+	}
+	u64 index = result.value;
+
+	ComponentType last_type = cpm->types[cpm->count - 1];
+	// Place the last entity in the entity list at the index we are removing from
+	cpm->types[index] = last_type;
+	cpm->count--;
+	// Update the mapping of the swapped entity to it's new index
+	//map_put(&cpm->id_map, last_entity_in_list_to_swap_with.id, index);
+	map_remove(&cpm->id_map, entity.id);
+
+}
+
+void set_component_flag(ComponentManager* cpm, Entity entity, ComponentType component) {
+	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
+	if (!result.found) {
+		assert_fail();
+	}
+	u64 index = result.value;
+	ComponentType* flags = &cpm->types[index];
+	*flags = *flags | component;
+	
+	
+}
+
+static void unset_component_flag(ComponentManager* cpm, Entity entity, ComponentType component) {
+	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
+	if (!result.found) {
+		assert_fail();
+	}
+	u64 index = result.value;
+	ComponentType* flags = &cpm->types[index];
+	*flags = *flags & ~component;
+}
+
+
 
 Entity create_entity(EntityManager* manager, String name) {
 	
@@ -30,7 +97,13 @@ Entity create_entity(EntityManager* manager, String name) {
 	map_put(&manager->entity_index_map, entity.id, manager->entity_count);
 	manager->entity_count++;
 
+	create_component_flag(&manager->component_manager, entity);
+
 	entity_add_transform_component(&manager->transform_manager, entity, name);
+	set_component_flag(&manager->component_manager, entity, ComponentType::Transform);
+
+	
+	
 	
 
 	return entity;
@@ -81,13 +154,14 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 
 	// Need to remove it from all the other components
 
+
 	for (int i = (int)ComponentType::None; i < (int)ComponentType::Count; i++) {
 		ComponentType type = (ComponentType)i;
 		remove_component(manager, entity, type);
 	}
 
-	
-	
+	remove_component_flag(&manager->component_manager, entity);
+
 }
 
 void add_component(EntityManager* manager, Entity entity, ComponentType type) {
@@ -99,6 +173,8 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 		return;
 	}
 
+	set_component_flag(&manager->component_manager, entity, type);
+
 	switch (type) {
 		case ComponentType::Transform: {
 			//entity_add_transform_component(&manager->transform_manager, entity);
@@ -106,7 +182,6 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 		}
 		case ComponentType::Camera: {
 			entity_add_camera_component(&manager->camera_manager, entity);
-			
 			break;
 		}
 		case ComponentType::StaticMesh: {
@@ -127,6 +202,8 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 
 
 void remove_component(EntityManager* manager, Entity entity, ComponentType type) {
+	unset_component_flag(&manager->component_manager, entity, type);
+
 	switch (type) {
 		case ComponentType::Transform: {
 			entity_remove_transform_component(&manager->transform_manager, entity);
@@ -144,7 +221,6 @@ void remove_component(EntityManager* manager, Entity entity, ComponentType type)
 			entity_remove_light_component(&manager->light_manager, entity);
 			break;
 		}
-
 		case ComponentType::Render: {
 			entity_remove_render_component(&manager->render_manager, entity);
 			break;
@@ -153,9 +229,22 @@ void remove_component(EntityManager* manager, Entity entity, ComponentType type)
 }
 
 
+bool has_component(EntityManager* manager, Entity entity, ComponentType component) {
+	ComponentManager* cpm = &manager->component_manager;
+	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
+	if (!result.found) {
+		assert_fail();
+	}
+	u64 index = result.value;
+	ComponentType flags = cpm->types[index];
+	return ((u64)flags & (u64)component);
+}
+
+
 void init_entity_manager(EntityManager* manager) {
 	arena_init(&manager->arena);
 
+	init_component_manager(&manager->component_manager);
 
 	manager->entity_count = 0;
 	manager->entitys_created = 0;
@@ -183,6 +272,7 @@ void destroy_entity_manager(EntityManager* manager) {
 	arena_free(&manager->arena);
 	stb_sb_free(manager->entity_list);
 
+	destroy_component_manager(&manager->component_manager);
 	
 	destroy_transform_manager(&manager->transform_manager);
 	destroy_static_mesh_manager(&manager->static_mesh_manger);

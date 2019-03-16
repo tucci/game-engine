@@ -35,17 +35,25 @@ struct LogItem {
 
 };
 
+struct LogList {
+	LogItem* logs;
+	s32 log_count;
+};
+
 
 struct Logger {
-	LogItem* info;
-	LogItem* warn;
-	LogItem* fatal;
-	LogItem* verbose;
+	LogItem* logs;
+	s32 log_count;
 
-	s32 info_count;
-	s32 warn_count;
-	s32 fatal_count;
-	s32 verbose_count;
+	//LogItem* info;
+	//LogItem* warn;
+	//LogItem* fatal;
+	//LogItem* verbose;
+	//
+	//s32 info_count;
+	//s32 warn_count;
+	//s32 fatal_count;
+	//s32 verbose_count;
 
 	
 	FILE* log_file;
@@ -64,6 +72,7 @@ void g_init_logger();
 void g_destory_logger();
 void g_attach_logger_callback(void(*log_callback)(void*), void* log_callback_data);
 void g_detach_logger_callback();
+LogList g_get_loglist();
 
 
 void _log(

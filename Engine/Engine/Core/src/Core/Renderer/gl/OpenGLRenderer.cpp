@@ -618,10 +618,23 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right) {
 
 
-	Camera camera = *opengl->render_world->camera;
+	Camera* camera = opengl->render_world->camera;
 	Mat4x4f model_mat;
-	Mat4x4f view_mat = camera.view_mat;
-	Mat4x4f projection_mat = perspective(camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
+	Mat4x4f view_mat = camera->view_mat;
+
+	Mat4x4f projection_mat;
+
+	switch (camera->projection) {
+		case CameraProjection::Perspective: {
+			projection_mat = perspective(camera->near_clip, camera->far_clip, camera->fov, camera->aspect_ratio);
+			break;
+		}
+		case CameraProjection::Orthographic: {
+			projection_mat = ortho(camera->near_clip, camera->far_clip, camera->top, camera->bottom, camera->right, camera->left);
+			break;
+		}
+	}
+	
 
 	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
 
@@ -690,6 +703,8 @@ void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f u
 
 
 bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world) {
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
@@ -867,10 +882,24 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
 
 
-	Camera camera = *opengl->render_world->camera;
+	
+	Camera* camera = opengl->render_world->camera;
 	Mat4x4f model_mat;
-	Mat4x4f view_mat = camera.view_mat;
-	Mat4x4f projection_mat = perspective(camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
+	Mat4x4f view_mat = camera->view_mat;
+	Mat4x4f projection_mat;
+
+
+
+	switch (camera->projection) {
+		case CameraProjection::Perspective: {
+			projection_mat = perspective(camera->near_clip, camera->far_clip, camera->fov, camera->aspect_ratio);
+			break;
+		}
+		case CameraProjection::Orthographic: {
+			projection_mat = ortho(camera->near_clip, camera->far_clip, camera->top, camera->bottom, camera->right, camera->left);
+			break;
+		}
+	}
 	
 	Mat4x4f mvp_mat = projection_mat * view_mat * model_mat;
 	
@@ -1024,7 +1053,19 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 
 	Mat4x4f view_mat = camera->view_mat;
-	Mat4x4f projection_mat = perspective(camera->near_clip, camera->far_clip, camera->fov, camera->aspect_ratio);
+	Mat4x4f projection_mat;
+	switch (camera->projection) {
+		case CameraProjection::Perspective: {
+			projection_mat = perspective(camera->near_clip, camera->far_clip, camera->fov, camera->aspect_ratio);
+			break;
+		}
+		case CameraProjection::Orthographic: {
+			projection_mat = ortho(camera->near_clip, camera->far_clip, camera->top, camera->bottom, camera->right, camera->left);
+			break;
+		}
+	}
+	
+	
 	Mat4x4f pv_mat;
 	
 	

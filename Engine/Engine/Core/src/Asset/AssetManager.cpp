@@ -152,7 +152,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 	node.scale = *cast(Vec3f*)buffer;
 
 	fread(buffer, sizeof(Vec3f), 1, file);
-	node.rotation = *cast(Vec3f*)buffer;
+	node.get_rotation = *cast(Vec3f*)buffer;
 
 	fread(buffer, sizeof(u32), 1, file);
 	node.children_count = *cast(u32*)buffer;

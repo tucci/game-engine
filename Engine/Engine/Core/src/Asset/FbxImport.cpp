@@ -43,7 +43,7 @@ static TextureType fbx_string_texture_type(const char* string) {
 		return TextureType::None;
 	}
 }
-static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f rotation, IString path, IString filename){
+static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f get_rotation, IString path, IString filename){
 
 
 	// Get the size of the full path
@@ -89,7 +89,7 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	// Write the transform
 	fwrite(cast(const void*) &pos, sizeof(pos), 1, file);
 	fwrite(cast(const void*) &scale, sizeof(scale), 1, file);
-	fwrite(cast(const void*) &rotation, sizeof(rotation), 1, file);
+	fwrite(cast(const void*) &get_rotation, sizeof(get_rotation), 1, file);
 	
 	int vertex_count = geo->index_count * 3;
 	int index_count = geo->index_count;
@@ -452,7 +452,7 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 
 	return id;
 }
-AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f rotation, IString path, IString filename) {
+AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f get_rotation, IString path, IString filename) {
 
 	
 	
@@ -498,7 +498,7 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 
 	fwrite(cast(const void*) &pos, sizeof(pos), 1, file);
 	fwrite(cast(const void*) &scale, sizeof(scale), 1, file);
-	fwrite(cast(const void*) &rotation, sizeof(rotation), 1, file);
+	fwrite(cast(const void*) &get_rotation, sizeof(get_rotation), 1, file);
 
 	fwrite(cast(const void*) &mesh->vertex_count, sizeof(mesh->vertex_count), 1, file);
 	fwrite(cast(const void*) &mesh->index_count, sizeof(mesh->index_count), 1, file);
@@ -573,7 +573,7 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 		+ node->name_length
 		+ sizeof(node->translation)
 		+ sizeof(node->scale)
-		+ sizeof(node->rotation)
+		+ sizeof(node->get_rotation)
 		+ sizeof(node->children_count)
 		+ node->children_count * sizeof(u64)
 
@@ -600,7 +600,7 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 
 	// Transform
 	Vec3f export_pos = node->translation;
-	Vec3f export_rotation = node->rotation;
+	Vec3f export_rotation = node->get_rotation;
 	Vec3f export_scale = node->scale;
 
 
@@ -621,9 +621,9 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 	export_scale.y = node->scale.data[importer->global_settings.up_axis];
 	export_scale.z = node->scale.data[importer->global_settings.front_axis];
 
-	export_rotation.x = node->rotation.data[importer->global_settings.coord_axis];
-	export_rotation.y = node->rotation.data[importer->global_settings.up_axis];
-	export_rotation.z = node->rotation.data[importer->global_settings.front_axis];
+	export_rotation.x = node->get_rotation.data[importer->global_settings.coord_axis];
+	export_rotation.y = node->get_rotation.data[importer->global_settings.up_axis];
+	export_rotation.z = node->get_rotation.data[importer->global_settings.front_axis];
 
 	
 
@@ -689,7 +689,7 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 
 	fwrite(cast(const void*) &export_pos, sizeof(node->translation), 1, file);
 	fwrite(cast(const void*) &export_scale, sizeof(node->scale), 1, file);
-	fwrite(cast(const void*) &export_rotation, sizeof(node->rotation), 1, file);
+	fwrite(cast(const void*) &export_rotation, sizeof(node->get_rotation), 1, file);
 	// amount of children this node has
 	fwrite(cast(const void*) &node->children_count, sizeof(node->children_count), 1, file);
 
@@ -1623,7 +1623,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 						geo,
 						parent_scene_node->translation,
 						parent_scene_node->scale,
-						parent_scene_node->rotation,
+						parent_scene_node->get_rotation,
 						path,
 						parent_name);
 

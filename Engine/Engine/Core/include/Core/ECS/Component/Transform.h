@@ -17,9 +17,9 @@ struct Entity;
 struct Transform {
 	
 
-	Vec3f position;
+	Vec3f get_position;
 	Vec3f scale;
-	Quat rotation;
+	Quat get_rotation;
 	// These may or may not be linked to the rotation. depends on the user
 	Vec3f forward;
 	Vec3f up;
@@ -28,19 +28,19 @@ struct Transform {
 	
 
 	Transform() {
-		this->position = Vec3f_Zero;
+		this->get_position = Vec3f_Zero;
 		this->scale = Vec3f_One;
 		this->forward = Vec3f_Forward;
 		this->up = Vec3f_Up;
 		this->right = Vec3f_Right;
-		this->rotation = Quat();
+		this->get_rotation = Quat();
 	}
 };
 
 void inline update_direction_vectors_for_transform(Transform& transform) {
-	transform.forward = transform.rotation * Vec3f_Forward;
-	transform.up = transform.rotation * Vec3f_Up;
-	transform.right = transform.rotation * Vec3f_Right;
+	transform.forward = transform.get_rotation * Vec3f_Forward;
+	transform.up = transform.get_rotation * Vec3f_Up;
+	transform.right = transform.get_rotation * Vec3f_Right;
 }
 
 

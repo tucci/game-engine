@@ -7,6 +7,7 @@
 #include "Core/GameTimer.h"
 #include "Core/ECS/EntityManager.h"
 #include "Core/Renderer/Renderer.h"
+
 #include "Asset/AssetManager.h"
 
 //struct Display;
@@ -31,5 +32,6 @@ struct EngineAPI {
 	EntityManager* entity_manager;
 	Renderer* renderer;
 	AssetManager* asset_manager;
+	
 };
 

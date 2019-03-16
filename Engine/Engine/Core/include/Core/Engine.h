@@ -19,11 +19,10 @@
 
 #include "debug_macros.h"
 
-
-
-
-
 #include "Editor/EditorInterface.h"
+
+#define ENGINE_MODE_EDITOR 1
+
 
 
 
@@ -113,23 +112,6 @@ struct Event {
 	
 };
 
-struct Clock {
-
-	u64 ticks;
-	u64 delta_ticks;
-
-	double seconds;
-	float delta_seconds;
-
-	u64 milliseconds;
-	int delta_milliseconds;
-	
-
-	u64 ticks_per_sec;
-	u64 sdl_start_ticks;
-
-};
-
 
 
 
@@ -140,7 +122,6 @@ struct Engine {
 	Display display;
 	Window window;
 	Input input;
-	Clock clock;
 	GameTimer game_loop;
 	EntityManager entity_manager;
 	AssetManager asset_manager;
@@ -184,7 +165,6 @@ static bool init_window(Engine* engine);
 static bool init_backend_renderer(Engine* engine);
 static bool init_keys(Engine* engine);
 static bool init_event_queue(Engine* engine);
-static bool init_clock(Engine* engine);
 static bool init_game_loop(Engine* engine);
 static bool init_debug(Engine* engine);
 static bool init_ecs(Engine* engine);

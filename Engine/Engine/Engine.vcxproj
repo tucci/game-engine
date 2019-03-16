@@ -209,6 +209,12 @@
     <ClCompile Include="Core\src\test.cpp" />
     <ClCompile Include="Core\src\Util\Utils.cpp" />
     <ClCompile Include="Core\src\win32_engine_platform.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="imgui\imgui_impl_sdl.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\StackAllocator.h" />
@@ -266,6 +272,13 @@
     <ClInclude Include="Core\include\Core\Renderer\software_renderer\SoftwareRenderer.h" />
     <ClInclude Include="Core\include\Core\Renderer\software_renderer\SoftwareRendererShader.h" />
     <ClInclude Include="Core\include\Util\Utils.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="imgui\imgui_impl_sdl.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\imstb_rectpack.h" />
+    <ClInclude Include="imgui\imstb_textedit.h" />
+    <ClInclude Include="imgui\imstb_truetype.h" />
     <ClInclude Include="lib\glew210\include\GL\eglew.h" />
     <ClInclude Include="lib\glew210\include\GL\glew.h" />
     <ClInclude Include="lib\glew210\include\GL\glxew.h" />
