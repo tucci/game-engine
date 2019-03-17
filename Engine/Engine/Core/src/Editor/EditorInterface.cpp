@@ -27,6 +27,13 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->show_function = true;
 	editor->show_line = true;
 	editor->show_message = true;
+
+
+	editor->window_scene_tree_open = true;
+	editor->window_log_open = true;
+	editor->window_asset_browser_open = true;
+	editor->window_entity_components_open = true;
+	editor->window_engine_timers_open = true;
 	
 
 	editor->api = api;
@@ -184,107 +191,277 @@ void editor_update(EditorInterface* editor) {
 
 	if (editor->show_editor) {
 
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-		
-		
+		bool p_open = true;
+		static bool opt_fullscreen_persistant = true;
+		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_PassthruDockspace;
+		bool opt_fullscreen = opt_fullscreen_persistant;
 
-		if (ImGui::BeginMainMenuBar()) {
-			if (ImGui::BeginMenu("File")) {
-				if (ImGui::MenuItem("New Project", "Ctrl+N")) { /* Do stuff */ }
-				if (ImGui::MenuItem("Open Project", "Ctrl+O")) {}
-				if (ImGui::MenuItem("Build", "Ctrl+B")) { /* Do stuff */ }
-				if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
-				if (ImGui::MenuItem("Exit")) {
-				}
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Scene")) {
-				if (ImGui::MenuItem("Create Emtpty Entity", "Ctrl+Alt+N")) {}
-				if (ImGui::MenuItem("Create Camera")) {}
-				if (ImGui::MenuItem("Create Light")) {}
-				if (ImGui::MenuItem("Create Plane")) {}
-				if (ImGui::MenuItem("Create Cube")) {}
-				if (ImGui::MenuItem("Create Sphere")) {}
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Assets")) {
-
-				if (ImGui::MenuItem("Import")) {}
-				if (ImGui::MenuItem("Create Material")) {}
-				if (ImGui::MenuItem("Create Folder")) {}
-				ImGui::EndMenu();
-			}
-
-			if (ImGui::BeginMenu("Window")) {
-
-				ImGui::EndMenu();
-			}
-			ImGui::EndMainMenuBar();
+		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+		// because it would be confusing to have two docking targets within each others.
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		if (opt_fullscreen) {
+			ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->Pos);
+			ImGui::SetNextWindowSize(viewport->Size);
+			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 		}
 
-		ImGui::Begin("ENGINE TIMERS");
+		// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+		if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
+			window_flags |= ImGuiWindowFlags_NoBackground;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
+		ImGui::PopStyleVar();
+
+		if (opt_fullscreen)
+			ImGui::PopStyleVar(2);
+
+		// Dockspace
+		//ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
+		} else {
 			
-		ImGui::Checkbox("Cap framerate", &editor->api.game_loop->cap_framerate);
-		if (editor->api.game_loop->cap_framerate) {
-			ImGui::SliderInt("Target Framerate", &editor->api.game_loop->target_fps, 0, 240);
 		}
-		editor->fps_history[editor->fps_history_index] = timer->fps;
-		editor->fps_history_index = ((editor->fps_history_index + 1 )% FPS_HISTORY_COUNT);
-		static char fps_text[32];
-		snprintf(fps_text, 32, "FPS %d - dt %f", timer->fps, timer->delta_time);
-		ImGui::PlotLines("Frame Times", editor->fps_history, IM_ARRAYSIZE(editor->fps_history), 0, fps_text, 0.0f, 120.0f, ImVec2(0, 140));
-
-		
-		ImGui::Text("Time %f", timer->seconds);
-		ImGui::Text("Physics Time %f", timer->physics_time);
-		ImGui::Text("Physics Time Step %f", timer->time_step);
-
-		ImGui::Text("Frame Count %d", timer->frame_count);
-		ImGui::Text("Ticks %llu", timer->ticks);
-		ImGui::Text("Delta Ticks %llu", timer->delta_ticks);
-		ImGui::Text("Ticks per sec %llu", timer->ticks_per_sec);
-
 		ImGui::End();
 
+
 		
 
 
-		ImGui::Begin("Entity Scene Tree");
-		ImGui::Text("Total Entitys Created %d", entity_manager->entitys_created);
-		ImGui::Text("Current Entity Count %d", entity_manager->entity_count);
-		ImGui::Separator();
+	
 
 
-		static char str0[128] = "";
-		ImGui::Text("Filter Entitys");
-		ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
-		ImGui::Separator();
-			
+		draw_main_menu_bar(editor);
+		draw_window_entity_components(editor);
+		draw_window_scene_hierarchy(editor);
+
+		draw_window_engine_timer(editor);
+		draw_window_log(editor);
+		draw_window_assets(editor);;
+
+		
+	
+	} // END OF SHOW EDITOR
+
+	
+
+	
+	
 
 
-			
-		for (int i = 0; i < entity_manager->entity_count; i++) {
-			Entity e = entity_manager->entity_list[i];
-			
-			String name = get_name(&entity_manager->transform_manager, e);
-			Entity parent_entity = parent(entity_manager, e);
+	
 
-			if (parent_entity.id == NO_ENTITY_ID) {	
-				draw_entity_tree(editor, e);
+	
+
+
+	float delta_time = timer->delta_time;
+	Camera* camera = get_camera(entity_manager, editor->editor_camera);
+
+
+
+
+	Vec2i scroll = get_scroll_delta(input);
+
+	
+	
+	// Capture scolling to move camera forward and back
+	if (scroll.y != 0) {
+		Vec3f new_cam_direction = (delta_time * -forward(entity_manager, editor->editor_camera));
+
+		// TODO: make this configurable
+		float scroll_scale = 10.0f;
+
+		float cam_move_scale = scroll_scale * scroll.y;
+		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
+		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
+
+		LOG_WARN("EDITOR", "scroll test");
+	}
+
+
+
+
+
+	int x = input->mouse.pos.x;
+	int y = input->mouse.pos.y;
+
+	int gx = input->mouse.global_pos.x;
+	int gy = input->mouse.global_pos.y;
+
+	int sx = window->size.x;
+	int sy = window->size.y;
+
+	Vec2i delta_pos = input->mouse.delta_pos;
+
+
+
+	// Only apply editor movement if right mouse button is clicked
+	if (is_mouse_down(input, MouseButton::Right)) {
+		//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
+		//SDL_ShowCursor(SDL_DISABLE);
+		//
+		SDL_SetRelativeMouseMode(SDL_TRUE);
+		//SDL_CaptureMouse(SDL_TRUE);
+
+		Vec2i rel_pos = Vec2i(0, 0);
+
+
+		SDL_GetRelativeMouseState(&rel_pos.x, &rel_pos.y);
+
+
+		// TODO: remove need for sdl specific scan codes. convert to our own input api
+
+		Vec3f new_cam_direction;
+
+
+		// Since the camera always looks down -z
+		if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, editor->editor_camera)); }
+		if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, editor->editor_camera)); }
+		if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, editor->editor_camera)); }
+		if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, editor->editor_camera)); }
+		if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, editor->editor_camera)); }
+		if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, editor->editor_camera)); }
+
+		float cam_move_scale = 10;
+		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
+		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
+
+		// Prevent rotation jump, when the delta between the last time the right mouse was down and now
+
+
+		// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
+		float sensitivity = 0.25f;
+		Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
+		Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
+		new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
+
+		set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
+
+	} else {
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+	}
+		
+
+		
+
+	
+
+
+}
+
+
+static void draw_main_menu_bar(EditorInterface* editor) {
+	// Menu bar
+	if (ImGui::BeginMainMenuBar()) {
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("New Project", "Ctrl+N")) { /* Do stuff */ }
+			if (ImGui::MenuItem("Open Project", "Ctrl+O")) {}
+			if (ImGui::MenuItem("Build", "Ctrl+B")) { /* Do stuff */ }
+			if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
+			if (ImGui::MenuItem("Exit")) {
 			}
-			
+			ImGui::EndMenu();
 		}
 
-		ImGui::End();
+		if (ImGui::BeginMenu("Scene")) {
+			if (ImGui::MenuItem("Create Emtpty Entity", "Ctrl+Alt+N")) {}
+			if (ImGui::MenuItem("Create Camera")) {}
+			if (ImGui::MenuItem("Create Light")) {}
+			if (ImGui::MenuItem("Create Plane")) {}
+			if (ImGui::MenuItem("Create Cube")) {}
+			if (ImGui::MenuItem("Create Sphere")) {}
+			ImGui::EndMenu();
+		}
 
-		
+		if (ImGui::BeginMenu("Assets")) {
+
+			if (ImGui::MenuItem("Import")) {}
+			if (ImGui::MenuItem("Create Material")) {}
+			if (ImGui::MenuItem("Create Folder")) {}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Window")) {
+
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+
+}
+
+static void draw_component_transform(EditorInterface* editor, Entity e) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	
+	if (ImGui::CollapsingHeader("Transform")) {
+		Vec3f pos = get_position(entity_manager, e);
+		Quat quat = get_rotation(entity_manager, e);
+		Vec3f euler = quat_to_euler(quat);
+
+		Vec3f scale = get_scale(entity_manager, e);
+
+		if (ImGui::DragFloat3("Position", pos.data, 1.0f)) {
+			set_position(entity_manager, e, pos);
+		}
+
+		if (ImGui::DragFloat3("Scale", scale.data, 1.0f)) {
+			set_scale(entity_manager, e, scale);
+		}
+		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
+			quat = euler_to_quat(euler);
+			set_rotation(entity_manager, e, quat);
+		}
+	}
+	
+}
 
 
-		
-		
-		ImGui::Begin("Entity Components");
+static void draw_component_camera(EditorInterface* editor, Entity e) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	
+	if (ImGui::CollapsingHeader("Camera")) {
+		Camera* cam = get_camera(entity_manager, e);
+		//ImGui::DragFloat("Aspect Ratio", &cam->aspect_ratio);
+
+		int projection = (int)cam->projection;
+		if (ImGui::Combo("Projection", &projection, "Perspective\0Orthographic\0\0")) {
+			cam->projection = (CameraProjection)projection;
+		}
+
+		ImGui::SliderFloat("Field Of View", &cam->fov, 30.0f, 120.0f);
+		ImGui::DragFloat("Near", &cam->near_clip, 1.0f, 0.0f, FLT_MAX);
+		ImGui::DragFloat("Far", &cam->far_clip, 1.0f, 0.0f, FLT_MAX);
+
+
+		if (cam->projection == CameraProjection::Orthographic) {
+
+			ImGui::Separator();
+			ImGui::Text("Orthographic Settings");
+			ImGui::DragFloat("Left", &cam->left, 1.0f, 0.0f, FLT_MAX);
+			ImGui::DragFloat("Right", &cam->right, 1.0f, 0.0f, FLT_MAX);
+			ImGui::DragFloat("Top", &cam->top, 1.0f, 0.0f, FLT_MAX);
+			ImGui::DragFloat("Bottom", &cam->bottom, 1.0f, 0.0f, FLT_MAX);
+		}
+	}
+}
+
+
+
+static void draw_window_entity_components(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	if (ImGui::Begin("Entity Components", &editor->window_entity_components_open)) {
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
 			MapResult<bool> result = map_get(&editor->entity_selected, e.id);
@@ -293,8 +470,8 @@ void editor_update(EditorInterface* editor) {
 				ImGui::PushID(e.id);
 				String e_name = get_name(&entity_manager->transform_manager, e);
 
-				
-			
+
+
 				ImGui::InputText("", e_name.buffer, e_name.length);
 				ImGui::SameLine();
 				bool enabled = 0;
@@ -312,29 +489,91 @@ void editor_update(EditorInterface* editor) {
 				ImGui::PopID();
 
 
-				
-				
+
+
 				ImGui::Separator();
 				ImGui::Spacing();
-				
+
 			}
 
-			
 
-			
+
+
 
 		}
-		
+
+	}
 		ImGui::End();
-		
+
+}
+
+static void draw_window_scene_hierarchy(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	if (ImGui::Begin("Entity Scene Tree", &editor->window_scene_tree_open, ImGuiWindowFlags_DockNodeHost)) {
+
+		ImGui::Text("Total Entitys Created %d", entity_manager->entitys_created);
+		ImGui::Text("Current Entity Count %d", entity_manager->entity_count);
+		ImGui::Separator();
 
 
-		
+		static char str0[128] = "";
+		ImGui::Text("Filter Entitys");
+		ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+		ImGui::Separator();
 
-		ImGui::Begin("Log");
 
 
-		
+
+		for (int i = 0; i < entity_manager->entity_count; i++) {
+			Entity e = entity_manager->entity_list[i];
+
+			String name = get_name(&entity_manager->transform_manager, e);
+			Entity parent_entity = parent(entity_manager, e);
+
+			if (parent_entity.id == NO_ENTITY_ID) {
+				draw_entity_tree(editor, e);
+			}
+
+		}
+
+	}
+		ImGui::End();
+}
+
+
+static void draw_window_engine_timer(EditorInterface* editor) {
+	GameTimer* timer = editor->api.game_loop;
+	
+	if (ImGui::Begin("Game Loop", &editor->window_engine_timers_open)) {
+
+		ImGui::Checkbox("Cap framerate", &timer->cap_framerate);
+		if (timer->cap_framerate) {
+			ImGui::SliderInt("Target Framerate", &timer->target_fps, 0, 240);
+		}
+		editor->fps_history[editor->fps_history_index] = timer->fps;
+		editor->fps_history_index = ((editor->fps_history_index + 1) % FPS_HISTORY_COUNT);
+		static char fps_text[32];
+		snprintf(fps_text, 32, "FPS %d - dt %f", timer->fps, timer->delta_time);
+		ImGui::PlotLines("Frame Times", editor->fps_history, IM_ARRAYSIZE(editor->fps_history), 0, fps_text, 0.0f, 120.0f, ImVec2(0, 140));
+
+
+		ImGui::Text("Time %f", timer->seconds);
+		ImGui::Text("Physics Time %f", timer->physics_time);
+		ImGui::Text("Physics Time Step %f", timer->time_step);
+
+		ImGui::Text("Frame Count %d", timer->frame_count);
+		ImGui::Text("Ticks %llu", timer->ticks);
+		ImGui::Text("Delta Ticks %llu", timer->delta_ticks);
+		ImGui::Text("Ticks per sec %llu", timer->ticks_per_sec);
+
+	}
+		ImGui::End();
+
+}
+
+static void draw_window_log(EditorInterface* editor) {
+	if (ImGui::Begin("Log", &editor->window_log_open)) {
+
 		LogList logs = g_get_loglist();
 
 		static char filter_buffer[128];
@@ -352,13 +591,13 @@ void editor_update(EditorInterface* editor) {
 		ImGui::Checkbox("Warning", &editor->show_warning);
 		ImGui::SameLine();
 		ImGui::Checkbox("Fatal", &editor->show_fatal);
-		
-		
+
+
 		ImGui::Text("Filter Columns");
 		ImGui::SameLine();
-		
 
-		
+
+
 		static const char* str_time = "Time";
 		static const char* str_tag = "Tag";
 		static const char* str_thread_id = "Thread Id";
@@ -366,7 +605,7 @@ void editor_update(EditorInterface* editor) {
 		static const char* str_function = "Function";
 		static const char* str_line = "Line";
 		static const char* str_msg = "Message";
-		
+
 
 		ImGui::Checkbox(str_time, &editor->show_time); ImGui::SameLine();
 		ImGui::Checkbox(str_tag, &editor->show_tag); ImGui::SameLine();
@@ -448,11 +687,11 @@ void editor_update(EditorInterface* editor) {
 				}
 
 				if (editor->show_time) {
-					ImGui::Text("%llu", log_item->time);
+					ImGui::TextUnformatted(log_item->tag, log_item->tag + log_item->tag_length - 1);
 					ImGui::NextColumn();
 				}
 				if (editor->show_tag) {
-					ImGui::Text(log_type_str);
+					ImGui::Text(log_item->tag);
 					ImGui::NextColumn();
 				}
 				if (editor->show_thread_id) {
@@ -486,7 +725,7 @@ void editor_update(EditorInterface* editor) {
 
 				ImGui::Separator();
 			}
-			
+
 
 			ImGui::PopStyleVar();
 
@@ -497,203 +736,13 @@ void editor_update(EditorInterface* editor) {
 			ImGui::Columns(1);
 			ImGui::EndChild();
 			ImGui::EndGroup();
-
-			
-
-
-			
 		}
-		
-
-		
-		
-		
-		
+	}
 		ImGui::End();
-
-		
-
-		
-
-
-
-		
-	
-	} // END OF SHOW EDITOR
-
-	
-
-	
-	
-
-
-	
-
-	
-
-
-	float delta_time = timer->delta_time;
-	Camera* camera = get_camera(entity_manager, editor->editor_camera);
-
-
-
-
-	Vec2i scroll = get_scroll_delta(input);
-
-	
-	
-	// Capture scolling to move camera forward and back
-	if (scroll.y != 0) {
-		Vec3f new_cam_direction = (delta_time * -forward(entity_manager, editor->editor_camera));
-
-		// TODO: make this configurable
-		float scroll_scale = 10.0f;
-
-		float cam_move_scale = scroll_scale * scroll.y;
-		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
-		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
-
-		LOG_WARN("EDITOR", "scroll test");
-	}
-
-
-
-
-
-	int x = input->mouse.pos.x;
-	int y = input->mouse.pos.y;
-
-	int gx = input->mouse.global_pos.x;
-	int gy = input->mouse.global_pos.y;
-
-	int sx = window->size.x;
-	int sy = window->size.y;
-
-	Vec2i delta_pos = input->mouse.delta_pos;
-
-
-
-	//debug_print("mouse pos %d,%d\t, delta pos %d,%d\tglobal mos pos %d,%d, window size %d,%d\n", x, y, delta_pos.x, delta_pos.y, gx, gy, sx, sy);
-
-
-	
-	
-	/*if (is_mouse_pressed(input, MouseButton::Left)) {
-		create_entity(entity_manager, "Entity test");
-	}
-
-	if (is_mouse_pressed(input, MouseButton::Middle)) {
-		u64 last_entity = entity_manager->entity_count;
-		auto e = entity_manager->entity_list[last_entity - 1];
-		destroy_entity(entity_manager, e);
-	}*/
-
-	// Only apply editor movement if right mouse button is clicked
-	if (is_mouse_down(input, MouseButton::Right)) {
-		//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
-		//SDL_ShowCursor(SDL_DISABLE);
-		//
-		SDL_SetRelativeMouseMode(SDL_TRUE);
-		//SDL_CaptureMouse(SDL_TRUE);
-
-		Vec2i rel_pos = Vec2i(0, 0);
-
-
-		SDL_GetRelativeMouseState(&rel_pos.x, &rel_pos.y);
-
-
-		// TODO: remove need for sdl specific scan codes. convert to our own input api
-
-		Vec3f new_cam_direction;
-
-
-		// Since the camera always looks down -z
-		if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, editor->editor_camera)); }
-
-		float cam_move_scale = 10;
-		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
-		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
-
-		// Prevent rotation jump, when the delta between the last time the right mouse was down and now
-
-
-		// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
-		float sensitivity = 0.25f;
-		Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
-		Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
-		new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
-
-		set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
-
-	} else {
-		SDL_SetRelativeMouseMode(SDL_FALSE);
-	}
-		
-
-		
-
-	
-
-
 }
 
-static void draw_component_transform(EditorInterface* editor, Entity e) {
-	EntityManager* entity_manager = editor->api.entity_manager;
-	
-	if (ImGui::CollapsingHeader("Transform")) {
-		Vec3f pos = get_position(entity_manager, e);
-		Quat quat = get_rotation(entity_manager, e);
-		Vec3f euler = quat_to_euler(quat);
-
-		Vec3f scale = get_scale(entity_manager, e);
-
-		if (ImGui::DragFloat3("Position", pos.data, 1.0f)) {
-			set_position(entity_manager, e, pos);
-		}
-
-		if (ImGui::DragFloat3("Scale", scale.data, 1.0f)) {
-			set_scale(entity_manager, e, scale);
-		}
-		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
-			quat = euler_to_quat(euler);
-			set_rotation(entity_manager, e, quat);
-		}
+static void draw_window_assets(EditorInterface* editor) {
+	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
 	}
-	
-}
-
-
-static void draw_component_camera(EditorInterface* editor, Entity e) {
-	EntityManager* entity_manager = editor->api.entity_manager;
-
-	
-	if (ImGui::CollapsingHeader("Camera")) {
-		Camera* cam = get_camera(entity_manager, e);
-		//ImGui::DragFloat("Aspect Ratio", &cam->aspect_ratio);
-
-		int projection = (int)cam->projection;
-		if (ImGui::Combo("Projection", &projection, "Perspective\0Orthographic\0\0")) {
-			cam->projection = (CameraProjection)projection;
-		}
-
-		ImGui::SliderFloat("Field Of View", &cam->fov, 30.0f, 120.0f);
-		ImGui::DragFloat("Near", &cam->near_clip, 1.0f, 0.0f, FLT_MAX);
-		ImGui::DragFloat("Far", &cam->far_clip, 1.0f, 0.0f, FLT_MAX);
-
-
-		if (cam->projection == CameraProjection::Orthographic) {
-
-			ImGui::Separator();
-			ImGui::Text("Orthographic Settings");
-			ImGui::DragFloat("Left", &cam->left, 1.0f, 0.0f, FLT_MAX);
-			ImGui::DragFloat("Right", &cam->right, 1.0f, 0.0f, FLT_MAX);
-			ImGui::DragFloat("Top", &cam->top, 1.0f, 0.0f, FLT_MAX);
-			ImGui::DragFloat("Bottom", &cam->bottom, 1.0f, 0.0f, FLT_MAX);
-		}
-	}
+		ImGui::End();
 }

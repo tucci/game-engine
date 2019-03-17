@@ -66,6 +66,12 @@ struct EditorInterface {
 
 	
 	bool auto_scroll;
+
+	bool window_scene_tree_open;
+	bool window_log_open;
+	bool window_asset_browser_open;
+	bool window_entity_components_open;
+	bool window_engine_timers_open;
 	
 
 
@@ -83,6 +89,15 @@ void editor_update(EditorInterface* editor);
 
 static void draw_component_transform(EditorInterface* editor, Entity e);
 static void draw_component_camera(EditorInterface* editor, Entity e);
+
+
+
+static void draw_main_menu_bar(EditorInterface* editor);
+static void draw_window_entity_components(EditorInterface* editor);
+static void draw_window_scene_hierarchy(EditorInterface* editor);
+static void draw_window_engine_timer(EditorInterface* editor);
+static void draw_window_log(EditorInterface* editor);
+static void draw_window_assets(EditorInterface* editor);
 
 
 
