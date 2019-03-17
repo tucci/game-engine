@@ -99,6 +99,8 @@ static void draw_window_engine_timer(EditorInterface* editor);
 static void draw_window_log(EditorInterface* editor);
 static void draw_window_assets(EditorInterface* editor);
 
+static void draw_window_scene_viewports(EditorInterface* editor);
+
 
 
 

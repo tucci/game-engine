@@ -181,4 +181,5 @@ bool destroy_engine(Engine* engine);
 static void update_engine_state(Engine* engine, float delta_time);
 static void fixed_physics_update(Engine* engine, float fixed_time);
 void game_loop(Engine* engine);
+void editor_loop(Engine* engine);
 

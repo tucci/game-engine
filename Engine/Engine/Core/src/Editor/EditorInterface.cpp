@@ -247,7 +247,8 @@ void editor_update(EditorInterface* editor) {
 
 		draw_window_engine_timer(editor);
 		draw_window_log(editor);
-		draw_window_assets(editor);;
+		draw_window_assets(editor);
+		draw_window_scene_viewports(editor);
 
 		
 	
@@ -738,11 +739,28 @@ static void draw_window_log(EditorInterface* editor) {
 			ImGui::EndGroup();
 		}
 	}
-		ImGui::End();
+	ImGui::End();
 }
 
 static void draw_window_assets(EditorInterface* editor) {
 	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
 	}
-		ImGui::End();
+	ImGui::End();
+}
+
+static void draw_window_scene_viewports(EditorInterface* editor) {
+
+
+	if (ImGui::Begin("Scene")) {
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Game")) {
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Multi Windows")) {
+	}
+	ImGui::End();
+
 }

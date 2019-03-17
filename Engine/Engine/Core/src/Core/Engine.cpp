@@ -945,14 +945,6 @@ void game_loop(Engine* engine) {
 
 
 	while (!engine->quit) {
-#if ENGINE_MODE_EDITOR
-		// Start the Dear ImGui frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplSDL2_NewFrame(engine->window.sdl_window);
-		ImGui::NewFrame();
-#endif
-
-		
 
 		GameTimer* timer = &engine->game_loop;
 		u64 ticks = SDL_GetPerformanceCounter() - timer->sdl_start_ticks;
@@ -1012,15 +1004,7 @@ void game_loop(Engine* engine) {
 			}
             
 			case BackenedRendererType::OpenGL: {
-				#if ENGINE_MODE_EDITOR
-				ImGui::Render();
-				#endif
-				
 				opengl_render(&engine->renderer.opengl, engine->window.size, true);
-				#if ENGINE_MODE_EDITOR
-				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-				#endif
-
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;
 			}
@@ -1050,3 +1034,84 @@ void game_loop(Engine* engine) {
 	}
 }
 
+
+void editor_loop(Engine* engine) {
+	while (!engine->quit) {
+#if ENGINE_MODE_EDITOR
+		// Start the Dear ImGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(engine->window.sdl_window);
+		ImGui::NewFrame();
+#endif
+
+
+
+		GameTimer* timer = &engine->game_loop;
+		u64 ticks = SDL_GetPerformanceCounter() - timer->sdl_start_ticks;
+		timer->delta_ticks = (int)(ticks - timer->ticks);
+		timer->ticks = ticks;
+		timer->milliseconds = (timer->ticks * 1000) / timer->ticks_per_sec;
+		timer->seconds = (double)(timer->ticks) / (double)(timer->ticks_per_sec);
+		timer->delta_milliseconds = (int)((timer->delta_ticks * 1000) / timer->ticks_per_sec);
+		timer->delta_seconds = (float)(timer->delta_ticks) / (float)(timer->ticks_per_sec);
+		timer->delta_time = timer->delta_milliseconds / 1000.0f;
+		timer->frame_count++;
+		timer->fps = (int)(1 / timer->delta_time);
+		timer->target_delta_time = 1.0f / timer->target_fps;
+		timer->accumulator += timer->delta_time;
+
+
+
+
+		// Process inputs once per frame
+		poll_inputs(engine);
+		process_event_queue(engine);
+
+		while (timer->accumulator >= timer->time_step) {
+			// fixed update zero or more times per frame
+			fixed_physics_update(engine, timer->time_step);
+			timer->physics_time += timer->time_step;
+			timer->accumulator -= timer->time_step;
+		}
+
+		// Update once per frame
+		update_engine_state(engine, timer->delta_time);
+
+
+		// TODO: this is used to interpolate game state during the rendering
+		float alpha = timer->accumulator / timer->time_step;
+
+		switch (engine->renderer.type) {
+			case BackenedRendererType::OpenGL: {
+				ImGui::Render();
+				
+				opengl_render(&engine->renderer.opengl, engine->window.size, true);
+				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+				opengl_swap_buffer(&engine->renderer.opengl);
+				break;
+			}
+			default:
+				break;
+		}
+
+
+
+
+		if (timer->cap_framerate) {
+			// TODO: if we have low frame rate, we might be skipping events. A possible  way to do this, is to have the input and rendering on seperate threads
+			// https://gamedev.stackexchange.com/questions/90762/taking-advantage-of-multithreading-between-game-loop-and-opengl
+
+			u64 frame_ticks = (SDL_GetPerformanceCounter() - timer->sdl_start_ticks) - timer->ticks;
+			float frame_time = ((1.0f * frame_ticks) / (1.0f * timer->ticks_per_sec));
+
+			if (frame_time < timer->target_delta_time) {
+				float sleep_for = timer->target_delta_time - frame_time;
+				// NOTE: since we can't change the os scheduling, we'll wait at least sleep_for time.
+				// If there is a way to change the granularity of the sleep, then we should do it
+				SDL_Delay((Uint32)(1000 * sleep_for));
+			}
+		}
+
+
+	}
+}

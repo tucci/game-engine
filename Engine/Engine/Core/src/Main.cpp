@@ -149,7 +149,12 @@ int main(int argc, char* argv[]) {
 	
 	
 	if (init_engine(&engine)) {
+#if ENGINE_MODE_EDITOR
+		editor_loop(&engine);
+#else
 		game_loop(&engine);
+#endif
+		
 		destroy_engine(&engine);
 	}
 #endif
