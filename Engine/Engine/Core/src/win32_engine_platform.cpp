@@ -248,6 +248,11 @@ bool platform_concat_path_and_filename(IString path, IString filename, char* out
 
 }
 
+const char* platform_file_extension(const char* filename) {
+	char* ext = PathFindExtension(filename);
+	return ext;
+}
+
 
 bool platform_file_rename(const char* existing_file, const char* new_file) {
 	assert(existing_file != NULL);

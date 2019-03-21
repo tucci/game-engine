@@ -10,6 +10,16 @@
 
 #include "Common/stb_image.h"
 
+void init_texture_default(Texture2D* texture) {
+	texture->width = 0;
+	texture->height = 0;
+	texture->channels = 0;
+	texture->depth = 0;
+	texture->data = NULL;
+	texture->uv_translation = Vec2f(0, 0);
+	texture->uv_scaling = Vec2f(1, 1);
+	texture->uv_rotation = 0;
+}
 
 
 bool load_texture(const char* filename, Texture2D* texture, Arena* mem, bool flip) {
@@ -134,5 +144,6 @@ bool load_hdr_texture(const char* filename, HDRTexture* texture, StackAllocator*
 	stbi_image_free(data);
 	return true;
 }
+
 
 

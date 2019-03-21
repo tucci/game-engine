@@ -11,6 +11,9 @@
 
 #include "Core/ECS/Component/Primitives.h"
 
+#include "Asset/AssetManager.h"
+#include "Asset/FbxImport.h"
+
 
 #include "Core/ECS/JobSystem/TransformSystem.h"
 #include "Core/ECS/JobSystem/CameraSystem.h"
@@ -38,6 +41,10 @@ struct EditorInterface {
 	
 
 	Entity editor_camera;
+	Entity entity_test_light;
+	Entity test_mesh;
+	
+	
 	HDR_SkyMap hdr_skymap;
 
 	bool show_editor;
@@ -89,6 +96,9 @@ void editor_update(EditorInterface* editor);
 
 static void draw_component_transform(EditorInterface* editor, Entity e);
 static void draw_component_camera(EditorInterface* editor, Entity e);
+static void draw_component_light(EditorInterface* editor, Entity e);
+static void draw_component_static_mesh(EditorInterface* editor, Entity e);
+static void draw_component_render(EditorInterface* editor, Entity e);
 
 
 
@@ -98,6 +108,8 @@ static void draw_window_scene_hierarchy(EditorInterface* editor);
 static void draw_window_engine_timer(EditorInterface* editor);
 static void draw_window_log(EditorInterface* editor);
 static void draw_window_assets(EditorInterface* editor);
+
+static void draw_window_renderer_stats(EditorInterface* editor);
 
 static void draw_window_scene_viewports(EditorInterface* editor);
 

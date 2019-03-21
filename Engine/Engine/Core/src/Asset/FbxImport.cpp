@@ -368,27 +368,27 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	AssetType type = AssetType::Texture;
 	fwrite(cast(const void*) &type, sizeof(type), 1, file);
 
-	// Write name length
-	fwrite(cast(const void*) &texture->name_length, sizeof(texture->name_length), 1, file);
-	// Write name
-	fwrite(cast(const void*) texture->name, texture->name_length, 1, file);
-
-	// Write filelength
-	fwrite(cast(const void*) &texture->filename_length, sizeof(texture->filename_length), 1, file);
-	// Write file
-	fwrite(cast(const void*) texture->filename, texture->filename_length, 1, file);
-
-
-	// Write relative filelength
-	fwrite(cast(const void*) &texture->relative_filename_length, sizeof(texture->relative_filename_length), 1, file);
-	// Write relative file
-	fwrite(cast(const void*) texture->relative_filename, texture->relative_filename_length, 1, file);
-
-	
+	//// Write name length
+	//fwrite(cast(const void*) &texture->name_length, sizeof(texture->name_length), 1, file);
+	//// Write name
+	//fwrite(cast(const void*) texture->name, texture->name_length, 1, file);
+	//
+	//// Write filelength
+	//fwrite(cast(const void*) &texture->filename_length, sizeof(texture->filename_length), 1, file);
+	//// Write file
+	//fwrite(cast(const void*) texture->filename, texture->filename_length, 1, file);
+	//
+	//
+	//// Write relative filelength
+	//fwrite(cast(const void*) &texture->relative_filename_length, sizeof(texture->relative_filename_length), 1, file);
+	//// Write relative file
+	//fwrite(cast(const void*) texture->relative_filename, texture->relative_filename_length, 1, file);
 
 	
-	// Write Translation
-	fwrite(cast(const void*) &texture->translation, sizeof(texture->translation), 1, file);
+
+	
+	
+	//fwrite(cast(const void*) &texture->translation, sizeof(texture->translation), 1, file);
 	fwrite(cast(const void*) &texture->uv_translation, sizeof(texture->uv_translation), 1, file);
 	fwrite(cast(const void*) &texture->uv_scaling, sizeof(texture->uv_scaling), 1, file);
 	fwrite(cast(const void*) &texture->uv_rotation, sizeof(texture->uv_rotation), 1, file);

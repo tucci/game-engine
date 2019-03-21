@@ -44,7 +44,7 @@ bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 
 struct StaticMeshManager {
 	CompactMap<u64> id_map;
-	u64* meshes;
+	StaticMeshID* meshes;
 	u64 count;
 };
 

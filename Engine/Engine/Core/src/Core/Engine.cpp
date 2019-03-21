@@ -14,11 +14,11 @@
 #include "Core/ECS/JobSystem/RenderSystem.h"
 #include "Logger.h"
 
-#if ENGINE_MODE_EDITOR
+//#if ENGINE_MODE_EDITOR
 #include "../../imgui/imgui.h"
 #include "../../imgui/imgui_impl_sdl.h"
 #include "../../imgui/imgui_impl_opengl3.h"
-#endif
+//#endif
 
 
 
@@ -1037,12 +1037,10 @@ void game_loop(Engine* engine) {
 
 void editor_loop(Engine* engine) {
 	while (!engine->quit) {
-#if ENGINE_MODE_EDITOR
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(engine->window.sdl_window);
 		ImGui::NewFrame();
-#endif
 
 
 

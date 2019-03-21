@@ -409,3 +409,84 @@ u64 get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<u64>*
 	return index;
 }
 
+
+
+//static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
+//
+//	AssetImport_SceneNode* children = parent_node->children;
+//	for (u32 i = 0; i < parent_node->children_count; i++) {
+//		AssetImport_SceneNode* child_node = &children[i];
+//		Entity child_entity = create_entity(manager, child_node->name);
+//
+//
+//
+//
+//		//add_component(manager, child_entity, ComponentType::Transform);
+//		//set_name(manager, child_entity, child_node->name);
+//		set_position(manager, child_entity, child_node->translation);
+//		set_scale(manager, child_entity, child_node->scale);
+//		set_rotation(manager, child_entity, euler_to_quat(child_node->get_rotation));
+//		attach_child_entity(manager, parent_entity, child_entity);
+//
+//		import_asset_scene_node(manager, scene, child_node, child_entity);
+//	}
+//
+//	if (parent_node->mesh_count > 0) {
+//		for (u32 i = 0; i < parent_node->mesh_count; i++) {
+//			add_component(manager, parent_entity, ComponentType::StaticMesh);
+//			add_component(manager, parent_entity, ComponentType::Render);
+//			set_render_visibility(manager, parent_entity, true);
+//
+//
+//			u32 mesh_index = parent_node->meshes[i];
+//			AssetID mesh_id = scene->mesh_infos[mesh_index];
+//			set_static_mesh(manager, parent_entity, mesh_id.mesh);
+//
+//			// TODO: What happens when the mesh has multiple child nodes, does that mean is has multiple materials?
+//			//assert(parent_node->children_count < 2);
+//			// Get material for this mesh
+//			AssetImport_SceneNode* child_node = &parent_node->children[i];
+//			if (child_node->material_count > 0) {
+//				u32 mat_index = child_node->materials[0];
+//				AssetID material_id = scene->material_infos[mat_index];
+//				set_render_material(manager, parent_entity, material_id.material);
+//			} else {
+//
+//				DEBUG_BREAK;
+//				// use default material
+//				//set_render_material(manager)
+//
+//			}
+//
+//		}
+//	}
+//
+//}
+//
+//
+//Entity import_asset_scene(EntityManager* manager, SceneID id) {
+//
+//	AssetID scene_id;
+//	scene_id.id = id.id;
+//	scene_id.type = AssetType::Scene;
+//	InternalAsset asset = get_asset_by_id(game->engineAPI.asset_manager, scene_id);
+//	
+//	AssetImport_Scene* scene = asset.scene;
+//	EntityManager* manager = game->engineAPI.entity_manager;
+//
+//	
+//	Entity root = create_entity(manager, scene->root->name);
+//	//add_component(manager, root, ComponentType::Transform);
+//	//set_name(manager, root, scene->root->name);
+//
+//	set_position(manager, root, scene->root->translation);
+//	set_scale(manager, root, scene->root->scale);
+//	set_rotation(manager, root, euler_to_quat(scene->root->get_rotation));
+//
+//	
+//	import_asset_scene_node(manager, scene, scene->root, root);
+//	return root;
+//}
+//
+//
+

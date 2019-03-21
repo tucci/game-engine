@@ -62,6 +62,20 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 
+	AssetID tcolor = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_basecolor.png"), true);
+	AssetID tnormal = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_normal.png"), true);
+	AssetID tmetallic= import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_metallic.png"), true);
+	AssetID troughness = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_roughness.png"), true);
+	AssetID tao = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_ao.png"), true);
+
+	Material rust_mat;
+	init_material_defaults(&rust_mat);
+	
+	load_asset_by_id(editor->api.asset_manager, tcolor);
+
+	//AssetID rust1 = load_asset_by_id(editor->api.asset_manager, tcolor);
+	
+
 
 
 	EntityManager* entity_manager = editor->api.entity_manager;
@@ -87,6 +101,41 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	map_put(&editor->entity_selected, e4.id, false);
 	map_put(&editor->entity_selected, e5.id, false);
 	map_put(&editor->entity_selected, e6.id, false);
+
+
+	AssetManager* asset_manager = editor->api.asset_manager;
+
+
+
+	
+
+	
+
+	AssetID mat_test = load_asset_by_name(asset_manager, "Assets/BB8 New/Material #46_mat.easset");
+
+
+	editor->test_mesh = create_entity(entity_manager, "Test mesh");
+	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
+	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
+	//set_render_material(entity_manager, editor->test_mesh, editor->api.asset_manager->default_mat.material);
+	set_render_material(entity_manager, editor->test_mesh, mat_test.material);
+	set_render_visibility(entity_manager, editor->test_mesh, true);
+
+	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->sphere_mesh.mesh);
+	
+
+
+	editor->entity_test_light = create_entity(entity_manager, "Test Light");
+	add_component(entity_manager, editor->entity_test_light, ComponentType::Light);
+
+	map_put(&editor->entity_selected, editor->entity_test_light.id, false);
+
+
+	Light light;
+	light.type = LightType::DirectionalLight;
+	light.dir_light.direction = Vec3f(0.00000000001f, -1.0f, 0.0f);;
+	light.dir_light.color = Vec3f(1, 1, 1);
+	set_light(entity_manager, editor->entity_test_light, light);
 
 	
 
@@ -248,7 +297,9 @@ void editor_update(EditorInterface* editor) {
 		draw_window_engine_timer(editor);
 		draw_window_log(editor);
 		draw_window_assets(editor);
-		draw_window_scene_viewports(editor);
+		//draw_window_scene_viewports(editor);
+
+		draw_window_renderer_stats(editor);
 
 		
 	
@@ -458,6 +509,69 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 }
 
 
+static void draw_component_light(EditorInterface* editor, Entity e) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+
+	if (ImGui::CollapsingHeader("Light")) {
+
+		Light light =  get_light(entity_manager, e);
+		int light_type = (int)light.type;
+		if (ImGui::Combo("Type", &light_type, "None\0Directional Light\0Point Light\0\0")) {
+			light.type = (LightType)light_type;
+		}
+
+		switch (light.type) {
+			case LightType::DirectionalLight: {
+				ImGui::DragFloat3("Direction", light.dir_light.direction.data);
+				ImGui::ColorEdit3("Color", light.dir_light.color.data);
+				break;
+			}
+			case LightType::PointLight: {
+				ImGui::ColorEdit3("Color", light.point_light.color.data);
+				break;
+			}
+		}
+
+		set_light(entity_manager, e, light);
+		
+		
+	}
+}
+
+static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+
+	if (ImGui::CollapsingHeader("Static Mesh")) {
+		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
+		StaticMesh* mesh = get_static_mesh_by_id(editor->api.asset_manager, mesh_id);
+		ImGui::Text("Mesh id %lld", mesh_id.id);
+
+		
+		
+		
+		
+
+		
+
+
+	}
+}
+
+static void draw_component_render(EditorInterface* editor, Entity e) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	if (ImGui::CollapsingHeader("Render")) {
+		MaterialID mat_id = get_render_material(entity_manager, e);
+		Material* material = get_material_by_id(editor->api.asset_manager, mat_id);
+		ImGui::Text("Material id %lld", mat_id.id);
+		
+
+
+	}
+}
+
+
 
 static void draw_window_entity_components(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
@@ -486,6 +600,17 @@ static void draw_window_entity_components(EditorInterface* editor) {
 
 				if (has_component(entity_manager, e, ComponentType::Camera)) {
 					draw_component_camera(editor, e);
+				}
+
+				if (has_component(entity_manager, e, ComponentType::Light)) {
+					draw_component_light(editor, e);
+				}
+
+				if (has_component(entity_manager, e, ComponentType::StaticMesh)) {
+					draw_component_static_mesh(editor, e);
+				}
+				if (has_component(entity_manager, e, ComponentType::Render)) {
+					draw_component_render(editor, e);
 				}
 				ImGui::PopID();
 
@@ -744,6 +869,54 @@ static void draw_window_log(EditorInterface* editor) {
 
 static void draw_window_assets(EditorInterface* editor) {
 	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
+	}
+	ImGui::End();
+}
+
+static void draw_window_renderer_stats(EditorInterface* editor) {
+	if (ImGui::Begin("Render Stats")) {
+		Renderer* renderer = editor->api.renderer;
+
+		char renderer_type_str[16];
+
+		switch (renderer->type) {
+			case BackenedRendererType::OpenGL: {
+				snprintf(renderer_type_str, 16, "OpenGL");
+				break;
+			}
+			default: {
+				snprintf(renderer_type_str, 16, "Unknown");
+				break;
+			}
+
+		}
+		ImGui::Text("Renderer Backend: %s", renderer_type_str);
+		ImGui::Text("Shader Count: %d", renderer->opengl.shader_count);
+		ImGui::Text("Texture Count: %d", renderer->opengl.texture_count);
+		ImGui::Text("VAO Count: %d", renderer->opengl.vao_count);
+		ImGui::Text("VBO Count: %d", renderer->opengl.vbo_count);
+		ImGui::Text("EBO Count: %d", renderer->opengl.ebo_count);
+		ImGui::Text("FBO Count: %d", renderer->opengl.fbo_count);
+		ImGui::Text("RBO Count: %d", renderer->opengl.rbo_count);
+
+		ImGui::Separator();
+		ImGui::Text("Render World");
+		
+		ImGui::Text("Mesh Count: %d", renderer->render_world.render_mesh_count);
+		ImGui::Text("Mesh Capacity: %d", renderer->render_world.render_mesh_capacity);
+
+		
+		ImGui::Text("Render Resoure Count: %d", renderer->render_world.resources_count);
+		ImGui::Text("Material Count: %d", renderer->render_world.material_res_count);
+		//ImGui::Text("Mesh Capacity: %d", renderer->render_world.render_mesh_capacity);
+		
+		
+		
+
+		
+
+
+		
 	}
 	ImGui::End();
 }

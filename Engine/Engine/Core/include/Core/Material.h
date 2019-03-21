@@ -18,7 +18,7 @@ enum class MaterialShadingModel {
 	CookTorrance
 };
 
-enum class TextureType {
+enum TextureType {
 	None,
 	Albedo,
 	Normal,

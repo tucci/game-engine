@@ -19,7 +19,7 @@ void import_pak_file(AssetManager* manager, char* pak_file) {
 
 void init_asset_manager(AssetManager* manager) {
 	arena_init(&manager->asset_mem);
-	size_t stack_size = MEGABYTES(1);
+	size_t stack_size = MEGABYTES(20);
 	void* start = arena_alloc(&manager->asset_mem, stack_size);
 	stack_alloc_init(&manager->stack, start, stack_size);
 	map_init(&manager->asset_id_map);
@@ -42,6 +42,25 @@ void init_asset_manager(AssetManager* manager) {
 	manager->_static_meshes = NULL;
 	manager->_materials = NULL;
 	manager->_textures = NULL;
+
+
+	// Load up internal assets
+	// default texture
+	// cube/plane/sphere meshes
+
+	//IString path = "Assets";
+	//IString name = "Default";
+	//Material default_mat;
+	//init_material_defaults(&default_mat);
+	//manager->default_mat = create_material_asset(manager, path, name, &default_mat);
+
+	
+	manager->default_mat = load_asset_by_name(manager, "Assets/Default_mat.easset");
+	manager->cube_mesh = load_asset_by_name(manager, "Assets/Cube_mesh.easset");
+	manager->plane_mesh = load_asset_by_name(manager, "Assets/Grid_mesh.easset");
+	manager->sphere_mesh = load_asset_by_name(manager, "Assets/Sphere_mesh.easset");
+	
+
 	
 }
 
@@ -528,7 +547,8 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				fread(buffer, sizeof(AssetID), 1, file);
 				AssetID texture_id = *cast(AssetID*)buffer;
 				
-
+				// There is no texture stored here
+				if (texture_id.texture.id == 0) { continue; }
 				// TODO: push onto import queue
 				load_asset_by_id(manager, texture_id);
 
@@ -573,38 +593,38 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 			
 			
 			// Read name
-			fread(buffer, sizeof(s32), 1, file);
-			s32 name_length = *cast(s32*)buffer;
-			fread(buffer, name_length, 1, file);
-			char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length);
-			snprintf(name, name_length + 1, "%s", buffer);
+			//fread(buffer, sizeof(s32), 1, file);
+			//s32 name_length = *cast(s32*)buffer;
+			//fread(buffer, name_length, 1, file);
+			//char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length);
+			//snprintf(name, name_length + 1, "%s", buffer);
 			
 			
 			
 			
 			// Read filename
-			fread(buffer, sizeof(s32), 1, file);
-			s32 filename_length = *cast(s32*)buffer;
-			fread(buffer, filename_length, 1, file);
-			char* texture_filename = cast(char*) arena_alloc(&manager->asset_mem, filename_length);
-			snprintf(texture_filename, filename_length + 1, "%s", buffer);
+			//fread(buffer, sizeof(s32), 1, file);
+			//s32 filename_length = *cast(s32*)buffer;
+			//fread(buffer, filename_length, 1, file);
+			//char* texture_filename = cast(char*) arena_alloc(&manager->asset_mem, filename_length);
+			//snprintf(texture_filename, filename_length + 1, "%s", buffer);
 			
 			
 			
 			// Read relative filename
-			fread(buffer, sizeof(s32), 1, file);
-			s32 relative_filename_length = *cast(s32*)buffer;
-			fread(buffer, relative_filename_length, 1, file);
-			char* relative_filename = cast(char*) arena_alloc(&manager->asset_mem, relative_filename_length);
-			snprintf(relative_filename, relative_filename_length + 1, "%s", buffer);
+			//fread(buffer, sizeof(s32), 1, file);
+			//s32 relative_filename_length = *cast(s32*)buffer;
+			//fread(buffer, relative_filename_length, 1, file);
+			//char* relative_filename = cast(char*) arena_alloc(&manager->asset_mem, relative_filename_length);
+			//snprintf(relative_filename, relative_filename_length + 1, "%s", buffer);
 
 
 
 
 
 
-			fread(buffer, sizeof(Vec3f), 1, file);
-			Vec3f translation = *cast(Vec3f*)buffer;
+			//fread(buffer, sizeof(Vec3f), 1, file);
+			//Vec3f translation = *cast(Vec3f*)buffer;
 			
 			fread(buffer, sizeof(Vec2f), 1, file);
 			texture->uv_translation = *cast(Vec2f*)buffer;
@@ -662,6 +682,9 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 
 void load_asset_by_id(AssetManager* manager, AssetID id) {
+	if (id.id == 0) {
+		assert_fail("Ids cannot be 0");
+	}
 	MapResult<AssetTrackData> result = map_get(&manager->asset_tracker.track_map, id.id);
 	if (!result.found) { assert_fail(); }
 	
@@ -669,7 +692,7 @@ void load_asset_by_id(AssetManager* manager, AssetID id) {
 }
 
 
-MaterialID create_material(AssetManager* manager, IString path, IString name, Material* mat) {
+MaterialID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat) {
 	
 
 	// Get the size of the full path
@@ -742,21 +765,33 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 
 	// Write the texture type and ids
 	
-	fwrite(cast(const void*) TextureType::Albedo, sizeof(TextureType::Albedo), 1, file);
-	fwrite(cast(const void*) &mat->albedo->id, sizeof(mat->albedo->id), 1, file);
-		
-	fwrite(cast(const void*) TextureType::Normal, sizeof(TextureType::Normal), 1, file);
-	fwrite(cast(const void*) &mat->normal->id, sizeof(mat->normal->id), 1, file);
 
-	fwrite(cast(const void*) TextureType::Metal, sizeof(TextureType::Metal), 1, file);
-	fwrite(cast(const void*) &mat->metal->id, sizeof(mat->metal->id), 1, file);
+	TextureID no_texture_id;
+	no_texture_id.id = 0;
 
-	fwrite(cast(const void*) TextureType::Roughness, sizeof(TextureType::Roughness), 1, file);
-	fwrite(cast(const void*) &mat->roughness->id, sizeof(mat->roughness->id), 1, file);
+	TextureType texture_type = TextureType::Albedo;
+	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
+	fwrite(cast(const void*) mat->albedo == NULL ? &no_texture_id : &mat->albedo->id, sizeof(TextureID), 1, file);
+	
+	
+	texture_type = TextureType::Normal;
+	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
+	fwrite(cast(const void*) mat->normal == NULL ? &no_texture_id : &mat->normal->id, sizeof(TextureID), 1, file);
 
-	fwrite(cast(const void*) TextureType::AO, sizeof(TextureType::AO), 1, file);
-	fwrite(cast(const void*) &mat->ao->id, sizeof(mat->ao->id), 1, file);
+	texture_type = TextureType::Metal;
+	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
+	fwrite(cast(const void*) mat->metal == NULL ? &no_texture_id : &mat->metal->id, sizeof(TextureID), 1, file);
 
+	texture_type = TextureType::Roughness;
+	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
+	fwrite(cast(const void*) mat->roughness == NULL ? &no_texture_id : &mat->roughness->id, sizeof(TextureID), 1, file);
+
+	texture_type = TextureType::AO;
+	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
+	fwrite(cast(const void*) mat->ao == NULL ? &no_texture_id : &mat->ao->id, sizeof(TextureID), 1, file);
+
+
+	
 
 
 	err = fclose(file);
@@ -779,3 +814,137 @@ MaterialID create_material(AssetManager* manager, IString path, IString name, Ma
 //	// TODO: implement texture creating
 //	
 //}
+
+
+AssetID import_texture(AssetManager* manager, IString file, bool reimport) {
+	AssetID texture_id;
+	
+	AssetID tracked_id = find_asset_by_name(&manager->asset_tracker, file.buf);
+	if (tracked_id.id == 0 && tracked_id.type == AssetType::None) {
+		// Asset not tracked
+		texture_id.id = 0;
+		texture_id.type = AssetType::None;
+	} else {
+		// Asset alredy being tracked
+		texture_id = tracked_id;
+		// If already being tracked, and we are not reimporting it, then just return what is already imported previously
+		if (!reimport) {
+			return texture_id;
+		}
+	}
+
+	
+	
+	
+
+
+		char path_buffer[260];
+		platform_file_dirname(file, path_buffer, 260);
+
+		const char* ext = platform_file_extension(file.buf);
+		const char* basename = platform_file_basename(file.buf);
+
+		s64 basename_without_ext_length = ext - basename;
+
+		IString basename_without_ext(basename, basename_without_ext_length);
+		IString path(path_buffer);
+
+		
+		// Get the size of the full path
+		// + 1 file seperator
+		// + 3 _tx part
+		// + 1 for null terminator
+		u32 file_str_size = path.length + 1 + 3 + basename_without_ext.length + ASSET_FILE_EXTENSION_LENGTH + 1;
+
+		// Alloc on stack to hold the path string
+		char* file_str = cast(char*) stack_alloc(&manager->stack, file_str_size, 1);
+		// Generate the file part with the extension
+		
+
+
+		
+
+		char* file_str_ptr = file_str;
+		
+		// Print filename basename without extension
+		snprintf(file_str_ptr, basename_without_ext.length + 1, "%s", basename_without_ext.buf);
+		file_str_ptr += basename_without_ext.length;
+
+		// Print the rest and the extension
+		snprintf(file_str_ptr, 3 + ASSET_FILE_EXTENSION_LENGTH + 1, "_tx%s", ASSET_FILE_EXTENSION);
+
+		IString file_with_ext(file_str);
+		platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
+
+		AssetID id = track_asset(&manager->asset_tracker, file_str, file_str_size);
+		id.type = AssetType::Texture;
+
+
+		Texture2D texture;
+		init_texture_default(&texture);
+
+		bool loaded_successfully = load_texture(file.buf, &texture, &manager->stack, false);
+
+		if (!loaded_successfully) {
+			// TODO: figure out how to handle failed asset importing
+			LOG_FATAL("ASSET MANAGER", "Texture failed to import %s", file.buf);
+			assert_fail();
+		} else {
+			LOG_INFO("ASSET MANAGER", "Imported texture %s", file.buf);
+
+			FILE* file;
+			errno_t err;
+			
+			err = fopen_s(&file, file_str, "wb");  // write binary
+			
+			if (err == 0) {
+				LOG_INFO("ASSET MANAGER", "Writing to %s,", file_str);
+			} else {
+				assert_fail();
+				LOG_FATAL("ASSET MANAGER", "Fail writing to %s,", file_str);
+			}
+			//void* buffer[256];
+			
+			
+			// Write asset id
+			fwrite(cast(const void*) &id.id, sizeof(id.id), 1, file);
+			
+			// Write type of asset
+			AssetType type = AssetType::Texture;
+			fwrite(cast(const void*) &type, sizeof(type), 1, file);
+			
+			
+			
+			
+			
+			
+			fwrite(cast(const void*) &texture.uv_translation, sizeof(texture.uv_translation), 1, file);
+			fwrite(cast(const void*) &texture.uv_scaling, sizeof(texture.uv_scaling), 1, file);
+			fwrite(cast(const void*) &texture.uv_rotation, sizeof(texture.uv_rotation), 1, file);
+			
+			
+			fwrite(cast(const void*) &texture.width, sizeof(texture.width), 1, file);
+			fwrite(cast(const void*) &texture.height, sizeof(texture.height), 1, file);
+			fwrite(cast(const void*) &texture.channels, sizeof(texture.channels), 1, file);
+			fwrite(cast(const void*) &texture.depth, sizeof(texture.depth), 1, file);
+			
+			s32 txt_size = texture.width * texture.height * texture.channels;
+			fwrite(cast(const void*) texture.data, txt_size, 1, file);
+			
+			
+			err = fclose(file);
+			if (err == 0) {
+				LOG_INFO("ASSET MANAGER", "Finished writing to %s\n", file_str);
+			} else {
+				assert_fail();
+				LOG_FATAL("ASSET MANAGER", "Cannot close to %s\n", file_str);
+			}
+
+
+			stack_pop(&manager->stack);
+
+		}
+
+		return id;
+
+}

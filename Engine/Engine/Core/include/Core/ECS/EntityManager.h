@@ -110,3 +110,7 @@ bool has_component(EntityManager* manager, Entity entity, ComponentType componen
 // quick helper function so we dont have to keep writing this below
 u64 get_index_for_entity(EntityManager* manager, Entity entity, CompactMap<u64>* map);
 
+
+//Entity import_asset_scene(EntityManager* manager, SceneID id);
+
+

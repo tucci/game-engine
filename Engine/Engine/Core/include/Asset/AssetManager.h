@@ -50,6 +50,11 @@ struct AssetManager {
 	Texture2D** _textures;
 	
 
+	AssetID default_mat;
+	AssetID plane_mesh;
+	AssetID cube_mesh;
+	AssetID sphere_mesh;
+
 
 };
 
@@ -69,5 +74,9 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename);
 void load_asset_by_id(AssetManager* manager, AssetID id);
 
 
-MaterialID create_material(AssetManager* manager, IString path, IString name, Material* mat);
+
+
+MaterialID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat);
 //TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture);
+AssetID import_texture(AssetManager* manager, IString file, bool reimport);
+

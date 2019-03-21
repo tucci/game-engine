@@ -100,61 +100,79 @@ void load_scene(Game* game, int scene_id) {
 	//bool loaded = obj_to_static_mesh("Assets/AC Cobra/Shelby.obj", mesh1, &game->s tack);
 	//FBX_Import_Data import = import_fbx("Assets/AC Cobra/Shelby.fbx", &game->stack, true);
 
-	AssetImporter importer;
-	init_asset_importer(&importer, &asset_manager->asset_tracker);
+	//AssetImporter importer;
+	//init_asset_importer(&importer, &asset_manager->asset_tracker);
 
-	remove_all_tracked_assets(importer.tracker);
+	//remove_all_tracked_assets(importer.tracker);
 	
-	AssetID import_scene;
+	//AssetID import_scene;
 	//import_scene = find_asset_by_name(importer.tracker, "mill.fbx.easset");
 	
 
 	// asset not found
 	//if (import_scene.id == 0) {
-		import_scene = import_fbx(&importer, "Assets/BB8 New/test3.fbx", false);
+	//import_scene = import_fbx(&importer, "Assets/BB8 New/test3.fbx", false);
+
+	//import_scene = import_fbx(&importer, "Assets/cube.fbx", false);
+	//import_scene = import_fbx(&importer, "Assets/plane.fbx", false);
+	//import_scene = import_fbx(&importer, "Assets/sphere.fbx", false);
 
 	
 
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
-	//import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
-		//import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX");
-
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", true);
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
-
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx");
-
-		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
-		//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx", false);
-
-
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx", false);
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
-
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx");
-
-
-		// TOO MUCH MEMORY here
-		// TODO: need to find a way for the importer memory to scale without having a fixed memory
-		//import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx", false);
-	//}
-	
-
-
-	
-	
-	
-	
+	//
+	//
+	//
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/mill.fbx", false);
+	////import_scene = import_fbx(&importer, "Assets/AC Cobra/Shelby.FBX", false);
+	//	//import_scene = import_fbx(&importer, "Assets/AC Cobra/test_bin.FBX");
+	//
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/mill_test2_fz_bin.fbx", true);
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/sink_fz.fbx", false);
+	//
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/cube_test.fbx");
+	//
+	//	//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink.fbx", false);
+	//	//import_scene = import_fbx(&importer, "Assets/BB8 New/Sink2.fbx", false);
+	//
+	//
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz2.fbx", false);
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/car_fz.fbx", false);
+	//
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/diamond_upy.fbx");
+	//
+	//
+	//	// TOO MUCH MEMORY here
+	//	// TODO: need to find a way for the importer memory to scale without having a fixed memory
+	//	//import_scene = import_fbx(&importer, "Assets/test_fbx/mountains.fbx", false);
+	////}
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 	//AssetID import_scene;
 	//import_scene.id = 11;
-
+	
 	
 
-	scene->sink = import_asset_scene_into_scene(game, import_scene.scene);
+	AssetID cube = load_asset_by_name(asset_manager, "Assets/Cube_mesh.easset");
+	AssetID default_mat = load_asset_by_name(asset_manager, "Assets/Default_mat.easset");
+
+	scene->sink = create_entity(entity_manager, "Test mesh");
+	add_component(entity_manager, scene->sink, ComponentType::StaticMesh);
+	add_component(entity_manager, scene->sink, ComponentType::Render);
+	set_render_material(entity_manager, scene->sink, default_mat.material);
+	set_render_visibility(entity_manager, scene->sink, true);
+
+	set_static_mesh(entity_manager, scene->sink, cube.mesh);
+	
+	//scene->sink = import_asset_scene_into_scene(game, import_scene.scene);
 
 
 
-	destroy_asset_importer(&importer);
+	//destroy_asset_importer(&importer);
 
 	Vec3f model_pos = get_position(entity_manager, scene->sink);
 	set_position(entity_manager, scene->entity_main_camera, model_pos);
@@ -388,7 +406,7 @@ void game_update(Game* game) {
 
 
 
-static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
+static void import_asset_scene_node(Game* game, EntityManager* manager, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
 
 	AssetImport_SceneNode* children = parent_node->children;
 	for (u32 i = 0; i < parent_node->children_count; i++) {
@@ -405,7 +423,7 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 		set_rotation(manager, child_entity, euler_to_quat(child_node->get_rotation));
 		attach_child_entity(manager, parent_entity, child_entity);
 
-		import_asset_scene_node(manager, scene, child_node, child_entity);
+		import_asset_scene_node(game, manager, scene, child_node, child_entity);
 	}
 
 	if (parent_node->mesh_count > 0) {
@@ -422,23 +440,28 @@ static void import_asset_scene_node(EntityManager* manager, AssetImport_Scene* s
 			// TODO: What happens when the mesh has multiple child nodes, does that mean is has multiple materials?
 			//assert(parent_node->children_count < 2);
 			// Get material for this mesh
-			AssetImport_SceneNode* child_node = &parent_node->children[i];
-			if (child_node->material_count > 0) {
-				u32 mat_index = child_node->materials[0];
-				AssetID material_id = scene->material_infos[mat_index];
-				set_render_material(manager, parent_entity, material_id.material);
+			if (parent_node->children_count != 0) {
+				AssetImport_SceneNode* child_node = &parent_node->children[i];
+				if (child_node->material_count > 0) {
+					u32 mat_index = child_node->materials[0];
+					AssetID material_id = scene->material_infos[mat_index];
+					set_render_material(manager, parent_entity, material_id.material);
+				} else {
+					// use default material
+					set_render_material(manager, parent_entity, game->engineAPI.asset_manager->default_mat.material);
+				}
 			} else {
-				
-				DEBUG_BREAK;
 				// use default material
-				//set_render_material(manager)
+				set_render_material(manager, parent_entity, game->engineAPI.asset_manager->default_mat.material);
 				
 			}
+			
 
 		}
 	}
 
 }
+
 
 Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 
@@ -460,7 +483,7 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 	set_rotation(manager, root, euler_to_quat(scene->root->get_rotation));
 
 	
-	import_asset_scene_node(manager, scene, scene->root, root);
+	import_asset_scene_node(game, manager, scene, scene->root, root);
 	return root;
 }
 

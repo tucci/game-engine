@@ -46,6 +46,7 @@ struct HDRTexture {
 };
 
 
+void init_texture_default(Texture2D* texture);
 
 bool load_texture(const char* filename, Texture2D* texture, Arena* mem, bool flip);
 bool load_texture(const char* filename, Texture2D* texture, StackAllocator* mem, bool flip);
