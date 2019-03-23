@@ -26,8 +26,8 @@ s64 platform_get_file_size(FileHandle* handle);
 
 
 const char* platform_file_basename(const char* filename);
-bool platform_file_dirname(IString path, char* output_path, s32 output_path_length);
-bool platform_concat_path_and_filename(IString path, IString filename, char* output, s32 output_length);
+bool platform_file_dirname(String path, char* output_path, s32 output_path_length);
+bool platform_concat_path_and_filename(String path, String filename, char* output, s32 output_length);
 const char* platform_file_extension(const char* filename);
 
 bool platform_file_rename(const char* existing_file, const char* new_file);

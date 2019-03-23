@@ -263,11 +263,11 @@ void destroy_asset_importer(AssetImporter* importer);
 
 
 
-static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f get_rotation, IString path, IString filename);
-static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportData* import_data,AssetImport_SceneNode* material, IString path, IString filename);
-static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Texture* texture, IString path, IString filename);
-AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f get_rotation, IString path, IString filename);
-AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IString path, IString filename);
+static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f get_rotation, String path, String filename);
+static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportData* import_data,AssetImport_SceneNode* material, String path, String filename);
+static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Texture* texture, String path, String filename);
+AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f get_rotation, String path, String filename);
+AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, String path, String filename);
 AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport);
 
 

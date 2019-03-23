@@ -27,6 +27,8 @@ struct AssetManager {
 	StackAllocator stack;
 	AssetID* assets;
 	AssetTracker asset_tracker;
+
+	// Assets that are currently loaded into memory
 	CompactMap<u64> asset_id_map;
 
 	// TODO: lights/cameras arent really assets, and should be removed from the manager, we can probably move them into scene	
@@ -77,7 +79,7 @@ void load_asset_by_id(AssetManager* manager, AssetID id);
 
 
 
-AssetID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat);
+AssetID create_material_asset(AssetManager* manager, String path, String name, Material* mat);
 //TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture);
-AssetID import_texture(AssetManager* manager, IString file, bool reimport);
+AssetID import_texture(AssetManager* manager, String file, bool reimport);
 

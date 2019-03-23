@@ -604,8 +604,12 @@ static void draw_window_entity_components(EditorInterface* editor) {
 
 
 
-				ImGui::InputText("", e_name.buffer, e_name.length);
-				ImGui::SameLine();
+				//ImGui::InputText("", e_name.buffer, e_name.length);
+				//ImGui::SameLine();
+				ImGui::Text(e_name.buffer);
+				
+				//ImGui::SameLine();
+
 				bool enabled = 0;
 				if (ImGui::Checkbox("Enabled", &enabled)) {
 					printf("enabled");

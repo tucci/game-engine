@@ -43,7 +43,7 @@ static TextureType fbx_string_texture_type(const char* string) {
 		return TextureType::None;
 	}
 }
-static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f get_rotation, IString path, IString filename){
+static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f get_rotation, String path, String filename){
 
 
 	// Get the size of the full path
@@ -55,9 +55,9 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	// Alloc on stack to hold the path string
 	char* file_str = cast(char*) stack_alloc(&importer->stack, str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, str_size, "%s_mesh%s", filename.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, str_size, "%s_mesh%s", filename.buffer, ASSET_FILE_EXTENSION);
 
-	IString file_with_ext(file_str);
+	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
@@ -170,7 +170,7 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	return id;
 }
 
-static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportData* fbx_import, AssetImport_SceneNode* material_node, IString path, IString filename) {
+static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportData* fbx_import, AssetImport_SceneNode* material_node, String path, String filename) {
 
 
 	// Get the size of the full path
@@ -182,9 +182,9 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 	// Alloc on stack to hold the path string
 	char* file_str = cast(char*) stack_alloc(&importer->stack, str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, str_size, "%s_mat%s", filename.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, str_size, "%s_mat%s", filename.buffer, ASSET_FILE_EXTENSION);
 
-	IString file_with_ext(file_str);
+	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
@@ -327,7 +327,7 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 }
 
 
-static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Texture* texture, IString path, IString filename) {
+static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Texture* texture, String path, String filename) {
 
 	// Get the size of the full path
 	// Get the size of the full path
@@ -339,9 +339,9 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	// Alloc on stack to hold the path string
 	char* file_str = cast(char*) stack_alloc(&importer->stack, file_str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, file_str_size, "%s_tx%s", filename.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, file_str_size, "%s_tx%s", filename.buffer, ASSET_FILE_EXTENSION);
 
-	IString file_with_ext(file_str);
+	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
 
 	AssetID id = track_asset(importer->tracker, file_str, file_str_size);
@@ -405,7 +405,7 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	// Read texture file and export back to custom format
 	// for now it's simply just a memcpy
 
-	platform_concat_path_and_filename(path, IString(texture->relative_filename, texture->relative_filename_length), file_str, file_str_size);
+	platform_concat_path_and_filename(path, String(texture->relative_filename, texture->relative_filename_length), file_str, file_str_size);
 	
 	bool loaded = load_texture(file_str, &txt_tmp, &importer->stack, false);
 	
@@ -452,7 +452,7 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 
 	return id;
 }
-AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f get_rotation, IString path, IString filename) {
+AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos, Vec3f scale, Vec3f get_rotation, String path, String filename) {
 
 	
 	
@@ -465,9 +465,9 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	// Alloc on stack to hold the path string
 	char* file_str = cast(char*) stack_alloc(&importer->stack, str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, str_size, "%s_mesh%s", filename.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, str_size, "%s_mesh%s", filename.buffer, ASSET_FILE_EXTENSION);
 
-	IString file_with_ext(file_str);
+	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 	
@@ -741,7 +741,7 @@ static void write_scene_node(AssetImporter* importer, AssetImport_SceneNode* nod
 }
 
 
-AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IString path, IString filename) {
+AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, String path, String filename) {
 	
 
 	// Get the size of the full path
@@ -753,9 +753,9 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, IS
 	// Alloc on stack to hold the path string
 	char* file_str = cast(char*) stack_alloc(&importer->stack, str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, str_size, "%s_scene%s", filename.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, str_size, "%s_scene%s", filename.buffer, ASSET_FILE_EXTENSION);
 
-	IString file_with_ext(file_str);
+	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
@@ -900,13 +900,13 @@ static void fbx_process_material_nodes(AssetImporter* importer, FBX_ImportData* 
 	fbx_import->export_scene.material_count = count;
 	sb_add(fbx_import->export_scene.material_infos, count);
 	
-	IString path(fbx_import->import_path, fbx_import->import_path_length);
+	String path(fbx_import->import_path, fbx_import->import_path_length);
 
 	for (int i = 0; i < count; i++) {
 		// Get the material node from the cache
 		AssetImport_SceneNode* material_node = fbx_import->material_node_cache[i];
 
-		IString mat_name(material_node->name, material_node->name_length);
+		String mat_name(material_node->name, material_node->name_length);
 		// Convert the fbx material to our custom material format
 		AssetID material_id = fbx_convert_mat_and_export(importer, fbx_import, material_node, path, mat_name);
 		// Add the material id the scene's list of material id
@@ -1485,7 +1485,7 @@ static void fbx_process_objects_node(AssetImporter* importer, FBX_Node* node, FB
 static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node, FBX_ImportData* fbx_import) {
 	FBX_Node* connection_node = node->first_child;
 
-	IString path(fbx_import->import_path, fbx_import->import_path_length);
+	String path(fbx_import->import_path, fbx_import->import_path_length);
 
 	while (connection_node != NULL) {
 		const int num_properties = connection_node->num_properties;
@@ -1618,7 +1618,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 					// that data is attached to the parent model object
 					// So we'll grab the name from the parent in the scene node
 
-					IString parent_name(parent_scene_node->name, parent_scene_node->name_length);
+					String parent_name(parent_scene_node->name, parent_scene_node->name_length);
 					AssetID asset_id = fbx_convert_geo2static_mesh_and_export(importer,
 						geo,
 						parent_scene_node->translation,
@@ -1719,7 +1719,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 
 					//init_scene_node(child_scene_node, child_object_id, texture->name, texture->name_length);
 
-					IString tx_name(texture->name, texture->name_length);
+					String tx_name(texture->name, texture->name_length);
 					// Create texture asset 
 					AssetID asset_id = fbx_convert_texture_and_export(importer, texture, path, tx_name);
 
@@ -1852,7 +1852,7 @@ static void fbx_process_connections_node(AssetImporter* importer, FBX_Node* node
 						add_child_to_scene_node(parent_scene_node, child_scene_node);
 
 
-						IString tx_name(texture->name, texture->name_length);
+						String tx_name(texture->name, texture->name_length);
 						// Create texture asset 
 						AssetID asset_id = fbx_convert_texture_and_export(importer, texture, path, tx_name);
 
@@ -2313,12 +2313,12 @@ AssetID import_fbx(AssetImporter* importer, char* filename, bool reimport) {
 	errno_t err;
 
 	char path_buffer[260];
-	platform_file_dirname(IString(filename), path_buffer, 260);
+	platform_file_dirname(String(filename), path_buffer, 260);
 
-	IString stripped_filename(platform_file_basename(filename));
-	IString path(path_buffer);
+	String stripped_filename(platform_file_basename(filename));
+	String path(path_buffer);
 
-	fbx_import.import_path = path.buf;
+	fbx_import.import_path = path.buffer;
 	fbx_import.import_path_length = path.length;
 
 	// TODO: use memory mapped files

@@ -220,25 +220,25 @@ const char* platform_file_basename(const char* filename) {
 }
 
 
-bool platform_file_dirname(IString path, char* output_path, s32 output_path_length) {
+bool platform_file_dirname(String path, char* output_path, s32 output_path_length) {
 	assert(output_path != NULL);
 	// First check to see if the actual path is bigger than the output buffer, to prevent buffer overrun
 	if (path.length > output_path_length) {
 		return false;
 	}
-	convert_to_os_path(path.buf, output_path, output_path_length);
+	convert_to_os_path(path.buffer, output_path, output_path_length);
 	//memcpy(output_path, path.buf, path.length);
 	//output_path[path.length] = '\0';
 	return PathRemoveFileSpec(output_path);
 }
 
-bool platform_concat_path_and_filename(IString path, IString filename, char* output, s32 output_length) {
+bool platform_concat_path_and_filename(String path, String filename, char* output, s32 output_length) {
 	assert(output != NULL);
 	s32 concat_length = path.length + filename.length + 1;
 	if (concat_length > output_length) {
 		return false;
 	}
-	char* result = PathCombine(output, path.buf, filename.buf);
+	char* result = PathCombine(output, path.buffer, filename.buffer);
 	// Compare pointer values,
 	assert(result == output);
 	if (result == NULL) {

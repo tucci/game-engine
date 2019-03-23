@@ -280,9 +280,9 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 	
 	char buf[260];
-	IString ifilename(filename);
+	String ifilename(filename);
 	platform_file_dirname(ifilename, buf, 260);
-	IString path(buf);
+	String path(buf);
 
 	
 
@@ -773,7 +773,7 @@ void load_asset_by_id(AssetManager* manager, AssetID id) {
 }
 
 
-AssetID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat) {
+AssetID create_material_asset(AssetManager* manager, String path, String name, Material* mat) {
 	
 
 	// Get the size of the full path
@@ -786,9 +786,9 @@ AssetID create_material_asset(AssetManager* manager, IString path, IString name,
 	// Alloc on stack to hold the path string
 	char* file_str = cast(char*) stack_alloc(&manager->stack, str_size, 1);
 	// Generate the file part with the extension
-	snprintf(file_str, str_size, "%s_mat%s", name.buf, ASSET_FILE_EXTENSION);
+	snprintf(file_str, str_size, "%s_mat%s", name.buffer, ASSET_FILE_EXTENSION);
 
-	IString file_with_ext(file_str);
+	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
@@ -823,7 +823,7 @@ AssetID create_material_asset(AssetManager* manager, IString path, IString name,
 	// Write material name length
 	fwrite(cast(const void*) &name.length, sizeof(name.length), 1, file);
 	//// Write material name 
-	fwrite(cast(const void*) name.buf, name.length, 1, file);
+	fwrite(cast(const void*) name.buffer, name.length, 1, file);
 
 
 	// Write shading model type
@@ -902,10 +902,10 @@ AssetID create_material_asset(AssetManager* manager, IString path, IString name,
 //}
 
 
-AssetID import_texture(AssetManager* manager, IString file, bool reimport) {
+AssetID import_texture(AssetManager* manager, String file, bool reimport) {
 	AssetID texture_id;
 	
-	AssetID tracked_id = find_asset_by_name(&manager->asset_tracker, file.buf);
+	AssetID tracked_id = find_asset_by_name(&manager->asset_tracker, file.buffer);
 	if (tracked_id.id == 0 && tracked_id.type == AssetType::None) {
 		// Asset not tracked
 		texture_id.id = 0;
@@ -927,13 +927,13 @@ AssetID import_texture(AssetManager* manager, IString file, bool reimport) {
 		char path_buffer[260];
 		platform_file_dirname(file, path_buffer, 260);
 
-		const char* ext = platform_file_extension(file.buf);
-		const char* basename = platform_file_basename(file.buf);
+		const char* ext = platform_file_extension(file.buffer);
+		const char* basename = platform_file_basename(file.buffer);
 
 		s64 basename_without_ext_length = ext - basename;
 
-		IString basename_without_ext(basename, basename_without_ext_length);
-		IString path(path_buffer);
+		String basename_without_ext(basename, basename_without_ext_length);
+		String path(path_buffer);
 
 		
 		// Get the size of the full path
@@ -953,13 +953,13 @@ AssetID import_texture(AssetManager* manager, IString file, bool reimport) {
 		char* file_str_ptr = file_str;
 		
 		// Print filename basename without extension
-		snprintf(file_str_ptr, basename_without_ext.length + 1, "%s", basename_without_ext.buf);
+		snprintf(file_str_ptr, basename_without_ext.length + 1, "%s", basename_without_ext.buffer);
 		file_str_ptr += basename_without_ext.length;
 
 		// Print the rest and the extension
 		snprintf(file_str_ptr, 3 + ASSET_FILE_EXTENSION_LENGTH + 1, "_tx%s", ASSET_FILE_EXTENSION);
 
-		IString file_with_ext(file_str);
+		String file_with_ext(file_str);
 		platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
 
 		AssetID id = track_asset(&manager->asset_tracker, file_str, file_str_size);
@@ -969,14 +969,14 @@ AssetID import_texture(AssetManager* manager, IString file, bool reimport) {
 		Texture2D texture;
 		init_texture_default(&texture);
 
-		bool loaded_successfully = load_texture(file.buf, &texture, &manager->stack, false);
+		bool loaded_successfully = load_texture(file.buffer, &texture, &manager->stack, false);
 
 		if (!loaded_successfully) {
 			// TODO: figure out how to handle failed asset importing
-			LOG_FATAL("ASSET MANAGER", "Texture failed to import %s", file.buf);
+			LOG_FATAL("ASSET MANAGER", "Texture failed to import %s", file.buffer);
 			assert_fail();
 		} else {
-			LOG_INFO("ASSET MANAGER", "Imported texture %s", file.buf);
+			LOG_INFO("ASSET MANAGER", "Imported texture %s", file.buffer);
 
 			FILE* file;
 			errno_t err;

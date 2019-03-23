@@ -161,6 +161,8 @@ struct AssetTracker {
 	u64 last_asset_id = 1;
 	u64 assets_tracked;
 	CompactMap<AssetTrackData> track_map;
+
+	//todo asset tree/file path
 	
 };
 

@@ -26,29 +26,9 @@ struct Buffer {
 // This struct is just a wrapper around char* that also holds the length of the c string
 struct String {
 	size_t length;
-	char* buffer;
-	String(char* cstr) : buffer(cstr), length(strlen(cstr)) {}
-	String(char* cstr, size_t len) : buffer(cstr), length(len) {}
+	const char* buffer;
+	String(const char* cstr) : buffer(cstr), length(strlen(cstr)) {}
+	String(const char* cstr, size_t len) : buffer(cstr), length(len) {}
 };
 
 
-// The string struct does not own the underlying string ptr
-// Buf must be null terminated
-struct IString {
-        const size_t length;
-        const char* const buf;
-        // O(n) to init
-        IString(const char* cstr) : buf(cstr), length(strlen(cstr)) {
-        }
-        // O(n) to init in debug mode, O(1) in non debug
-        IString(const char* cstr, size_t len) : buf(cstr), length(len) {
-//#if DEBUG
-                // In debug mode, make sure the length of the string passed in, is actually the same as the actual length of the string
-                /*if (strlen(cstr) != len) {
-                        assert_fail();
-                } */
-//#endif
-
-        }
-
-};
