@@ -762,7 +762,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 
 
 
-	Vec3f color_white = { 1, 1, 1 };
+	Vec3f grid_color = { 0.75f, 0.75f, 0.75f };
 	int index = 0;
 	float half_unit_size = 0.5f;
 	for (int i = -grid_size; i <= grid_size; i += 2) {
@@ -782,10 +782,10 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 		opengl->grid_mesh.pos[index + 2] = pt;
 		opengl->grid_mesh.pos[index + 3] = pt2;
 
-		opengl->grid_mesh.color[index + 0] = color_white;
-		opengl->grid_mesh.color[index + 1] = color_white;
-		opengl->grid_mesh.color[index + 2] = color_white;
-		opengl->grid_mesh.color[index + 3] = color_white;
+		opengl->grid_mesh.color[index + 0] = grid_color;
+		opengl->grid_mesh.color[index + 1] = grid_color;
+		opengl->grid_mesh.color[index + 2] = grid_color;
+		opengl->grid_mesh.color[index + 3] = grid_color;
 
 
 
@@ -796,7 +796,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	int axis_offset_pos = index;
 	opengl->axes_pos_offset = index;
 
-	float axis_scale = 1.0f;
+	float axis_scale = 100.0f;
 	Vec3f x_axis = { axis_scale, 0, 0 };
 	Vec3f y_axis = { 0, axis_scale, 0 };
 	Vec3f z_axis = { 0, 0, axis_scale };
@@ -944,7 +944,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 	if (opengl->show_debug_grid) {
-		glLineWidth(2);
+		glLineWidth(0.5f);
 		glDrawArrays(GL_LINES, 0, opengl->axes_pos_offset);
 
 		glLineWidth(4);
@@ -963,8 +963,9 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 		dir_light_line[0] = Vec3f(0, 0, 0);
 
 
-		dir_light_line_color[0] = Vec3f(1, 1, 1);
-		dir_light_line_color[1] = Vec3f(1, 1, 1);
+		
+		dir_light_line_color[0] = opengl->render_world->test_light.dir_light.color;
+		dir_light_line_color[1] = opengl->render_world->test_light.dir_light.color;
 		glBufferData(GL_ARRAY_BUFFER,
 			4 * sizeof(Vec3f),
 			NULL,
@@ -998,6 +999,9 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 		for (int i = 0; i < opengl->render_world->render_mesh_count; i++) {
+			
+			
+
 			RenderMesh render_mesh = opengl->render_world->render_mesh_list[i];
 			Mat4x4f* world_mat = render_mesh.world;
 
@@ -1099,6 +1103,8 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	
 	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), uniform3f_pack(cam_pos));
 	glUniform3f(glGetUniformLocation(current_shader, "light_pos"), uniform3f_pack(test_light.direction));
+	glUniform3f(glGetUniformLocation(current_shader, "light_color"), uniform3f_pack(test_light.color));
+	glUniform1f(glGetUniformLocation(current_shader, "light_intensity"), test_light.intensity);
 
 		
 
@@ -1108,7 +1114,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		StaticMesh* mesh = render_mesh.mesh;
 		Mat4x4f* world_mat = render_mesh.world;
 
-		Material* material = render_mesh.material;
+		InternalMaterial* material = render_mesh.material;
 		
 		//render_mesh.material->
 		
@@ -1117,7 +1123,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 		if (!light_pass) {
 			glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->render_world->light_space_mat.mat1d);
 
-			MapResult<RenderMaterialResource*> result_handle = map_get(&opengl->render_world->material_res_map, material->id.id);
+			MapResult<RenderMaterialResource*> result_handle = map_get(&opengl->render_world->material_res_map, material->material.id.id);
 			RenderMaterialResource* material_handle = result_handle.value;
 
 

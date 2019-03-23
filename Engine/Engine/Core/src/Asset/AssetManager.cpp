@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include "Logger.h"
 
+#include "Asset/FbxImport.h"
+
 
 
 
@@ -54,11 +56,31 @@ void init_asset_manager(AssetManager* manager) {
 	//init_material_defaults(&default_mat);
 	//manager->default_mat = create_material_asset(manager, path, name, &default_mat);
 
+
+
+	//AssetImporter importer;
+	//init_asset_importer(&importer, &manager->asset_tracker);
+	//
+	//AssetID import_scene;
+	//
+	//import_scene = import_fbx(&importer, "Assets/cube.fbx", true);
+	//import_scene = import_fbx(&importer, "Assets/plane.fbx", true);
+	//import_scene = import_fbx(&importer, "Assets/sphere.fbx", true);
+	//
+	//
+	//
+	//
+	//
+	//
+	//destroy_asset_importer(&importer);
+
+	
 	
 	manager->default_mat = load_asset_by_name(manager, "Assets/Default_mat.easset");
 	manager->cube_mesh = load_asset_by_name(manager, "Assets/Cube_mesh.easset");
 	manager->plane_mesh = load_asset_by_name(manager, "Assets/Grid_mesh.easset");
 	manager->sphere_mesh = load_asset_by_name(manager, "Assets/Sphere_mesh.easset");
+	
 	
 
 	
@@ -134,6 +156,14 @@ StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id) {
 }
 
 Material* get_material_by_id(AssetManager* manager, MaterialID id) {
+	AssetID asset_id;
+	asset_id.type = AssetType::Material;
+	asset_id.material = id;
+	InternalAsset mat = get_asset_by_id(manager, asset_id);
+	return &mat.material->material;
+}
+
+InternalMaterial* get_material_internal_by_id(AssetManager* manager, MaterialID id) {
 	AssetID asset_id;
 	asset_id.type = AssetType::Material;
 	asset_id.material = id;
@@ -488,48 +518,56 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 		}
 		case AssetType::Material: {
 
-			Material* material = cast(Material*)arena_alloc(&manager->asset_mem, sizeof(Material));
-			init_material_defaults(material);
-			material->id = asset.material;
+			InternalMaterial* material = cast(InternalMaterial*)arena_alloc(&manager->asset_mem, sizeof(InternalMaterial));
+			init_material_defaults(&material->material);
+			material->material.id = asset.material;
 			sb_push(manager->_materials, material);
 
 			
+			
+
 			// Add this asset to the id map
 			// map the asset id to the index in the material array
 			map_put(&manager->asset_id_map, asset.id, manager->_material_count);
 			manager->_material_count++;
 
+			
+			
+
+
+			
+
 			// Read name
-			fread(buffer, sizeof(s32), 1, file);
-			s32 name_length = *cast(s32*)buffer;
+			fread(buffer, sizeof(size_t), 1, file);
+			size_t name_length = *cast(size_t*)buffer;
 			fread(buffer, name_length, 1, file);
-			char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length);
-			snprintf(name, name_length, "%s", buffer);
+			char* name = cast(char*) arena_alloc(&manager->asset_mem, name_length + 1);
+			snprintf(name, name_length + 1, "%s", buffer);
 
 			// Read shading model
-			fread(buffer, sizeof(material->shading_model), 1, file);
-			material->shading_model = *cast(MaterialShadingModel*)buffer;
+			fread(buffer, sizeof(material->material.shading_model), 1, file);
+			material->material.shading_model = *cast(MaterialShadingModel*)buffer;
 
 			
 			// Read metallic factor
-			fread(buffer, sizeof(material->metallic_factor), 1, file);
-			material->metallic_factor = *cast(float*)buffer;
+			fread(buffer, sizeof(material->material.metallic_factor), 1, file);
+			material->material.metallic_factor = *cast(float*)buffer;
 
 			// Read roughness factor
-			fread(buffer, sizeof(material->roughness_factor), 1, file);
-			material->roughness_factor = *cast(float*)buffer;
+			fread(buffer, sizeof(material->material.roughness_factor), 1, file);
+			material->material.roughness_factor = *cast(float*)buffer;
 
 			// Read emissive factor
-			fread(buffer, sizeof(material->emissive_factor), 1, file);
-			material->emissive_factor = *cast(float*)buffer;
+			fread(buffer, sizeof(material->material.emissive_factor), 1, file);
+			material->material.emissive_factor = *cast(float*)buffer;
 			
 			
 			// albedo color
 			fread(buffer, sizeof(Vec3f), 1, file);
-			material->albedo_color = *cast(Vec3f*)buffer;
+			material->material.albedo_color = *cast(Vec3f*)buffer;
 			// emissive color
 			fread(buffer, sizeof(Vec3f), 1, file);
-			material->emissive_color = *cast(Vec3f*)buffer;
+			material->material.emissive_color = *cast(Vec3f*)buffer;
 
 			
 			
@@ -544,17 +582,57 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 				fread(buffer, sizeof(TextureType), 1, file);
 				TextureType texture_type = *cast(TextureType*)buffer;
 				// Read asset id
-				fread(buffer, sizeof(AssetID), 1, file);
-				AssetID texture_id = *cast(AssetID*)buffer;
+				fread(buffer, sizeof(TextureID), 1, file);
+				TextureID texture_id = *cast(TextureID*)buffer;
 				
+				AssetID asset_id;
+				asset_id.type = AssetType::Texture;
+				asset_id.texture = texture_id;
 				// There is no texture stored here
-				if (texture_id.texture.id == 0) { continue; }
+				if (texture_id.id == 0) { continue; }
 				// TODO: push onto import queue
-				load_asset_by_id(manager, texture_id);
+				load_asset_by_id(manager, asset_id);
 
 				// Once the dependant texture is loaded, we need update the internal pointer to the texture inside the material
-				InternalAsset asset = get_asset_by_id(manager, texture_id);
-				update_material_with_texture_data(material, texture_type, texture_id.texture, asset.texture, 0);
+				InternalAsset asset = get_asset_by_id(manager, asset_id);
+
+				//update_material_with_texture_data(material, texture_type, texture_id.texture, asset.texture, 0);
+				
+				// NEED TO FIGURE OUT HOW TO USE TEXTURE LAYERS
+				switch (texture_type) {
+					case TextureType::Albedo: {
+						//material->albedo = id;
+						material->tx_albedo = asset.texture;
+						material->material.albedo = texture_id;
+						break;
+					}
+					case TextureType::Normal: {
+						//material->normal = id;
+						material->tx_normal = asset.texture;
+						material->material.normal = texture_id;
+						break;
+					}
+					case TextureType::Metal: {
+						//material->metal = id;
+						material->tx_metal = asset.texture;
+						material->material.metal = texture_id;
+						break;
+					}
+					case TextureType::Roughness: {
+						//material->roughness = id;
+						material->tx_roughness = asset.texture;
+						material->material.roughness = texture_id;
+						break;
+					}
+					case TextureType::AO: {
+						//material->ao = id;
+						material->tx_ao = asset.texture;
+						material->material.ao = texture_id;
+						break;
+					}
+				}
+
+				
 
 				// NOTE: our material doesnt support layerted materials yet
 				
@@ -685,6 +763,9 @@ void load_asset_by_id(AssetManager* manager, AssetID id) {
 	if (id.id == 0) {
 		assert_fail("Ids cannot be 0");
 	}
+
+	
+
 	MapResult<AssetTrackData> result = map_get(&manager->asset_tracker.track_map, id.id);
 	if (!result.found) { assert_fail(); }
 	
@@ -692,7 +773,7 @@ void load_asset_by_id(AssetManager* manager, AssetID id) {
 }
 
 
-MaterialID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat) {
+AssetID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat) {
 	
 
 	// Get the size of the full path
@@ -734,7 +815,7 @@ MaterialID create_material_asset(AssetManager* manager, IString path, IString na
 
 	// Write type of asset
 	AssetType type = AssetType::Material;
-	fwrite(cast(const void*) &type, sizeof(type), 1, file);
+	fwrite(cast(const void*) &id.type, sizeof(id.type), 1, file);
 
 
 
@@ -771,24 +852,29 @@ MaterialID create_material_asset(AssetManager* manager, IString path, IString na
 
 	TextureType texture_type = TextureType::Albedo;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
-	fwrite(cast(const void*) mat->albedo == NULL ? &no_texture_id : &mat->albedo->id, sizeof(TextureID), 1, file);
+	fwrite(cast(const void*) &mat->albedo, sizeof(TextureID), 1, file);
+	//fwrite(cast(const void*) mat->albedo == NULL ? &no_texture_id : &mat->albedo->id, sizeof(TextureID), 1, file);
 	
 	
 	texture_type = TextureType::Normal;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
-	fwrite(cast(const void*) mat->normal == NULL ? &no_texture_id : &mat->normal->id, sizeof(TextureID), 1, file);
+	fwrite(cast(const void*) &mat->normal, sizeof(TextureID), 1, file);
+	//fwrite(cast(const void*) mat->normal == NULL ? &no_texture_id : &mat->normal->id, sizeof(TextureID), 1, file);
 
 	texture_type = TextureType::Metal;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
-	fwrite(cast(const void*) mat->metal == NULL ? &no_texture_id : &mat->metal->id, sizeof(TextureID), 1, file);
+	fwrite(cast(const void*) &mat->metal, sizeof(TextureID), 1, file);
+	//fwrite(cast(const void*) mat->metal == NULL ? &no_texture_id : &mat->metal->id, sizeof(TextureID), 1, file);
 
 	texture_type = TextureType::Roughness;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
-	fwrite(cast(const void*) mat->roughness == NULL ? &no_texture_id : &mat->roughness->id, sizeof(TextureID), 1, file);
+	fwrite(cast(const void*) &mat->roughness, sizeof(TextureID), 1, file);
+	//fwrite(cast(const void*) mat->roughness == NULL ? &no_texture_id : &mat->roughness->id, sizeof(TextureID), 1, file);
 
 	texture_type = TextureType::AO;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
-	fwrite(cast(const void*) mat->ao == NULL ? &no_texture_id : &mat->ao->id, sizeof(TextureID), 1, file);
+	fwrite(cast(const void*) &mat->ao, sizeof(TextureID), 1, file);
+	//fwrite(cast(const void*) mat->ao == NULL ? &no_texture_id : &mat->ao->id, sizeof(TextureID), 1, file);
 
 
 	
@@ -806,7 +892,7 @@ MaterialID create_material_asset(AssetManager* manager, IString path, IString na
 	stack_pop(&manager->stack);
 
 
-	return id.material;
+	return id;
 
 }
 

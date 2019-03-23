@@ -14,6 +14,8 @@ struct TextureID {
 };
 
 
+
+
 struct Texture2D {
 	TextureID id;
 	s32 width;

@@ -50,7 +50,7 @@ struct EditorInterface {
 	bool show_editor;
 
 
-	
+	bool was_last_frame_using_right_click;
 
 	// Game clock vars
 	int fps_history_index = 0;

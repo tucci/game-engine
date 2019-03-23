@@ -918,7 +918,7 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		//how to create material and also handling asset / material streaming
 		//	do we do an if here and see if it is loaded and load here ?
 
-		rm.material = get_material_by_id(asset_manager, mat_id);
+		rm.material = get_material_internal_by_id(asset_manager, mat_id);
 
 		if (!is_material_loaded(renderer, mat_id)) {
 			create_material(renderer, rm.material);

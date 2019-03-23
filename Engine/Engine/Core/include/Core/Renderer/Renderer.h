@@ -50,7 +50,7 @@ RenderResource create_index_buffer(Renderer* renderer);
 
 bool is_material_loaded(Renderer* renderer, MaterialID id);
 
-RenderMaterialResource create_material(Renderer* renderer, Material* material);
+RenderMaterialResource create_material(Renderer* renderer, InternalMaterial* material);
 
 // When we create a texture, we copy the texture to the gpu memory
 // however it does not free the texture memory on the cpu side. the caller must manually free it

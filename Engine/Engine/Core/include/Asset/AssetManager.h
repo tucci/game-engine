@@ -15,7 +15,7 @@ struct InternalAsset {
 	union {
 		AssetImport_Scene* scene;
 		StaticMesh* mesh;
-		Material* material;
+		InternalMaterial* material;
 		Texture2D* texture;
 	};
 };
@@ -43,7 +43,7 @@ struct AssetManager {
 
 	AssetImport_Scene** _scenes;
 	StaticMesh** _static_meshes;
-	Material** _materials;
+	InternalMaterial** _materials;
 	//Light** _lights;
 	//Camera** _cameras;
 	//Animation** _anims;
@@ -66,6 +66,7 @@ void destroy_asset_manager(AssetManager* manager);
 InternalAsset get_asset_by_id(AssetManager* manager, AssetID id);
 StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id);
 Material* get_material_by_id(AssetManager* manager, MaterialID id);
+InternalMaterial* get_material_internal_by_id(AssetManager* manager, MaterialID id);
 
 void import_pak_file(AssetManager* manager, char* pak_file);
 
@@ -76,7 +77,7 @@ void load_asset_by_id(AssetManager* manager, AssetID id);
 
 
 
-MaterialID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat);
+AssetID create_material_asset(AssetManager* manager, IString path, IString name, Material* mat);
 //TextureID create_texture(AssetManager* manager, IString path, IString name, Texture2D* texture);
 AssetID import_texture(AssetManager* manager, IString file, bool reimport);
 

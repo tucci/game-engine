@@ -19,6 +19,7 @@ enum class LightType {
 struct DirectionalLight {
 	Vec3f direction;
 	Vec3f color;
+	float intensity;
 };
 
 struct PointLight {

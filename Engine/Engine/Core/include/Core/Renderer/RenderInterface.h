@@ -50,7 +50,7 @@ struct RenderMaterialResource {
 struct RenderMesh {
 	StaticMesh* mesh;
 	Mat4x4f* world;
-	Material* material;
+	InternalMaterial* material;
 	
 };
 

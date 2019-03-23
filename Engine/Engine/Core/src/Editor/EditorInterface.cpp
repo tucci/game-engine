@@ -62,18 +62,37 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 
-	AssetID tcolor = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_basecolor.png"), true);
-	AssetID tnormal = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_normal.png"), true);
-	AssetID tmetallic= import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_metallic.png"), true);
-	AssetID troughness = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_roughness.png"), true);
-	AssetID tao = import_texture(editor->api.asset_manager, IString("Assets/textures/rust_iron/rustediron2_ao.png"), true);
 
-	Material rust_mat;
-	init_material_defaults(&rust_mat);
+
+
 	
-	load_asset_by_id(editor->api.asset_manager, tcolor);
 
-	//AssetID rust1 = load_asset_by_id(editor->api.asset_manager, tcolor);
+
+
+	//AssetID tcolor = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-albedo.png"), true);
+	//AssetID tnormal = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-normal.png"), true);
+	//AssetID tmetallic = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-metalness.png"), true);
+	//AssetID troughness = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-roughness.png"), true);
+	//AssetID tao = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-ao.png"), true);
+	//
+	//Material test_mat;
+	//init_material_defaults(&test_mat);
+	//
+	//test_mat.albedo = tcolor.texture;
+	//test_mat.normal = tnormal.texture;
+	//test_mat.metal = tmetallic.texture;
+	//test_mat.roughness = troughness.texture;
+	//test_mat.ao = tao.texture;
+	//
+	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets/textures/paint_cement/", "paint_cement_mat", &test_mat);
+
+	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
+	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat_mat.easset");
+	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_mat_mat.easset");
+	AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
+	
+	
+	
 	
 
 
@@ -107,21 +126,16 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 
-	
-
-	
-
-	AssetID mat_test = load_asset_by_name(asset_manager, "Assets/BB8 New/Material #46_mat.easset");
-
-
 	editor->test_mesh = create_entity(entity_manager, "Test mesh");
+	map_put(&editor->entity_selected, editor->test_mesh.id, false);
+
 	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
 	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
 	//set_render_material(entity_manager, editor->test_mesh, editor->api.asset_manager->default_mat.material);
-	set_render_material(entity_manager, editor->test_mesh, mat_test.material);
+	set_render_material(entity_manager, editor->test_mesh, mat_id.material);
 	set_render_visibility(entity_manager, editor->test_mesh, true);
 
-	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->sphere_mesh.mesh);
+	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
 	
 
 
@@ -302,6 +316,7 @@ void editor_update(EditorInterface* editor) {
 		draw_window_renderer_stats(editor);
 
 		
+		
 	
 	} // END OF SHOW EDITOR
 
@@ -336,8 +351,6 @@ void editor_update(EditorInterface* editor) {
 		float cam_move_scale = scroll_scale * scroll.y;
 		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
 		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
-
-		LOG_WARN("EDITOR", "scroll test");
 	}
 
 
@@ -355,6 +368,7 @@ void editor_update(EditorInterface* editor) {
 
 	Vec2i delta_pos = input->mouse.delta_pos;
 
+	
 
 
 	// Only apply editor movement if right mouse button is clicked
@@ -388,25 +402,26 @@ void editor_update(EditorInterface* editor) {
 		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
 		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
 
-		// Prevent rotation jump, when the delta between the last time the right mouse was down and now
+
+		// Prevent camera rotation jump, when the delta between the last time the right mouse was down and now
+		if (editor->was_last_frame_using_right_click) {
+			// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
+			float sensitivity = 0.25f;
+			Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
+			Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
+			new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
+
+			set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
+		}
+		
 
 
-		// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
-		float sensitivity = 0.25f;
-		Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
-		Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
-		new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
-
-		set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
-
+		editor->was_last_frame_using_right_click = true;
 	} else {
+		editor->was_last_frame_using_right_click = false;
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 		
-
-		
-
-	
 
 
 }
@@ -525,6 +540,8 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 			case LightType::DirectionalLight: {
 				ImGui::DragFloat3("Direction", light.dir_light.direction.data);
 				ImGui::ColorEdit3("Color", light.dir_light.color.data);
+				ImGui::DragFloat("Intensity", &light.dir_light.intensity, 1.0f, 0.0f, 100000.0f);
+
 				break;
 			}
 			case LightType::PointLight: {
@@ -869,6 +886,16 @@ static void draw_window_log(EditorInterface* editor) {
 
 static void draw_window_assets(EditorInterface* editor) {
 	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
+		AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
+		size_t map_size = tracker->track_map.size;
+		// Go over our track map, and look for filename
+		for (int i = 0; i < map_size; i++) {
+			CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
+			// Check if this is a valid track data
+			if (track_item.key != 0 && track_item.key != TOMBSTONE) {
+				ImGui::Text(track_item.value.filename);
+			}
+		}
 	}
 	ImGui::End();
 }

@@ -143,32 +143,33 @@ bool is_material_loaded(Renderer* renderer, MaterialID id) {
 	return result.found;
 }
 
-RenderMaterialResource create_material(Renderer* renderer, Material* material) {
+RenderMaterialResource create_material(Renderer* renderer, InternalMaterial* material) {
 	
-
+	TextureID no_texture = { 0 };
 	
 	RenderMaterialResource material_handle;
-	if (material->albedo != NULL) {
-		material_handle.albedo = create_texture(renderer, material->albedo, false);
+	
+	if (material->tx_albedo != NULL) {
+		material_handle.albedo = create_texture(renderer, material->tx_albedo, false);
 	}
-	if (material->normal != NULL) {
-		material_handle.normal = create_texture(renderer, material->normal, false);
+	if (material->tx_normal != NULL) {
+		material_handle.normal = create_texture(renderer, material->tx_normal, false);
 	}
-	if (material->metal != NULL) {
-		material_handle.metallic = create_texture(renderer, material->metal, false);
+	if (material->tx_metal != NULL) {
+		material_handle.metallic = create_texture(renderer, material->tx_metal, false);
 	}
-	if (material->roughness != NULL) {
-		material_handle.roughness = create_texture(renderer, material->roughness, false);
+	if (material->tx_roughness != NULL) {
+		material_handle.roughness = create_texture(renderer, material->tx_roughness, false);
 	}
-	if (material->ao!= NULL) {
-		material_handle.ao = create_texture(renderer, material->ao, false);
+	if (material->tx_ao != NULL) {
+		material_handle.ao = create_texture(renderer, material->tx_ao, false);
 	}
 	
 	sb_push(renderer->render_world.material_res, material_handle);
 
 	RenderMaterialResource* handle = &sb_last(renderer->render_world.material_res);
 
-	map_put(&renderer->render_world.material_res_map, material->id.id, handle);
+	map_put(&renderer->render_world.material_res_map, material->material.id.id, handle);
 	return material_handle;
 }
 
