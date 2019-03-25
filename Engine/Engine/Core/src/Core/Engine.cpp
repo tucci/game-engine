@@ -921,12 +921,9 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		rm.material = get_material_internal_by_id(asset_manager, mat_id);
 
 		if (!is_material_loaded(renderer, mat_id)) {
-			create_material(renderer, rm.material);
+			create_material_resource(renderer, rm.material);
 		}
 
-
-		
-		//create_material(&engine->renderer, rm.material);
 		
 		push_render_object(renderer, rm);
 	}

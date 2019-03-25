@@ -34,6 +34,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->window_asset_browser_open = true;
 	editor->window_entity_components_open = true;
 	editor->window_engine_timers_open = true;
+	editor->window_render_stats = true;
 	
 
 	editor->api = api;
@@ -98,6 +99,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 	EntityManager* entity_manager = editor->api.entity_manager;
+	AssetManager* asset_manager = editor->api.asset_manager;
 
 	Entity e1 = create_entity(entity_manager, "Entity 2");
 	Entity e2 = create_entity(entity_manager, "Entity 3");
@@ -105,6 +107,11 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	Entity e4 = create_entity(entity_manager, "Entity 5");
 	Entity e5 = create_entity(entity_manager, "Entity 6");
 	Entity e6 = create_entity(entity_manager, "Entity 7");
+	editor->test_mesh = create_entity(entity_manager, "Test mesh");
+	editor->entity_test_light = create_entity(entity_manager, "Test Light");
+
+	add_component(entity_manager, editor->entity_test_light, ComponentType::Light);
+
 
 	attach_child_entity(entity_manager, e1, e2);
 	attach_child_entity(entity_manager, e1, e6);
@@ -120,29 +127,41 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	map_put(&editor->entity_selected, e4.id, false);
 	map_put(&editor->entity_selected, e5.id, false);
 	map_put(&editor->entity_selected, e6.id, false);
-
-
-	AssetManager* asset_manager = editor->api.asset_manager;
-
-
-
-	editor->test_mesh = create_entity(entity_manager, "Test mesh");
 	map_put(&editor->entity_selected, editor->test_mesh.id, false);
+	map_put(&editor->entity_selected, editor->entity_test_light.id, false);
 
-	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
-	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
-	//set_render_material(entity_manager, editor->test_mesh, editor->api.asset_manager->default_mat.material);
-	set_render_material(entity_manager, editor->test_mesh, mat_id.material);
-	set_render_visibility(entity_manager, editor->test_mesh, true);
-
-	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
 	
 
 
-	editor->entity_test_light = create_entity(entity_manager, "Test Light");
-	add_component(entity_manager, editor->entity_test_light, ComponentType::Light);
 
-	map_put(&editor->entity_selected, editor->entity_test_light.id, false);
+	
+	
+
+	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
+	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
+	set_render_material(entity_manager, editor->test_mesh, mat_id.material);
+	set_render_visibility(entity_manager, editor->test_mesh, true);
+	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
+
+
+	add_component(entity_manager, e1, ComponentType::StaticMesh);
+	add_component(entity_manager, e1, ComponentType::Render);
+	set_render_material(entity_manager, e1, mat_id.material);
+	set_render_visibility(entity_manager, e1, true);
+	set_static_mesh(entity_manager, e1, editor->api.asset_manager->sphere_mesh.mesh);
+
+
+	//add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
+	//add_component(entity_manager, editor->test_mesh, ComponentType::Render);
+	//set_render_material(entity_manager, editor->test_mesh, mat_id.material);
+	//set_render_visibility(entity_manager, editor->test_mesh, true);
+	//set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
+	
+
+
+	
+	
+	
 
 
 	Light light;
@@ -460,6 +479,16 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 		if (ImGui::BeginMenu("Window")) {
 
+
+			
+			ImGui::MenuItem("Scene Tree", NULL, &editor->window_scene_tree_open);
+			ImGui::MenuItem("Entity Components", NULL, &editor->window_entity_components_open);
+			ImGui::MenuItem("Game Loop", NULL, &editor->window_engine_timers_open);
+			ImGui::MenuItem("Log", NULL, &editor->window_log_open);
+			ImGui::MenuItem("Asset Browser", NULL, &editor->window_asset_browser_open);
+			ImGui::MenuItem("Render Stats", NULL, &editor->window_render_stats);
+			
+			
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
@@ -593,6 +622,10 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 static void draw_window_entity_components(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
+	if (!editor->window_entity_components_open) {
+		return;
+	}
+
 	if (ImGui::Begin("Entity Components", &editor->window_entity_components_open)) {
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
@@ -648,13 +681,16 @@ static void draw_window_entity_components(EditorInterface* editor) {
 
 
 		}
-
 	}
-		ImGui::End();
+	ImGui::End();
+		
 
 }
 
 static void draw_window_scene_hierarchy(EditorInterface* editor) {
+	if (!editor->window_scene_tree_open) {
+		return;
+	}
 	EntityManager* entity_manager = editor->api.entity_manager;
 	if (ImGui::Begin("Entity Scene Tree", &editor->window_scene_tree_open, ImGuiWindowFlags_DockNodeHost)) {
 
@@ -684,12 +720,15 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		}
 
 	}
-		ImGui::End();
+	ImGui::End();
 }
 
 
 static void draw_window_engine_timer(EditorInterface* editor) {
 	GameTimer* timer = editor->api.game_loop;
+	if (!editor->window_engine_timers_open) {
+		return;
+	}
 	
 	if (ImGui::Begin("Game Loop", &editor->window_engine_timers_open)) {
 
@@ -714,11 +753,16 @@ static void draw_window_engine_timer(EditorInterface* editor) {
 		ImGui::Text("Ticks per sec %llu", timer->ticks_per_sec);
 
 	}
-		ImGui::End();
+	ImGui::End();
 
 }
 
 static void draw_window_log(EditorInterface* editor) {
+
+	if (!editor->window_log_open) {
+		return;
+	}
+
 	if (ImGui::Begin("Log", &editor->window_log_open)) {
 
 		LogList logs = g_get_loglist();
@@ -889,7 +933,19 @@ static void draw_window_log(EditorInterface* editor) {
 }
 
 static void draw_window_assets(EditorInterface* editor) {
+
+	if (!editor->window_asset_browser_open) {
+		return;
+	}
+
 	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
+
+		float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {  }
+		ImGui::SameLine(0.0f, spacing);
+		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {  }
+		
+
 		AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
 		size_t map_size = tracker->track_map.size;
 		// Go over our track map, and look for filename
@@ -905,7 +961,13 @@ static void draw_window_assets(EditorInterface* editor) {
 }
 
 static void draw_window_renderer_stats(EditorInterface* editor) {
-	if (ImGui::Begin("Render Stats")) {
+
+	
+	if (!editor->window_render_stats) {
+		return;
+	}
+
+	if (ImGui::Begin("Render Stats", &editor->window_render_stats)) {
 		Renderer* renderer = editor->api.renderer;
 
 		char renderer_type_str[16];
@@ -942,12 +1004,7 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 		//ImGui::Text("Mesh Capacity: %d", renderer->render_world.render_mesh_capacity);
 		
 		
-		
-
-		
-
-
-		
+			
 	}
 	ImGui::End();
 }
@@ -956,15 +1013,15 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 
 
 	if (ImGui::Begin("Scene")) {
-	}
 	ImGui::End();
+	}
 
 	if (ImGui::Begin("Game")) {
-	}
 	ImGui::End();
+	}
 
 	if (ImGui::Begin("Multi Windows")) {
-	}
 	ImGui::End();
+	}
 
 }

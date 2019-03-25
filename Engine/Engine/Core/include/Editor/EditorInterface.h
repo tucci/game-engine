@@ -79,6 +79,7 @@ struct EditorInterface {
 	bool window_asset_browser_open;
 	bool window_entity_components_open;
 	bool window_engine_timers_open;
+	bool window_render_stats;
 	
 
 

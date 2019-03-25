@@ -80,7 +80,7 @@ RenderResource create_frame_buffer(Renderer* renderer) {
 			handle = gl_create_fbo(&renderer->opengl);
 			break;
 	}
-
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::FRAME_BUFFER;
 	return handle;
 }
@@ -94,6 +94,7 @@ RenderResource create_render_target(Renderer* renderer, u32 width, u32 height) {
 			break;
 	}
 
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::RENDER_TARGET;
 	return handle;
 }
@@ -107,7 +108,7 @@ RenderResource create_vertex_decl(Renderer* renderer) {
 			handle = gl_create_vao(&renderer->opengl);
 			break;
 	}
-
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::VERTEX_DECLARATION;
 	return handle;
 }
@@ -121,6 +122,7 @@ RenderResource create_vertex_buffer(Renderer* renderer) {
 			handle = gl_create_vbo(&renderer->opengl);
 			break;
 	}
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::VERTEX_BUFFER;
 	return handle;
 }
@@ -133,6 +135,7 @@ RenderResource create_index_buffer(Renderer* renderer) {
 		case BackenedRendererType::OpenGL:
 			break;
 	}
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::INDEX_BUFFER;
 	return handle;
 }
@@ -143,37 +146,38 @@ bool is_material_loaded(Renderer* renderer, MaterialID id) {
 	return result.found;
 }
 
-RenderMaterialResource create_material(Renderer* renderer, InternalMaterial* material) {
+RenderMaterialResource create_material_resource(Renderer* renderer, InternalMaterial* material) {
 	
 	TextureID no_texture = { 0 };
 	
 	RenderMaterialResource material_handle;
 	
 	if (material->tx_albedo != NULL) {
-		material_handle.albedo = create_texture(renderer, material->tx_albedo, false);
+		material_handle.albedo = create_texture_resource(renderer, material->tx_albedo, false);
 	}
 	if (material->tx_normal != NULL) {
-		material_handle.normal = create_texture(renderer, material->tx_normal, false);
+		material_handle.normal = create_texture_resource(renderer, material->tx_normal, false);
 	}
 	if (material->tx_metal != NULL) {
-		material_handle.metallic = create_texture(renderer, material->tx_metal, false);
+		material_handle.metallic = create_texture_resource(renderer, material->tx_metal, false);
 	}
 	if (material->tx_roughness != NULL) {
-		material_handle.roughness = create_texture(renderer, material->tx_roughness, false);
+		material_handle.roughness = create_texture_resource(renderer, material->tx_roughness, false);
 	}
 	if (material->tx_ao != NULL) {
-		material_handle.ao = create_texture(renderer, material->tx_ao, false);
+		material_handle.ao = create_texture_resource(renderer, material->tx_ao, false);
 	}
 	
 	sb_push(renderer->render_world.material_res, material_handle);
-
+	
 	RenderMaterialResource* handle = &sb_last(renderer->render_world.material_res);
-
 	map_put(&renderer->render_world.material_res_map, material->material.id.id, handle);
+	renderer->render_world.material_res_count++;
+
 	return material_handle;
 }
 
-RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipmap) {
+RenderResource create_texture_resource(Renderer* renderer, Texture2D* texture, bool mipmap) {
 	RenderResource handle;
 	
 	switch (renderer->type) {
@@ -182,11 +186,12 @@ RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipma
 			break;
 	}
 	
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::TEXTURE;
 	return handle;
 }
 
-RenderResource create_shader(Renderer* renderer, const char* vertex_file, const char* fragment_file) {
+RenderResource create_shader_resource(Renderer* renderer, const char* vertex_file, const char* fragment_file) {
 	
 	RenderResource handle;
 	
@@ -195,6 +200,7 @@ RenderResource create_shader(Renderer* renderer, const char* vertex_file, const 
 			handle = gl_create_shader(&renderer->opengl, vertex_file, fragment_file);
 			break;
 	}
+	renderer->render_world.resources_count++;
 	handle.type = RenderResourceType::SHADER;
 	return handle;
 }

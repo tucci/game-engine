@@ -50,12 +50,12 @@ RenderResource create_index_buffer(Renderer* renderer);
 
 bool is_material_loaded(Renderer* renderer, MaterialID id);
 
-RenderMaterialResource create_material(Renderer* renderer, InternalMaterial* material);
+RenderMaterialResource create_material_resource(Renderer* renderer, InternalMaterial* material);
 
 // When we create a texture, we copy the texture to the gpu memory
 // however it does not free the texture memory on the cpu side. the caller must manually free it
-RenderResource create_texture(Renderer* renderer, Texture2D* texture, bool mipmap);
+RenderResource create_texture_resource(Renderer* renderer, Texture2D* texture, bool mipmap);
 // TODO: implement generic shader abstraction filenames
-RenderResource create_shader(Renderer* renderer, const char* vertex_file, const char* fragment_file);
+RenderResource create_shader_resource(Renderer* renderer, const char* vertex_file, const char* fragment_file);
 
  
