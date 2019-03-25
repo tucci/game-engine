@@ -506,17 +506,42 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 
 		Vec3f scale = get_scale(entity_manager, e);
 
+		
+		ImGui::PushID("pos_default");
+		if (ImGui::SmallButton("z")) {
+			set_position(entity_manager, e, Vec3f(0,0,0));
+		}
+		ImGui::SameLine();
 		if (ImGui::DragFloat3("Position", pos.data, 1.0f)) {
 			set_position(entity_manager, e, pos);
 		}
+		ImGui::PopID();
+		
 
+		ImGui::PushID("scale_default");
+		
+		if (ImGui::SmallButton("z")) {
+			set_scale(entity_manager, e, Vec3f(1, 1, 1));
+		}
+		ImGui::SameLine();
 		if (ImGui::DragFloat3("Scale", scale.data, 1.0f)) {
 			set_scale(entity_manager, e, scale);
 		}
+		ImGui::PopID();
+		
+
+		ImGui::PushID("rot_default");
+		
+		if (ImGui::SmallButton("z")) {
+			set_rotation(entity_manager, e, Quat());
+		}
+		ImGui::SameLine();
 		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
 			quat = euler_to_quat(euler);
 			set_rotation(entity_manager, e, quat);
 		}
+		ImGui::PopID();
+		
 	}
 	
 }
@@ -535,19 +560,69 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 			cam->projection = (CameraProjection)projection;
 		}
 
+		ImGui::PushID("camera_fov_default");
+		if (ImGui::SmallButton("z")) {
+			cam->fov = 90.0f;
+		}
+		ImGui::SameLine();
 		ImGui::SliderFloat("Field Of View", &cam->fov, 30.0f, 120.0f);
+		ImGui::PopID();
+
+		ImGui::PushID("camera_near_default");
+		if (ImGui::SmallButton("z")) {
+			cam->near_clip = 0.01f;
+		}
+		ImGui::SameLine();
 		ImGui::DragFloat("Near", &cam->near_clip, 1.0f, 0.0f, FLT_MAX);
+		ImGui::PopID();
+
+		ImGui::PushID("camera_far_default");
+		if (ImGui::SmallButton("z")) {
+			cam->far_clip = 100.0f;
+		}
+		ImGui::SameLine();
+
 		ImGui::DragFloat("Far", &cam->far_clip, 1.0f, 0.0f, FLT_MAX);
+		ImGui::PopID();
 
 
 		if (cam->projection == CameraProjection::Orthographic) {
 
 			ImGui::Separator();
 			ImGui::Text("Orthographic Settings");
+
+			ImGui::PushID("camera_left_default");
+			if (ImGui::SmallButton("z")) {
+				cam->left = 0.0f;
+			}
+			ImGui::SameLine();
 			ImGui::DragFloat("Left", &cam->left, 1.0f, 0.0f, FLT_MAX);
+			ImGui::PopID();
+
+			ImGui::PushID("camera_right_default");
+			if (ImGui::SmallButton("z")) {
+				cam->right = 100.0f;
+			}
+			ImGui::SameLine();
 			ImGui::DragFloat("Right", &cam->right, 1.0f, 0.0f, FLT_MAX);
+			ImGui::PopID();
+
+			ImGui::PushID("camera_top_default");
+			if (ImGui::SmallButton("z")) {
+				cam->top = 0.0f;
+			}
+			ImGui::SameLine();
 			ImGui::DragFloat("Top", &cam->top, 1.0f, 0.0f, FLT_MAX);
+			ImGui::PopID();
+
+			ImGui::PushID("camera_bottom_default");
+			if (ImGui::SmallButton("z")) {
+				cam->bottom = 100.0f;
+			}
+			ImGui::SameLine();
+
 			ImGui::DragFloat("Bottom", &cam->bottom, 1.0f, 0.0f, FLT_MAX);
+			ImGui::PopID();
 		}
 	}
 }
@@ -567,14 +642,47 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 
 		switch (light.type) {
 			case LightType::DirectionalLight: {
+
+
+				ImGui::PushID("dir_direction_default");
+				if (ImGui::SmallButton("z")) {
+					light.dir_light.direction = Vec3f(0, 0, 0);
+				}
+				ImGui::SameLine();
 				ImGui::DragFloat3("Direction", light.dir_light.direction.data);
+				ImGui::PopID();
+
+				ImGui::PushID("dir_color_default");
+				if (ImGui::SmallButton("z")) {
+					light.dir_light.color = Vec3f(1, 1, 1);
+				}
+				ImGui::SameLine();
 				ImGui::ColorEdit3("Color", light.dir_light.color.data);
+				ImGui::PopID();
+
+
+
+				ImGui::PushID("dir_intensity_default");
+				if (ImGui::SmallButton("z")) {
+					light.dir_light.intensity = 0;
+				}
+				ImGui::SameLine();
+
 				ImGui::DragFloat("Intensity", &light.dir_light.intensity, 1.0f, 0.0f, 100000.0f);
+				ImGui::PopID();
+
+				
 
 				break;
 			}
 			case LightType::PointLight: {
+				ImGui::PushID("point_color_default");
+				if (ImGui::SmallButton("z")) {
+					light.point_light.color = Vec3f(1,1,1);
+				}
+				ImGui::SameLine();
 				ImGui::ColorEdit3("Color", light.point_light.color.data);
+				ImGui::PopID();
 				break;
 			}
 		}
@@ -643,7 +751,7 @@ static void draw_window_entity_components(EditorInterface* editor) {
 				
 				//ImGui::SameLine();
 
-				bool enabled = 0;
+				bool enabled = 1;
 				if (ImGui::Checkbox("Enabled", &enabled)) {
 					printf("enabled");
 				}
@@ -944,6 +1052,13 @@ static void draw_window_assets(EditorInterface* editor) {
 		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {  }
 		ImGui::SameLine(0.0f, spacing);
 		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {  }
+		//ImGui::SameLine(0.0f, spacing);
+		
+		ImGui::Button("Assets");
+		ImGui::SameLine(0.0f, spacing);
+		ImGui::SmallButton("<");
+		ImGui::SameLine(0.0f, spacing);
+		ImGui::Button("textures");
 		
 
 		AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
