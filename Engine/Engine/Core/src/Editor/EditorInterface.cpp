@@ -6,7 +6,7 @@
 
 #include "SDL_syswm.h"
 
-#include "../../imgui/imgui.h"
+
 
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
@@ -90,7 +90,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat_mat.easset");
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_mat_mat.easset");
-	AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
+	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
 	
 	
 	
@@ -117,6 +117,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	attach_child_entity(entity_manager, e1, e6);
 	attach_child_entity(entity_manager, e2, e3);
 	attach_child_entity(entity_manager, e1, e4);
+	attach_child_entity(entity_manager, e1, editor->test_mesh);
 
 	
 
@@ -139,14 +140,14 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
 	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
-	set_render_material(entity_manager, editor->test_mesh, mat_id.material);
+	set_render_material(entity_manager, editor->test_mesh, editor->test_mat.material);
 	set_render_visibility(entity_manager, editor->test_mesh, true);
 	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
 
 
 	add_component(entity_manager, e1, ComponentType::StaticMesh);
 	add_component(entity_manager, e1, ComponentType::Render);
-	set_render_material(entity_manager, e1, mat_id.material);
+	set_render_material(entity_manager, e1, editor->test_mat.material);
 	set_render_visibility(entity_manager, e1, true);
 	set_static_mesh(entity_manager, e1, editor->api.asset_manager->sphere_mesh.mesh);
 
@@ -195,60 +196,6 @@ static void clear_entity_selection(EditorInterface* editor) {
 }
 
 
-static void draw_entity_tree(EditorInterface* editor, Entity e) {
-
-	MapResult<bool> result = map_get(&editor->entity_selected, e.id);
-	
-	auto em = editor->api.entity_manager;
-	// We need to recursivly draw the children
-	Entity child = first_child(em, e);
-	
-	
-	String name = get_name(&em->transform_manager, e);
-	if (child.id == NO_ENTITY_ID) {
-		// This is a leaf node
-		ImGui::Indent();
-		
-		if (ImGui::Selectable(name.buffer, result.value)) {
-			
-			if (!ImGui::GetIO().KeyCtrl) {
-				// Clear selection when CTRL is not held
-				clear_entity_selection(editor);
-			}
-			map_put(&editor->entity_selected, e.id, !result.value);
-		}
-		
-		ImGui::Unindent();
-	} else {
-		
-		// This is a node that has children
-		
-		ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((result.value) ? ImGuiTreeNodeFlags_Selected : 0);
-
-
-		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
-
-
-		if (ImGui::IsItemClicked()) {
-			if (!ImGui::GetIO().KeyCtrl) {
-				// Clear selection when CTRL is not held
-				clear_entity_selection(editor);
-			}
-			map_put(&editor->entity_selected, e.id, !result.value);
-		}
-		if (node_open) {
-			while (child.id != NO_ENTITY_ID) {
-				draw_entity_tree(editor, child);
-				child = next_sibling(em, child);
-			}
-			ImGui::TreePop();
-		}
-		
-		
-	}
-
-	
-}
 
 void editor_update(EditorInterface* editor) {
 
@@ -311,6 +258,7 @@ void editor_update(EditorInterface* editor) {
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
 			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
+
 		} else {
 			
 		}
@@ -348,6 +296,16 @@ void editor_update(EditorInterface* editor) {
 	
 
 	
+
+	if (is_mouse_pressed(input, MouseButton::Left)) {
+		Vec2i mouse_pos = get_mouse_pos(input);
+
+		// Do a raycast to check which object is pressed
+		LOG_INFO("MOUSE", "Mouse pos %d, %d\n", mouse_pos.x, mouse_pos.y);
+	}
+	
+
+
 
 
 	float delta_time = timer->delta_time;
@@ -441,6 +399,7 @@ void editor_update(EditorInterface* editor) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 		
+	
 
 
 }
@@ -455,17 +414,30 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 			if (ImGui::MenuItem("Build", "Ctrl+B")) { /* Do stuff */ }
 			if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
 			if (ImGui::MenuItem("Exit")) {
+				
 			}
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Scene")) {
-			if (ImGui::MenuItem("Create Emtpty Entity", "Ctrl+Alt+N")) {}
-			if (ImGui::MenuItem("Create Camera")) {}
-			if (ImGui::MenuItem("Create Light")) {}
-			if (ImGui::MenuItem("Create Plane")) {}
-			if (ImGui::MenuItem("Create Cube")) {}
-			if (ImGui::MenuItem("Create Sphere")) {}
+			if (ImGui::MenuItem("Create Empty Entity")) {
+				editor_create_empty_entity(editor);
+			}
+			if (ImGui::MenuItem("Create Camera")) {
+				editor_create_camera(editor);
+			}
+			if (ImGui::MenuItem("Create Light")) {
+				editor_create_light(editor);
+			}
+			if (ImGui::MenuItem("Create Plane")) {
+				editor_create_plane(editor);
+			}
+			if (ImGui::MenuItem("Create Cube")) {
+				editor_create_cube(editor);
+			}
+			if (ImGui::MenuItem("Create Sphere")) {
+				editor_create_sphere(editor);
+			}
 			ImGui::EndMenu();
 		}
 
@@ -498,6 +470,9 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 static void draw_component_transform(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
+	
+	
+	//remove component
 	
 	if (ImGui::CollapsingHeader("Transform")) {
 		Vec3f pos = get_position(entity_manager, e);
@@ -542,7 +517,11 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		}
 		ImGui::PopID();
 		
+		
+	} else {
+		
 	}
+
 	
 }
 
@@ -550,8 +529,8 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 static void draw_component_camera(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
-	
-	if (ImGui::CollapsingHeader("Camera")) {
+	bool open = true;
+	if (ImGui::CollapsingHeader("Camera", &open)) {
 		Camera* cam = get_camera(entity_manager, e);
 		//ImGui::DragFloat("Aspect Ratio", &cam->aspect_ratio);
 
@@ -625,14 +604,17 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 			ImGui::PopID();
 		}
 	}
+	if (!open) {
+		remove_component(entity_manager, e, ComponentType::Camera);
+	}
 }
 
 
 static void draw_component_light(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
-
-	if (ImGui::CollapsingHeader("Light")) {
+	bool open = true;
+	if (ImGui::CollapsingHeader("Light", &open)) {
 
 		Light light =  get_light(entity_manager, e);
 		int light_type = (int)light.type;
@@ -691,37 +673,37 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 		
 		
 	}
+
+	if (!open) {
+		remove_component(entity_manager, e, ComponentType::Light);
+	}
 }
 
 static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
-
-	if (ImGui::CollapsingHeader("Static Mesh")) {
+	bool open = true;
+	if (ImGui::CollapsingHeader("Static Mesh", &open)) {
 		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
-		StaticMesh* mesh = get_static_mesh_by_id(editor->api.asset_manager, mesh_id);
+		
 		ImGui::Text("Mesh id %lld", mesh_id.id);
-
-		
-		
-		
-		
-
-		
-
-
+	}
+	if (!open) {
+		remove_component(entity_manager, e, ComponentType::StaticMesh);
 	}
 }
 
 static void draw_component_render(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
-	if (ImGui::CollapsingHeader("Render")) {
+	bool open = true;
+	if (ImGui::CollapsingHeader("Render", &open)) {
 		MaterialID mat_id = get_render_material(entity_manager, e);
-		Material* material = get_material_by_id(editor->api.asset_manager, mat_id);
 		ImGui::Text("Material id %lld", mat_id.id);
 		
+	}
 
-
+	if (!open) {
+		remove_component(entity_manager, e, ComponentType::Render);
 	}
 }
 
@@ -735,6 +717,9 @@ static void draw_window_entity_components(EditorInterface* editor) {
 	}
 
 	if (ImGui::Begin("Entity Components", &editor->window_entity_components_open)) {
+		
+		
+
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
 			MapResult<bool> result = map_get(&editor->entity_selected, e.id);
@@ -751,10 +736,41 @@ static void draw_window_entity_components(EditorInterface* editor) {
 				
 				//ImGui::SameLine();
 
+
+				
+				ComponentType comp_types[] = {
+					ComponentType::Transform,
+					ComponentType::Camera,
+					ComponentType::StaticMesh,
+					ComponentType::Light,
+					ComponentType::Render
+				};
+
+				const char* comp_names[] = { "Transform", "Camera", "StaticMesh", "Light", "Render" };
+				
+
+			
+
 				bool enabled = 1;
 				if (ImGui::Checkbox("Enabled", &enabled)) {
-					printf("enabled");
+					
 				}
+				ImGui::SameLine();
+				if (ImGui::Button("Add Component")) {
+					ImGui::OpenPopup("component_popup");
+				}
+				ImGui::SameLine();
+				if (ImGui::BeginPopup("component_popup")) {
+					
+					for (int i = 0; i < IM_ARRAYSIZE(comp_names); i++)
+						if (ImGui::Selectable(comp_names[i])) {
+							
+							add_component(entity_manager, e, comp_types[i]);
+						}
+							
+					ImGui::EndPopup();
+				}
+				ImGui::NewLine();
 
 				if (has_component(entity_manager, e, ComponentType::Transform)) {
 					draw_component_transform(editor, e);
@@ -795,40 +811,188 @@ static void draw_window_entity_components(EditorInterface* editor) {
 
 }
 
+static void draw_entity_tree(EditorInterface* editor, Entity e) {
+
+	MapResult<bool> result = map_get(&editor->entity_selected, e.id);
+
+	auto em = editor->api.entity_manager;
+	// We need to recursivly draw the children
+	Entity child = first_child(em, e);
+
+
+	String name = get_name(&em->transform_manager, e);
+	
+	ImGui::PushID(e.id);
+	if (child.id == NO_ENTITY_ID) {
+		// This is a leaf node
+		ImGui::Indent();
+		
+		if (ImGui::Selectable(name.buffer, result.value)) {
+			if (!ImGui::GetIO().KeyCtrl) {
+				// Clear selection when CTRL is not held
+				clear_entity_selection(editor);
+			}
+			map_put(&editor->entity_selected, e.id, !result.value);
+		}
+		if (ImGui::BeginPopupContextItem("Entity Item Context Menu")) {
+			
+
+			if (ImGui::Selectable("Copy")) {
+				
+			}
+			if (ImGui::Selectable("Paste")) {
+
+			}
+
+			if (ImGui::Selectable("Duplicate")) {
+
+			}
+			if (ImGui::Selectable("Rename")) {
+
+			}
+			ImGui::Separator();
+			if (ImGui::Selectable("Delete")) {
+				destroy_entity(em, e);
+			}
+
+
+			ImGui::EndPopup();
+		}
+		
+
+		ImGui::Unindent();
+	} else {
+
+
+		// This is a node that has children
+
+		ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((result.value) ? ImGuiTreeNodeFlags_Selected : 0);
+
+
+		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
+
+
+		if (ImGui::IsItemClicked()) {
+			if (!ImGui::GetIO().KeyCtrl) {
+				// Clear selection when CTRL is not held
+				clear_entity_selection(editor);
+			}
+			map_put(&editor->entity_selected, e.id, !result.value);
+		}
+		if (node_open) {
+			while (child.id != NO_ENTITY_ID) {
+				draw_entity_tree(editor, child);
+				child = next_sibling(em, child);
+			}
+			ImGui::TreePop();
+		}
+
+
+	}
+	ImGui::PopID();
+
+
+}
+
 static void draw_window_scene_hierarchy(EditorInterface* editor) {
 	if (!editor->window_scene_tree_open) {
 		return;
 	}
 	EntityManager* entity_manager = editor->api.entity_manager;
 	if (ImGui::Begin("Entity Scene Tree", &editor->window_scene_tree_open, ImGuiWindowFlags_DockNodeHost)) {
-
+		
+		
+		
 		ImGui::Text("Total Entitys Created %d", entity_manager->entitys_created);
 		ImGui::Text("Current Entity Count %d", entity_manager->entity_count);
 		ImGui::Separator();
 
 
-		static char str0[128] = "";
-		ImGui::Text("Filter Entitys");
-		ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+		//static char str0[128] = "";
+		//ImGui::Text("Filter Entitys");
+		//ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
+		
+
+		editor->scene_tree_entity_filter.Draw("Filter");
+
 		ImGui::Separator();
 
-
-
-
+		
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
 
 			String name = get_name(&entity_manager->transform_manager, e);
+			const char* start = name.buffer;
+			const char* end = name.buffer + name.length;
+			if (!editor->scene_tree_entity_filter.PassFilter(name.buffer, name.buffer + name.length)) {
+				// TODO: children filtering
+				continue;
+			}
+
+
 			Entity parent_entity = parent(entity_manager, e);
 
 			if (parent_entity.id == NO_ENTITY_ID) {
 				draw_entity_tree(editor, e);
 			}
-
+			
 		}
+
+		ImGui::BeginChild("scene_internal");
+
+		if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
+			clear_entity_selection(editor);
+		}
+		
+
+		if (ImGui::BeginPopupContextWindow()) {
+			
+
+			if (ImGui::MenuItem("Copy")) {
+				
+			}
+
+			if (ImGui::MenuItem("Paste")) {
+				
+			}
+			if (ImGui::MenuItem("Duplicate")) {
+
+			}
+
+			
+
+			ImGui::Separator();
+
+			if (ImGui::MenuItem("Create Camera")) {
+				editor_create_camera(editor);
+			}
+			if (ImGui::MenuItem("Create Empty Entity")) {
+				editor_create_empty_entity(editor);
+			}
+			if (ImGui::MenuItem("Create Camera")) {
+				editor_create_camera(editor);
+			}
+			if (ImGui::MenuItem("Create Light")) {
+				editor_create_light(editor);
+			}
+			if (ImGui::MenuItem("Create Plane")) {
+				editor_create_plane(editor);
+			}
+			if (ImGui::MenuItem("Create Cube")) {
+				editor_create_cube(editor);
+			}
+			if (ImGui::MenuItem("Create Sphere")) {
+				editor_create_sphere(editor);
+			}
+			ImGui::EndPopup();
+		}
+
+		ImGui::EndChild();
+		
 
 	}
 	ImGui::End();
+	
 }
 
 
@@ -875,8 +1039,7 @@ static void draw_window_log(EditorInterface* editor) {
 
 		LogList logs = g_get_loglist();
 
-		static char filter_buffer[128];
-		ImGui::InputTextWithHint("", "Filter", filter_buffer, 128);
+		editor->log_filter.Draw("Filter");
 		ImGui::SameLine();
 		if (ImGui::Button("Clear")) {
 			editor->log_start_offset = logs.log_count;
@@ -894,6 +1057,9 @@ static void draw_window_log(EditorInterface* editor) {
 
 		ImGui::Text("Filter Columns");
 		ImGui::SameLine();
+
+		
+		
 
 
 
@@ -954,76 +1120,101 @@ static void draw_window_log(EditorInterface* editor) {
 			ImGui::Separator();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
-			for (int i = editor->log_start_offset; i < logs.log_count; i++) {
-				LogItem* log_item = &logs.logs[i];
 
-				bool pop_color = false;
+			
+				for (int i = editor->log_start_offset; i < logs.log_count; i++) {
+					LogItem* log_item = &logs.logs[i];
+					
+					bool found = false;
 
-				const char* log_type_str;
-				switch (log_item->verbosity) {
-					case LoggerVerbosity::INFO: {
-						if (!editor->show_info) { continue; }
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); pop_color = true;
-						log_type_str = "[INFO]"; break;
+					if (editor->log_filter.PassFilter(log_item->msg, log_item->msg + log_item->msg_length)) {
+						found = true;
 					}
-					case LoggerVerbosity::WARN: {
-						if (!editor->show_warning) { continue; }
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.90f, 0.25f, 1.0f)); pop_color = true;
-						log_type_str = "[WARN]"; break;
+
+					if (editor->log_filter.PassFilter(log_item->tag, log_item->tag + log_item->tag_length)) {
+						found = true;
 					}
-					case LoggerVerbosity::FATAL: {
-						if (!editor->show_fatal) { continue; }
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f)); pop_color = true;
-						log_type_str = "[FATAL]"; break;
+
+					if (editor->log_filter.PassFilter(log_item->function, log_item->function + log_item->function_length)) {
+						found = true;
 					}
-					case LoggerVerbosity::VERBOSE: {
-						ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); pop_color = true;
-						log_type_str = "[VERBOSE]"; break;
+
+					if (editor->log_filter.PassFilter(log_item->filename, log_item->filename + log_item->filename_length)) {
+						found = true;
 					}
-					default: {
-						log_type_str = "[NONE]"; break;
+					if (!found) {
+						continue;
 					}
-				}
+					
+					
+					bool pop_color = false;
 
-				if (editor->show_time) {
-					ImGui::TextUnformatted(log_item->tag, log_item->tag + log_item->tag_length - 1);
-					ImGui::NextColumn();
-				}
-				if (editor->show_tag) {
-					ImGui::Text(log_item->tag);
-					ImGui::NextColumn();
-				}
-				if (editor->show_thread_id) {
-					ImGui::Text("%d", log_item->thread_id);
-					ImGui::NextColumn();
-				}
-				if (editor->show_filename) {
-					ImGui::TextUnformatted(log_item->filename, log_item->filename + log_item->filename_length - 1);
-					ImGui::NextColumn();
-				}
-				if (editor->show_function) {
-					ImGui::TextUnformatted(log_item->function, log_item->function + log_item->function_length - 1);
-					ImGui::NextColumn();
-				}
-				if (editor->show_line) {
-					ImGui::Text("%d", log_item->line);
-					ImGui::NextColumn();
-				}
+					const char* log_type_str;
+					switch (log_item->verbosity) {
+						case LoggerVerbosity::INFO: {
+							if (!editor->show_info) { continue; }
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); pop_color = true;
+							log_type_str = "[INFO]"; break;
+						}
+						case LoggerVerbosity::WARN: {
+							if (!editor->show_warning) { continue; }
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.90f, 0.25f, 1.0f)); pop_color = true;
+							log_type_str = "[WARN]"; break;
+						}
+						case LoggerVerbosity::FATAL: {
+							if (!editor->show_fatal) { continue; }
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f)); pop_color = true;
+							log_type_str = "[FATAL]"; break;
+						}
+						case LoggerVerbosity::VERBOSE: {
+							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); pop_color = true;
+							log_type_str = "[VERBOSE]"; break;
+						}
+						default: {
+							log_type_str = "[NONE]"; break;
+						}
+					}
 
-				if (editor->show_message) {
-					const char* end = (log_item->msg + log_item->msg_length - 1);
-					ImGui::TextUnformatted(log_item->msg, end);
+					if (editor->show_time) {
+						ImGui::Text("%llu", log_item->time);
+						ImGui::NextColumn();
+					}
+					if (editor->show_tag) {
+						ImGui::Text(log_item->tag);
+						ImGui::NextColumn();
+					}
+					if (editor->show_thread_id) {
+						ImGui::Text("%d", log_item->thread_id);
+						ImGui::NextColumn();
+					}
+					if (editor->show_filename) {
+						ImGui::TextUnformatted(log_item->filename, log_item->filename + log_item->filename_length - 1);
+						ImGui::NextColumn();
+					}
+					if (editor->show_function) {
+						ImGui::TextUnformatted(log_item->function, log_item->function + log_item->function_length - 1);
+						ImGui::NextColumn();
+					}
+					if (editor->show_line) {
+						ImGui::Text("%d", log_item->line);
+						ImGui::NextColumn();
+					}
 
-					ImGui::NextColumn();
+					if (editor->show_message) {
+						const char* end = (log_item->msg + log_item->msg_length - 1);
+						ImGui::TextUnformatted(log_item->msg, end);
+						ImGui::NextColumn();
+					}
+
+
+					if (pop_color) {
+						ImGui::PopStyleColor();
+					}
+
+					ImGui::Separator();
 				}
-
-
-				if (pop_color) {
-					ImGui::PopStyleColor();
-				}
-
-				ImGui::Separator();
-			}
+			
+			
 
 
 			ImGui::PopStyleVar();
@@ -1139,4 +1330,77 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 	ImGui::End();
 	}
 
+}
+
+static void editor_create_empty_entity(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	Entity e = create_entity(entity_manager, "Entity");
+
+	map_put(&editor->entity_selected, e.id, false);
+}
+
+static void editor_create_plane(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	
+	Entity e = create_entity(entity_manager, "Plane");
+	
+	map_put(&editor->entity_selected, e.id, false);
+
+	add_component(entity_manager, e, ComponentType::StaticMesh);
+	add_component(entity_manager, e, ComponentType::Render);
+	set_render_material(entity_manager, e, editor->test_mat.material);
+	set_render_visibility(entity_manager, e, true);
+	set_static_mesh(entity_manager, e, editor->api.asset_manager->plane_mesh.mesh);
+
+}
+
+static void editor_create_sphere(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	Entity e = create_entity(entity_manager, "Sphere");
+
+	map_put(&editor->entity_selected, e.id, false);
+
+	add_component(entity_manager, e, ComponentType::StaticMesh);
+	add_component(entity_manager, e, ComponentType::Render);
+	set_render_material(entity_manager, e, editor->test_mat.material);
+	set_render_visibility(entity_manager, e, true);
+	set_static_mesh(entity_manager, e, editor->api.asset_manager->sphere_mesh.mesh);
+
+}
+
+
+static void editor_create_cube(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	Entity e = create_entity(entity_manager, "Cube");
+
+	map_put(&editor->entity_selected, e.id, false);
+
+	add_component(entity_manager, e, ComponentType::StaticMesh);
+	add_component(entity_manager, e, ComponentType::Render);
+	set_render_material(entity_manager, e, editor->test_mat.material);
+	set_render_visibility(entity_manager, e, true);
+	set_static_mesh(entity_manager, e, editor->api.asset_manager->cube_mesh.mesh);
+
+}
+
+static void editor_create_light(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	Entity e = create_entity(entity_manager, "Light");
+
+	map_put(&editor->entity_selected, e.id, false);
+	add_component(entity_manager, e, ComponentType::Light);
+}
+
+
+static void editor_create_camera(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	Entity e = create_entity(entity_manager, "Camera");
+
+	map_put(&editor->entity_selected, e.id, false);
+	add_component(entity_manager, e, ComponentType::Camera);
 }

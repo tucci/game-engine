@@ -22,6 +22,7 @@
 #include "Core/ECS/JobSystem/RenderSystem.h"
 
 
+#include "../../imgui/imgui.h"
 
 #define EDITOR_MEMORY MEGABYTES(100)
 
@@ -39,7 +40,7 @@ struct EditorInterface {
 
 
 	
-
+	AssetID test_mat;
 	Entity editor_camera;
 	Entity entity_test_light;
 	Entity test_mesh;
@@ -73,13 +74,18 @@ struct EditorInterface {
 
 	
 	bool auto_scroll;
+	ImGuiTextFilter scene_tree_entity_filter;
 
 	bool window_scene_tree_open;
+
+	ImGuiTextFilter log_filter;
 	bool window_log_open;
 	bool window_asset_browser_open;
 	bool window_entity_components_open;
 	bool window_engine_timers_open;
 	bool window_render_stats;
+
+	
 	
 
 
@@ -113,6 +119,14 @@ static void draw_window_assets(EditorInterface* editor);
 static void draw_window_renderer_stats(EditorInterface* editor);
 
 static void draw_window_scene_viewports(EditorInterface* editor);
+
+
+static void editor_create_empty_entity(EditorInterface* editor);
+static void editor_create_plane(EditorInterface* editor);
+static void editor_create_sphere(EditorInterface* editor);
+static void editor_create_cube(EditorInterface* editor);
+static void editor_create_light(EditorInterface* editor);
+static void editor_create_camera(EditorInterface* editor);
 
 
 
