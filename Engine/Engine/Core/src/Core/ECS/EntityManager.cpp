@@ -98,9 +98,11 @@ Entity create_entity(EntityManager* manager, String name) {
 	manager->entity_count++;
 
 	create_component_flag(&manager->component_manager, entity);
+	
+	entity_add_metainfo_component(&manager->meta_manager, entity, name);
+	set_component_flag(&manager->component_manager, entity, ComponentType::MetaInfo);
 
-	entity_add_transform_component(&manager->transform_manager, entity, name);
-	set_component_flag(&manager->component_manager, entity, ComponentType::Transform);
+	add_component(manager, entity, ComponentType::Transform);
 
 	
 	
@@ -165,6 +167,15 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 }
 
 void add_component(EntityManager* manager, Entity entity, ComponentType type) {
+	
+	if (has_component(manager, entity, type)) {
+		// Already has a component attached
+		return;
+	}
+	if (type == ComponentType::MetaInfo) {
+		// Can't add meta info manually. already added when entity is created
+		return;
+	}
 
 	// Get index of the entity we are trying to remove
 	MapResult<u64> result = map_get(&manager->entity_index_map, entity.id);
@@ -177,14 +188,18 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 
 	switch (type) {
 		case ComponentType::Transform: {
-			//entity_add_transform_component(&manager->transform_manager, entity);
+			entity_add_transform_component(&manager->transform_manager, entity);
 			break;
 		}
 		case ComponentType::Camera: {
+			// Add dependant components first
+			add_component(manager, entity, ComponentType::Transform);
+
 			entity_add_camera_component(&manager->camera_manager, entity);
 			break;
 		}
 		case ComponentType::StaticMesh: {
+			add_component(manager, entity, ComponentType::Transform);
 			entity_add_mesh_component(&manager->static_mesh_manger, entity);
 			break;
 		}
@@ -194,6 +209,7 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 		}
 
 		case ComponentType::Render: {
+			add_component(manager, entity, ComponentType::StaticMesh);
 			entity_add_render_component(&manager->render_manager, entity);
 			break;
 		}
@@ -202,6 +218,11 @@ void add_component(EntityManager* manager, Entity entity, ComponentType type) {
 
 
 void remove_component(EntityManager* manager, Entity entity, ComponentType type) {
+	if (type == ComponentType::MetaInfo) {
+		// Can't remove meta info manually. already added when entity is created
+		return;
+	}
+
 	unset_component_flag(&manager->component_manager, entity, type);
 
 	switch (type) {
@@ -257,7 +278,7 @@ void init_entity_manager(EntityManager* manager) {
 	mem_size = manager->arena.end - cast(char*) mem_block;
 	stack_alloc_init(&manager->stack_mem, mem_block, mem_size);
 	
-	
+	init_metainfo_manager(&manager->meta_manager);
 	init_transform_manager(&manager->transform_manager);
 	init_static_mesh_manager(&manager->static_mesh_manger);
 	init_camera_manager(&manager->camera_manager);
@@ -273,7 +294,7 @@ void destroy_entity_manager(EntityManager* manager) {
 	stb_sb_free(manager->entity_list);
 
 	destroy_component_manager(&manager->component_manager);
-	
+	destroy_metainfo_manager(&manager->meta_manager);
 	destroy_transform_manager(&manager->transform_manager);
 	destroy_static_mesh_manager(&manager->static_mesh_manger);
 	destroy_camera_manager(&manager->camera_manager);

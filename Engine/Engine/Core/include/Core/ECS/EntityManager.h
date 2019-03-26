@@ -6,6 +6,7 @@
 #include "Common/Arena.h"
 #include "Common/StackAllocator.h"
 
+#include "Core/ECS/Component/MetaInfo.h"
 #include "Core/ECS/Component/Camera.h"
 #include "Core/ECS/Component/Transform.h"
 #include "Core/ECS/Component/StaticMesh.h"
@@ -20,11 +21,12 @@
 
 enum class ComponentType : u64 {
 	None = 0x00,
-	Transform = 1 << 0,
-	Camera = 1 << 1,
-	StaticMesh = 1 << 2,
-	Light = 1 << 3,
-	Render = 1 << 4,
+	MetaInfo = 1 << 0,
+	Transform = 1 << 1,
+	Camera = 1 << 2,
+	StaticMesh = 1 << 3,
+	Light = 1 << 4,
+	Render = 1 << 5,
 
 	Count = 6,
 };
@@ -63,6 +65,7 @@ struct EntityManager {
 	
 	ComponentManager component_manager;
 
+	MetaInfoManager meta_manager;
 	TransformManager transform_manager;
 	CameraManager camera_manager;
 	StaticMeshManager static_mesh_manger;

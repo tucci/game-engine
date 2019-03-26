@@ -38,6 +38,7 @@ struct Camera {
 
 	Mat4x4f view_mat;
 	Camera(Entity ref) {
+		projection = CameraProjection::Perspective;
 		entity_ref = ref;
 		near_clip = 0.0001f;
 		far_clip = 100.0f;

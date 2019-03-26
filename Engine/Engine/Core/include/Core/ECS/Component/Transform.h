@@ -93,7 +93,7 @@ struct TransformManager {
 	u64 count;
 	CompactMap<u64> id_map;
 	
-	String* names;
+	
 	Vec3f* positions;
 	Vec3f* scales;
 	Vec3f* ups;
@@ -110,7 +110,7 @@ struct TransformManager {
 	u64* child_count;
 	//Entity* prev_sibling;
 
-	Arena name_arena;
+	
 
 	
 
@@ -120,8 +120,6 @@ struct TransformManager {
 
 void init_transform_manager(TransformManager* manager);
 void destroy_transform_manager(TransformManager* manager);
-void entity_add_transform_component(TransformManager* manager, Entity entity, String name);
+void entity_add_transform_component(TransformManager* manager, Entity entity);
 void entity_remove_transform_component(TransformManager* manager, Entity entity);
 
-void set_name(TransformManager* manager, Entity entity, String name);
-String get_name(TransformManager* manager, Entity entity);

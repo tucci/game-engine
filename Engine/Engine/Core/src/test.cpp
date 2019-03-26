@@ -256,7 +256,7 @@ void inline test_ecs(void) {
 
 	for (u64 i = 0; i < count; i++) {
 		Entity entity = manager.entity_list[i];
-		String name = get_name(&manager.transform_manager, entity);
+		String name = get_name(&manager.meta_manager, entity);
 		u64 child_count = children_count(&manager, entity);
 		printf("Entity id: %d, Name: %s, %d, Children:[", entity.id, name.buffer, child_count);
 

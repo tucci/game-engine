@@ -726,7 +726,7 @@ static void draw_window_entity_components(EditorInterface* editor) {
 			if (!result.found) continue;
 			if (result.value) {
 				ImGui::PushID(e.id);
-				String e_name = get_name(&entity_manager->transform_manager, e);
+				String e_name = get_name(&entity_manager->meta_manager, e);
 
 
 
@@ -820,7 +820,7 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 	Entity child = first_child(em, e);
 
 
-	String name = get_name(&em->transform_manager, e);
+	String name = get_name(&em->meta_manager, e);
 	
 	ImGui::PushID(e.id);
 	if (child.id == NO_ENTITY_ID) {
@@ -833,6 +833,9 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 				clear_entity_selection(editor);
 			}
 			map_put(&editor->entity_selected, e.id, !result.value);
+		}
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("EntityID %llu", e.id);
 		}
 		if (ImGui::BeginPopupContextItem("Entity Item Context Menu")) {
 			
@@ -870,6 +873,10 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 
 		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("EntityID %llu", e.id);
+		}
+			
 
 
 		if (ImGui::IsItemClicked()) {
@@ -921,7 +928,7 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
 
-			String name = get_name(&entity_manager->transform_manager, e);
+			String name = get_name(&entity_manager->meta_manager, e);
 			const char* start = name.buffer;
 			const char* end = name.buffer + name.length;
 			if (!editor->scene_tree_entity_filter.PassFilter(name.buffer, name.buffer + name.length)) {
@@ -963,9 +970,6 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 
 			ImGui::Separator();
 
-			if (ImGui::MenuItem("Create Camera")) {
-				editor_create_camera(editor);
-			}
 			if (ImGui::MenuItem("Create Empty Entity")) {
 				editor_create_empty_entity(editor);
 			}
