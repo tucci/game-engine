@@ -902,21 +902,23 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	for (int i = 0; i < entity_manager->render_manager.count; i++) {
         
 		Entity e = entity_manager->render_manager.renders[i].entity_ref;
-		RenderMesh rm;
+		
 		
 		
 		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
+		if (mesh_id.id == 0) {
+			// No Mesh to render
+			continue;
+		}
+		
+		MaterialID mat_id = get_render_material(entity_manager, e);
+
+		RenderMesh rm;
 		rm.mesh = get_static_mesh_by_id(asset_manager, mesh_id);
 		rm.world = get_world_mat(entity_manager, e);
 
-		
-
-
-		MaterialID mat_id = get_render_material(entity_manager, e);
-
-
 		//how to create material and also handling asset / material streaming
-		//	do we do an if here and see if it is loaded and load here ?
+		//do we do an if here and see if it is loaded and load here ?
 
 		rm.material = get_material_internal_by_id(asset_manager, mat_id);
 

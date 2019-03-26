@@ -7,11 +7,13 @@
 struct Render {
 	Entity entity_ref;
 	bool visible;
+	MaterialID material_id;
 	Render(Entity e, bool visibility) {
 		entity_ref = e; 
 		visible = visibility;
+		material_id.id = 0;
 	}
-	MaterialID material_id;
+	
 
 };
 
