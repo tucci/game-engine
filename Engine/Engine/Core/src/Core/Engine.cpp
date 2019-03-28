@@ -906,6 +906,9 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		
 		
 		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
+		// Might be bad for cache misses?
+		// Need to investigate
+		// If when removing mesh components, should we also remove the render component?
 		if (mesh_id.id == 0) {
 			// No Mesh to render
 			continue;

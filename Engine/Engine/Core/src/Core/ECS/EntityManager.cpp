@@ -166,85 +166,95 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 
 }
 
-void add_component(EntityManager* manager, Entity entity, ComponentType type) {
+bool add_component(EntityManager* manager, Entity entity, ComponentType type) {
 	
 	if (has_component(manager, entity, type)) {
 		// Already has a component attached
-		return;
+		return false;
 	}
 	if (type == ComponentType::MetaInfo) {
 		// Can't add meta info manually. already added when entity is created
-		return;
+		return false;
 	}
 
-	// Get index of the entity we are trying to remove
+	// Get index of the entity
 	MapResult<u64> result = map_get(&manager->entity_index_map, entity.id);
 	if (!result.found) {
-		// This entity has already been deleted 
-		return;
+		// This entity doesnt exist or has been deleted
+		return false;
 	}
 
 	set_component_flag(&manager->component_manager, entity, type);
 
 	switch (type) {
 		case ComponentType::Transform: {
-			entity_add_transform_component(&manager->transform_manager, entity);
-			break;
+			return entity_add_transform_component(&manager->transform_manager, entity);
 		}
 		case ComponentType::Camera: {
-			// Add dependant components first
-			add_component(manager, entity, ComponentType::Transform);
 
-			entity_add_camera_component(&manager->camera_manager, entity);
-			break;
+			// Add dependant components first
+			if (!has_component(manager, entity, ComponentType::Transform) && add_component(manager, entity, ComponentType::Transform)) {
+				return false;
+			}
+			return entity_add_camera_component(&manager->camera_manager, entity);
+			
 		}
 		case ComponentType::StaticMesh: {
-			add_component(manager, entity, ComponentType::Transform);
-			entity_add_mesh_component(&manager->static_mesh_manger, entity);
-			break;
+			if (!has_component(manager, entity, ComponentType::Transform) && add_component(manager, entity, ComponentType::Transform)) {
+				return false;
+			}
+			return entity_add_mesh_component(&manager->static_mesh_manger, entity);
 		}
 		case ComponentType::Light: {
-			entity_add_light_component(&manager->light_manager, entity);
-			break;
+			return entity_add_light_component(&manager->light_manager, entity);
 		}
 
 		case ComponentType::Render: {
-			add_component(manager, entity, ComponentType::StaticMesh);
-			entity_add_render_component(&manager->render_manager, entity);
-			break;
+			if (!has_component(manager, entity, ComponentType::StaticMesh) && add_component(manager, entity, ComponentType::StaticMesh)) {
+				return false;
+			}
+			return entity_add_render_component(&manager->render_manager, entity);
+		}
+		default: {
+			// Type not handled
+			assert_fail();
+			return false;
 		}
 	}
 }
 
 
-void remove_component(EntityManager* manager, Entity entity, ComponentType type) {
-	if (type == ComponentType::MetaInfo) {
+bool remove_component(EntityManager* manager, Entity entity, ComponentType type) {
+	if (type == ComponentType::MetaInfo || (type == ComponentType::Transform)) {
 		// Can't remove meta info manually. already added when entity is created
-		return;
+		return false;
 	}
 
 	unset_component_flag(&manager->component_manager, entity, type);
 
 	switch (type) {
-		case ComponentType::Transform: {
-			entity_remove_transform_component(&manager->transform_manager, entity);
-			break;
-		}
+		//case ComponentType::Transform: {
+		//	return entity_remove_transform_component(&manager->transform_manager, entity);
+		//}
 		case ComponentType::Camera: {
-			entity_remove_camera_component(&manager->camera_manager, entity);
-			break;
+			return entity_remove_camera_component(&manager->camera_manager, entity);
+			
 		}
 		case ComponentType::StaticMesh: {
-			entity_remove_mesh_component(&manager->static_mesh_manger, entity);
-			break;
+			return entity_remove_mesh_component(&manager->static_mesh_manger, entity);
+			
 		}
 		case ComponentType::Light: {
-			entity_remove_light_component(&manager->light_manager, entity);
-			break;
+			return entity_remove_light_component(&manager->light_manager, entity);
+			
 		}
 		case ComponentType::Render: {
-			entity_remove_render_component(&manager->render_manager, entity);
-			break;
+			return entity_remove_render_component(&manager->render_manager, entity);
+		}
+		default: {
+			// Type not handled
+			assert_fail();
+			return false;
 		}
 	}
 }

@@ -49,5 +49,5 @@ struct LightManager {
 
 void init_light_manager(LightManager* manager);
 void destroy_light_manager(LightManager* manager);
-void entity_add_light_component(LightManager* manager, Entity entity);
-void entity_remove_light_component(LightManager* manager, Entity entity);
+bool entity_add_light_component(LightManager* manager, Entity entity);
+bool entity_remove_light_component(LightManager* manager, Entity entity);

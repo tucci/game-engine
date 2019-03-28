@@ -13,17 +13,23 @@ void destroy_light_manager(LightManager* manager) {
 	stb_sb_free(manager->lights);
 	map_destroy(&manager->id_map);
 }
-void entity_add_light_component(LightManager* manager, Entity entity) {
+
+bool entity_add_light_component(LightManager* manager, Entity entity) {
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There already a component, return early and do nothing
+	if (result.found) return false;
+
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
 	stb_sb_push(manager->lights, Light());
+	return true;
 }
 
-void entity_remove_light_component(LightManager* manager, Entity entity) {
+bool  entity_remove_light_component(LightManager* manager, Entity entity) {
 	
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
-	if (!result.found) return;
+	if (!result.found) return false;
 
 	u64 index = result.value;
 	// Get the last in the list to swap with
@@ -33,4 +39,5 @@ void entity_remove_light_component(LightManager* manager, Entity entity) {
 	manager->count--;
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
+	return true;
 }

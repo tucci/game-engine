@@ -27,5 +27,5 @@ struct RenderManager {
 void init_render_manager(RenderManager* manager);
 void destroy_render_manager(RenderManager* manager);
 
-void entity_add_render_component(RenderManager* manager, Entity entity);
-void entity_remove_render_component(RenderManager* manager, Entity entity);
+bool entity_add_render_component(RenderManager* manager, Entity entity);
+bool entity_remove_render_component(RenderManager* manager, Entity entity);

@@ -34,7 +34,13 @@ void destroy_camera_manager(CameraManager* manager) {
 	stb_sb_free(manager->cameras);
 	map_destroy(&manager->id_map);
 }
-void entity_add_camera_component(CameraManager* manager, Entity entity) {
+
+bool entity_add_camera_component(CameraManager* manager, Entity entity) {
+
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There already a component, return early and do nothing
+	if (result.found) return false;
+
 	if (stb_sb_count(manager->cameras) == manager->count) {
 		stb_sb_push(manager->cameras, Camera(entity));
 	} else {
@@ -42,13 +48,16 @@ void entity_add_camera_component(CameraManager* manager, Entity entity) {
 	}
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
+
+	return true;
 	
 }
-void entity_remove_camera_component(CameraManager* manager, Entity entity) {
+
+bool entity_remove_camera_component(CameraManager* manager, Entity entity) {
 	// See if this entity even has a camera
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
-	if (!result.found) return;
+	if (!result.found) return false;
 	
 	u64 index = result.value;
 	// Get the last camera in the list to swap with
@@ -58,4 +67,5 @@ void entity_remove_camera_component(CameraManager* manager, Entity entity) {
 	manager->count--;
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
+	return true;
 }

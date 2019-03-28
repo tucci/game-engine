@@ -92,6 +92,7 @@ void destroy_entity_manager(EntityManager* manager);
 Entity create_entity(EntityManager* manager, String name);
 void destroy_entity(EntityManager* manager, Entity entity);
 
+
 // TODO: these are attached to the transform manager. maybe we should move them there
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child);
 u64 entity_count(EntityManager* manager);
@@ -104,8 +105,8 @@ u64 children_count(EntityManager* manager, Entity entity);
 
 
 
-void add_component(EntityManager* manager, Entity entity, ComponentType component);
-void remove_component(EntityManager* manager, Entity entity, ComponentType component);
+bool add_component(EntityManager* manager, Entity entity, ComponentType component);
+bool remove_component(EntityManager* manager, Entity entity, ComponentType component);
 bool has_component(EntityManager* manager, Entity entity, ComponentType component);
 
 

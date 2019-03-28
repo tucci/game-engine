@@ -45,7 +45,12 @@ void destroy_transform_manager(TransformManager* manager) {
 	
 }
 
-void entity_add_transform_component(TransformManager* manager, Entity entity) {
+bool entity_add_transform_component(TransformManager* manager, Entity entity) {
+
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There already a component, return early and do nothing
+	if (result.found) return false;
+
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
 
@@ -67,16 +72,16 @@ void entity_add_transform_component(TransformManager* manager, Entity entity) {
 	stb_sb_push(manager->child_count, 0);
 	//stb_sb_push(manager->prev_sibling, Entity());
 
-
+	return true;
 
 	
 	
 }
 
-void entity_remove_transform_component(TransformManager* manager, Entity entity) {
+bool entity_remove_transform_component(TransformManager* manager, Entity entity) {
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
-	if (!result.found) return;
+	if (!result.found) return false;
 
 	u64 index = result.value;
 
@@ -118,5 +123,7 @@ void entity_remove_transform_component(TransformManager* manager, Entity entity)
 	manager->count--;
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
+
+	return true;
 }
 

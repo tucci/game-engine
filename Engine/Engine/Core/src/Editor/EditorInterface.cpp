@@ -956,7 +956,7 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 			
 
 			if (ImGui::MenuItem("Copy")) {
-				
+			
 			}
 
 			if (ImGui::MenuItem("Paste")) {
