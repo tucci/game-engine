@@ -10,6 +10,7 @@
 
 
 
+
 struct InternalAsset {
 	AssetID id;
 	union {

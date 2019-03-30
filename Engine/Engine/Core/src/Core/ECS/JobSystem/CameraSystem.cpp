@@ -8,7 +8,7 @@ Camera* get_camera(EntityManager* manager, Entity entity) {
 	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
 	if (!result.found) return NULL;
 	u64 index = result.value;
-	return &manager->camera_manager.cameras[index];
+	return &manager->camera_manager.enabled_cameras[index];
 }
 
 void set_camera_params(EntityManager* manager, Entity entity,
@@ -19,7 +19,7 @@ void set_camera_params(EntityManager* manager, Entity entity,
 	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
 	
 	u64 index = result.value;
-	Camera* cam = &manager->camera_manager.cameras[index];
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
 
 	cam->near_clip = near_clip;
 	cam->far_clip = far_clip;
@@ -31,14 +31,14 @@ void set_camera_projection(EntityManager* manager, Entity entity, CameraProjecti
 	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
 
 	u64 index = result.value;
-	Camera* cam = &manager->camera_manager.cameras[index];
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
 	cam->projection = projection;
 }
 
 void job_compute_camera_view_matrices(EntityManager* manager) {
-	for (int i = 0; i < manager->camera_manager.count; i++) {
-		Camera* cam = &manager->camera_manager.cameras[i];
-		Entity e = manager->camera_manager.cameras[i].entity_ref;
+	for (int i = 0; i < manager->camera_manager.enabled_count; i++) {
+		Camera* cam = &manager->camera_manager.enabled_cameras[i];
+		Entity e = manager->camera_manager.enabled_cameras[i].entity_ref;
 		Vec3f cam_pos = get_position(manager, e);
 		// Since camera is looking now -z, we want to move in that direction instead
 		// so we need to flip the forward

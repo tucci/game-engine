@@ -34,15 +34,24 @@ struct Light {
 		PointLight point_light;
 	};
 	Light() {
+		type = LightType::None;
 		dir_light.direction = Vec3f(0, 0, 0);
 		dir_light.color = Vec3f(1, 1, 1);
+		dir_light.intensity = 1.0f;
 	};
 };
 
 struct LightManager {
-	CompactMap<u64> id_map;
-	Light* lights;
-	u64 count;
+	CompactMap<u64> enabled_id_map;
+	CompactMap<u64> disabled_id_map;
+
+	Light* enabled_lights;
+	u64 enabled_count;
+
+	Light* disabled_lights;
+	u64 disabled_count;
+
+
 };
 
 
@@ -51,3 +60,5 @@ void init_light_manager(LightManager* manager);
 void destroy_light_manager(LightManager* manager);
 bool entity_add_light_component(LightManager* manager, Entity entity);
 bool entity_remove_light_component(LightManager* manager, Entity entity);
+void enable_light_component(LightManager* manager, Entity entity, bool enabled);
+bool is_light_component_enabled(LightManager* manager, Entity entity);

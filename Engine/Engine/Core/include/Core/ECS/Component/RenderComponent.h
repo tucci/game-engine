@@ -6,11 +6,9 @@
 
 struct Render {
 	Entity entity_ref;
-	bool visible;
 	MaterialID material_id;
-	Render(Entity e, bool visibility) {
+	Render(Entity e) {
 		entity_ref = e; 
-		visible = visibility;
 		material_id.id = 0;
 	}
 	
@@ -18,9 +16,14 @@ struct Render {
 };
 
 struct RenderManager {
-	CompactMap<u64> id_map;
-	Render* renders;
-	u64 count;
+	CompactMap<u64> enabled_id_map;
+	CompactMap<u64> disabled_id_map;
+
+	Render* enabled_renders;
+	u64 enabled_count;
+
+	Render* disabled_renders;
+	u64 disabled_count;
 };
 
 
@@ -29,3 +32,6 @@ void destroy_render_manager(RenderManager* manager);
 
 bool entity_add_render_component(RenderManager* manager, Entity entity);
 bool entity_remove_render_component(RenderManager* manager, Entity entity);
+
+void enable_render_component(RenderManager* manager, Entity entity, bool enabled);
+bool is_render_component_enabled(RenderManager* manager, Entity entity);

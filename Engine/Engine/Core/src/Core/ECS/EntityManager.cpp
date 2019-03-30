@@ -166,13 +166,23 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 
 }
 
-bool add_component(EntityManager* manager, Entity entity, ComponentType type) {
+void enable_entity(EntityManager* manager, Entity entity, bool enabled) {
+
+
+	for (int i = (int)ComponentType::None; i < (int)ComponentType::Count; i++) {
+		ComponentType type = (ComponentType)i;
+		enable_component(manager, entity, type, enabled);
+	}
+
+}
+
+bool add_component(EntityManager* manager, Entity entity, ComponentType component) {
 	
-	if (has_component(manager, entity, type)) {
+	if (has_component(manager, entity, component)) {
 		// Already has a component attached
 		return false;
 	}
-	if (type == ComponentType::MetaInfo) {
+	if (component == ComponentType::MetaInfo) {
 		// Can't add meta info manually. already added when entity is created
 		return false;
 	}
@@ -184,9 +194,9 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType type) {
 		return false;
 	}
 
-	set_component_flag(&manager->component_manager, entity, type);
+	set_component_flag(&manager->component_manager, entity, component);
 
-	switch (type) {
+	switch (component) {
 		case ComponentType::Transform: {
 			return entity_add_transform_component(&manager->transform_manager, entity);
 		}
@@ -224,15 +234,15 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType type) {
 }
 
 
-bool remove_component(EntityManager* manager, Entity entity, ComponentType type) {
-	if (type == ComponentType::MetaInfo || (type == ComponentType::Transform)) {
+bool remove_component(EntityManager* manager, Entity entity, ComponentType component) {
+	if (component == ComponentType::MetaInfo || (component == ComponentType::Transform)) {
 		// Can't remove meta info manually. already added when entity is created
 		return false;
 	}
 
-	unset_component_flag(&manager->component_manager, entity, type);
+	unset_component_flag(&manager->component_manager, entity, component);
 
-	switch (type) {
+	switch (component) {
 		//case ComponentType::Transform: {
 		//	return entity_remove_transform_component(&manager->transform_manager, entity);
 		//}
@@ -269,6 +279,71 @@ bool has_component(EntityManager* manager, Entity entity, ComponentType componen
 	u64 index = result.value;
 	ComponentType flags = cpm->types[index];
 	return ((u64)flags & (u64)component);
+}
+
+void enable_component(EntityManager* manager, Entity entity, ComponentType component, bool enabled) {
+	if (component == ComponentType::MetaInfo || (component == ComponentType::Transform)) {
+		// Can't disable these components
+		return;
+	}
+
+	switch (component) {
+		//case ComponentType::Transform: {
+		//	return entity_remove_transform_component(&manager->transform_manager, entity);
+		//}
+		case ComponentType::Camera: {
+			return enable_camera_component(&manager->camera_manager, entity, enabled);
+
+		}
+		case ComponentType::StaticMesh: {
+			//return enable_mesh_component(&manager->static_mesh_manger, entity);
+
+		}
+		case ComponentType::Light: {
+			return enable_light_component(&manager->light_manager, entity, enabled);
+
+		}
+		case ComponentType::Render: {
+			return enable_render_component(&manager->render_manager, entity, enabled);
+		}
+		default: {
+			// Type not handled
+			assert_fail();
+		}
+	}
+}
+
+bool is_component_enabled(EntityManager* manager, Entity entity, ComponentType component) {
+	if (component == ComponentType::MetaInfo || (component == ComponentType::Transform)) {
+		return true;
+	}
+
+
+
+	switch (component) {
+		//case ComponentType::Transform: {
+		//	return entity_remove_transform_component(&manager->transform_manager, entity);
+		//}
+		case ComponentType::Camera: {
+			//return enable_camera_component(&manager->camera_manager, entity, enabled);
+
+		}
+		case ComponentType::StaticMesh: {
+			//return enable_mesh_component(&manager->static_mesh_manger, entity);
+
+		}
+		case ComponentType::Light: {
+			return is_light_component_enabled(&manager->light_manager, entity);
+		}
+		case ComponentType::Render: {
+			return is_render_component_enabled(&manager->render_manager, entity);
+		}
+		default: {
+			// Type not handled
+			assert_fail();
+		}
+	}
+
 }
 
 

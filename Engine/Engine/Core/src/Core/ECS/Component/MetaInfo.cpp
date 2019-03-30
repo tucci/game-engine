@@ -21,7 +21,7 @@ void destroy_metainfo_manager(MetaInfoManager* manager) {
 void entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, String name) {
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
-	stb_sb_push(manager->names, String(0, NULL));
+	stb_sb_push(manager->names, String(NULL, 0));
 	set_name(manager, entity, name);
 }
 
@@ -64,6 +64,7 @@ void set_name(MetaInfoManager* manager, Entity entity, String name) {
 	memcpy(name_copy, name.buffer, name.length);
 	// add the null terminator to end of string inside the allocator memory
 	name_copy[name.length] = '\0';
+	
 	e_name->length = name.length;
 	e_name->buffer = name_copy;
 

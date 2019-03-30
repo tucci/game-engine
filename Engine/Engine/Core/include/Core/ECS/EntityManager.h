@@ -31,6 +31,7 @@ enum class ComponentType : u64 {
 	Count = 6,
 };
 
+
 inline ComponentType operator|(ComponentType a, ComponentType b) {
 	return static_cast<ComponentType>(static_cast<int>(a) | static_cast<int>(b));
 }
@@ -91,6 +92,8 @@ void destroy_entity_manager(EntityManager* manager);
 
 Entity create_entity(EntityManager* manager, String name);
 void destroy_entity(EntityManager* manager, Entity entity);
+void enable_entity(EntityManager* manager, Entity entity, bool enabled);
+
 
 
 // TODO: these are attached to the transform manager. maybe we should move them there
@@ -108,6 +111,9 @@ u64 children_count(EntityManager* manager, Entity entity);
 bool add_component(EntityManager* manager, Entity entity, ComponentType component);
 bool remove_component(EntityManager* manager, Entity entity, ComponentType component);
 bool has_component(EntityManager* manager, Entity entity, ComponentType component);
+void enable_component(EntityManager* manager, Entity entity, ComponentType component, bool enabled);
+bool is_component_enabled(EntityManager* manager, Entity entity, ComponentType component);
+
 
 
 

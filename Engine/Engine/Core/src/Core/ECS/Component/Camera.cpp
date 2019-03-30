@@ -25,13 +25,13 @@ void init_camera_params(Camera* camera,
 
 void init_camera_manager(CameraManager* manager) {
 	map_init(&manager->id_map);
-	manager->count = 0;
-	manager->cameras = NULL;
+	manager->enabled_count = 0;
+	manager->enabled_cameras = NULL;
 
 }
 void destroy_camera_manager(CameraManager* manager) {
 
-	stb_sb_free(manager->cameras);
+	stb_sb_free(manager->enabled_cameras);
 	map_destroy(&manager->id_map);
 }
 
@@ -41,13 +41,13 @@ bool entity_add_camera_component(CameraManager* manager, Entity entity) {
 	// There already a component, return early and do nothing
 	if (result.found) return false;
 
-	if (stb_sb_count(manager->cameras) == manager->count) {
-		stb_sb_push(manager->cameras, Camera(entity));
+	if (stb_sb_count(manager->enabled_cameras) == manager->enabled_count) {
+		stb_sb_push(manager->enabled_cameras, Camera(entity));
 	} else {
-		manager->cameras[manager->count] = Camera(entity);
+		manager->enabled_cameras[manager->enabled_count] = Camera(entity);
 	}
-	map_put(&manager->id_map, entity.id, manager->count);
-	manager->count++;
+	map_put(&manager->id_map, entity.id, manager->enabled_count);
+	manager->enabled_count++;
 
 	return true;
 	
@@ -61,11 +61,15 @@ bool entity_remove_camera_component(CameraManager* manager, Entity entity) {
 	
 	u64 index = result.value;
 	// Get the last camera in the list to swap with
-	Camera last = manager->cameras[manager->count - 1];
+	Camera last = manager->enabled_cameras[manager->enabled_count - 1];
 	// swap the last camera at the current index we are removing from
-	manager->cameras[index] = last;
-	manager->count--;
+	manager->enabled_cameras[index] = last;
+	manager->enabled_count--;
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
 	return true;
+}
+
+void enable_camera_component(CameraManager* manager, Entity entity, bool enabled) {
+
 }

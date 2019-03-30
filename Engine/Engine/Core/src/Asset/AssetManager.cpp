@@ -103,8 +103,6 @@ void destroy_asset_manager(AssetManager* manager) {
 
 
 InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
-
-	
 	MapResult<u64> result = map_get(&manager->asset_id_map, id.id);
 	u64 index_to_asset_type_array;
 	if (!result.found) {

@@ -880,18 +880,18 @@ static void update_engine_state(Engine* engine, float delta_time) {
     
     
 	// You go through all the entites, and push them to the render state
-	for (int i = 0; i < entity_manager->camera_manager.count; i++) {
-		Camera* cam = &entity_manager->camera_manager.cameras[i];
+	for (int i = 0; i < entity_manager->camera_manager.enabled_count; i++) {
+		Camera* cam = &entity_manager->camera_manager.enabled_cameras[i];
 		// Update camera aspect ratios
 		cam->aspect_ratio = (float)window_size.x / (float)window_size.y;
-		Entity e = entity_manager->camera_manager.cameras[i].entity_ref;
+		Entity e = entity_manager->camera_manager.enabled_cameras[i].entity_ref;
 		Vec3f cam_pos = get_position(entity_manager, e);
 		push_camera(renderer, cam, cam_pos);
 	}
     
     
-	for (int i = 0; i < entity_manager->light_manager.count; i++) {
-		Light light = entity_manager->light_manager.lights[i];
+	for (int i = 0; i < entity_manager->light_manager.enabled_count; i++) {
+		Light light = entity_manager->light_manager.enabled_lights[i];
 		push_light(renderer, light);
 	}
     
@@ -899,9 +899,9 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	
     
     
-	for (int i = 0; i < entity_manager->render_manager.count; i++) {
+	for (int i = 0; i < entity_manager->render_manager.enabled_count; i++) {
         
-		Entity e = entity_manager->render_manager.renders[i].entity_ref;
+		Entity e = entity_manager->render_manager.enabled_renders[i].entity_ref;
 		
 		
 		
@@ -915,6 +915,10 @@ static void update_engine_state(Engine* engine, float delta_time) {
 		}
 		
 		MaterialID mat_id = get_render_material(entity_manager, e);
+
+		if (mat_id.id == 0) {
+			continue;
+		}
 
 		RenderMesh rm;
 		rm.mesh = get_static_mesh_by_id(asset_manager, mesh_id);

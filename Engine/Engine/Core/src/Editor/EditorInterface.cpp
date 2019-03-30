@@ -141,14 +141,13 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
 	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
 	set_render_material(entity_manager, editor->test_mesh, editor->test_mat.material);
-	set_render_visibility(entity_manager, editor->test_mesh, true);
+	
 	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
 
 
 	add_component(entity_manager, e1, ComponentType::StaticMesh);
 	add_component(entity_manager, e1, ComponentType::Render);
 	set_render_material(entity_manager, e1, editor->test_mat.material);
-	set_render_visibility(entity_manager, e1, true);
 	set_static_mesh(entity_manager, e1, editor->api.asset_manager->sphere_mesh.mesh);
 
 
@@ -531,6 +530,10 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 
 	bool open = true;
 	if (ImGui::CollapsingHeader("Camera", &open)) {
+		bool comp_enabled = true;
+		ImGui::Checkbox("Enabled", &comp_enabled);
+			
+		
 		Camera* cam = get_camera(entity_manager, e);
 		//ImGui::DragFloat("Aspect Ratio", &cam->aspect_ratio);
 
@@ -612,9 +615,20 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 
 static void draw_component_light(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
-
+	
 	bool open = true;
 	if (ImGui::CollapsingHeader("Light", &open)) {
+		
+		bool comp_enabled = is_component_enabled(entity_manager, e, ComponentType::Light);
+		ImGui::PushID("light_enabled");
+		if (ImGui::Checkbox("Enabled", &comp_enabled)) {
+			enable_component(editor->api.entity_manager, e, ComponentType::Light, comp_enabled);
+		}
+		ImGui::PopID();
+			
+		
+		
+		
 
 		Light light =  get_light(entity_manager, e);
 		int light_type = (int)light.type;
@@ -697,6 +711,14 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	bool open = true;
 	if (ImGui::CollapsingHeader("Render", &open)) {
+		bool comp_enabled = is_component_enabled(entity_manager, e, ComponentType::Render);
+		ImGui::PushID("render_enabled");
+		if (ImGui::Checkbox("Enabled", &comp_enabled)) {
+			enable_component(editor->api.entity_manager, e, ComponentType::Render, comp_enabled);
+		}
+		ImGui::PopID();
+
+
 		MaterialID mat_id = get_render_material(entity_manager, e);
 		ImGui::Text("Material id %lld", mat_id.id);
 		
@@ -1354,7 +1376,6 @@ static void editor_create_plane(EditorInterface* editor) {
 	add_component(entity_manager, e, ComponentType::StaticMesh);
 	add_component(entity_manager, e, ComponentType::Render);
 	set_render_material(entity_manager, e, editor->test_mat.material);
-	set_render_visibility(entity_manager, e, true);
 	set_static_mesh(entity_manager, e, editor->api.asset_manager->plane_mesh.mesh);
 
 }
@@ -1369,7 +1390,6 @@ static void editor_create_sphere(EditorInterface* editor) {
 	add_component(entity_manager, e, ComponentType::StaticMesh);
 	add_component(entity_manager, e, ComponentType::Render);
 	set_render_material(entity_manager, e, editor->test_mat.material);
-	set_render_visibility(entity_manager, e, true);
 	set_static_mesh(entity_manager, e, editor->api.asset_manager->sphere_mesh.mesh);
 
 }
@@ -1385,7 +1405,6 @@ static void editor_create_cube(EditorInterface* editor) {
 	add_component(entity_manager, e, ComponentType::StaticMesh);
 	add_component(entity_manager, e, ComponentType::Render);
 	set_render_material(entity_manager, e, editor->test_mat.material);
-	set_render_visibility(entity_manager, e, true);
 	set_static_mesh(entity_manager, e, editor->api.asset_manager->cube_mesh.mesh);
 
 }

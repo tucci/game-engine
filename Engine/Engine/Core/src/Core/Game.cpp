@@ -164,7 +164,7 @@ void load_scene(Game* game, int scene_id) {
 	add_component(entity_manager, scene->sink, ComponentType::StaticMesh);
 	add_component(entity_manager, scene->sink, ComponentType::Render);
 	set_render_material(entity_manager, scene->sink, default_mat.material);
-	set_render_visibility(entity_manager, scene->sink, true);
+	
 
 	set_static_mesh(entity_manager, scene->sink, cube.mesh);
 	
@@ -181,6 +181,7 @@ void load_scene(Game* game, int scene_id) {
 
 	scene->entity_test_light = create_entity(entity_manager, "Test Light");
 	add_component(entity_manager, scene->entity_test_light, ComponentType::Light);
+	
 
 	Light light;
 	light.type = LightType::DirectionalLight;
@@ -430,7 +431,7 @@ static void import_asset_scene_node(Game* game, EntityManager* manager, AssetImp
 		for (u32 i = 0; i < parent_node->mesh_count; i++) {
 			add_component(manager, parent_entity, ComponentType::StaticMesh);
 			add_component(manager, parent_entity, ComponentType::Render);
-			set_render_visibility(manager, parent_entity, true);
+		
 
 
 			u32 mesh_index = parent_node->meshes[i];
