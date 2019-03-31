@@ -829,6 +829,36 @@ static void draw_window_entity_components(EditorInterface* editor) {
 		}
 	}
 	ImGui::End();
+
+	if (ImGui::Begin("Render Components")) {
+		RenderManager* rm = &entity_manager->render_manager;
+		ImGui::Text("Capacity %d", rm->capacity);
+		ImGui::Text("Enabled %d", rm->enabled_count);
+
+		for (u64 i = 0; i < rm->enabled_count; i++) {
+			ImGui::Text("%d ", rm->entitys[i].id);
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+		for (u64 i = 0; i < rm->capacity; i++) {
+			ImGui::Text("%d ", rm->entitys[i].id);
+			ImGui::SameLine();
+		}
+
+		ImGui::NewLine();
+		size_t map_size = rm->id_map.size;
+		// Go over our track map, and look for filename
+		for (int i = 0; i < map_size; i++) {
+			CompactMapItem<u64> item = rm->id_map.map[i];
+			
+			// Check if this is a valid track data
+			if (item.key!= 0 && item.key != TOMBSTONE) {
+				ImGui::Text("%llu -> %llu", item.key, item.value);
+			}
+		}
+
+	}
+	ImGui::End();
 		
 
 }

@@ -4,187 +4,199 @@
 #include "Common/stretchy_buffer.h"
 
 void init_render_manager(RenderManager* manager) {
-	map_init(&manager->enabled_id_map);
-	map_init(&manager->disabled_id_map);
-
+	map_init(&manager->id_map);
+	
+	manager->capacity = 0;
 	manager->enabled_count = 0;
-	manager->enabled_renders = NULL;
-
-	manager->disabled_count = 0;
-	manager->disabled_renders = NULL;
+	manager->renders = NULL;
+	manager->entitys = NULL;
 
 }
+
 void destroy_render_manager(RenderManager* manager) {
-	stb_sb_free(manager->enabled_renders);
-	map_destroy(&manager->enabled_id_map);
+	stb_sb_free(manager->renders);
+	stb_sb_free(manager->entitys);
+	map_destroy(&manager->id_map);
+	manager->capacity = 0;
 	manager->enabled_count = 0;
-
-	stb_sb_free(manager->disabled_renders);
-	map_destroy(&manager->disabled_id_map);
-	manager->disabled_count = 0;
-
 }
 
 bool entity_add_render_component(RenderManager* manager, Entity entity) {
-	MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
-	if (result.found) {
-		// There already a component, return early and do nothing
-		return false;
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There already a component, return early and do nothing
+	if (result.found) return false;
+
+	
+	
+	u64 index;
+
+	if (manager->enabled_count == manager->capacity && stb_sb_count(manager->renders) != manager->enabled_count) {
+		manager->renders[manager->enabled_count] = Render(entity);
+		manager->entitys[manager->enabled_count] = entity;
+		index = manager->enabled_count;
 	} else {
-		// If the component wasn't found inside the enabled list
-		// it might be inside the disabled list
-		result = map_get(&manager->disabled_id_map, entity.id);
-		if (result.found) {
-			// There already a component, return early and do nothing
-			return false;
-		}
-
-
+		stb_sb_push(manager->renders, Render(entity));
+		stb_sb_push(manager->entitys, entity);
+		index = stb_sb_count(manager->renders) - 1;
 	}
 
-	map_put(&manager->enabled_id_map, entity.id, manager->enabled_count);
+	
+
+	
 
 
-	if (stb_sb_count(manager->enabled_renders) == manager->enabled_count) {
-		stb_sb_push(manager->enabled_renders, Render(entity));
-	} else {
-		manager->enabled_renders[manager->enabled_count] = Render(entity);
-	}
+	Render this_comp = manager->renders[index];
+	Render first_disabled_comp = manager->renders[manager->enabled_count];
+
+
+	// swap the first disabled comp with the comp we are trying to enable
+	manager->renders[manager->enabled_count] = this_comp;
+	manager->renders[index] = first_disabled_comp;
+
+	// Swap entitys
+	Entity this_entity = manager->entitys[index];
+	Entity first_disabled_entity = manager->entitys[manager->enabled_count];
+	manager->entitys[manager->enabled_count] = this_entity;
+	manager->entitys[index] = first_disabled_entity;
+
+	// Update the entity id to index mapping
+	map_put(&manager->id_map, this_entity.id, manager->enabled_count);
+	map_put(&manager->id_map, first_disabled_entity.id, index);
+
 
 	manager->enabled_count++;
+	manager->capacity++;
 
+	assert(manager->enabled_count <= manager->capacity);
 
 	return true;
+
 }
 
 bool entity_remove_render_component(RenderManager* manager, Entity entity) {
-	MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
 
+	
 
-	CompactMap<u64>* map = &manager->enabled_id_map;
-	Render* list = manager->enabled_renders;
-	u64* list_count = &manager->enabled_count;
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There is no result, return early and do nothing
+	if (!result.found) return false;
 
-	if (!result.found) {
-		// If the component wasn't found inside the enabled list
-		// it might be inside the disabled list
-		result = map_get(&manager->disabled_id_map, entity.id);
-		map = &manager->disabled_id_map;
-		list = manager->disabled_renders;
-		list_count = &manager->disabled_count;
-
-		if (!result.found) {
-			// the component wasn't found inside the disabled list either
-			// this component doesnt exist on this entity
-			return false;
-		}
-	}
-
-
-	/*PROBLEM, when swapping the last
-		the entity doesnt get updated*/
-
+	//removing disabled components
 	u64 index = result.value;
+
+	if (index >= manager->enabled_count) {
+		Render this_comp = manager->renders[index];
+		Render last_comp = manager->renders[manager->capacity - 1];
+	
+		// swap the last at the current index we are removing from
+		manager->renders[index] = last_comp;
+	
+		// Swap entitys
+		Entity last_entity = manager->entitys[manager->capacity - 1];
+		manager->entitys[index] = last_entity;
+	
+		// Remove the entity from the index map
+		map_remove(&manager->id_map, entity.id);
+		if (entity.id != last_entity.id) {
+			map_put(&manager->id_map, last_entity.id, index);
+		}
+	
+		manager->capacity--;
+		assert(manager->enabled_count <= manager->capacity);
+		return true;
+	}
+	
+	 
+	
 	// Get the last in the list to swap with
-	Render last = list[*list_count - 1];
+
+	Render this_comp = manager->renders[index];
+	Render last_comp = manager->renders[manager->enabled_count - 1];
+
 	// swap the last at the current index we are removing from
-	list[index] = last;
-	(*list_count)--;
+	manager->renders[index] = last_comp;
+
+	// Swap entitys
+	Entity last_entity = manager->entitys[manager->enabled_count - 1];
+	manager->entitys[index] = last_entity;
+
 	// Remove the entity from the index map
-	map_remove(map, entity.id);
+	map_remove(&manager->id_map, entity.id);
+	if (entity.id != last_entity.id) {
+		map_put(&manager->id_map, last_entity.id, index);
+	}
+	manager->enabled_count--;
+	manager->capacity--;
+	assert(manager->enabled_count <= manager->capacity);
 	return true;
 }
 
 
 
 void enable_render_component(RenderManager* manager, Entity entity, bool enabled) {
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There is no result, return early and do nothing
+	if (!result.found) return;
+
+	u64 index = result.value;
+
 	if (enabled) {
-		// First we need to check if the component is already enabled
-		MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
+		
 
+		Render this_comp = manager->renders[index];
+		Render first_disabled_comp = manager->renders[manager->enabled_count];
+		
 
-		if (result.found) {
-			// The component is already enabled
-			// don't do anything
-			return;
-		}
+		// swap the first disabled comp with the comp we are trying to enable
+		manager->renders[manager->enabled_count] = this_comp;
+		manager->renders[index] = first_disabled_comp;
 
+		// Swap entitys
+		Entity this_entity = manager->entitys[index];
+		Entity first_disabled_entity = manager->entitys[manager->enabled_count];
+		manager->entitys[manager->enabled_count] = this_entity;
+		manager->entitys[index] = first_disabled_entity;
 
-		// If the component wasn't found inside the enabled list
-		// it might be inside the disabled list
-		result = map_get(&manager->disabled_id_map, entity.id);
+		// Update the entity id to index mapping
+		map_put(&manager->id_map, this_entity.id, manager->enabled_count);
+		map_put(&manager->id_map, first_disabled_entity.id, index);
 
-
-		if (!result.found) {
-			// the component wasn't found inside the disabled list either
-			// this component doesnt exist on this entity
-			return;
-		}
-
-
-		// At this point the component is on the disabled list and needs to be enabled
-
-		u64 index = result.value;
-		Render copy = manager->disabled_renders[index];
-
-		entity_remove_render_component(manager, entity);
-
-		entity_add_render_component(manager, entity);
-
-		result = map_get(&manager->enabled_id_map, entity.id);
-
-		index = result.value;
-		Render* to_copy_to = &manager->enabled_renders[index];
-		*to_copy_to = copy;
-
+		manager->enabled_count++;
 	} else {
-		// First we need to check if the component is already disabled
-		MapResult<u64> result = map_get(&manager->disabled_id_map, entity.id);
 
+		
+		Render this_comp = manager->renders[index];
+		Render last_comp = manager->renders[manager->enabled_count - 1];
+		// swap the last at the current index we are removing from
+ 		manager->renders[index] = last_comp;
+		manager->renders[manager->enabled_count - 1] = this_comp;
+		
+		// Swap entitys
+		Entity this_entity = manager->entitys[index];
+		Entity first_disabled_entity = manager->entitys[manager->enabled_count - 1];
+		manager->entitys[manager->enabled_count - 1] = this_entity;
+		manager->entitys[index] = first_disabled_entity;
 
-		if (result.found) {
-			// The component is already disabled
-			// don't do anything
-			return;
-		}
+		// Update the entity id to index mapping
+		map_put(&manager->id_map, this_entity.id, manager->enabled_count - 1);
+		map_put(&manager->id_map, first_disabled_entity.id, index);
 
-
-		// If the component wasn't found inside the disabled list
-		// it might be inside the enabled list
-		result = map_get(&manager->enabled_id_map, entity.id);
-
-
-		if (!result.found) {
-			// the component wasn't found inside the enabled list either
-			// this component doesnt exist on this entity
-			return;
-		}
-
-
-		// At this point the component is on the enabled list and needs to be disabled
-		u64 index = result.value;
-		Render copy = manager->enabled_renders[index];
-		entity_remove_render_component(manager, entity);
-
-		map_put(&manager->disabled_id_map, entity.id, manager->disabled_count);
-
-
-		if (stb_sb_count(manager->disabled_renders) == manager->disabled_count) {
-			stb_sb_push(manager->disabled_renders, copy);
-		} else {
-			manager->disabled_renders[manager->disabled_count] = copy;
-		}
-
-		manager->disabled_count++;
-
+		manager->enabled_count--;
 	}
+	assert(manager->enabled_count <= manager->capacity);
+	
 }
 
 bool is_render_component_enabled(RenderManager* manager, Entity entity) {
-	MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 
-	if (result.found) {
-		return true;
+	if (!result.found) {
+		return false;
 	}
-	return false;
+	// Check if the index is less than the enabled index
+	// Everything to the left of the enabeld count is enabled, everything to the right of it, is disabled
+	assert(manager->enabled_count <= manager->capacity);
+	return result.value < manager->enabled_count;
+	
+	
 }

@@ -18,17 +18,23 @@ void destroy_metainfo_manager(MetaInfoManager* manager) {
 
 
 
-void entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, String name) {
+bool entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, String name) {
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There already a component, return early and do nothing
+	if (result.found) return false;
+
 	map_put(&manager->id_map, entity.id, manager->count);
 	manager->count++;
 	stb_sb_push(manager->names, String(NULL, 0));
 	set_name(manager, entity, name);
+
+	return true;
 }
 
-void entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity) {
+bool entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity) {
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
-	if (!result.found) return;
+	if (!result.found) false;
 
 	u64 index = result.value;
 
@@ -39,6 +45,7 @@ void entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity) {
 	manager->count--;
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
+	return true;
 }
 
 

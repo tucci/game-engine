@@ -901,7 +901,7 @@ static void update_engine_state(Engine* engine, float delta_time) {
     
 	for (int i = 0; i < entity_manager->render_manager.enabled_count; i++) {
         
-		Entity e = entity_manager->render_manager.enabled_renders[i].entity_ref;
+		Entity e = entity_manager->render_manager.renders[i].entity_ref;
 		
 		
 		

@@ -109,6 +109,9 @@ u64 children_count(EntityManager* manager, Entity entity);
 
 
 bool add_component(EntityManager* manager, Entity entity, ComponentType component);
+// Internal remove component that allows the entity manager to destory any component
+static bool em_remove_component(EntityManager* manager, Entity entity, ComponentType component);
+// Exposed remove component function can delete most components except internal components such as meta/transform
 bool remove_component(EntityManager* manager, Entity entity, ComponentType component);
 bool has_component(EntityManager* manager, Entity entity, ComponentType component);
 void enable_component(EntityManager* manager, Entity entity, ComponentType component, bool enabled);

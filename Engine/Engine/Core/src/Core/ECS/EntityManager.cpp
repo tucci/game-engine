@@ -157,9 +157,9 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 	// Need to remove it from all the other components
 
 
-	for (int i = (int)ComponentType::None; i < (int)ComponentType::Count; i++) {
+	for (int i = 1; i < (1 << (int)ComponentType::Count); i*= 2) {
 		ComponentType type = (ComponentType)i;
-		remove_component(manager, entity, type);
+		em_remove_component(manager, entity, type);
 	}
 
 	remove_component_flag(&manager->component_manager, entity);
@@ -203,14 +203,14 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType componen
 		case ComponentType::Camera: {
 
 			// Add dependant components first
-			if (!has_component(manager, entity, ComponentType::Transform) && add_component(manager, entity, ComponentType::Transform)) {
+			if (!has_component(manager, entity, ComponentType::Transform) && !add_component(manager, entity, ComponentType::Transform)) {
 				return false;
 			}
 			return entity_add_camera_component(&manager->camera_manager, entity);
 			
 		}
 		case ComponentType::StaticMesh: {
-			if (!has_component(manager, entity, ComponentType::Transform) && add_component(manager, entity, ComponentType::Transform)) {
+			if (!has_component(manager, entity, ComponentType::Transform) && !add_component(manager, entity, ComponentType::Transform)) {
 				return false;
 			}
 			return entity_add_mesh_component(&manager->static_mesh_manger, entity);
@@ -220,10 +220,46 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType componen
 		}
 
 		case ComponentType::Render: {
-			if (!has_component(manager, entity, ComponentType::StaticMesh) && add_component(manager, entity, ComponentType::StaticMesh)) {
+			if (!has_component(manager, entity, ComponentType::StaticMesh) && !add_component(manager, entity, ComponentType::StaticMesh)) {
 				return false;
 			}
 			return entity_add_render_component(&manager->render_manager, entity);
+		}
+		default: {
+			// Type not handled
+			assert_fail();
+			return false;
+		}
+	}
+}
+
+static bool em_remove_component(EntityManager* manager, Entity entity, ComponentType component) {
+
+	unset_component_flag(&manager->component_manager, entity, component);
+	switch (component) {
+		case ComponentType::None: {
+			return false;
+		}
+		case ComponentType::MetaInfo: {
+			return entity_remove_metainfo_component(&manager->meta_manager, entity);
+		}
+		case ComponentType::Transform: {
+			return entity_remove_transform_component(&manager->transform_manager, entity);
+		}
+		case ComponentType::Camera: {
+			return entity_remove_camera_component(&manager->camera_manager, entity);
+
+		}
+		case ComponentType::StaticMesh: {
+			return entity_remove_mesh_component(&manager->static_mesh_manger, entity);
+
+		}
+		case ComponentType::Light: {
+			return entity_remove_light_component(&manager->light_manager, entity);
+
+		}
+		case ComponentType::Render: {
+			return entity_remove_render_component(&manager->render_manager, entity);
 		}
 		default: {
 			// Type not handled
@@ -237,36 +273,11 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType componen
 bool remove_component(EntityManager* manager, Entity entity, ComponentType component) {
 	if (component == ComponentType::MetaInfo || (component == ComponentType::Transform)) {
 		// Can't remove meta info manually. already added when entity is created
+		// Only the entity manager itself can delete these components
+		// by calling em_remove_component
 		return false;
 	}
-
-	unset_component_flag(&manager->component_manager, entity, component);
-
-	switch (component) {
-		//case ComponentType::Transform: {
-		//	return entity_remove_transform_component(&manager->transform_manager, entity);
-		//}
-		case ComponentType::Camera: {
-			return entity_remove_camera_component(&manager->camera_manager, entity);
-			
-		}
-		case ComponentType::StaticMesh: {
-			return entity_remove_mesh_component(&manager->static_mesh_manger, entity);
-			
-		}
-		case ComponentType::Light: {
-			return entity_remove_light_component(&manager->light_manager, entity);
-			
-		}
-		case ComponentType::Render: {
-			return entity_remove_render_component(&manager->render_manager, entity);
-		}
-		default: {
-			// Type not handled
-			assert_fail();
-			return false;
-		}
-	}
+	return em_remove_component(manager, entity, component);
 }
 
 

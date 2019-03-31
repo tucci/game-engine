@@ -20,8 +20,8 @@ struct MetaInfoManager {
 void init_metainfo_manager(MetaInfoManager* manager);
 void destroy_metainfo_manager(MetaInfoManager* manager);
 
-void entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, String name);
-void entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity);
+bool entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, String name);
+bool entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity);
 
 void set_name(MetaInfoManager* manager, Entity entity, String name);
 String get_name(MetaInfoManager* manager, Entity entity);

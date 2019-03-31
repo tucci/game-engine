@@ -16,14 +16,14 @@ struct Render {
 };
 
 struct RenderManager {
-	CompactMap<u64> enabled_id_map;
-	CompactMap<u64> disabled_id_map;
-
-	Render* enabled_renders;
+	CompactMap<u64> id_map;
+	
+	Entity* entitys;
+	Render* renders;
+	u64 capacity;
 	u64 enabled_count;
 
-	Render* disabled_renders;
-	u64 disabled_count;
+	
 };
 
 

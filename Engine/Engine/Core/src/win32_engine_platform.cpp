@@ -291,12 +291,12 @@ s64 platform_ms_since_epoch() {
 	s64 seconds_to_ms = (s64)tp.tv_sec * 1000;
 	// There should be no overflow since LONG_MAX * 1000 < _I64_MAX
 	// but safe t check
-	assert(seconds_to_ms > 0);
+	assert(seconds_to_ms >= 0);
 	assert(seconds_to_ms < _I64_MAX);
 
 	// There also should be no overflow
 	s64 nano_to_ms = tp.tv_usec / 1000;
-	assert(nano_to_ms > 0);
+	assert(nano_to_ms >= 0);
 	assert(nano_to_ms < _I64_MAX);
 
 	// There may be overlfow here since s64 + s64 may be > _I64_MAX
@@ -304,7 +304,7 @@ s64 platform_ms_since_epoch() {
 	// and nano_to_ms is very small
 	s64 ms = seconds_to_ms + nano_to_ms;
 
-	assert(ms > 0);
+	assert(ms >= 0);
 	assert(ms < _I64_MAX);
 	return ms;
 }
