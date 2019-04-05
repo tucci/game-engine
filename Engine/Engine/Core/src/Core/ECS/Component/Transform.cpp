@@ -4,9 +4,17 @@
 
 #include "Common/stretchy_buffer.h"
 
+
+
+
+
+
 void init_transform_manager(TransformManager* manager) {
 	map_init(&manager->id_map);
-	manager->count = 0;
+
+	manager->total_count = 0;
+	manager->enabled_count = 0;
+	manager->entitys = NULL;
 	
 	manager->positions = NULL;
 	manager->scales = NULL;
@@ -19,8 +27,9 @@ void init_transform_manager(TransformManager* manager) {
 	manager->parent = NULL;
 	manager->first_child = NULL;
 	manager->next_sibling = NULL;
+	manager->prev_sibling = NULL;
 	manager->child_count = NULL;
-	//manager->prev_sibling = NULL;
+	
 
 	
 }
@@ -38,8 +47,8 @@ void destroy_transform_manager(TransformManager* manager) {
 	stb_sb_free(manager->parent);
 	stb_sb_free(manager->first_child);
 	stb_sb_free(manager->next_sibling);
+	stb_sb_free(manager->prev_sibling);
 	stb_sb_free(manager->child_count);
-	//stb_sb_free(manager->prev_sibling);
 
 	map_destroy(&manager->id_map);
 	
@@ -50,32 +59,58 @@ bool entity_add_transform_component(TransformManager* manager, Entity entity) {
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There already a component, return early and do nothing
 	if (result.found) return false;
+	
 
-	map_put(&manager->id_map, entity.id, manager->count);
-	manager->count++;
+	u64 index;
+	u64 count = stb_sb_count(manager->entitys);
+	if (manager->enabled_count == manager->total_count && count != manager->enabled_count) {
+		manager->entitys[manager->enabled_count] = entity;
+		index = manager->enabled_count;
+	} else {
+		stb_sb_push(manager->entitys, entity);
+		index = stb_sb_count(manager->entitys) - 1;
+	}
+
+
+	
+	entity_add_component_data(manager, entity, &manager->positions, Vec3f(0,0,0), index);
+	entity_add_component_data(manager, entity, &manager->scales, Vec3f(1, 1, 1), index);
+	entity_add_component_data(manager, entity, &manager->ups, Vec3f(0, 1, 0), index);
+	entity_add_component_data(manager, entity, &manager->forwards, Vec3f(0, 0, 1), index);
+	entity_add_component_data(manager, entity, &manager->rights, Vec3f(1, 0, 0), index);
+	entity_add_component_data(manager, entity, &manager->rotations, Quat(), index);
+	entity_add_component_data(manager, entity, &manager->local, Mat4x4f(), index);
+	entity_add_component_data(manager, entity, &manager->world, Mat4x4f(), index);
+	entity_add_component_data(manager, entity, &manager->parent, Entity(), index);
+	entity_add_component_data(manager, entity, &manager->first_child, Entity(), index);
+	entity_add_component_data(manager, entity, &manager->next_sibling, Entity(), index);
+	entity_add_component_data(manager, entity, &manager->prev_sibling, Entity(), index);
+	entity_add_component_data(manager, entity, &manager->child_count, u64(0), index);
+	
+	
+	// Swap entitys
+	Entity this_entity = manager->entitys[index];
+	Entity first_disabled_entity = manager->entitys[manager->enabled_count];
+	manager->entitys[manager->enabled_count] = this_entity;
+	manager->entitys[index] = first_disabled_entity;
+
+	// Update the entity id to index mapping
+	map_put(&manager->id_map, this_entity.id, manager->enabled_count);
+	map_put(&manager->id_map, first_disabled_entity.id, index);
 
 	
 
 	
-	stb_sb_push(manager->positions, Vec3f(0, 0, 0));
+	//map_put(&manager->id_map, this_entity.id, manager->enabled_count);
+	//map_put(&manager->id_map, first_disabled_entity.id, index);
 
-	stb_sb_push(manager->scales, Vec3f(1, 1, 1));
-	stb_sb_push(manager->ups, Vec3f(0, 1, 0));
-	stb_sb_push(manager->forwards, Vec3f(0, 0, 1));
-	stb_sb_push(manager->rights, Vec3f(1, 0, 0));
-	stb_sb_push(manager->rotations, Quat());
-	stb_sb_push(manager->local, Mat4x4f());
-	stb_sb_push(manager->world, Mat4x4f());
-	stb_sb_push(manager->parent, Entity());
-	stb_sb_push(manager->first_child, Entity());
-	stb_sb_push(manager->next_sibling, Entity());
-	stb_sb_push(manager->child_count, 0);
-	//stb_sb_push(manager->prev_sibling, Entity());
+	manager->enabled_count++;
+	manager->total_count++;
+
+	assert(manager->enabled_count <= manager->total_count);
 
 	return true;
 
-	
-	
 }
 
 bool entity_remove_transform_component(TransformManager* manager, Entity entity) {
@@ -83,46 +118,46 @@ bool entity_remove_transform_component(TransformManager* manager, Entity entity)
 	// There is no result, return early and do nothing
 	if (!result.found) return false;
 
+	
 	u64 index = result.value;
+	u64 index_to_swap;
 
-	// Get the last in the list to swap with
-	Vec3f last_pos = manager->positions[manager->count - 1];
-	Vec3f last_scale = manager->scales[manager->count - 1];
-	Vec3f last_up = manager->ups[manager->count - 1];
-	Vec3f last_forward = manager->forwards[manager->count - 1];
-	Vec3f last_right = manager->rights[manager->count - 1];
-	Quat last_rotation = manager->rotations[manager->count - 1];
-
-	Mat4x4f last_local = manager->local[manager->count - 1];
-	Mat4x4f last_world = manager->world[manager->count - 1];
-
-	Entity last_parent = manager->parent[manager->count - 1];
-	Entity last_first_child = manager->first_child[manager->count - 1];
-	Entity last_next_sibling = manager->next_sibling[manager->count - 1];
-
-	u64 last_child_count = manager->child_count[manager->count - 1];
-
-	// Swap
-	manager->positions[index] = last_pos;
-	manager->scales[index] = last_scale;
-	manager->ups[index] = last_up;
-	manager->forwards[index] = last_forward;
-	manager->rights[index] = last_right;
-	manager->rotations[index] = last_rotation;
-
-	manager->local[index] = last_local;
-	manager->world[index] = last_world;
-
-	manager->parent[index] = last_parent;
-	manager->first_child[index] = last_first_child;
-	manager->next_sibling[index] = last_next_sibling;
-
-	manager->child_count[index] = last_child_count;
+	//removing disabled components
+	if (index >= manager->enabled_count) {
+		index_to_swap = manager->total_count - 1;
+	} else {
+		index_to_swap = manager->enabled_count - 1;	
+	}
 
 
-	manager->count--;
+
+	entity_remove_component_data(manager, entity, manager->positions, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->scales, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->ups, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->forwards, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->rights, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->rotations, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->local, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->world, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->parent, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->first_child, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->next_sibling, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->prev_sibling, index, index_to_swap);
+	entity_remove_component_data(manager, entity, manager->child_count, index, index_to_swap);
+
+
+	Entity last_entity = manager->entitys[index_to_swap];
+	manager->entitys[index] = last_entity;
+
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
+	if (entity.id != last_entity.id) {
+		map_put(&manager->id_map, last_entity.id, index);
+	}
+
+	manager->enabled_count--;
+	manager->total_count--;
+	assert(manager->enabled_count <= manager->total_count);
 
 	return true;
 }

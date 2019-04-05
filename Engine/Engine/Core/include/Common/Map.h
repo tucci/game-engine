@@ -90,7 +90,7 @@ MapResult<V> map_get(CompactMap<V>* map, u64 key) {
 	size_t hash_index = MurmurHash3Mixer(key);
 	for (;;) {
 		// Since our map size is a power of 2, we can mod it using this bit trick
-		// same has hash = hash % map->size;
+		// same as hash = hash % map->size;
 		hash_index &= (map->size - 1);
 		if (map->map[hash_index].key == key) {
 			MapResult<V> result;
@@ -107,6 +107,33 @@ MapResult<V> map_get(CompactMap<V>* map, u64 key) {
 			//result.value = 0;
 			return result;
 			//return map->empty_ref;
+		}
+		hash_index++;
+	}
+}
+
+template <typename V>
+V map_get(CompactMap<V>* map, u64 key, V default_value) {
+	assert(map != NULL);
+	assert(key != 0);
+	assert(key != TOMBSTONE);
+
+
+	if (map->map == NULL) {
+		return default_value;
+	}
+
+	assert(IS_POW2(map->size));
+
+	size_t hash_index = MurmurHash3Mixer(key);
+	for (;;) {
+		// Since our map size is a power of 2, we can mod it using this bit trick
+		// same as hash = hash % map->size;
+		hash_index &= (map->size - 1);
+		if (map->map[hash_index].key == key) {
+			return map->map[hash_index].value;
+		} else if (map->map[hash_index].key == 0) {
+			return default_value
 		}
 		hash_index++;
 	}

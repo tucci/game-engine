@@ -83,7 +83,8 @@ Entity create_entity(EntityManager* manager, String name) {
 	Entity entity;
 	// Note our entites shouldnt start at 0, because our map expects that no key maps to 0
 	entity.id = entity_index + 1;
-	if (stb_sb_count(manager->entity_list) == manager->entity_count) {
+	u64 count = stb_sb_count(manager->entity_list);
+	if (count == manager->entity_count) {
 		stb_sb_push(manager->entity_list, entity);
 	} else {
 		manager->entity_list[manager->entity_count] = entity;
@@ -92,8 +93,8 @@ Entity create_entity(EntityManager* manager, String name) {
 
 	// adds a mapping between the entity's id, and its index
 	// while it seems dumb that the key,values are obvious when adding
-	// when we delete an entity, we may need to remap its index to something else
-	// mapping <entity_id, index into the entity array>
+	// when we delete an entity, we may need to remap its index to something else.
+	// mapping = <entity_id, index into the entity array>
 	map_put(&manager->entity_index_map, entity.id, manager->entity_count);
 	manager->entity_count++;
 
@@ -104,8 +105,9 @@ Entity create_entity(EntityManager* manager, String name) {
 
 	add_component(manager, entity, ComponentType::Transform);
 
-	
-	
+	if (manager->entitys_created > 1) {
+		attach_child_entity(manager, manager->root, entity);
+	}
 	
 
 	return entity;
@@ -114,8 +116,138 @@ Entity create_entity(EntityManager* manager, String name) {
 	
 }
 
+static void remove_entity_from_hierarchy(EntityManager* manager, Entity entity) {
+	// This entity was not found. 
+	// Just do nothing, and return back
+	MapResult<u64> entity_result = map_get(&manager->transform_manager.id_map, entity.id);
+	if (!entity_result.found) { return; }
+	u64 entity_index = entity_result.value;
+
+
+
+	Entity parent_entity = manager->transform_manager.parent[entity_index];
+
+
+	if (parent_entity.id != NO_ENTITY_ID) {
+		MapResult<u64> child_old_parent_result = map_get(&manager->transform_manager.id_map, parent_entity.id);
+		if (child_old_parent_result.found) {
+			u64 child_old_parent_index = child_old_parent_result.value;
+			Entity first = manager->transform_manager.first_child[child_old_parent_index];
+
+			// if the parent's first child is the entity we are reparentoing,
+			// then we need to set the first child of the parent to the next sibling of the entity
+
+			if (first == entity) {
+				// Example
+				//   6
+				//  /
+				// 2 -> 3 -> 5
+
+				// Reparenting entity 2
+				//    6
+				//  /
+				// 3 -> 5
+
+				// Set the first to the next entity of the child
+				Entity next = manager->transform_manager.next_sibling[entity_index];
+				manager->transform_manager.first_child[child_old_parent_index] = next;
+			} else {
+				// If it isn't the first child, then we don't have to worry. 
+				// This means that the child entity is somewhere in the sibling chain
+				// This will be handled further down when we update the next/prev sibling
+
+
+				// Example
+				//   6
+				//  /
+				// 2 -> 3 -> 5
+
+				// Reparenting entity 3
+				//    6
+				//  /
+				// 2 -> 5
+			}
+
+
+
+			// Decrement the child count for the old parent of the child
+			manager->transform_manager.child_count[child_old_parent_index]--;
+		}
+
+
+	}
+
+
+
+
+
+
+	// Get the old prev sibling and next sibling for the entity we are reparenting. (in this case it is the child)
+
+	// Example
+	// if our entity is 6
+	// Then we need to get the prev sibling of 6, and the next sibling of 6
+	// 9 -> 6 -> 2
+	Entity child_old_prev = manager->transform_manager.prev_sibling[entity_index];
+	Entity child_old_next = manager->transform_manager.next_sibling[entity_index];
+
+	// Assume that there entity were not found
+	// Default value where found = false
+	MapResult<u64> child_old_prev_result = { false, 0, 0 };
+	MapResult<u64> child_old_next_result = { false, 0, 0 };
+
+	// Since prev/next sibling could have No entity. We mark the ends of the chains with Entity Id 0
+	// Since our map doesnt allow 0 values
+	// We need to pre check if the entity id is 0
+
+	// Get the previous entity index mapping
+	if (child_old_prev.id != NO_ENTITY_ID) {
+		child_old_prev_result = map_get(&manager->transform_manager.id_map, child_old_prev.id);
+	}
+
+	// Get the next entity index mapping
+	if (child_old_next.id != NO_ENTITY_ID) {
+		child_old_next_result = map_get(&manager->transform_manager.id_map, child_old_next.id);
+	}
+
+
+
+	// Update the next sibling for the prev sibling
+	// Example
+	// 9 -> 6 -> 2
+	// becomes
+	// 9 -> 2
+	if (child_old_prev_result.found) {
+		u64 child_old_prev_index = child_old_prev_result.value;
+		manager->transform_manager.next_sibling[child_old_prev_index] = child_old_next;
+	}
+
+	// Update the prev sibling for the next sibling
+	// Example
+	// 9 <- 6 <- 2
+	// becomes
+	// 9 <- 2
+	if (child_old_next_result.found) {
+		u64 child_old_next_index = child_old_next_result.value;
+		manager->transform_manager.prev_sibling[child_old_next_index] = child_old_prev;
+	}
+}
+
 void destroy_entity(EntityManager* manager, Entity entity) {
-	
+	if (entity == manager->root) {
+		// can't destroy the root entity
+		return;
+	}
+
+	// The simplest way to think about reparenting an entity
+	// is to first think about removing the child from the tree and updating all the entitys that were previously attached to the entity
+	// So we need to update the parent, next sibling, and prev sibling of the child entity
+	// and reattach/update them
+	// Then once the entity is removed from the hierarchy, we can think about it, by just adding the child entity to the new parent
+
+	remove_entity_from_hierarchy(manager, entity);
+
+
 	
 	// Entity list before deleting [1, 2, 3, 4, 5]
 	//                                          ^
@@ -381,6 +513,8 @@ void init_entity_manager(EntityManager* manager) {
 	init_light_manager(&manager->light_manager);
 	init_render_manager(&manager->render_manager);
 
+	manager->root = create_entity(manager, "Root");
+
 	
 
 }
@@ -398,30 +532,85 @@ void destroy_entity_manager(EntityManager* manager) {
 	destroy_render_manager(&manager->render_manager);
 }
 
+
+
 void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 
-	if (entity.id == child.id) {
-		// An entity can't be a child of itself
-		return;
-	}
+	// An entity can't be a child of itself
+	if (entity == child) {return;}
+
+	// Can't reattach root to anything
+	if (child == manager->root) {return;}
 
 	// This entity was not found. 
 	// Just do nothing, and return back
-	MapResult<u64> result = map_get(&manager->transform_manager.id_map, entity.id);
-	if (!result.found) { return; }
-	
-	
-	// Get the mapped index into the first child array
-	
-	u64 entity_index = result.value;
+	MapResult<u64> parent_result = map_get(&manager->transform_manager.id_map, entity.id);
+	MapResult<u64> child_result = map_get(&manager->transform_manager.id_map, child.id);
 
-	Entity* first_child = &manager->transform_manager.first_child[entity_index];
+	if (!parent_result.found) { return; }
+	if (!child_result.found) { return; }
+	
+	
+	u64 parent_index = parent_result.value;
+	u64 child_index = child_result.value;
+
+	// The simplest way to think about reparenting an entity
+	// is to first think about removing the child from the tree and updating all the entitys that were previously attached to the entity
+	// So we need to update the parent, next sibling, and prev sibling of the child entity
+	// and reattach/update them
+
+	// Then once the entity is removed from the hierarchy, we can think about it, by just adding the child entity to the new parent
+	remove_entity_from_hierarchy(manager, child);
+
+	// At this point the child entity should have been removed from the hierarchy
+
+	
+
+
+	// Now we need to attach the child to the new parent
+
+	// Get the old first child of the parent entity
+	Entity* first_child = &manager->transform_manager.first_child[parent_index];
+	Entity prev_sibling = Entity();
+	
+
+	// See Transform.h for the structure of how entitys are stored in a parent/child relationship
+
+	// If the parent doesn't have any children, then we just need to simply put the child as the first_child of the parent
 	if (first_child->id == NO_ENTITY_ID) {
 		// This entity has no children, so we need to add this child to the first child
+
+		// Example
+		//   6
+		//  /
+		// 0 // where 0 means no entity
+
+		// Adding entity 7 where the parent is 6
+
+		// Example
+		//   6
+		//  /
+		// 7
+
+
 		first_child->id = child.id;
 	} else {
-		// This entity already has a first child so we need to look at the siblings
-		// Try to get the mapped index for the child entity
+		// This entity already has a first child so we need to follow the siblings chain, till we get to the end
+
+		// Example
+		//   6
+		//  /
+		// 2 -> 3 -> 5
+
+		// Adding entity 7 where the parent is 6
+
+		// Example
+		//   6
+		//  /
+		// 2 -> 3 -> 5 -> 7
+
+
+		// Try to get the mapped index for the first child entity
 		MapResult<u64> child_result = map_get(&manager->transform_manager.id_map, first_child->id);
 		// This index is not in the manager
 		if (!child_result.found) { return; }
@@ -429,30 +618,32 @@ void attach_child_entity(EntityManager* manager, Entity entity, Entity child) {
 
 		// Get the next sibling entity mapped to the child index by using the next_sibling array
 		Entity* next_sibling = &manager->transform_manager.next_sibling[first_child_index];
+		prev_sibling = *first_child;
 
-
-		// Loop over all the siblings untill we get to the end of the list
+		// Loop over all the siblings until we get to the end of the list
 		while (next_sibling->id != NO_ENTITY_ID) {
 			// Get next sibling
 			child_result = map_get(&manager->transform_manager.id_map, next_sibling->id);
 			// if the entity is not valid do nothing
 			if (!child_result.found) { return; }
 			// move the next_sibling entity to the next one
+			prev_sibling = *next_sibling;
 			next_sibling = &manager->transform_manager.next_sibling[child_result.value];
 		}
 		next_sibling->id = child.id;
-		
 	}
-	MapResult<u64> child_result = map_get(&manager->transform_manager.id_map, child.id);
-	if (!child_result.found) {
-		return;
-	}
-
-	// Assign the child, the parent entity
-	u64 child_index = child_result.value;
 	
+
+	// Update the parent entity for the child entity
 	manager->transform_manager.parent[child_index] = entity;
-	manager->transform_manager.child_count[entity_index]++;
+	manager->transform_manager.child_count[parent_index]++;
+	
+	// Set the prev/next entitys for the child in the new positon in the hierarchy
+	manager->transform_manager.prev_sibling[child_index] = prev_sibling;
+	manager->transform_manager.next_sibling[child_index] = Entity();
+	
+
+	
 }
 
 u64 entity_count(EntityManager* manager) {

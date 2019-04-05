@@ -101,33 +101,33 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	AssetManager* asset_manager = editor->api.asset_manager;
 
-	Entity e1 = create_entity(entity_manager, "Entity 2");
-	Entity e2 = create_entity(entity_manager, "Entity 3");
-	Entity e3 = create_entity(entity_manager, "Entity 4");
-	Entity e4 = create_entity(entity_manager, "Entity 5");
-	Entity e5 = create_entity(entity_manager, "Entity 6");
-	Entity e6 = create_entity(entity_manager, "Entity 7");
+	Entity e3 = create_entity(entity_manager, "Entity 3");
+	Entity e4 = create_entity(entity_manager, "Entity 4");
+	Entity e5 = create_entity(entity_manager, "Entity 5");
+	Entity e6 = create_entity(entity_manager, "Entity 6");
+	Entity e7 = create_entity(entity_manager, "Entity 7");
+	Entity e8 = create_entity(entity_manager, "Entity 8");
 	editor->test_mesh = create_entity(entity_manager, "Test mesh");
 	editor->entity_test_light = create_entity(entity_manager, "Test Light");
 
 	add_component(entity_manager, editor->entity_test_light, ComponentType::Light);
 
 
-	attach_child_entity(entity_manager, e1, e2);
-	attach_child_entity(entity_manager, e1, e6);
-	attach_child_entity(entity_manager, e2, e3);
-	attach_child_entity(entity_manager, e1, e4);
-	attach_child_entity(entity_manager, e1, editor->test_mesh);
+	attach_child_entity(entity_manager, e3, e4);
+	attach_child_entity(entity_manager, e3, e8);
+	attach_child_entity(entity_manager, e4, e5);
+	attach_child_entity(entity_manager, e3, e6);
+	attach_child_entity(entity_manager, e3, editor->test_mesh);
 
 	
 
 	map_put(&editor->entity_selected, editor->editor_camera.id, false);
-	map_put(&editor->entity_selected, e1.id, false);
-	map_put(&editor->entity_selected, e2.id, false);
 	map_put(&editor->entity_selected, e3.id, false);
 	map_put(&editor->entity_selected, e4.id, false);
 	map_put(&editor->entity_selected, e5.id, false);
 	map_put(&editor->entity_selected, e6.id, false);
+	map_put(&editor->entity_selected, e7.id, false);
+	map_put(&editor->entity_selected, e8.id, false);
 	map_put(&editor->entity_selected, editor->test_mesh.id, false);
 	map_put(&editor->entity_selected, editor->entity_test_light.id, false);
 
@@ -145,10 +145,10 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
 
 
-	add_component(entity_manager, e1, ComponentType::StaticMesh);
-	add_component(entity_manager, e1, ComponentType::Render);
-	set_render_material(entity_manager, e1, editor->test_mat.material);
-	set_static_mesh(entity_manager, e1, editor->api.asset_manager->sphere_mesh.mesh);
+	add_component(entity_manager, e3, ComponentType::StaticMesh);
+	add_component(entity_manager, e3, ComponentType::Render);
+	set_render_material(entity_manager, e3, editor->test_mat.material);
+	set_static_mesh(entity_manager, e3, editor->api.asset_manager->sphere_mesh.mesh);
 
 
 	//add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
@@ -491,6 +491,18 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		}
 		ImGui::PopID();
 		
+		ImGui::PushID("rot_default");
+
+		if (ImGui::SmallButton("z")) {
+			set_rotation(entity_manager, e, Quat());
+		}
+		ImGui::SameLine();
+		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
+			quat = euler_to_quat(euler);
+			set_rotation(entity_manager, e, quat);
+		}
+		ImGui::PopID();
+
 
 		ImGui::PushID("scale_default");
 		
@@ -504,17 +516,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		ImGui::PopID();
 		
 
-		ImGui::PushID("rot_default");
 		
-		if (ImGui::SmallButton("z")) {
-			set_rotation(entity_manager, e, Quat());
-		}
-		ImGui::SameLine();
-		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
-			quat = euler_to_quat(euler);
-			set_rotation(entity_manager, e, quat);
-		}
-		ImGui::PopID();
 		
 		
 	} else {
@@ -1045,6 +1047,65 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 
 		ImGui::EndChild();
 		
+
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Transform Components")) {
+		TransformManager* rm = &entity_manager->transform_manager;
+		ImGui::Text("Capacity %d", rm->total_count);
+		ImGui::Text("Enabled %d", rm->enabled_count);
+
+		//for (u64 i = 0; i < rm->enabled_count; i++) {
+		//	ImGui::Text("%d ", rm->entitys[i].id);
+		//	ImGui::SameLine();
+		//}
+		//ImGui::NewLine();
+		//for (u64 i = 0; i < rm->capacity; i++) {
+		//	ImGui::Text("%d ", rm->entitys[i].id);
+		//	ImGui::SameLine();
+		//}
+		//
+		//ImGui::NewLine();
+		//size_t map_size = rm->id_map.size;
+		//// Go over our track map, and look for filename
+		//for (int i = 0; i < map_size; i++) {
+		//	CompactMapItem<u64> item = rm->id_map.map[i];
+		//
+		//	// Check if this is a valid track data
+		//	if (item.key != 0 && item.key != TOMBSTONE) {
+		//		ImGui::Text("%llu -> %llu", item.key, item.value);
+		//	}
+		//}
+
+		ImGui::Text("Parents");
+		ImGui::SameLine();
+		for (u64 i = 0; i < rm->enabled_count; i++) {
+			ImGui::Text("%llu ", rm->parent[i]);
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+
+		ImGui::Text("1childs");
+		ImGui::SameLine();
+		for (u64 i = 0; i < rm->enabled_count; i++) {
+			ImGui::Text("%llu ", rm->first_child[i]);
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+		ImGui::Text("Nxtsibs");
+		ImGui::SameLine();
+		for (u64 i = 0; i < rm->enabled_count; i++) {
+			ImGui::Text("%llu ", rm->next_sibling[i]);
+			ImGui::SameLine();
+		}
+		ImGui::NewLine();
+		ImGui::Text("Prvsibs");
+		ImGui::SameLine();
+		for (u64 i = 0; i < rm->enabled_count; i++) {
+			ImGui::Text("%llu ", rm->prev_sibling[i]);
+			ImGui::SameLine();
+		}
 
 	}
 	ImGui::End();

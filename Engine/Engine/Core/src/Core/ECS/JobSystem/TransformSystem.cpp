@@ -10,13 +10,13 @@ void job_update_basis_vectors(EntityManager* manager) {
 
 	TransformManager* tm = &manager->transform_manager;
 
-	for (int i = 0; i < tm->count; i++) {
+	for (int i = 0; i < tm->enabled_count; i++) {
 		tm->forwards[i] = tm->rotations[i] * forward;
 	}
-	for (int i = 0; i < tm->count; i++) {
+	for (int i = 0; i < tm->enabled_count; i++) {
 		tm->ups[i] = tm->rotations[i] * up;
 	}
-	for (int i = 0; i < tm->count; i++) {
+	for (int i = 0; i < tm->enabled_count; i++) {
 		tm->rights[i] = tm->rotations[i] * right;
 	}
 
@@ -67,19 +67,19 @@ void job_compute_world_matrices(EntityManager* manager) {
 
 
 	// Scale first
-	for (int i = 0; i < tm->count; i++) {
+	for (int i = 0; i < tm->enabled_count; i++) {
 		tm->local[i] = scale(tm->scales[i]);
 	}
 
 	// Then rotate
-	for (int i = 0; i < tm->count; i++) {
+	for (int i = 0; i < tm->enabled_count; i++) {
 		// Build the rotation matrix from our quat
 		Mat4x4f r = quat_to_rotation_matrix(tm->rotations[i]);
 		tm->local[i] = r * tm->local[i];
 	}
 
 	// Then translate
-	for (int i = 0; i < tm->count; i++) {
+	for (int i = 0; i < tm->enabled_count; i++) {
 		Mat4x4f t = translate(tm->positions[i]);
 		tm->local[i] = t * tm->local[i];
 		

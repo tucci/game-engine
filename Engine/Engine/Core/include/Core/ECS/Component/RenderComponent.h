@@ -20,6 +20,7 @@ struct RenderManager {
 	
 	Entity* entitys;
 	Render* renders;
+
 	u64 capacity;
 	u64 enabled_count;
 

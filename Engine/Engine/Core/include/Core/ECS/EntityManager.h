@@ -76,11 +76,13 @@ struct EntityManager {
 
 
 
+	
 	Arena arena;
 	StackAllocator stack_mem;
 
 	u64 entitys_created;
 	u64 entity_count;
+	Entity root;
 	Entity* entity_list;
 	CompactMap<u64> entity_index_map;
 	

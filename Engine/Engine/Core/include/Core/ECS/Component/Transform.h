@@ -7,6 +7,7 @@
 
 #include "Core/ECS/Entity.h"
 #include "Common/Arena.h"
+#include "Common/stretchy_buffer.h"
 
 
 struct Entity;
@@ -89,11 +90,19 @@ Mat4x4f inline rotate(float rads, const Vec3f& axis) {
 	return result;
 }
 
+
+
+
+
 struct TransformManager {
-	u64 count;
+	
 	CompactMap<u64> id_map;
 	
-	
+	u64 enabled_count; // Amount of enabled transform components
+	u64 total_count; // Total of transform components that are enabled and disabled
+
+	Entity* entitys;
+
 	Vec3f* positions;
 	Vec3f* scales;
 	Vec3f* ups;
@@ -104,11 +113,40 @@ struct TransformManager {
 	Mat4x4f* local;
 	Mat4x4f* world;
 
+
+	// The entity tree uses a first_child/next sibling
+	// Note that entity 0, is reserved for a None entity. 0 Is not the Root entity
+	// Root entity is created by the entity manager
+	// To check if something is the root entity, look using entity_manager->root
+
+	// Example
+	//              root
+	//              /
+	//             6
+	//            / 
+	//           3 -> 2 -> 5
+	//         /          / 
+	//         1->4      7->8
+
+	// Then the first_child/next/prev/count table would look like
+
+	//	    	|root|1|2|3|4|5|6|7|8|
+	//_______________________________
+	// parent   |   0|3|6|6|3|6|0|5|5|
+	// first	|   6|0|0|1|0|7|3|0|0|
+	// next		|   0|4|5|2|0|0|0|8|0|
+	// prev		|   0|0|3|0|1|2|0|0|7|
+	// count	|   1|0|0|2|0|2|3|0|0| 
+
+
+	
+
+
 	Entity* parent;
 	Entity* first_child;
 	Entity* next_sibling;
+	Entity* prev_sibling;
 	u64* child_count;
-	//Entity* prev_sibling;
 
 	
 
@@ -116,6 +154,46 @@ struct TransformManager {
 
 	
 };
+
+
+template<typename T>
+static bool entity_add_component_data(TransformManager* manager, Entity entity, T** list, T con, u64 index) {
+	
+	
+	
+
+	u64 count = stb_sb_count((*list));
+	if (manager->enabled_count == manager->total_count && count != manager->enabled_count) {
+		(*list)[manager->enabled_count] = con;
+	} else {
+		stb_sb_push((*list), con);
+	}
+
+	T this_comp = (*list)[index];
+	T first_disabled_comp = (*list)[manager->enabled_count];
+
+	// swap the first disabled comp with the comp we are trying to enable
+	(*list)[manager->enabled_count] = this_comp;
+	(*list)[index] = first_disabled_comp;
+
+	
+
+	return true;
+
+}
+
+template<typename T>
+static bool entity_remove_component_data(TransformManager* manager, Entity entity, T* list, u64 index, u64 swap_index) {
+
+	// Get the last in the list to swap with
+	T this_comp = list[index];
+	T last_comp = list[swap_index];
+	// swap the last at the current index we are removing from
+	list[index] = last_comp;
+	return true;
+
+	
+}
 
 
 void init_transform_manager(TransformManager* manager);
