@@ -10,6 +10,9 @@ struct Entity {
 	Entity() {
 		id = NO_ENTITY_ID;
 	}
+	Entity(u64 entity_id) {
+		id = entity_id;
+	}
 };
 
 inline bool operator==(const Entity& lhs, const Entity& rhs) {

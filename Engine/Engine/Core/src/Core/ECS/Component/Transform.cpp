@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/ECS/Component/ComponentHelpers.h"
 #include "Core/ECS/Component/Transform.h"
 
 #include "Common/stretchy_buffer.h"
@@ -73,19 +74,19 @@ bool entity_add_transform_component(TransformManager* manager, Entity entity) {
 
 
 	
-	entity_add_component_data(manager, entity, &manager->positions, Vec3f(0,0,0), index);
-	entity_add_component_data(manager, entity, &manager->scales, Vec3f(1, 1, 1), index);
-	entity_add_component_data(manager, entity, &manager->ups, Vec3f(0, 1, 0), index);
-	entity_add_component_data(manager, entity, &manager->forwards, Vec3f(0, 0, 1), index);
-	entity_add_component_data(manager, entity, &manager->rights, Vec3f(1, 0, 0), index);
-	entity_add_component_data(manager, entity, &manager->rotations, Quat(), index);
-	entity_add_component_data(manager, entity, &manager->local, Mat4x4f(), index);
-	entity_add_component_data(manager, entity, &manager->world, Mat4x4f(), index);
-	entity_add_component_data(manager, entity, &manager->parent, Entity(), index);
-	entity_add_component_data(manager, entity, &manager->first_child, Entity(), index);
-	entity_add_component_data(manager, entity, &manager->next_sibling, Entity(), index);
-	entity_add_component_data(manager, entity, &manager->prev_sibling, Entity(), index);
-	entity_add_component_data(manager, entity, &manager->child_count, u64(0), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->positions, Vec3f(0,0,0), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->scales, Vec3f(1, 1, 1), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->ups, Vec3f(0, 1, 0), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->forwards, Vec3f(0, 0, 1), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->rights, Vec3f(1, 0, 0), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->rotations, Quat(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->local, Mat4x4f(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->world, Mat4x4f(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->parent, Entity(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->first_child, Entity(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->next_sibling, Entity(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->prev_sibling, Entity(), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->child_count, u64(0), index);
 	
 	
 	// Swap entitys
@@ -131,19 +132,19 @@ bool entity_remove_transform_component(TransformManager* manager, Entity entity)
 
 
 
-	entity_remove_component_data(manager, entity, manager->positions, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->scales, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->ups, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->forwards, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->rights, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->rotations, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->local, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->world, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->parent, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->first_child, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->next_sibling, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->prev_sibling, index, index_to_swap);
-	entity_remove_component_data(manager, entity, manager->child_count, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->positions, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->scales, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->ups, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->forwards, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->rights, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->rotations, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->local, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->world, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->parent, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->first_child, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->next_sibling, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->prev_sibling, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->child_count, index, index_to_swap);
 
 
 	Entity last_entity = manager->entitys[index_to_swap];

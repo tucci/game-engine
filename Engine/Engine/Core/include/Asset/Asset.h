@@ -40,12 +40,18 @@ enum class AssetStatus {
 
 struct SceneID {
 	u64 id;
+	SceneID() {
+		id = 0;
+	}
 };
 
 
 
 struct AnimationID {
 	u64 id;
+	AnimationID() {
+		id = 0;
+	}
 };
 
 
@@ -63,6 +69,12 @@ struct AssetID {
 		AnimationID animation;
 		TextureID texture;
 	};
+
+	AssetID() {
+		type = AssetType::None;
+		status = AssetStatus::Unloaded;
+		id = 0;
+	}
 };
 
 

@@ -114,9 +114,6 @@
     <ClCompile Include="Core\src\Core\TextureData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Core\src\Editor\EditorCommands.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Core\src\Editor\EditorInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -621,6 +618,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Core\ECS\Component\ComponentHelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\include\Editor\EditorCommandList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

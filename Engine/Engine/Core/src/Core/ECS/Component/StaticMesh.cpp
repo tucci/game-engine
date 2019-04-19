@@ -3,6 +3,8 @@
 
 #include "Core/ECS/Component/StaticMesh.h"
 
+#include "Core/ECS/Component/ComponentHelpers.h"
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -277,12 +279,18 @@ bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 
 void init_static_mesh_manager(StaticMeshManager* manager) {
 	map_init(&manager->id_map);
-	manager->count = 0;
+	
+	manager->total_count = 0;
+	manager->enabled_count = 0;
 	manager->meshes = NULL;
+	manager->entitys = NULL;
 }
 void destroy_static_mesh_manager(StaticMeshManager* manager) {
 	stb_sb_free(manager->meshes);
+	stb_sb_free(manager->entitys);
 	map_destroy(&manager->id_map);
+	manager->total_count = 0;
+	manager->enabled_count = 0;
 }
 
 bool entity_add_mesh_component(StaticMeshManager* manager, Entity entity) {
@@ -291,28 +299,72 @@ bool entity_add_mesh_component(StaticMeshManager* manager, Entity entity) {
 	// There already a component, return early and do nothing
 	if (result.found) return false;
 
-	map_put(&manager->id_map, entity.id, manager->count);
-	manager->count++;
-	StaticMeshID none;
-	none.id = 0;
-	stb_sb_push(manager->meshes, none);
+
+	u64 index;
+	u64 count = stb_sb_count(manager->entitys);
+	if (manager->enabled_count == manager->total_count && count != manager->enabled_count) {
+		manager->entitys[manager->enabled_count] = entity;
+		index = manager->enabled_count;
+	} else {
+		stb_sb_push(manager->entitys, entity);
+		index = stb_sb_count(manager->entitys) - 1;
+	}
+
+
+
+
+
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->meshes, StaticMeshID(), index);
+
+	// Swap entitys
+	Entity this_entity = manager->entitys[index];
+	Entity first_disabled_entity = manager->entitys[manager->enabled_count];
+	manager->entitys[manager->enabled_count] = this_entity;
+	manager->entitys[index] = first_disabled_entity;
+
+	// Update the entity id to index mapping
+	map_put(&manager->id_map, this_entity.id, manager->enabled_count);
+	map_put(&manager->id_map, first_disabled_entity.id, index);
+
+	manager->enabled_count++;
+	manager->total_count++;
+
+	assert(manager->enabled_count <= manager->total_count);
+
 	return true;
 }
 
 bool entity_remove_mesh_component(StaticMeshManager* manager, Entity entity) {
-	// See if this entity even has a mesh
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There is no result, return early and do nothing
 	if (!result.found) return false;
 
+
 	u64 index = result.value;
-	// Get the last mesh in the list to swap with
-	StaticMeshID last = manager->meshes[manager->count - 1];
-	// swap the last mesh at the current index we are removing from
-	manager->meshes[index] = last;
-	manager->count--;
+	u64 index_to_swap;
+
+	//removing disabled components
+	if (index >= manager->enabled_count) {
+		index_to_swap = manager->total_count - 1;
+	} else {
+		index_to_swap = manager->enabled_count - 1;
+	}
+
+
+	comphelper_remove_component_data(entity, manager->meshes, index, index_to_swap);
+
+	Entity last_entity = manager->entitys[index_to_swap];
+	manager->entitys[index] = last_entity;
+
 	// Remove the entity from the index map
 	map_remove(&manager->id_map, entity.id);
+	if (entity.id != last_entity.id) {
+		map_put(&manager->id_map, last_entity.id, index);
+	}
+
+	manager->enabled_count--;
+	manager->total_count--;
+	assert(manager->enabled_count <= manager->total_count);
 
 	return true;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 
+
 #include "Math/Vec.h"
 
 #include "Common/Map.h"
@@ -42,14 +43,14 @@ struct Light {
 };
 
 struct LightManager {
-	CompactMap<u64> enabled_id_map;
-	CompactMap<u64> disabled_id_map;
-
-	Light* enabled_lights;
+	CompactMap<u64> id_map;
+	
+	Entity* entitys;
+	Light* lights;
 	u64 enabled_count;
+	u64 total_count;
 
-	Light* disabled_lights;
-	u64 disabled_count;
+	
 
 
 };

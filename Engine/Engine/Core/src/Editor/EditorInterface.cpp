@@ -38,6 +38,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 
 	editor->api = api;
+
+	
 	
 	
 
@@ -48,6 +50,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	stack_alloc_init(&editor->stack, mem_block, mem_size);
 
 	
+
+	map_put(&editor->entity_selected, editor->api.entity_manager->root.id, false);
 
 	editor->editor_camera = create_entity(api.entity_manager, "Editor Camera");
 	//add_component(api.entity_manager, editor->editor_camera , ComponentType::Transform);
@@ -181,19 +185,6 @@ void destroy_editor_interface(EditorInterface* editor) {
 }
 
 
-static void clear_entity_selection(EditorInterface* editor) {
-	
-	EntityManager* em = editor->api.entity_manager;
-	for (int i = 0; i < em->entity_count; i++) {
-		Entity e = em->entity_list[i];
-		MapResult<bool> result = map_get(&editor->entity_selected, e.id);
-		if (result.found) {
-			map_put(&editor->entity_selected, e.id, false);
-		}
-	}
-
-}
-
 
 
 void editor_update(EditorInterface* editor) {
@@ -210,6 +201,26 @@ void editor_update(EditorInterface* editor) {
 	
 
 	
+
+	// Need to move key presses to use repeats and add key modifiers
+	if (is_key_pressed(input, KEYCODE_Z) && is_key_down(input, KEYCODE_LCTRL)) {
+		perform_undo_operation(editor);
+	}
+
+
+	if (is_key_pressed(input, KEYCODE_Y) && is_key_down(input, KEYCODE_LCTRL)) {
+		perform_redo_operation(editor);
+	}
+
+	if (is_key_pressed(input, KEYCODE_C) && is_key_down(input, KEYCODE_LCTRL)) {
+		LOG_INFO("Editor", "perform copy command");
+	}
+	if (is_key_pressed(input, KEYCODE_V) && is_key_down(input, KEYCODE_LCTRL)) {
+		LOG_INFO("Editor", "perform paste command");
+	}
+	if (is_key_pressed(input, KEYCODE_D) && is_key_down(input, KEYCODE_LCTRL)) {
+		LOG_INFO("Editor", "perform duplicate command");
+	}
 
 	if (is_key_pressed(input, KEYCODE_BACKQUOTE)) {
 		editor->show_editor = !editor->show_editor;
@@ -280,6 +291,7 @@ void editor_update(EditorInterface* editor) {
 		//draw_window_scene_viewports(editor);
 
 		draw_window_renderer_stats(editor);
+		draw_editor_command_undo_and_redo_stack(editor);
 
 		
 		
@@ -398,9 +410,15 @@ void editor_update(EditorInterface* editor) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 		
-	
+	process_editor_command_buffer(editor);
+}
 
 
+
+
+static bool is_entity_selected(EditorInterface* editor, Entity entity) {
+	bool selected = map_get(&editor->entity_selected, entity.id, false);
+	return selected;
 }
 
 
@@ -420,22 +438,22 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 		if (ImGui::BeginMenu("Scene")) {
 			if (ImGui::MenuItem("Create Empty Entity")) {
-				editor_create_empty_entity(editor);
+				cmd_editor_create_emtpy_entity(editor);
 			}
 			if (ImGui::MenuItem("Create Camera")) {
-				editor_create_camera(editor);
+				cmd_editor_create_camera(editor);
 			}
 			if (ImGui::MenuItem("Create Light")) {
-				editor_create_light(editor);
+				cmd_editor_create_light(editor);
 			}
 			if (ImGui::MenuItem("Create Plane")) {
-				editor_create_plane(editor);
+				cmd_editor_create_plane(editor);
 			}
 			if (ImGui::MenuItem("Create Cube")) {
-				editor_create_cube(editor);
+				cmd_editor_create_cube(editor);
 			}
 			if (ImGui::MenuItem("Create Sphere")) {
-				editor_create_sphere(editor);
+				cmd_editor_create_sphere(editor);
 			}
 			ImGui::EndMenu();
 		}
@@ -450,7 +468,7 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 		if (ImGui::BeginMenu("Window")) {
 
-
+			
 			
 			ImGui::MenuItem("Scene Tree", NULL, &editor->window_scene_tree_open);
 			ImGui::MenuItem("Entity Components", NULL, &editor->window_entity_components_open);
@@ -474,32 +492,38 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 	//remove component
 	
 	if (ImGui::CollapsingHeader("Transform")) {
-		Vec3f pos = get_position(entity_manager, e);
-		Quat quat = get_rotation(entity_manager, e);
-		Vec3f euler = quat_to_euler(quat);
+		Vec3f old_pos = get_position(entity_manager, e);
+		Vec3f new_pos = old_pos;
 
-		Vec3f scale = get_scale(entity_manager, e);
+		Quat old_rot = get_rotation(entity_manager, e);
+		Vec3f euler = quat_to_euler(old_rot);
+		Quat new_rot = old_rot;
+
+		Vec3f old_scale = get_scale(entity_manager, e);
+		Vec3f new_scale = old_scale;
 
 		
 		ImGui::PushID("pos_default");
 		if (ImGui::SmallButton("z")) {
-			set_position(entity_manager, e, Vec3f(0,0,0));
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale);
 		}
 		ImGui::SameLine();
-		if (ImGui::DragFloat3("Position", pos.data, 1.0f)) {
-			set_position(entity_manager, e, pos);
+		if (ImGui::DragFloat3("Position", new_pos.data, 1.0f)) {
+			//set_position(entity_manager, e, old_scale);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, new_pos, old_rot, old_scale);
 		}
 		ImGui::PopID();
 		
 		ImGui::PushID("rot_default");
 
 		if (ImGui::SmallButton("z")) {
-			set_rotation(entity_manager, e, Quat());
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
-			quat = euler_to_quat(euler);
-			set_rotation(entity_manager, e, quat);
+			new_rot = euler_to_quat(euler);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, new_rot, old_scale);
+			
 		}
 		ImGui::PopID();
 
@@ -507,11 +531,11 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		ImGui::PushID("scale_default");
 		
 		if (ImGui::SmallButton("z")) {
-			set_scale(entity_manager, e, Vec3f(1, 1, 1));
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1));
 		}
 		ImGui::SameLine();
-		if (ImGui::DragFloat3("Scale", scale.data, 1.0f)) {
-			set_scale(entity_manager, e, scale);
+		if (ImGui::DragFloat3("Scale", new_scale.data, 1.0f)) {
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, new_scale);
 		}
 		ImGui::PopID();
 		
@@ -834,7 +858,7 @@ static void draw_window_entity_components(EditorInterface* editor) {
 
 	if (ImGui::Begin("Render Components")) {
 		RenderManager* rm = &entity_manager->render_manager;
-		ImGui::Text("Capacity %d", rm->capacity);
+		ImGui::Text("Capacity %d", rm->total_count);
 		ImGui::Text("Enabled %d", rm->enabled_count);
 
 		for (u64 i = 0; i < rm->enabled_count; i++) {
@@ -842,7 +866,7 @@ static void draw_window_entity_components(EditorInterface* editor) {
 			ImGui::SameLine();
 		}
 		ImGui::NewLine();
-		for (u64 i = 0; i < rm->capacity; i++) {
+		for (u64 i = 0; i < rm->total_count; i++) {
 			ImGui::Text("%d ", rm->entitys[i].id);
 			ImGui::SameLine();
 		}
@@ -865,9 +889,45 @@ static void draw_window_entity_components(EditorInterface* editor) {
 
 }
 
+static void draw_entity_item_context_menu(EditorInterface* editor, Entity e) {
+	if (ImGui::BeginPopupContextItem("Entity Item Context Menu")) {
+
+
+		if (ImGui::Selectable("Copy")) {
+
+		}
+		if (ImGui::Selectable("Paste")) {
+
+		}
+
+		if (ImGui::Selectable("Duplicate")) {
+
+		}
+		if (ImGui::Selectable("Rename")) {
+
+		}
+		ImGui::Separator();
+		if (ImGui::Selectable("Delete")) {
+			EditorCommand command;
+			command.type = EditorCommandType::DELETE_ENTITY;
+			command.cmd.delete_entity.entity_to_delete = e;
+			push_editor_command(editor, command);
+		}
+
+
+		ImGui::EndPopup();
+	}
+}
+
 static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
-	MapResult<bool> result = map_get(&editor->entity_selected, e.id);
+	//if (editor->editor_camera == e) {
+	//	// Dont draw the editor camera in the tree
+	//	return;
+	//}
+
+
+	bool entity_selected = is_entity_selected(editor, e);
 
 	auto em = editor->api.entity_manager;
 	// We need to recursivly draw the children
@@ -881,40 +941,19 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 		// This is a leaf node
 		ImGui::Indent();
 		
-		if (ImGui::Selectable(name.buffer, result.value)) {
+		if (ImGui::Selectable(name.buffer, entity_selected)) {
+			cmd_editor_group_begin(editor);
 			if (!ImGui::GetIO().KeyCtrl) {
-				// Clear selection when CTRL is not held
-				clear_entity_selection(editor);
+				cmd_editor_deselect_all_entitys(editor);
 			}
-			map_put(&editor->entity_selected, e.id, !result.value);
+			cmd_editor_select_entity(editor, e.id, !entity_selected);
+			cmd_editor_group_end(editor);
 		}
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip("EntityID %llu", e.id);
 		}
-		if (ImGui::BeginPopupContextItem("Entity Item Context Menu")) {
-			
+		draw_entity_item_context_menu(editor, e);
 
-			if (ImGui::Selectable("Copy")) {
-				
-			}
-			if (ImGui::Selectable("Paste")) {
-
-			}
-
-			if (ImGui::Selectable("Duplicate")) {
-
-			}
-			if (ImGui::Selectable("Rename")) {
-
-			}
-			ImGui::Separator();
-			if (ImGui::Selectable("Delete")) {
-				destroy_entity(em, e);
-			}
-
-
-			ImGui::EndPopup();
-		}
 		
 
 		ImGui::Unindent();
@@ -923,22 +962,24 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 		// This is a node that has children
 
-		ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((result.value) ? ImGuiTreeNodeFlags_Selected : 0);
-
+		ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((entity_selected) ? ImGuiTreeNodeFlags_Selected : 0);
 
 		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip("EntityID %llu", e.id);
 		}
-			
+		draw_entity_item_context_menu(editor, e);
 
 
 		if (ImGui::IsItemClicked()) {
+			cmd_editor_group_begin(editor);
 			if (!ImGui::GetIO().KeyCtrl) {
 				// Clear selection when CTRL is not held
-				clear_entity_selection(editor);
+				cmd_editor_deselect_all_entitys(editor);
 			}
-			map_put(&editor->entity_selected, e.id, !result.value);
+			cmd_editor_select_entity(editor, e.id, !entity_selected);
+			cmd_editor_group_end(editor);
+
 		}
 		if (node_open) {
 			while (child.id != NO_ENTITY_ID) {
@@ -964,8 +1005,9 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		
 		
 		
-		ImGui::Text("Total Entitys Created %d", entity_manager->entitys_created);
-		ImGui::Text("Current Entity Count %d", entity_manager->entity_count);
+		ImGui::Text("Total Entitys Created %llu", entity_manager->entitys_created);
+		ImGui::Text("Current Entity Count %llu", entity_manager->entity_count);
+		ImGui::Text("Entity Selected Count %llu", editor->entity_selected_count);
 		ImGui::Separator();
 
 
@@ -979,9 +1021,11 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		ImGui::Separator();
 
 		
+		
+
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
-
+		
 			String name = get_name(&entity_manager->meta_manager, e);
 			const char* start = name.buffer;
 			const char* end = name.buffer + name.length;
@@ -989,11 +1033,11 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 				// TODO: children filtering
 				continue;
 			}
-
-
+		
+		
 			Entity parent_entity = parent(entity_manager, e);
-
-			if (parent_entity.id == NO_ENTITY_ID) {
+		
+			if (parent_entity == entity_manager->root) {
 				draw_entity_tree(editor, e);
 			}
 			
@@ -1002,7 +1046,7 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		ImGui::BeginChild("scene_internal");
 
 		if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
-			clear_entity_selection(editor);
+			cmd_editor_deselect_all_entitys(editor);
 		}
 		
 
@@ -1025,22 +1069,22 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 			ImGui::Separator();
 
 			if (ImGui::MenuItem("Create Empty Entity")) {
-				editor_create_empty_entity(editor);
+				cmd_editor_create_emtpy_entity(editor);
 			}
 			if (ImGui::MenuItem("Create Camera")) {
-				editor_create_camera(editor);
+				cmd_editor_create_camera(editor);
 			}
 			if (ImGui::MenuItem("Create Light")) {
-				editor_create_light(editor);
+				cmd_editor_create_light(editor);
 			}
 			if (ImGui::MenuItem("Create Plane")) {
-				editor_create_plane(editor);
+				cmd_editor_create_plane(editor);
 			}
 			if (ImGui::MenuItem("Create Cube")) {
-				editor_create_cube(editor);
+				cmd_editor_create_cube(editor);
 			}
 			if (ImGui::MenuItem("Create Sphere")) {
-				editor_create_sphere(editor);
+				cmd_editor_create_sphere(editor);
 			}
 			ImGui::EndPopup();
 		}
@@ -1436,85 +1480,539 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 
 
 	if (ImGui::Begin("Scene")) {
-	ImGui::End();
 	}
+	ImGui::End();
 
 	if (ImGui::Begin("Game")) {
-	ImGui::End();
 	}
+	ImGui::End();
 
 	if (ImGui::Begin("Multi Windows")) {
+	}
 	ImGui::End();
+
+}
+
+static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
+	if (ImGui::Begin("Command Undo Stack")) {
+
+		size_t undo_stack_count = editor->cmd_buffer.command_undo_stack_count;
+		EditorCommand* undo_stack = editor->cmd_buffer.command_undo_stack;
+		for (size_t i = 0; i < undo_stack_count; i++) {
+			EditorCommand cmd = undo_stack[i];
+			if (cmd.type == EditorCommandType::COMMAND_GROUP_START) {
+				ImGui::Text("Cmd Group Start: ID %llu", cmd.cmd.group.stack_level);
+			}
+			else if (cmd.type == EditorCommandType::COMMAND_GROUP_END) {
+				ImGui::Text("Cmd Group End: ID %llu", cmd.cmd.group.stack_level);
+			} else {
+				ImGui::Text("Cmd type %d", cmd.type);
+			}
+			
+		}
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Command Redo Stack")) {
+
+		size_t redo_stack_count = editor->cmd_buffer.command_redo_stack_count;
+		EditorCommand* redo_stack = editor->cmd_buffer.command_redo_stack;
+		for (size_t i = 0; i < redo_stack_count; i++) {
+			EditorCommand cmd = redo_stack[i];
+			if (cmd.type == EditorCommandType::COMMAND_GROUP_START) {
+				ImGui::Text("Cmd Group Start: ID %llu", cmd.cmd.group.stack_level);
+			} else if (cmd.type == EditorCommandType::COMMAND_GROUP_END) {
+				ImGui::Text("Cmd Group End: ID %llu", cmd.cmd.group.stack_level);
+			} else {
+				ImGui::Text("Cmd type %d", cmd.type);
+			}
+		}
+	}
+	ImGui::End();
+}
+
+
+static void push_editor_undo_command(EditorInterface* editor, const EditorCommand& command) {
+	editor->cmd_buffer.command_undo_stack[editor->cmd_buffer.command_undo_stack_count] = command;
+	editor->cmd_buffer.command_undo_stack_count++;
+	// Too many commands were sent this frame
+	assert(editor->cmd_buffer.command_undo_stack_count < EDITOR_COMMAND_UNDO_BUFFER_CAPACITY);
+}
+
+static void push_editor_command(EditorInterface* editor, const EditorCommand& command) {
+	
+	//editor->cmd_buffer.current_group.command_count++;
+	editor->cmd_buffer.commands[editor->cmd_buffer.command_count] = command;
+	editor->cmd_buffer.command_count++;
+	// Too many commands were sent this frame
+	assert(editor->cmd_buffer.command_count < EDITOR_COMMAND_BUFFER_CAPACITY);
+
+	push_editor_undo_command(editor, command);
+
+	// Reset redo stack
+	editor->cmd_buffer.command_redo_stack_count = 0;
+
+}
+
+
+
+static void push_editor_redo_command(EditorInterface* editor, const EditorCommand& command) {
+	editor->cmd_buffer.command_redo_stack[editor->cmd_buffer.command_redo_stack_count] = command;
+	editor->cmd_buffer.command_redo_stack_count++;
+	// Too many commands were sent this frame
+	assert(editor->cmd_buffer.command_redo_stack_count < EDITOR_COMMAND_UNDO_BUFFER_CAPACITY);
+}
+
+
+
+
+static void perform_undo_operation(EditorInterface* editor) {
+	if (editor->cmd_buffer.command_undo_stack_count > 0) {
+		LOG_INFO("Editor", "perform undo command");
+
+		// Pop last command off the undo stack
+		EditorCommand last_command = editor->cmd_buffer.command_undo_stack[editor->cmd_buffer.command_undo_stack_count - 1];
+		editor->cmd_buffer.command_undo_stack_count--;
+		
+		// Push undo onto the redo stack
+		push_editor_redo_command(editor, last_command);
+		
+
+		// If this is a group command
+		// we need to pop the entire group off
+		if (last_command.type == EditorCommandType::COMMAND_GROUP_END) {
+
+			// The stack might look something like 
+			// Start Group 0
+			//  cmd 1
+			//	Start Group 1
+			//		cmd 2
+			//		cmd 3
+			//		cmd 4
+			//	End Group 1
+			//	cmd 5
+			//	cmd 6
+			// End Group 0
+
+			
+			u64 stack_level = last_command.cmd.group.stack_level;
+			
+			EditorCommand* sub_command;
+			do {
+				// Keep popping off sub commands till we reach the end command that is at the same level as the current stack level
+				sub_command = &editor->cmd_buffer.command_undo_stack[editor->cmd_buffer.command_undo_stack_count - 1];
+				editor->cmd_buffer.command_undo_stack_count--;
+
+				perform_command(editor, *sub_command, true);
+
+				// Push undo onto the redo stack
+				push_editor_redo_command(editor, *sub_command);
+			} while (!(sub_command->type == EditorCommandType::COMMAND_GROUP_START && sub_command->cmd.group.stack_level == stack_level));
+			
+
+
+		} else {
+			// This is a non group command
+			perform_command(editor, last_command, true);
+			
+		}
+
+		
+
+	
+		assert(editor->cmd_buffer.command_undo_stack_count >= 0);
+
+	}
+	
+}
+
+static void perform_redo_operation(EditorInterface* editor) {
+	LOG_INFO("Editor", "perform redo command");
+
+
+	if (editor->cmd_buffer.command_redo_stack_count > 0) {
+		EditorCommand last_command = editor->cmd_buffer.command_redo_stack[editor->cmd_buffer.command_redo_stack_count - 1];
+		editor->cmd_buffer.command_redo_stack_count--;
+
+		// Push undo onto the undo stack
+		push_editor_undo_command(editor, last_command);
+
+		
+
+
+		if (last_command.type == EditorCommandType::COMMAND_GROUP_START) {
+			u64 stack_level = last_command.cmd.group.stack_level;
+
+			EditorCommand* sub_command;
+			do {
+				sub_command = &editor->cmd_buffer.command_redo_stack[editor->cmd_buffer.command_redo_stack_count - 1];
+				editor->cmd_buffer.command_redo_stack_count--;
+				perform_command(editor, *sub_command, false);
+				// Push undo onto the redo stack
+				push_editor_undo_command(editor, *sub_command);
+
+			} while (!(sub_command->type == EditorCommandType::COMMAND_GROUP_END && sub_command->cmd.group.stack_level == stack_level));
+
+		} else {
+			perform_command(editor, last_command, false);
+
+		}
+
+
+		
+
+		assert(editor->cmd_buffer.command_redo_stack_count >= 0);
+
 	}
 
 }
 
-static void editor_create_empty_entity(EditorInterface* editor) {
-	EntityManager* entity_manager = editor->api.entity_manager;
 
-	Entity e = create_entity(entity_manager, "Entity");
-
-	map_put(&editor->entity_selected, e.id, false);
-}
-
-static void editor_create_plane(EditorInterface* editor) {
-	EntityManager* entity_manager = editor->api.entity_manager;
+static void perform_command(EditorInterface* editor, EditorCommand command, bool undo) {
 	
-	Entity e = create_entity(entity_manager, "Plane");
+	switch (command.type) {
+
+		case EditorCommandType::COMMAND_GROUP_START: {
+			EditorCommandGroup group = command.cmd.group;
+			break;
+		}
+		case EditorCommandType::COMMAND_GROUP_END: {
+			EditorCommandGroup group = command.cmd.group;
+			break;
+		}
+		case EditorCommandType::NEW_ENTITY: {
+
+			EditorCommand_NewEntity new_entity_command = command.cmd.new_entity;
+			if (undo) {
+				
+
+				destroy_entity(editor->api.entity_manager, new_entity_command.entity);
+			} else {
+				Entity e = create_entity(editor->api.entity_manager, new_entity_command.name);
+				map_put(&editor->entity_selected, e.id, false);
+				command.cmd.new_entity.entity = e;
+
+
+				ComponentType comp_flags = new_entity_command.component_flags;
+
+				for (int i = 1; i < (1 << (int)ComponentType::Count); i *= 2) {
+					ComponentType component = ComponentType(i);
+					bool comp_set = ((u64)comp_flags & (u64)component);
+					if (comp_set) {
+						add_component(editor->api.entity_manager, e, component);
+					}
+				}
+
+				if (new_entity_command.staticmesh_id.id != 0) {
+					set_static_mesh(editor->api.entity_manager, e, new_entity_command.staticmesh_id);
+				}
+
+				if (new_entity_command.material_id.id != 0) {
+					set_render_material(editor->api.entity_manager, e, new_entity_command.material_id);
+				}
+			}
+			break;
+		}
+		case EditorCommandType::DELETE_ENTITY: {
+			destroy_entity(editor->api.entity_manager, command.cmd.delete_entity.entity_to_delete);
+			break;
+		}
+		case EditorCommandType::SELECT_ENTITY: {
+
+			
+			EditorCommand_SelectEntity select_command = command.cmd.select_entity;
+			Entity selected_entity = select_command.entity_to_select;
+			bool selected = select_command.selected;
+
+
+
+			if (undo) {
+				bool already_selected = is_entity_selected(editor, selected_entity);
+				if (!selected == already_selected) { return; }
+
+				map_put(&editor->entity_selected, selected_entity.id, !selected);
+
+				if (!selected) {
+					assert(editor->entity_selected_count < ULLONG_MAX);
+					editor->entity_selected_count++;
+				} else {
+					assert(editor->entity_selected_count > 0);
+					editor->entity_selected_count--;
+				}
+			} else {
+				bool already_selected = is_entity_selected(editor, selected_entity);
+				if (selected == already_selected) { return; }
+
+				map_put(&editor->entity_selected, selected_entity.id, selected);
+
+				if (selected) {
+					assert(editor->entity_selected_count < ULLONG_MAX);
+					editor->entity_selected_count++;
+				} else {
+					assert(editor->entity_selected_count > 0);
+					editor->entity_selected_count--;
+				}
+			}
+
+			
+			
+
+			
+
+			
+			
+			
+			break;
+		}
+		case EditorCommandType::DUPLICATE_ENTITY: {
+			break;
+		}
+		case EditorCommandType::SET_TRANSFORM: {
+			EditorCommand_SetTransform set_transform = command.cmd.set_transform;
+			EntityManager* entity_manager = editor->api.entity_manager;
+			if (undo) {
+				set_position(entity_manager, set_transform.entity, set_transform.old_position);
+				set_rotation(entity_manager, set_transform.entity, set_transform.old_rotation);
+				set_scale(entity_manager, set_transform.entity, set_transform.old_scale);
+				
+			} else {
+				
+				set_position(entity_manager, set_transform.entity, set_transform.position);
+				set_rotation(entity_manager, set_transform.entity, set_transform.rotation);
+				set_scale(entity_manager, set_transform.entity, set_transform.scale);
+			}
+			break;
+		}
+
+		default: {
+			// Unknown command was sent
+			assert(false && "Unknown Editor command. Did you forget to implement an editor command?");
+		}
+	}
+
+
+
+}
+
+
+
+static void process_editor_command_buffer(EditorInterface* editor) {
+	EditorCommandBuffer* cmd_buffer = &editor->cmd_buffer;
+	const size_t command_count = cmd_buffer->command_count;
+	for (size_t i = 0; i < command_count; i++) {
+		const EditorCommand& command = cmd_buffer->commands[i];
+		perform_command(editor, command, false);
+
+		
+	}
+
 	
-	map_put(&editor->entity_selected, e.id, false);
-
-	add_component(entity_manager, e, ComponentType::StaticMesh);
-	add_component(entity_manager, e, ComponentType::Render);
-	set_render_material(entity_manager, e, editor->test_mat.material);
-	set_static_mesh(entity_manager, e, editor->api.asset_manager->plane_mesh.mesh);
-
-}
-
-static void editor_create_sphere(EditorInterface* editor) {
-	EntityManager* entity_manager = editor->api.entity_manager;
-
-	Entity e = create_entity(entity_manager, "Sphere");
-
-	map_put(&editor->entity_selected, e.id, false);
-
-	add_component(entity_manager, e, ComponentType::StaticMesh);
-	add_component(entity_manager, e, ComponentType::Render);
-	set_render_material(entity_manager, e, editor->test_mat.material);
-	set_static_mesh(entity_manager, e, editor->api.asset_manager->sphere_mesh.mesh);
-
+	cmd_buffer->command_count = 0;
 }
 
 
-static void editor_create_cube(EditorInterface* editor) {
-	EntityManager* entity_manager = editor->api.entity_manager;
+static void cmd_editor_group_begin(EditorInterface* editor) {
+	size_t group_count = editor->cmd_buffer.command_group_stack_count;
 
-	Entity e = create_entity(entity_manager, "Cube");
 
-	map_put(&editor->entity_selected, e.id, false);
+	EditorCommand command;
+	command.type = EditorCommandType::COMMAND_GROUP_START;
+	command.cmd.group.stack_level = group_count;
+	push_editor_command(editor, command);
 
-	add_component(entity_manager, e, ComponentType::StaticMesh);
-	add_component(entity_manager, e, ComponentType::Render);
-	set_render_material(entity_manager, e, editor->test_mat.material);
-	set_static_mesh(entity_manager, e, editor->api.asset_manager->cube_mesh.mesh);
+	assert(editor->cmd_buffer.group_stack[group_count].in_group_transaction == false && "Did you forget to call cmd_editor_group_end?");
+
+	
+
+	editor->cmd_buffer.group_stack[group_count].in_group_transaction = true;
+	editor->cmd_buffer.command_group_stack_count++;
+
+	//editor->cmd_buffer.current_group.in_group_transaction = true;
+	//editor->cmd_buffer.current_group.command_count = 0;
+
+}
+static void cmd_editor_group_end(EditorInterface* editor) {
+	
+	size_t group_count = editor->cmd_buffer.command_group_stack_count;
+
+	// Crash if this is not a group transaction
+	assert(editor->cmd_buffer.group_stack[group_count - 1].in_group_transaction == true && "Did you forget to call cmd_editor_group_begin?");
+
+
+	EditorCommand command;
+	command.type = EditorCommandType::COMMAND_GROUP_END;
+	command.cmd.group = editor->cmd_buffer.group_stack[group_count - 1];
+	command.cmd.group.stack_level = group_count - 1;
+	push_editor_command(editor, command);
+
+	
+	
+	// Reset command transaction
+	// Even though this will be guaranteed to happen when you call group begin
+	// this prevents weird lingering issues when group begin is not called
+	editor->cmd_buffer.group_stack[group_count - 1].in_group_transaction = false;
+	editor->cmd_buffer.command_group_stack_count--;
+	//editor->cmd_buffer.current_group.in_group_transaction = false;
+
+	
+}
+
+static void cmd_editor_create_emtpy_entity(EditorInterface* editor) {
+
+	EditorCommand command;
+	command.type = EditorCommandType::NEW_ENTITY;
+	command.cmd.new_entity.name = String("Entity");
+
+	ComponentType comp_flags = ComponentType::None;
+	command.cmd.new_entity.component_flags = comp_flags;
+
+	command.cmd.new_entity.staticmesh_id.id = 0;
+	command.cmd.new_entity.material_id.id = 0;
+
+	push_editor_command(editor, command);
 
 }
 
-static void editor_create_light(EditorInterface* editor) {
+static void cmd_editor_create_plane(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
-	Entity e = create_entity(entity_manager, "Light");
+	EditorCommand command;
+	command.type = EditorCommandType::NEW_ENTITY;
+	command.cmd.new_entity.name = String("Plane");
 
-	map_put(&editor->entity_selected, e.id, false);
-	add_component(entity_manager, e, ComponentType::Light);
+	ComponentType comp_flags = ComponentType::None;
+	comp_flags = comp_flags | ComponentType::StaticMesh;
+	comp_flags = comp_flags | ComponentType::Render;
+
+	command.cmd.new_entity.component_flags = comp_flags;
+	command.cmd.new_entity.staticmesh_id = editor->api.asset_manager->plane_mesh.mesh;
+	command.cmd.new_entity.material_id = editor->test_mat.material;
+
+	push_editor_command(editor, command);
+
+}
+
+static void cmd_editor_create_sphere(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	EditorCommand command;
+	command.type = EditorCommandType::NEW_ENTITY;
+	command.cmd.new_entity.name = String("Sphere");
+
+
+
+	ComponentType comp_flags = ComponentType::None;
+	comp_flags = comp_flags | ComponentType::StaticMesh;
+	comp_flags = comp_flags | ComponentType::Render;
+
+	command.cmd.new_entity.component_flags = comp_flags;
+	command.cmd.new_entity.staticmesh_id = editor->api.asset_manager->sphere_mesh.mesh;
+	command.cmd.new_entity.material_id = editor->test_mat.material;
+
+
+	push_editor_command(editor, command);
+
 }
 
 
-static void editor_create_camera(EditorInterface* editor) {
+static void cmd_editor_create_cube(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
+	EditorCommand command;
+	command.type = EditorCommandType::NEW_ENTITY;
+	command.cmd.new_entity.name = String("Cube");
 
-	Entity e = create_entity(entity_manager, "Camera");
+	ComponentType comp_flags = ComponentType::None;
+	comp_flags = comp_flags | ComponentType::StaticMesh;
+	comp_flags = comp_flags | ComponentType::Render;
 
-	map_put(&editor->entity_selected, e.id, false);
-	add_component(entity_manager, e, ComponentType::Camera);
+	command.cmd.new_entity.component_flags = comp_flags;
+	command.cmd.new_entity.staticmesh_id = editor->api.asset_manager->cube_mesh.mesh;
+	command.cmd.new_entity.material_id = editor->test_mat.material;
+
+
+	push_editor_command(editor, command);
+
+}
+
+static void cmd_editor_create_light(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	EditorCommand command;
+	command.type = EditorCommandType::NEW_ENTITY;
+	command.cmd.new_entity.name = String("Light");
+
+	ComponentType comp_flags = ComponentType::None;
+	comp_flags = comp_flags | ComponentType::Light;
+	command.cmd.new_entity.component_flags = comp_flags;
+
+	command.cmd.new_entity.staticmesh_id.id = 0;
+	command.cmd.new_entity.material_id.id = 0;
+
+	push_editor_command(editor, command);
+
+}
+
+
+static void cmd_editor_create_camera(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+	EditorCommand command;
+	command.type = EditorCommandType::NEW_ENTITY;
+	command.cmd.new_entity.name = String("Camera");
+	ComponentType comp_flags = ComponentType::None;
+
+	comp_flags = comp_flags | ComponentType::Camera;
+	command.cmd.new_entity.component_flags = comp_flags;
+
+	command.cmd.new_entity.staticmesh_id.id = 0;
+	command.cmd.new_entity.material_id.id = 0;
+
+	push_editor_command(editor, command);
+}
+
+
+static void cmd_editor_select_entity(EditorInterface* editor, Entity entity, bool selected) {
+	EditorCommand command;
+	command.type = EditorCommandType::SELECT_ENTITY;
+	command.cmd.select_entity.entity_to_select = entity;
+	command.cmd.select_entity.selected = selected;
+	
+
+	push_editor_command(editor, command);
+}
+
+static void cmd_editor_deselect_all_entitys(EditorInterface* editor) {
+	EntityManager* em = editor->api.entity_manager;
+
+	if (editor->entity_selected_count > 0) {
+		cmd_editor_group_begin(editor);
+		for (int i = 0; i < em->entity_count; i++) {
+			Entity e = em->entity_list[i];
+			// Only deselect the ones that are selected
+			if (is_entity_selected(editor, e)) {
+				cmd_editor_select_entity(editor, e, false);
+			}
+		}
+		cmd_editor_group_end(editor);
+	}
+	
+
+	
+	
+}
+
+
+static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale) {
+	EditorCommand command;
+	command.type = EditorCommandType::SET_TRANSFORM;
+	command.cmd.set_transform.entity = e;
+
+
+	command.cmd.set_transform.position = pos;
+	command.cmd.set_transform.old_position = old_pos;
+
+	command.cmd.set_transform.scale = scale;
+	command.cmd.set_transform.old_scale = old_scale;
+
+	command.cmd.set_transform.rotation = rot;
+	command.cmd.set_transform.old_rotation = old_rot;
+	
+	push_editor_command(editor, command);
 }

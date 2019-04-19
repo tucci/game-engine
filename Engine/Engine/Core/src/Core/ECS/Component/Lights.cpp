@@ -1,29 +1,32 @@
 #pragma once
 
+#include "Core/ECS/Component/ComponentHelpers.h"
 #include "Core/ECS/Component/Lights.h"
 #include "Common/stretchy_buffer.h"
 
 void init_light_manager(LightManager* manager) {
-	map_init(&manager->enabled_id_map);
-	map_init(&manager->disabled_id_map);
+	map_init(&manager->id_map);
 
+	manager->total_count = 0;
 	manager->enabled_count = 0;
-	manager->enabled_lights = NULL;
+	manager->lights = NULL;
+	manager->entitys = NULL;
 
-	manager->disabled_count = 0;
-	manager->disabled_lights = NULL;
+	
 
 	
 }
 
 void destroy_light_manager(LightManager* manager) {
-	stb_sb_free(manager->enabled_lights);
-	map_destroy(&manager->enabled_id_map);
+	stb_sb_free(manager->lights);
+	stb_sb_free(manager->entitys);
+	map_destroy(&manager->id_map);
+	manager->total_count = 0;
 	manager->enabled_count = 0;
 
-	stb_sb_free(manager->disabled_lights);
-	map_destroy(&manager->disabled_id_map);
-	manager->disabled_count = 0;
+	
+
+
 }
 
 
@@ -32,161 +35,92 @@ bool entity_add_light_component(LightManager* manager, Entity entity) {
 
 	
 
-	MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
-	if (result.found) {
-		// There already a component, return early and do nothing
-		return false;
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There already a component, return early and do nothing
+	if (result.found) return false;
+
+
+	u64 index;
+	u64 count = stb_sb_count(manager->entitys);
+	if (manager->enabled_count == manager->total_count && count != manager->enabled_count) {
+		manager->entitys[manager->enabled_count] = entity;
+		index = manager->enabled_count;
 	} else {
-		// If the component wasn't found inside the enabled list
-		// it might be inside the disabled list
-		result = map_get(&manager->disabled_id_map, entity.id);
-		if (result.found) {
-			// There already a component, return early and do nothing
-			return false;
-		}
-
-
+		stb_sb_push(manager->entitys, entity);
+		index = stb_sb_count(manager->entitys) - 1;
 	}
 
-	map_put(&manager->enabled_id_map, entity.id, manager->enabled_count);
-	
 
-	if (stb_sb_count(manager->enabled_lights) == manager->enabled_count) {
-		stb_sb_push(manager->enabled_lights, Light());
-	} else {
-		manager->enabled_lights[manager->enabled_count] = Light();
-	}
+
+
+
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->lights, Light(), index);
+
+	// Swap entitys
+	Entity this_entity = manager->entitys[index];
+	Entity first_disabled_entity = manager->entitys[manager->enabled_count];
+	manager->entitys[manager->enabled_count] = this_entity;
+	manager->entitys[index] = first_disabled_entity;
+
+	// Update the entity id to index mapping
+	map_put(&manager->id_map, this_entity.id, manager->enabled_count);
+	map_put(&manager->id_map, first_disabled_entity.id, index);
 
 	manager->enabled_count++;
+	manager->total_count++;
 
-	
+	assert(manager->enabled_count <= manager->total_count);
+
 	return true;
 }
 
 bool entity_remove_light_component(LightManager* manager, Entity entity) {
 	
-	MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
 
-	
-	CompactMap<u64>* map = &manager->enabled_id_map;
-	Light* list = manager->enabled_lights;
-	u64* list_count = &manager->enabled_count;
+	MapResult<u64> result = map_get(&manager->id_map, entity.id);
+	// There is no result, return early and do nothing
+	if (!result.found) return false;
 
-	if (!result.found) {
-		// If the component wasn't found inside the enabled list
-		// it might be inside the disabled list
-		result = map_get(&manager->disabled_id_map, entity.id);
-		map = &manager->disabled_id_map;
-		list = manager->disabled_lights;
-		list_count = &manager->disabled_count;
-
-		if (!result.found) {
-			// the component wasn't found inside the disabled list either
-			// this component doesnt exist on this entity
-			return false;
-		}
-	}
 
 	u64 index = result.value;
-	// Get the last in the list to swap with
-	Light last = list[*list_count - 1];
-	// swap the last at the current index we are removing from
-	list[index] = last;
-	(*list_count)--;
+	u64 index_to_swap;
+
+	//removing disabled components
+	if (index >= manager->enabled_count) {
+		index_to_swap = manager->total_count - 1;
+	} else {
+		index_to_swap = manager->enabled_count - 1;
+	}
+
+
+	comphelper_remove_component_data(entity, manager->lights, index, index_to_swap);
+
+	Entity last_entity = manager->entitys[index_to_swap];
+	manager->entitys[index] = last_entity;
+
 	// Remove the entity from the index map
-	map_remove(map, entity.id);
+	map_remove(&manager->id_map, entity.id);
+	if (entity.id != last_entity.id) {
+		map_put(&manager->id_map, last_entity.id, index);
+	}
+
+	manager->enabled_count--;
+	manager->total_count--;
+	assert(manager->enabled_count <= manager->total_count);
+
 	return true;
 }
 
 void enable_light_component(LightManager* manager, Entity entity, bool enabled) {
 	
-	if (enabled) {
-		// First we need to check if the component is already enabled
-		MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
-
-		
-		if (result.found) {
-			// The component is already enabled
-			// don't do anything
-			return;
-		} 
-
-		
-		// If the component wasn't found inside the enabled list
-		// it might be inside the disabled list
-		result = map_get(&manager->disabled_id_map, entity.id);
-		
-
-		if (!result.found) {
-			// the component wasn't found inside the disabled list either
-			// this component doesnt exist on this entity
-			return;
-		}
-
-
-		// At this point the component is on the disabled list and needs to be enabled
-
-		u64 index = result.value;
-		Light light_copy = manager->disabled_lights[index];
-
-		entity_remove_light_component(manager, entity);
-
-		entity_add_light_component(manager, entity);
-
-		result = map_get(&manager->enabled_id_map, entity.id);
-
-		index = result.value;
-		Light* light_to_copy_to = &manager->enabled_lights[index];
-		*light_to_copy_to = light_copy;
-
-	} else {
-		// First we need to check if the component is already disabled
-		MapResult<u64> result = map_get(&manager->disabled_id_map, entity.id);
-
-
-		if (result.found) {
-			// The component is already disabled
-			// don't do anything
-			return;
-		}
-
-
-		// If the component wasn't found inside the disabled list
-		// it might be inside the enabled list
-		result = map_get(&manager->enabled_id_map, entity.id);
-
-
-		if (!result.found) {
-			// the component wasn't found inside the enabled list either
-			// this component doesnt exist on this entity
-			return;
-		}
-
-
-		// At this point the component is on the enabled list and needs to be disabled
-		u64 index = result.value;
-		Light light_copy = manager->enabled_lights[index];
-		entity_remove_light_component(manager, entity);
-
-		map_put(&manager->disabled_id_map, entity.id, manager->disabled_count);
-		
-
-		if (stb_sb_count(manager->disabled_lights) == manager->disabled_count) {
-			stb_sb_push(manager->disabled_lights, light_copy);
-		} else {
-			manager->disabled_lights[manager->disabled_count] = light_copy;
-		}
-
-		manager->disabled_count++;
-		
-	}
+	comphelper_enable_component(&manager->id_map, manager->entitys, &manager->enabled_count, manager->lights, entity, enabled);
+	assert(manager->enabled_count <= manager->total_count);
 }
 
 bool is_light_component_enabled(LightManager* manager, Entity entity) {
-	MapResult<u64> result = map_get(&manager->enabled_id_map, entity.id);
+	// Check if the index is less than the enabled index
+	// Everything to the left of the enabeld count is enabled, everything to the right of it, is disabled
+	assert(manager->enabled_count <= manager->total_count);
 
-	if (result.found) {
-		return true;
-	}
-	return false;
+	return comphelper_is_component_enabled(&manager->id_map, &manager->enabled_count, entity);
 }

@@ -494,21 +494,7 @@ static bool init_asset_manager(Engine* engine) {
 	return true;
 }
 
-static void update_clock(Engine* engine) {
-	GameTimer* timer = &engine->game_loop;
-	u64 ticks = SDL_GetPerformanceCounter() - timer->sdl_start_ticks;
-	timer->delta_ticks = (int)(ticks - timer->ticks);
-	timer->ticks = ticks;
-    
-	timer->milliseconds = (timer->ticks * 1000) / timer->ticks_per_sec;
-	timer->seconds = (double)(timer->ticks) / (double)(timer->ticks_per_sec);
-    
-	timer->delta_milliseconds = (int)((timer->delta_ticks * 1000) / timer->ticks_per_sec);
-	timer->delta_seconds = (float)(timer->delta_ticks) / (float)(timer->ticks_per_sec);
 
-   
-    
-}
 
 static void poll_inputs(Engine* engine) {
 	post_update_button_state(&engine->input.mouse.mouse_button_left);
@@ -891,7 +877,7 @@ static void update_engine_state(Engine* engine, float delta_time) {
     
     
 	for (int i = 0; i < entity_manager->light_manager.enabled_count; i++) {
-		Light light = entity_manager->light_manager.enabled_lights[i];
+		Light light = entity_manager->light_manager.lights[i];
 		push_light(renderer, light);
 	}
     

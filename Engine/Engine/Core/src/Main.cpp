@@ -81,8 +81,12 @@ enum WindowFlag2 {
 	WindowFlag2_Has_Mouse_Focus = 1 << 10,
 
 };
+
+
 int main(int argc, char* argv[]) {
 
+
+	
 	//typedef void(*SignalHandlerPointer)(int);
 	//SignalHandlerPointer previousHandler;
 	//previousHandler = signal(SIGABRT, SignalHandler);
@@ -125,7 +129,10 @@ int main(int argc, char* argv[]) {
 	////figure out other thread things we need? multi wait, join?
 	////figure out what u dont know about threads
 	//
-	main_test();
+	//main_test();
+
+
+	
 	
 
 #else

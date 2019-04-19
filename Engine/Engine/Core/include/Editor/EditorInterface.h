@@ -3,11 +3,11 @@
 
 #include "engine_platform.h"
 
-#include "EditorCommands.h"
 
 #include "Core/EngineAPI.h"
 #include "Logger.h"
 
+#include "EditorCommandList.h"
 
 #include "Core/ECS/Component/Primitives.h"
 
@@ -27,6 +27,106 @@
 #define EDITOR_MEMORY MEGABYTES(100)
 
 
+struct EditorCommand_NewEntity {
+	Entity entity;
+	String name;
+	ComponentType component_flags;
+	StaticMeshID staticmesh_id;
+	MaterialID material_id;
+};
+
+struct EditorCommand_DeleteEntity {
+	/*instead of deleting a single entity, we rely on the fact that we may delete mulitple entitys at once in a tree form, we need to account for the tree linkage
+	soo that when we need to undo this delete command, we know how to reconstruct it
+	*/
+	Entity entity_to_delete;
+};
+
+struct EditorCommand_SelectEntity {
+	Entity entity_to_select;
+	bool selected;
+};
+
+
+// We could store the transform matrix and perform the inverse
+// That would use less size then storing old/new for each
+// But this is much simpler, faster, easier to debug, and we can rollback to the old data without having to recompute all kinds of deltas
+// and we dont have to worry about inverse quaterions and rotations
+struct EditorCommand_SetTransform {
+	Entity entity;
+
+	Vec3f position;
+	Vec3f old_position;
+
+	Vec3f scale;
+	Vec3f old_scale;
+
+	Quat rotation;
+	Quat old_rotation;
+
+};
+
+
+
+struct EditorCommandGroup {
+	// stack_level indicates what the id/index/level the current group is in.
+	// If the level is 0, then there is no parent groups
+	// If the level > 0, then this group has a parent group that it is nested inside
+	// Start 0
+	//	Start 1
+	//	End 1
+	// End 0
+	
+	u64 stack_level = 0;
+	bool in_group_transaction = false;
+};
+
+union EditorCommandData {
+	EditorCommand_NewEntity new_entity;
+	EditorCommand_DeleteEntity delete_entity;
+	EditorCommand_SelectEntity select_entity;
+	EditorCommand_SetTransform set_transform;
+	EditorCommandGroup group;
+	EditorCommandData() {};
+};
+
+
+
+struct EditorCommand {
+	EditorCommandType type;
+	EditorCommandData cmd;
+};
+
+
+
+#define EDITOR_COMMAND_BUFFER_CAPACITY 32
+
+// TODO: this should probably not be fixed, but left as an option to the user to define how many undos they want to have
+#define EDITOR_COMMAND_UNDO_BUFFER_CAPACITY 128
+#define EDITOR_COMMAND_GROUP_STACK_COUNT 32
+
+
+
+struct EditorCommandBuffer {
+
+	//EditorCommandGroup current_group;
+	
+
+	size_t command_count = 0;
+	size_t command_undo_stack_count = 0;
+	size_t command_redo_stack_count = 0;
+	size_t command_group_stack_count = 0;
+
+	
+
+
+	EditorCommand commands[EDITOR_COMMAND_BUFFER_CAPACITY];
+	EditorCommand command_undo_stack[EDITOR_COMMAND_UNDO_BUFFER_CAPACITY];
+	EditorCommand command_redo_stack[EDITOR_COMMAND_UNDO_BUFFER_CAPACITY];
+
+	EditorCommandGroup group_stack[EDITOR_COMMAND_GROUP_STACK_COUNT];
+};
+
 
 
 #define FPS_HISTORY_COUNT 240
@@ -36,9 +136,11 @@ struct EditorInterface {
 	Arena arena;
 	StackAllocator stack;
 
+	u64 entity_selected_count = 0;
 	CompactMap<bool> entity_selected;
 
-
+	
+	EditorCommandBuffer cmd_buffer;
 	
 	AssetID test_mat;
 	Entity editor_camera;
@@ -87,10 +189,16 @@ struct EditorInterface {
 
 	
 	
-
-
-	
 };
+
+
+
+static void push_editor_command(EditorInterface* editor, const EditorCommand& command);
+static void perform_undo_operation(EditorInterface* editor);
+static void perform_redo_operation(EditorInterface* editor);
+
+static void perform_command(EditorInterface* editor, EditorCommand command, bool undo);
+static void process_editor_command_buffer(EditorInterface* editor);
 
 
 
@@ -100,6 +208,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api);
 void destroy_editor_interface(EditorInterface* editor);
 
 void editor_update(EditorInterface* editor);
+static bool is_entity_selected(EditorInterface* editor, Entity entity);
 
 static void draw_component_transform(EditorInterface* editor, Entity e);
 static void draw_component_camera(EditorInterface* editor, Entity e);
@@ -117,16 +226,9 @@ static void draw_window_log(EditorInterface* editor);
 static void draw_window_assets(EditorInterface* editor);
 
 static void draw_window_renderer_stats(EditorInterface* editor);
-
 static void draw_window_scene_viewports(EditorInterface* editor);
+static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor);
 
-
-static void editor_create_empty_entity(EditorInterface* editor);
-static void editor_create_plane(EditorInterface* editor);
-static void editor_create_sphere(EditorInterface* editor);
-static void editor_create_cube(EditorInterface* editor);
-static void editor_create_light(EditorInterface* editor);
-static void editor_create_camera(EditorInterface* editor);
 
 
 

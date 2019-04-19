@@ -4,25 +4,28 @@
 #include "Math/Vec.h"
 #include "Math/Mat.h"
 
+
 struct Quaternion {
 	
 	union {
 		struct {
-			float x;
-			float y;
-			float z;
+			union {
+				struct {
+					float x;
+					float y;
+					float z;
+				};
+				Vec3f v;
+			};
+			float w;
 		};
-		Vec3f v;
+		float data[4];
 	};
-
-	float w;
-
-	float data[4];
 
 	Quaternion() : x(0), y(0), z(0), w(1) {};
 	Quaternion(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {};
-	
 };
+
 
 
 // Alias so that we dont have to type "Quaternion" everytime we want to use them

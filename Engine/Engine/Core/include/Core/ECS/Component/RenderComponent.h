@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "Common/Map.h"
 #include "Core/ECS/Entity.h"
 #include "Asset/Asset.h"
@@ -21,8 +22,8 @@ struct RenderManager {
 	Entity* entitys;
 	Render* renders;
 
-	u64 capacity;
 	u64 enabled_count;
+	u64 total_count;
 
 	
 };

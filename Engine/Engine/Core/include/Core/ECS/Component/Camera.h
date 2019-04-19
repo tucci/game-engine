@@ -58,7 +58,9 @@ void init_camera_params(Camera* camera, float near_clip, float far_clip, float f
 
 struct CameraManager {
 	CompactMap<u64> id_map;
+	Entity* entitys;
 	Camera* enabled_cameras;
+	u64 total_count;
 	u64 enabled_count;
 
 };

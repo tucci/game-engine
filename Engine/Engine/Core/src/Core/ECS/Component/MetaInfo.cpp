@@ -1,10 +1,11 @@
-#include "Core/ECS/Component/MetaInfo.h"
 
+#include "Core/ECS/Component/ComponentHelpers.h"
+#include "Core/ECS/Component/MetaInfo.h"
 #include "Common/stretchy_buffer.h"
 
 void init_metainfo_manager(MetaInfoManager* manager) {
 	map_init(&manager->id_map);
-	manager->capacity = 0;
+	manager->total_count = 0;
 	manager->enabled_count = 0;
 	manager->names = NULL;
 	manager->entitys = NULL;
@@ -18,7 +19,7 @@ void destroy_metainfo_manager(MetaInfoManager* manager) {
 	arena_free(&manager->name_arena);
 
 	map_destroy(&manager->id_map);
-	manager->capacity = 0;
+	manager->total_count = 0;
 	manager->enabled_count = 0;
 }
 
@@ -26,46 +27,26 @@ void destroy_metainfo_manager(MetaInfoManager* manager) {
 
 
 bool entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, String name) {
-	//MapResult<u64> result = map_get(&manager->id_map, entity.id);
-	//// There already a component, return early and do nothing
-	//if (result.found) return false;
-	//
-	//map_put(&manager->id_map, entity.id, manager->count);
-	//manager->count++;
-	//stb_sb_push(manager->names, String(NULL, 0));
-	//set_name(manager, entity, name);
-	//
-	//return true;
-
-
 	MapResult<u64> result = map_get(&manager->id_map, entity.id);
 	// There already a component, return early and do nothing
 	if (result.found) return false;
 
 
-
 	u64 index;
-
-	if (manager->enabled_count == manager->capacity && stb_sb_count(manager->names) != manager->enabled_count) {
-		manager->names[manager->enabled_count] = String(NULL, 0);
+	u64 count = stb_sb_count(manager->entitys);
+	if (manager->enabled_count == manager->total_count && count != manager->enabled_count) {
 		manager->entitys[manager->enabled_count] = entity;
 		index = manager->enabled_count;
-		
 	} else {
-		stb_sb_push(manager->names, String(NULL,0));
 		stb_sb_push(manager->entitys, entity);
-		index = stb_sb_count(manager->names) - 1;
-		
+		index = stb_sb_count(manager->entitys) - 1;
 	}
 
 
-	String this_comp = manager->names[index];
-	String first_disabled_comp = manager->names[manager->enabled_count];
 
 
-	// swap the first disabled comp with the comp we are trying to enable
-	manager->names[manager->enabled_count] = this_comp;
-	manager->names[index] = first_disabled_comp;
+
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->names, name, index);
 
 	// Swap entitys
 	Entity this_entity = manager->entitys[index];
@@ -77,14 +58,10 @@ bool entity_add_metainfo_component(MetaInfoManager* manager, Entity entity, Stri
 	map_put(&manager->id_map, this_entity.id, manager->enabled_count);
 	map_put(&manager->id_map, first_disabled_entity.id, index);
 
-
-	
 	manager->enabled_count++;
-	manager->capacity++;
+	manager->total_count++;
 
-	set_name(manager, entity, name);
-
-	assert(manager->enabled_count <= manager->capacity);
+	assert(manager->enabled_count <= manager->total_count);
 
 	return true;
 
@@ -95,43 +72,21 @@ bool entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity) {
 	// There is no result, return early and do nothing
 	if (!result.found) return false;
 
-	//removing disabled components
+
 	u64 index = result.value;
+	u64 index_to_swap;
 
+	//removing disabled components
 	if (index >= manager->enabled_count) {
-		String this_comp = manager->names[index];
-		String last_comp = manager->names[manager->capacity - 1];
-
-		// swap the last at the current index we are removing from
-		manager->names[index] = last_comp;
-
-		// Swap entitys
-		Entity last_entity = manager->entitys[manager->capacity - 1];
-		manager->entitys[index] = last_entity;
-
-		// Remove the entity from the index map
-		map_remove(&manager->id_map, entity.id);
-		if (entity.id != last_entity.id) {
-			map_put(&manager->id_map, last_entity.id, index);
-		}
-
-		manager->capacity--;
-		assert(manager->enabled_count <= manager->capacity);
-		return true;
+		index_to_swap = manager->total_count - 1;
+	} else {
+		index_to_swap = manager->enabled_count - 1;
 	}
 
 
+	comphelper_remove_component_data(entity, manager->names, index, index_to_swap);
 
-	// Get the last in the list to swap with
-
-	String this_comp = manager->names[index];
-	String last_comp = manager->names[manager->enabled_count - 1];
-
-	// swap the last at the current index we are removing from
-	manager->names[index] = last_comp;
-
-	// Swap entitys
-	Entity last_entity = manager->entitys[manager->enabled_count - 1];
+	Entity last_entity = manager->entitys[index_to_swap];
 	manager->entitys[index] = last_entity;
 
 	// Remove the entity from the index map
@@ -139,79 +94,29 @@ bool entity_remove_metainfo_component(MetaInfoManager* manager, Entity entity) {
 	if (entity.id != last_entity.id) {
 		map_put(&manager->id_map, last_entity.id, index);
 	}
+
 	manager->enabled_count--;
-	manager->capacity--;
-	assert(manager->enabled_count <= manager->capacity);
+	manager->total_count--;
+	assert(manager->enabled_count <= manager->total_count);
+
 	return true;
 }
 
 
 void enable_metainfo_component(MetaInfoManager* manager, Entity entity, bool enabled) {
 
-	MapResult<u64> result = map_get(&manager->id_map, entity.id);
-	// There is no result, return early and do nothing
-	if (!result.found) return;
-
-	u64 index = result.value;
-
-	if (enabled) {
-
-
-		String this_comp = manager->names[index];
-		String first_disabled_comp = manager->names[manager->enabled_count];
-
-
-		// swap the first disabled comp with the comp we are trying to enable
-		manager->names[manager->enabled_count] = this_comp;
-		manager->names[index] = first_disabled_comp;
-
-		// Swap entitys
-		Entity this_entity = manager->entitys[index];
-		Entity first_disabled_entity = manager->entitys[manager->enabled_count];
-		manager->entitys[manager->enabled_count] = this_entity;
-		manager->entitys[index] = first_disabled_entity;
-
-		// Update the entity id to index mapping
-		map_put(&manager->id_map, this_entity.id, manager->enabled_count);
-		map_put(&manager->id_map, first_disabled_entity.id, index);
-
-		manager->enabled_count++;
-	} else {
-
-
-		String this_comp = manager->names[index];
-		String last_comp = manager->names[manager->enabled_count - 1];
-		// swap the last at the current index we are removing from
-		manager->names[index] = last_comp;
-		manager->names[manager->enabled_count - 1] = this_comp;
-
-		// Swap entitys
-		Entity this_entity = manager->entitys[index];
-		Entity first_disabled_entity = manager->entitys[manager->enabled_count - 1];
-		manager->entitys[manager->enabled_count - 1] = this_entity;
-		manager->entitys[index] = first_disabled_entity;
-
-		// Update the entity id to index mapping
-		map_put(&manager->id_map, this_entity.id, manager->enabled_count - 1);
-		map_put(&manager->id_map, first_disabled_entity.id, index);
-
-		manager->enabled_count--;
-	}
-	assert(manager->enabled_count <= manager->capacity);
+	comphelper_enable_component(&manager->id_map, manager->entitys, &manager->enabled_count, manager->names, entity, enabled);
+	assert(manager->enabled_count <= manager->total_count);
 
 }
 
 
 bool is_metainfo_component_enabled(MetaInfoManager* manager, Entity entity) {
-	MapResult<u64> result = map_get(&manager->id_map, entity.id);
-
-	if (!result.found) {
-		return false;
-	}
 	// Check if the index is less than the enabled index
 	// Everything to the left of the enabeld count is enabled, everything to the right of it, is disabled
-	assert(manager->enabled_count <= manager->capacity);
-	return result.value < manager->enabled_count;
+	assert(manager->enabled_count <= manager->total_count);
+
+	return comphelper_is_component_enabled(&manager->id_map, &manager->enabled_count, entity);
 
 }
 

@@ -113,6 +113,7 @@ MapResult<V> map_get(CompactMap<V>* map, u64 key) {
 }
 
 template <typename V>
+// Return a default value if the key is not found
 V map_get(CompactMap<V>* map, u64 key, V default_value) {
 	assert(map != NULL);
 	assert(key != 0);
@@ -133,7 +134,7 @@ V map_get(CompactMap<V>* map, u64 key, V default_value) {
 		if (map->map[hash_index].key == key) {
 			return map->map[hash_index].value;
 		} else if (map->map[hash_index].key == 0) {
-			return default_value
+			return default_value;
 		}
 		hash_index++;
 	}

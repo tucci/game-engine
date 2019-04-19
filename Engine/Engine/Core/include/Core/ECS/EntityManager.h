@@ -32,14 +32,17 @@ enum class ComponentType : u64 {
 };
 
 
+// Turn on a component
 inline ComponentType operator|(ComponentType a, ComponentType b) {
 	return static_cast<ComponentType>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+// Check if component is on
 inline ComponentType operator&(ComponentType a, ComponentType b) {
 	return static_cast<ComponentType>(static_cast<int>(a) & static_cast<int>(b));
 }
 
+// Remove component
 inline ComponentType operator~(ComponentType a) {
 	return static_cast<ComponentType>(~static_cast<int>(a));
 }
@@ -47,24 +50,24 @@ inline ComponentType operator~(ComponentType a) {
 
 
 
-struct ComponentManager {
+struct ComponentTypesManager {
 	CompactMap<u64> id_map;
 	ComponentType* types;
 	u64 count;
 };
 
-static void init_component_manager(ComponentManager* cpm);
-static void destroy_component_manager(ComponentManager* cpm);
-static void create_component_flag(ComponentManager* cpm, Entity entity);
-static void remove_component_flag(ComponentManager* cpm, Entity entity);
-static void set_component_flag(ComponentManager* cpm, Entity entity, ComponentType component);
-static void unset_component_flag(ComponentManager* cpm, Entity entity, ComponentType component);
+static void init_component_manager(ComponentTypesManager* cpm);
+static void destroy_component_manager(ComponentTypesManager* cpm);
+static void create_component_flag(ComponentTypesManager* cpm, Entity entity);
+static void remove_component_flag(ComponentTypesManager* cpm, Entity entity);
+static void set_component_flag(ComponentTypesManager* cpm, Entity entity, ComponentType component);
+static void unset_component_flag(ComponentTypesManager* cpm, Entity entity, ComponentType component);
 
 
 
 struct EntityManager {
 	
-	ComponentManager component_manager;
+	ComponentTypesManager component_types_manager;
 
 	MetaInfoManager meta_manager;
 	TransformManager transform_manager;
@@ -93,7 +96,7 @@ void init_entity_manager(EntityManager* manager);
 void destroy_entity_manager(EntityManager* manager);
 
 Entity create_entity(EntityManager* manager, String name);
-void destroy_entity(EntityManager* manager, Entity entity);
+bool destroy_entity(EntityManager* manager, Entity entity);
 void enable_entity(EntityManager* manager, Entity entity, bool enabled);
 
 

@@ -8,6 +8,9 @@
 
 struct MaterialID {
 	u64 id;
+	MaterialID() {
+		id = 0;
+	}
 };
 
 enum class MaterialShadingModel {
@@ -71,7 +74,7 @@ struct InternalMaterial {
 inline void init_material_defaults(Material* material) {
 	material->shading_model = MaterialShadingModel::CookTorrance;
 
-	TextureID no_texture = { 0 };
+	TextureID no_texture;
 	
 	// No texture ids
 	material->albedo = no_texture;

@@ -11,6 +11,9 @@
 
 struct TextureID {
 	u64 id;
+	TextureID() {
+		id = 0;
+	}
 };
 
 

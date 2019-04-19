@@ -1,6 +1,7 @@
 #pragma once
 
 
+
 #include "Math/Vec.h"
 #include "ObjFile.h"
 #include "Common/StackAllocator.h"
@@ -10,6 +11,9 @@
 
 struct StaticMeshID {
 	u64 id;
+	StaticMeshID() {
+		id = 0;
+	}
 };
 
 
@@ -27,6 +31,7 @@ struct StaticMesh {
 
 	Vec3i* indices;
 	StaticMesh() {
+		id.id = NO_ENTITY_ID;
 		vertex_count = 0;
 		index_count = 0;
 		pos = NULL;
@@ -44,8 +49,13 @@ bool obj_to_static_mesh(const char* filename, StaticMesh* static_mesh, StackAllo
 
 struct StaticMeshManager {
 	CompactMap<u64> id_map;
+
+	Entity* entitys;
 	StaticMeshID* meshes;
-	u64 count;
+
+	u64 enabled_count;
+	u64 total_count;
+
 };
 
 

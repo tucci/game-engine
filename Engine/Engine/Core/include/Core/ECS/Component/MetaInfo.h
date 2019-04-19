@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "types.h"
 #include "Common/Map.h"
 #include "Common/Arena.h"
@@ -14,7 +15,7 @@ struct MetaInfoManager {
 	Entity* entitys;
 	String* names;
 
-	u64 capacity;
+	u64 total_count;
 	u64 enabled_count;
 
 	Arena name_arena;

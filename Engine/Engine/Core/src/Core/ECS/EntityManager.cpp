@@ -7,18 +7,18 @@
 
 #include "Common/stretchy_buffer.h"
 
-void init_component_manager(ComponentManager* cpm) {
+void init_component_manager(ComponentTypesManager* cpm) {
 	cpm->count = 0;
 	cpm->types = NULL;
 	map_init(&cpm->id_map);
 }
 
-void destroy_component_manager(ComponentManager* cpm) {
+void destroy_component_manager(ComponentTypesManager* cpm) {
 	cpm->count = 0;
 	map_destroy(&cpm->id_map);
 }
 
-static void create_component_flag(ComponentManager* cpm, Entity entity) {
+static void create_component_flag(ComponentTypesManager* cpm, Entity entity) {
 	
 	ComponentType comp_type;
 	comp_type = ComponentType::None;
@@ -32,7 +32,7 @@ static void create_component_flag(ComponentManager* cpm, Entity entity) {
 	cpm->count++;
 }
 
-static void remove_component_flag(ComponentManager* cpm, Entity entity) {
+static void remove_component_flag(ComponentTypesManager* cpm, Entity entity) {
 	// Get index of the entity we are trying to remove
 	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
 	if (!result.found) {
@@ -51,7 +51,7 @@ static void remove_component_flag(ComponentManager* cpm, Entity entity) {
 
 }
 
-void set_component_flag(ComponentManager* cpm, Entity entity, ComponentType component) {
+void set_component_flag(ComponentTypesManager* cpm, Entity entity, ComponentType component) {
 	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
 	if (!result.found) {
 		assert_fail();
@@ -63,7 +63,7 @@ void set_component_flag(ComponentManager* cpm, Entity entity, ComponentType comp
 	
 }
 
-static void unset_component_flag(ComponentManager* cpm, Entity entity, ComponentType component) {
+static void unset_component_flag(ComponentTypesManager* cpm, Entity entity, ComponentType component) {
 	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
 	if (!result.found) {
 		assert_fail();
@@ -98,10 +98,10 @@ Entity create_entity(EntityManager* manager, String name) {
 	map_put(&manager->entity_index_map, entity.id, manager->entity_count);
 	manager->entity_count++;
 
-	create_component_flag(&manager->component_manager, entity);
+	create_component_flag(&manager->component_types_manager, entity);
 	
 	entity_add_metainfo_component(&manager->meta_manager, entity, name);
-	set_component_flag(&manager->component_manager, entity, ComponentType::MetaInfo);
+	set_component_flag(&manager->component_types_manager, entity, ComponentType::MetaInfo);
 
 	add_component(manager, entity, ComponentType::Transform);
 
@@ -124,6 +124,7 @@ static void remove_entity_from_hierarchy(EntityManager* manager, Entity entity) 
 	u64 entity_index = entity_result.value;
 
 
+	
 
 	Entity parent_entity = manager->transform_manager.parent[entity_index];
 
@@ -233,11 +234,41 @@ static void remove_entity_from_hierarchy(EntityManager* manager, Entity entity) 
 	}
 }
 
-void destroy_entity(EntityManager* manager, Entity entity) {
+bool destroy_entity(EntityManager* manager, Entity entity) {
 	if (entity == manager->root) {
 		// can't destroy the root entity
-		return;
+		return false;
 	}
+
+	// Get index of the entity we are trying to remove
+	MapResult<u64> result = map_get(&manager->entity_index_map, entity.id);
+	if (!result.found) {
+		// This entity has already been deleted 
+		return false;
+	}
+	u64 index = result.value;
+
+	Entity child = manager->transform_manager.first_child[index];
+
+	do {
+	
+		if (child.id != NO_ENTITY_ID) {
+			Entity tmp = child;
+
+
+			MapResult<u64> next_result = map_get(&manager->entity_index_map, child.id);
+			if (next_result.found) {
+				child = manager->transform_manager.next_sibling[next_result.value];
+			}
+
+			destroy_entity(manager, tmp);
+		}
+		
+
+		
+	} while (child.id != NO_ENTITY_ID);
+
+	
 
 	// The simplest way to think about reparenting an entity
 	// is to first think about removing the child from the tree and updating all the entitys that were previously attached to the entity
@@ -269,13 +300,7 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 
 	
 	
-	// Get index of the entity we are trying to remove
-	MapResult<u64> result = map_get(&manager->entity_index_map, entity.id);
-	if (!result.found) {
-		// This entity has already been deleted 
-		return;
-	}
-	u64 index = result.value;
+
 	
 	Entity last_entity_in_list_to_swap_with = manager->entity_list[manager->entity_count - 1];
 	// Place the last entity in the entity list at the index we are removing from
@@ -294,7 +319,8 @@ void destroy_entity(EntityManager* manager, Entity entity) {
 		em_remove_component(manager, entity, type);
 	}
 
-	remove_component_flag(&manager->component_manager, entity);
+	remove_component_flag(&manager->component_types_manager, entity);
+	return true;
 
 }
 
@@ -326,7 +352,7 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType componen
 		return false;
 	}
 
-	set_component_flag(&manager->component_manager, entity, component);
+	set_component_flag(&manager->component_types_manager, entity, component);
 
 	switch (component) {
 		case ComponentType::Transform: {
@@ -367,7 +393,7 @@ bool add_component(EntityManager* manager, Entity entity, ComponentType componen
 
 static bool em_remove_component(EntityManager* manager, Entity entity, ComponentType component) {
 
-	unset_component_flag(&manager->component_manager, entity, component);
+	unset_component_flag(&manager->component_types_manager, entity, component);
 	switch (component) {
 		case ComponentType::None: {
 			return false;
@@ -414,7 +440,7 @@ bool remove_component(EntityManager* manager, Entity entity, ComponentType compo
 
 
 bool has_component(EntityManager* manager, Entity entity, ComponentType component) {
-	ComponentManager* cpm = &manager->component_manager;
+	ComponentTypesManager* cpm = &manager->component_types_manager;
 	MapResult<u64> result = map_get(&cpm->id_map, entity.id);
 	if (!result.found) {
 		assert_fail();
@@ -493,7 +519,7 @@ bool is_component_enabled(EntityManager* manager, Entity entity, ComponentType c
 void init_entity_manager(EntityManager* manager) {
 	arena_init(&manager->arena);
 
-	init_component_manager(&manager->component_manager);
+	init_component_manager(&manager->component_types_manager);
 
 	manager->entity_count = 0;
 	manager->entitys_created = 0;
@@ -523,7 +549,7 @@ void destroy_entity_manager(EntityManager* manager) {
 	arena_free(&manager->arena);
 	stb_sb_free(manager->entity_list);
 
-	destroy_component_manager(&manager->component_manager);
+	destroy_component_manager(&manager->component_types_manager);
 	destroy_metainfo_manager(&manager->meta_manager);
 	destroy_transform_manager(&manager->transform_manager);
 	destroy_static_mesh_manager(&manager->static_mesh_manger);

@@ -1,5 +1,8 @@
 #pragma once
 
+
+
+
 #include "Math/Vec.h"
 #include "Math/Mat.h"
 #include "Math/Quaternion.h"
@@ -156,44 +159,6 @@ struct TransformManager {
 };
 
 
-template<typename T>
-static bool entity_add_component_data(TransformManager* manager, Entity entity, T** list, T con, u64 index) {
-	
-	
-	
-
-	u64 count = stb_sb_count((*list));
-	if (manager->enabled_count == manager->total_count && count != manager->enabled_count) {
-		(*list)[manager->enabled_count] = con;
-	} else {
-		stb_sb_push((*list), con);
-	}
-
-	T this_comp = (*list)[index];
-	T first_disabled_comp = (*list)[manager->enabled_count];
-
-	// swap the first disabled comp with the comp we are trying to enable
-	(*list)[manager->enabled_count] = this_comp;
-	(*list)[index] = first_disabled_comp;
-
-	
-
-	return true;
-
-}
-
-template<typename T>
-static bool entity_remove_component_data(TransformManager* manager, Entity entity, T* list, u64 index, u64 swap_index) {
-
-	// Get the last in the list to swap with
-	T this_comp = list[index];
-	T last_comp = list[swap_index];
-	// swap the last at the current index we are removing from
-	list[index] = last_comp;
-	return true;
-
-	
-}
 
 
 void init_transform_manager(TransformManager* manager);

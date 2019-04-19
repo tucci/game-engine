@@ -148,7 +148,7 @@ bool is_material_loaded(Renderer* renderer, MaterialID id) {
 
 RenderMaterialResource create_material_resource(Renderer* renderer, InternalMaterial* material) {
 	
-	TextureID no_texture = { 0 };
+	TextureID no_texture;
 	
 	RenderMaterialResource material_handle;
 	

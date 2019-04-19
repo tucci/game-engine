@@ -170,7 +170,6 @@ static bool init_debug(Engine* engine);
 static bool init_ecs(Engine* engine);
 static bool init_asset_manager(Engine* engine);
 
-static void update_clock(Engine* engine);
 static void poll_inputs(Engine* engine);
 
 static bool load_engine_into_mode(Engine* engine);
