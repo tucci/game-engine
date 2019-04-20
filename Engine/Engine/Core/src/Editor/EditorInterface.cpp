@@ -276,7 +276,6 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//scene_asset = find_asset_by_name(importer->tracker, "mill.fbx.easset");
 	//if (scene_asset.id == 0) {
 	//	scene_asset = import_fbx(importer, "Assets/test_fbx/mill.fbx", true);
-	//	Entity imported_scene = import_scene(editor, scene_asset.scene);
 	//}
 	
 
@@ -610,24 +609,26 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		
 		ImGui::PushID("pos_default");
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale, true);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Position", new_pos.data, 1.0f)) {
 			//set_position(entity_manager, e, old_scale);
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, new_pos, old_rot, old_scale);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, new_pos, old_rot, old_scale, true);
 		}
 		ImGui::PopID();
 		
 		ImGui::PushID("rot_default");
 
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale, true);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
 			new_rot = euler_to_quat(euler);
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, new_rot, old_scale);
+
+			//set_rotation(entity_manager, e, new_rot);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, new_rot, old_scale, true);
 			
 		}
 		ImGui::PopID();
@@ -636,11 +637,11 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		ImGui::PushID("scale_default");
 		
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1));
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1), true);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Scale", new_scale.data, 1.0f)) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, new_scale);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, new_scale, true);
 		}
 		ImGui::PopID();
 		
@@ -2105,7 +2106,7 @@ static void cmd_editor_deselect_all_entitys(EditorInterface* editor) {
 }
 
 
-static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale) {
+static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool update_if_top) {
 	EditorCommand command;
 	command.type = EditorCommandType::SET_TRANSFORM;
 	command.cmd.set_transform.entity = e;
@@ -2120,5 +2121,31 @@ static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f ol
 	command.cmd.set_transform.rotation = rot;
 	command.cmd.set_transform.old_rotation = old_rot;
 	
-	push_editor_command(editor, command);
+	if (update_if_top) {
+		size_t top = editor->cmd_buffer.command_undo_stack_count;
+		if (top > 0) {
+			EditorCommand* top_command = &editor->cmd_buffer.command_undo_stack[top - 1];
+			if (top_command->type == EditorCommandType::SET_TRANSFORM) {
+				top_command->cmd.set_transform.position = pos;
+				top_command->cmd.set_transform.scale = scale;
+				top_command->cmd.set_transform.rotation = rot;
+
+
+				this is hacky and no good
+
+
+				set_position(editor->api.entity_manager, e, pos);
+				set_scale(editor->api.entity_manager, e, scale);
+				set_rotation(editor->api.entity_manager, e, rot);
+			} else {
+				push_editor_command(editor, command);
+			}
+		} else {
+			push_editor_command(editor, command);
+		}
+		
+	} else {
+		push_editor_command(editor, command);
+	}
+	
 }

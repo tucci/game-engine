@@ -100,30 +100,42 @@ Mat4x4f quat_to_rotation_matrix(const Quat& q) {
 
 Vec3f quat_to_euler(const Quat& q) {
 
+	// Taken from https://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/	
+	double heading;
+	double attitude;
+	double bank;
 	
-	Vec3f euler;
-
-	// roll 
-	float sinr_cosp = +2.0 * (q.w * q.x + q.y * q.z);
-	float cosr_cosp = +1.0 - 2.0 * (q.x * q.x + q.y * q.y);
-	euler.x = RAD2DEG(atan2f_(sinr_cosp, cosr_cosp));
-
-	// pitch 
-	double sinp = +2.0 * (q.w * q.y - q.z * q.x);
-	if (fabs(sinp) >= 1)
-		euler.z = RAD2DEG(copysignf_(PI / 2, sinp)); // use 90 degrees if out of range
-	else
-		euler.z = RAD2DEG(asinf_(sinp));
-
-	// yaw 
-	double siny_cosp = +2.0 * (q.w * q.z + q.x * q.y);
-	double cosy_cosp = +1.0 - 2.0 * (q.y * q.y + q.z * q.z);
-	euler.y = RAD2DEG(atan2f_(siny_cosp, cosy_cosp));
+	double sqw = q.w * q.w;
+	double sqx = q.x * q.x;
+	double sqy = q.y * q.y;
+	double sqz = q.z * q.z;
+	double unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+	double test = q.x * q.y + q.z * q.w;
 	
-
-
-
+	if (test > 0.499*unit) { // singularity at north pole
+		heading = 2 * atan2(q.x, q.w);
+		attitude = PI / 2;
+		bank = 0;
+		Vec3f euler(RAD2DEG(bank), RAD2DEG(heading), RAD2DEG(attitude));
+		return euler;
+	}
+	if (test < -0.499*unit) { // singularity at south pole
+		heading = -2 * atan2(q.x, q.w);
+		attitude = -PI / 2;
+		bank = 0;
+		Vec3f euler(RAD2DEG(bank), RAD2DEG(heading), RAD2DEG(attitude));
+		return euler;
+	}
+	heading = atan2(2 * q.y * q.w - 2 * q.x * q.z, sqx - sqy - sqz + sqw);
+	attitude = asin(2 * test / unit);
+	bank = atan2(2 * q.x * q.w - 2 * q.y * q.z, -sqx + sqy - sqz + sqw);
+	
+	
+	
+	Vec3f euler(RAD2DEG(bank), RAD2DEG(heading), RAD2DEG(attitude));
 	return euler;
+
+
 }
 
 // Euler angles in degrees

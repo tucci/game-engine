@@ -39,4 +39,4 @@ static void cmd_editor_create_camera(EditorInterface* editor);
 
 static void cmd_editor_select_entity(EditorInterface* editor, Entity entity, bool selected);
 static void cmd_editor_deselect_all_entitys(EditorInterface* editor);
-static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale);
+static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool update_if_top);
