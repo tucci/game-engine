@@ -9,6 +9,93 @@
 
 
 
+static void import_scene_node(EditorInterface* editor, AssetImport_Scene* scene, AssetImport_SceneNode* parent_node, Entity parent_entity) {
+
+	EntityManager* entity_manager = editor->api.entity_manager;
+	AssetManager* asset_manager = editor->api.asset_manager;
+	AssetImport_SceneNode* children = parent_node->children;
+	for (u32 i = 0; i < parent_node->children_count; i++) {
+		AssetImport_SceneNode* child_node = &children[i];
+		Entity child_entity = create_entity(entity_manager, child_node->name);
+
+
+
+
+		//add_component(manager, child_entity, ComponentType::Transform);
+		//set_name(manager, child_entity, child_node->name);
+		set_position(entity_manager, child_entity, child_node->translation);
+		set_scale(entity_manager, child_entity, child_node->scale);
+		set_rotation(entity_manager, child_entity, euler_to_quat(child_node->get_rotation));
+		attach_child_entity(entity_manager, parent_entity, child_entity);
+
+		import_scene_node(editor, scene, child_node, child_entity);
+	}
+
+	if (parent_node->mesh_count > 0) {
+		for (u32 i = 0; i < parent_node->mesh_count; i++) {
+			add_component(entity_manager, parent_entity, ComponentType::StaticMesh);
+			add_component(entity_manager, parent_entity, ComponentType::Render);
+
+
+
+			u32 mesh_index = parent_node->meshes[i];
+			AssetID mesh_id = scene->mesh_infos[mesh_index];
+			set_static_mesh(entity_manager, parent_entity, mesh_id.mesh);
+
+			// TODO: What happens when the mesh has multiple child nodes, does that mean is has multiple materials?
+			//assert(parent_node->children_count < 2);
+			// Get material for this mesh
+			if (parent_node->children_count != 0) {
+				AssetImport_SceneNode* child_node = &parent_node->children[i];
+				if (child_node->material_count > 0) {
+					u32 mat_index = child_node->materials[0];
+					AssetID material_id = scene->material_infos[mat_index];
+					set_render_material(entity_manager, parent_entity, material_id.material);
+				} else {
+					// use default material
+					set_render_material(entity_manager, parent_entity, asset_manager->default_mat.material);
+				}
+			} else {
+				// use default material
+				set_render_material(entity_manager, parent_entity, asset_manager->default_mat.material);
+
+			}
+
+
+		}
+	}
+
+}
+
+Entity import_scene(EditorInterface* editor, SceneID id) {
+
+	AssetID scene_id;
+	scene_id.id = id.id;
+	scene_id.type = AssetType::Scene;
+	
+	InternalAsset asset = get_asset_by_id(editor->api.asset_manager, scene_id);
+
+	AssetImport_Scene* scene = asset.scene;
+	EntityManager* manager = editor->api.entity_manager;
+
+
+	Entity root = create_entity(manager, scene->root->name);
+	//add_component(manager, root, ComponentType::Transform);
+	//set_name(manager, root, scene->root->name);
+
+	set_position(manager, root, scene->root->translation);
+	set_scale(manager, root, scene->root->scale);
+	set_rotation(manager, root, euler_to_quat(scene->root->get_rotation));
+
+
+	import_scene_node(editor, scene, scene->root, root);
+	return root;
+}
+
+
+
+
+
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	map_init(&editor->entity_selected);
@@ -48,6 +135,10 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	void* mem_block = arena_alloc(&editor->arena, mem_size);
 	mem_size = editor->arena.end - cast(char*) mem_block;
 	stack_alloc_init(&editor->stack, mem_block, mem_size);
+
+	
+	
+	init_asset_importer(&editor->importer, &editor->api.asset_manager->asset_tracker);
 
 	
 
@@ -174,6 +265,19 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	light.dir_light.color = Vec3f(1, 1, 1);
 	set_light(entity_manager, editor->entity_test_light, light);
 
+
+
+
+	
+	
+
+	//AssetImporter* importer = &editor->importer;
+	//AssetID scene_asset;
+	//scene_asset = find_asset_by_name(importer->tracker, "mill.fbx.easset");
+	//if (scene_asset.id == 0) {
+	//	scene_asset = import_fbx(importer, "Assets/test_fbx/mill.fbx", true);
+	//	Entity imported_scene = import_scene(editor, scene_asset.scene);
+	//}
 	
 
 	return true;
@@ -181,6 +285,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 void destroy_editor_interface(EditorInterface* editor) {
 	map_destroy(&editor->entity_selected);
+	destroy_asset_importer(&editor->importer);
 	arena_free(&editor->arena);
 }
 
@@ -1540,6 +1645,7 @@ static void push_editor_undo_command(EditorInterface* editor, const EditorComman
 }
 
 static void push_editor_command(EditorInterface* editor, const EditorCommand& command) {
+	
 	
 	//editor->cmd_buffer.current_group.command_count++;
 	editor->cmd_buffer.commands[editor->cmd_buffer.command_count] = command;

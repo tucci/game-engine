@@ -139,7 +139,7 @@ struct EditorInterface {
 	u64 entity_selected_count = 0;
 	CompactMap<bool> entity_selected;
 
-	
+	AssetImporter importer;
 	EditorCommandBuffer cmd_buffer;
 	
 	AssetID test_mat;

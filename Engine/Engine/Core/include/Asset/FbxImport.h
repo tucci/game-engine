@@ -54,7 +54,7 @@ struct FBX_Model {
 struct FBX_Material {
 	MaterialShadingModel shading_model;
 
-	s32 name_length;
+	size_t name_length;
 	char* name;
 
 	double emissive_factor;
