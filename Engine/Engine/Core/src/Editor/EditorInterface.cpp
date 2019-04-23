@@ -165,11 +165,11 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 
-	//AssetID tcolor = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-albedo.png"), true);
-	//AssetID tnormal = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-normal.png"), true);
-	//AssetID tmetallic = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-metalness.png"), true);
-	//AssetID troughness = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-roughness.png"), true);
-	//AssetID tao = import_texture(editor->api.asset_manager, IString("Assets/textures/paint_cement/wornpaintedcement-ao.png"), true);
+	//AssetID tcolor = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-albedo.png"), true);
+	//AssetID tnormal = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-normal.png"), true);
+	//AssetID tmetallic = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-metalness.png"), true);
+	//AssetID troughness = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-roughness.png"), true);
+	//AssetID tao = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-ao.png"), true);
 	//
 	//Material test_mat;
 	//init_material_defaults(&test_mat);
@@ -2129,10 +2129,6 @@ static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f ol
 				top_command->cmd.set_transform.position = pos;
 				top_command->cmd.set_transform.scale = scale;
 				top_command->cmd.set_transform.rotation = rot;
-
-
-				this is hacky and no good
-
 
 				set_position(editor->api.entity_manager, e, pos);
 				set_scale(editor->api.entity_manager, e, scale);

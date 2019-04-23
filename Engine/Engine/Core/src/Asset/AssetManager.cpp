@@ -50,29 +50,29 @@ void init_asset_manager(AssetManager* manager) {
 	// default texture
 	// cube/plane/sphere meshes
 
-	//IString path = "Assets";
-	//IString name = "Default";
+	//String path = "Assets";
+	//String name = "Default";
 	//Material default_mat;
 	//init_material_defaults(&default_mat);
 	//manager->default_mat = create_material_asset(manager, path, name, &default_mat);
 
 
 
-	//AssetImporter importer;
-	//init_asset_importer(&importer, &manager->asset_tracker);
-	//
-	//AssetID import_scene;
-	//
-	//import_scene = import_fbx(&importer, "Assets/cube.fbx", true);
+	AssetImporter importer;
+	init_asset_importer(&importer, &manager->asset_tracker);
+	
+	AssetID import_scene;
+	
+	import_scene = import_fbx(&importer, "Assets/cube.fbx", true);
 	//import_scene = import_fbx(&importer, "Assets/plane.fbx", true);
-	//import_scene = import_fbx(&importer, "Assets/sphere.fbx", true);
-	//
-	//
-	//
-	//
-	//
-	//
-	//destroy_asset_importer(&importer);
+	import_scene = import_fbx(&importer, "Assets/sphere.fbx", true);
+	
+	
+	
+	
+	
+	
+	destroy_asset_importer(&importer);
 
 	
 	
