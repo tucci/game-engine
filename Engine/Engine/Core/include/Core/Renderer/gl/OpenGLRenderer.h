@@ -100,7 +100,7 @@ RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, boo
 RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, unsigned int height);
 RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_texture, GLenum format, GLint internalformat);
 RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, unsigned int height, bool mipmap);
-RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file, const char* fragment_file);
+RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file, const char* fragment_file, const char* geometry_file);
 RenderResource gl_create_vbo(OpenGLRenderer* opengl);
 RenderResource gl_create_ebo(OpenGLRenderer* opengl);
 RenderResource gl_create_vao(OpenGLRenderer* opengl);

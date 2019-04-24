@@ -191,13 +191,13 @@ RenderResource create_texture_resource(Renderer* renderer, Texture2D* texture, b
 	return handle;
 }
 
-RenderResource create_shader_resource(Renderer* renderer, const char* vertex_file, const char* fragment_file) {
+RenderResource create_shader_resource(Renderer* renderer, const char* vertex_file, const char* fragment_file, const char* geometry_file) {
 	
 	RenderResource handle;
 	
 	switch (renderer->type) {
 		case BackenedRendererType::OpenGL:
-			handle = gl_create_shader(&renderer->opengl, vertex_file, fragment_file);
+			handle = gl_create_shader(&renderer->opengl, vertex_file, fragment_file, geometry_file);
 			break;
 	}
 	renderer->render_world.resources_count++;

@@ -658,6 +658,9 @@
     <None Include="lib\glew210\doc\install.html" />
     <None Include="lib\glew210\doc\log.html" />
     <None Include="lib\glew210\doc\wglew.html" />
+    <None Include="Assets\shaders\debug\normal_vis.vs" />
+    <None Include="Assets\shaders\debug\normal_vis.fs" />
+    <None Include="Assets\shaders\debug\normal_vis.gs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Engine.rc">

@@ -189,9 +189,9 @@ void load_scene(Game* game, int scene_id) {
 	light.dir_light.color = Vec3f(1, 1, 1);;
 	set_light(entity_manager, scene->entity_test_light, light);
 
-	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
-	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "Assets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-	load_hdr_skymap(&scene->hdr_skymap, &game->stack, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	//load_hdr_skymap(&scene->hdr_skymap, &game->game_memory, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
+	load_hdr_skymap(&scene->hdr_skymap, &game->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 
 	create_skymap(renderer, &scene->hdr_skymap);
 	create_shadowmap(renderer);

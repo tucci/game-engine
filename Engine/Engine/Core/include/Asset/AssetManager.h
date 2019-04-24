@@ -57,6 +57,7 @@ struct AssetManager {
 	AssetID plane_mesh;
 	AssetID cube_mesh;
 	AssetID sphere_mesh;
+	AssetID monkey_mesh;
 
 
 };

@@ -63,10 +63,11 @@ void init_asset_manager(AssetManager* manager) {
 	
 	AssetID import_scene;
 	
-	import_scene = import_fbx(&importer, "Assets/cube.fbx", true);
-	//import_scene = import_fbx(&importer, "Assets/plane.fbx", true);
-	import_scene = import_fbx(&importer, "Assets/sphere.fbx", true);
-	
+	import_scene = import_fbx(&importer, "InternalAssets/staticmeshes/cube.fbx", true);
+	import_scene = import_fbx(&importer, "InternalAssets/staticmeshes/plane.fbx", true);
+	import_scene = import_fbx(&importer, "InternalAssets/staticmeshes/sphere.fbx", true);
+	import_scene = import_fbx(&importer, "InternalAssets/staticmeshes/monkey.fbx", true);
+
 	
 	
 	
@@ -76,10 +77,11 @@ void init_asset_manager(AssetManager* manager) {
 
 	
 	
-	manager->default_mat = load_asset_by_name(manager, "Assets/Default_mat.easset");
-	manager->cube_mesh = load_asset_by_name(manager, "Assets/Cube_mesh.easset");
-	manager->plane_mesh = load_asset_by_name(manager, "Assets/Grid_mesh.easset");
-	manager->sphere_mesh = load_asset_by_name(manager, "Assets/Sphere_mesh.easset");
+	manager->default_mat = load_asset_by_name(manager, "InternalAssets/staticmeshes/Default_mat.easset");
+	manager->cube_mesh = load_asset_by_name(manager, "InternalAssets/staticmeshes/Cube_mesh.easset");
+	manager->plane_mesh = load_asset_by_name(manager, "InternalAssets/staticmeshes/Grid_mesh.easset");
+	manager->sphere_mesh = load_asset_by_name(manager, "InternalAssets/staticmeshes/Sphere_mesh.easset");
+	manager->monkey_mesh = load_asset_by_name(manager, "InternalAssets/staticmeshes/Suzanne_mesh.easset");
 	
 	
 

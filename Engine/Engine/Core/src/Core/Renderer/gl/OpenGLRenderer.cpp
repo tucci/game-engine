@@ -33,11 +33,11 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	opengl->render_world->env_cubemap_res = gl_create_cubemap(opengl, skymap_buffer_width, skymap_buffer_height, false);
 
 	// Load skymap to equirectangular shader 
-	opengl->render_world->equirectangular_shader_res = gl_create_shader(opengl, "Assets/shaders/hdr_skymap.vs", "Assets/shaders/hdr_skymap.fs");
-	opengl->render_world->irradiance_shader_res = gl_create_shader(opengl, "Assets/shaders/hdr_skymap.vs", "Assets/shaders/irradiance_conv.fs");
-	opengl->render_world->prefilter_shader_res = gl_create_shader(opengl, "Assets/shaders/hdr_skymap.vs", "Assets/shaders/prefilter.fs");
-	opengl->render_world->brdf_shader_res = gl_create_shader(opengl, "Assets/shaders/brdf.vs", "Assets/shaders/brdf.fs");
-	opengl->render_world->skybox_shader_res = gl_create_shader(opengl, "Assets/shaders/skybox.vs", "Assets/shaders/skybox.fs");
+	opengl->render_world->equirectangular_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/hdr_skymap.vs", "InternalAssets/shaders/hdr_skymap.fs", NULL);
+	opengl->render_world->irradiance_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/hdr_skymap.vs", "InternalAssets/shaders/irradiance_conv.fs", NULL);
+	opengl->render_world->prefilter_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/hdr_skymap.vs", "InternalAssets/shaders/prefilter.fs", NULL);
+	opengl->render_world->brdf_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/brdf.vs", "InternalAssets/shaders/brdf.fs", NULL);
+	opengl->render_world->skybox_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/skybox.vs", "InternalAssets/shaders/skybox.fs", NULL);
 	
 
 
@@ -326,7 +326,7 @@ void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 
 void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 	
-	opengl->render_world->shadow_shader_res = gl_create_shader(opengl, "Assets/shaders/shadows.vs", "Assets/shaders/shadows.fs");
+	opengl->render_world->shadow_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/shadows.vs", "InternalAssets/shaders/shadows.fs", NULL);
 	opengl->render_world->shadow_fbo_res = gl_create_fbo(opengl);
 	opengl->render_world->shadow_map_res = gl_create_shadow_map(opengl, SHADOW_WIDTH_RES, SHADOW_HEIGHT_RES);
 
@@ -452,7 +452,7 @@ RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, uns
 	return handle;
 }
 
-RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file, const char* fragment_file) {
+RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file, const char* fragment_file, const char* geometry_file) {
 	RenderResource handle;
 	handle.type = RenderResourceType::SHADER;
 	GLShader shader;
@@ -460,14 +460,22 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 	// Alloc on stack
 	const char* vertex_shader = file_to_str(vertex_file, &opengl->stack_allocator);
 	const char* fragment_shader = file_to_str(fragment_file, &opengl->stack_allocator);
+	const char* geometry_shader = NULL;
+	if (geometry_file != NULL) {
+		geometry_shader = file_to_str(geometry_file, &opengl->stack_allocator);
+	}
+	
 	assert(vertex_shader != NULL);
 	assert(fragment_shader != NULL);
 
 	if (vertex_shader && fragment_shader) {
-		load_gl_shader(&shader, &vertex_shader, &fragment_shader);
-		// Free stack
+		load_gl_shader(&shader, &vertex_shader, &fragment_shader, (geometry_shader == NULL) ? NULL : &geometry_shader);
+		// Free file string stack
 		stack_pop(&opengl->stack_allocator);
 		stack_pop(&opengl->stack_allocator);
+		if (geometry_file != NULL) {
+			stack_pop(&opengl->stack_allocator);
+		}
 
 
 		int next_shader_index = opengl->shader_count;
@@ -729,7 +737,8 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	glEnable(GL_DEPTH_TEST);
 
 	// TODO: remove these hardcoded shaders out of here, and instead into the scene loading
-	opengl->render_world->texture_shader_res = gl_create_shader(opengl, "Assets/shaders/textured.vs", "Assets/shaders/textured.fs");
+	opengl->render_world->texture_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/textured.vs", "InternalAssets/shaders/textured.fs", NULL);
+	opengl->render_world->normal_vis_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug/normal_vis.vs", "InternalAssets/shaders/debug/normal_vis.fs", "InternalAssets/shaders/debug/normal_vis.gs");
 	
 	opengl->render_world->render_mesh_capacity = 10;
 	opengl->render_world->render_mesh_count = 0;
@@ -745,7 +754,7 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	opengl->show_debug_axes = true;
 	opengl->draw_lines = false;
 
-	opengl->render_world->debug_shader_res = gl_create_shader(opengl, "Assets/shaders/debug.vs", "Assets/shaders/debug.fs");
+	opengl->render_world->debug_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug.vs", "InternalAssets/shaders/debug.fs", NULL);
 	opengl->render_world->debug_grid_vao_res = gl_create_vao(opengl);
 	opengl->render_world->debug_grid_vbo_res = gl_create_vbo(opengl);
 
@@ -1045,7 +1054,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	DirectionalLight test_light = opengl->render_world->test_light.dir_light;
 
-
+	
 
 	int draw_type = GL_TRIANGLES;
 	if (opengl->draw_lines) {
@@ -1086,7 +1095,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	
 
-
+	//somehow need to render debug normal vis shader here in a nice way
 
 	GLint current_shader = light_pass ?
 		opengl->shaders[opengl->render_world->shadow_shader_res.handle].program

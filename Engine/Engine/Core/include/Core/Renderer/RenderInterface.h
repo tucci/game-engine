@@ -107,6 +107,7 @@ struct RenderWorld {
 	RenderResource skybox_ebo_res;
 
 	RenderResource texture_shader_res;
+	RenderResource normal_vis_shader_res;
 
 	RenderResource VAO;
 	RenderResource VBO; // id to the Buffer that stores our vertices

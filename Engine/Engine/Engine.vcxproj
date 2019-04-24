@@ -383,6 +383,9 @@
     <None Include="Assets\shaders\brdf.vs" />
     <None Include="Assets\shaders\debug.fs" />
     <None Include="Assets\shaders\debug.vs" />
+    <None Include="Assets\shaders\debug\normal_vis.fs" />
+    <None Include="Assets\shaders\debug\normal_vis.gs" />
+    <None Include="Assets\shaders\debug\normal_vis.vs" />
     <None Include="Assets\shaders\hdr_skymap.fs" />
     <None Include="Assets\shaders\hdr_skymap.vs" />
     <None Include="Assets\shaders\irradiance_conv.fs" />

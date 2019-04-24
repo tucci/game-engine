@@ -152,7 +152,10 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	set_position(api.entity_manager, editor->editor_camera, Vec3f(0, 0, 0));
 
 	
-	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "Assets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
+	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+
 	create_skymap(api.renderer, &editor->hdr_skymap);
 	create_shadowmap(api.renderer);
 
@@ -165,11 +168,11 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 
-	//AssetID tcolor = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-albedo.png"), true);
-	//AssetID tnormal = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-normal.png"), true);
-	//AssetID tmetallic = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-metalness.png"), true);
-	//AssetID troughness = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-roughness.png"), true);
-	//AssetID tao = import_texture(editor->api.asset_manager, String("Assets/textures/paint_cement/wornpaintedcement-ao.png"), true);
+	//AssetID tcolor = import_texture(editor->api.asset_manager,		String("Assets/textures/wet_stone/slipperystonework-albedo.png"), true);
+	//AssetID tnormal = import_texture(editor->api.asset_manager,		String("Assets/textures/wet_stone/slipperystonework-normal.png"), true);
+	//AssetID tmetallic = import_texture(editor->api.asset_manager,	String("Assets/textures/wet_stone/slipperystonework-metalness.png"), true);
+	//AssetID troughness = import_texture(editor->api.asset_manager,	String("Assets/textures/wet_stone/slipperystonework-rough.png"), true);
+	//AssetID tao = import_texture(editor->api.asset_manager,			String("Assets/textures/wet_stone/slipperystonework-ao.png"), true);
 	//
 	//Material test_mat;
 	//init_material_defaults(&test_mat);
@@ -180,17 +183,25 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//test_mat.roughness = troughness.texture;
 	//test_mat.ao = tao.texture;
 	//
-	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets/textures/paint_cement/", "paint_cement_mat", &test_mat);
+	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets/textures/wet_stone/", "slipperystonework", &test_mat);
 
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat_mat.easset");
-	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_mat_mat.easset");
-	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
-	
-	
-	
-	
 
+
+	
+	//editor->test_mat = mat_id;
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
+
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_red_mat.easset");
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_green_mat.easset");
+
+	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/wet_stone/slipperystonework_mat.easset");
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold-scuffed_mat.easset");
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_iron_mat.easset");
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
+	
+	
 
 
 	EntityManager* entity_manager = editor->api.entity_manager;
@@ -237,7 +248,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
 	set_render_material(entity_manager, editor->test_mesh, editor->test_mat.material);
 	
-	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->cube_mesh.mesh);
+	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->monkey_mesh.mesh);
 
 
 	add_component(entity_manager, e3, ComponentType::StaticMesh);

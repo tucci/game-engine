@@ -130,26 +130,27 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	// Write normals straight to file
 	for (int i = 0; i < geo->index_count; i++) {
 
-		//fwrite(cast(const void*) &geo->normal[(3 * i) + 0], sizeof(Vec3f), 1, file);
-		//fwrite(cast(const void*) &geo->normal[(3 * i) + 1], sizeof(Vec3f), 1, file);
-		//fwrite(cast(const void*) &geo->normal[(3 * i) + 2], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->normal[(3 * i) + 0], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->normal[(3 * i) + 1], sizeof(Vec3f), 1, file);
+		fwrite(cast(const void*) &geo->normal[(3 * i) + 2], sizeof(Vec3f), 1, file);
 
-		fwrite(cast(const void*) &geo->normal[0], sizeof(Vec3f), 1, file);
-		fwrite(cast(const void*) &geo->normal[1], sizeof(Vec3f), 1, file);
-		fwrite(cast(const void*) &geo->normal[2], sizeof(Vec3f), 1, file);
+		//fwrite(cast(const void*) &geo->normal[0], sizeof(Vec3f), 1, file);
+		//fwrite(cast(const void*) &geo->normal[1], sizeof(Vec3f), 1, file);
+		//fwrite(cast(const void*) &geo->normal[2], sizeof(Vec3f), 1, file);
 	}
 
 	if (geo->uv_count > 0) {
 
 		for (int i = 0; i < geo->index_count; i++) {
+			
 
-			//fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].x], sizeof(Vec2f), 1, file);
-			//fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].y], sizeof(Vec2f), 1, file);
-			//fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].z], sizeof(Vec2f), 1, file);
+			fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].x], sizeof(Vec2f), 1, file);
+			fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].y], sizeof(Vec2f), 1, file);
+			fwrite(cast(const void*) &geo->texcoords[geo->uv_indices[i].z], sizeof(Vec2f), 1, file);
 
-			fwrite(cast(const void*) &geo->texcoords[0], sizeof(Vec2f), 1, file);
-			fwrite(cast(const void*) &geo->texcoords[1], sizeof(Vec2f), 1, file);
-			fwrite(cast(const void*) &geo->texcoords[2], sizeof(Vec2f), 1, file);
+			//fwrite(cast(const void*) &geo->texcoords[0], sizeof(Vec2f), 1, file);
+			//fwrite(cast(const void*) &geo->texcoords[1], sizeof(Vec2f), 1, file);
+			//fwrite(cast(const void*) &geo->texcoords[2], sizeof(Vec2f), 1, file);
 		}
 	}
 
