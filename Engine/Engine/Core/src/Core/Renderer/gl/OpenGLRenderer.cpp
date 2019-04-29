@@ -968,7 +968,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 		Vec3f dir_light_line[2];
 		Vec3f dir_light_line_color[2];
 
-		dir_light_line[1] = opengl->render_world->test_light.dir_light.direction;
+		dir_light_line[1] = -opengl->render_world->test_light.dir_light.direction;
 		dir_light_line[0] = Vec3f(0, 0, 0);
 
 
