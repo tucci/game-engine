@@ -27,6 +27,7 @@ struct Buffer {
 struct String {
 	size_t length;
 	const char* buffer;
+	String() : buffer(NULL), length(0) {}
 	String(const char* cstr) : buffer(cstr), length(strlen(cstr)) {}
 	String(const char* cstr, size_t len) : buffer(cstr), length(len) {}
 };

@@ -115,7 +115,7 @@ InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 			// This id is currently not being tracked and is probably an error
 			assert_fail();
 		} else {
-			load_asset_by_name(manager, track_result.value.filename);
+			load_asset_by_name(manager, track_result.value.file.buffer);
 			result = map_get(&manager->asset_id_map, id.id);
 			index_to_asset_type_array = result.value;
 		}
@@ -269,7 +269,7 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 
 
 
-AssetID load_asset_by_name(AssetManager* manager, char* filename) {
+AssetID load_asset_by_name(AssetManager* manager, String filepath) {
 	AssetID asset;
 	asset.id = 0;
 	asset.status = AssetStatus::Unloaded;
@@ -280,20 +280,19 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 	
 	char buf[260];
-	String ifilename(filename);
-	platform_file_dirname(ifilename, buf, 260);
+	platform_file_dirname(filepath, buf, 260);
 	String path(buf);
 
 	
 
 	// TODO: use memory mapped files
-	err = fopen_s(&file, filename, "rb");
+	err = fopen_s(&file, filepath.buffer, "rb");
 
 	// TODO: if we are not able to load the file, our engine should handle it properly
 	if (err == 0) {
-		LOG_INFO("ASSET MANAGER", "Opening asset file %s,", filename);
+		LOG_INFO("ASSET MANAGER", "Opening asset file %s,", filepath.buffer);
 	} else {
-		LOG_FATAL("ASSET MANAGER", "Cannot open asset file %s\n", filename);
+		LOG_FATAL("ASSET MANAGER", "Cannot open asset file %s\n", filepath.buffer);
 		return asset;
 	}
 
@@ -747,9 +746,9 @@ AssetID load_asset_by_name(AssetManager* manager, char* filename) {
 
 		err = fclose(file);
 		if (err == 0) {
-			LOG_INFO("ASSET MANAGER", "Closed asset file %s\n", filename);
+			LOG_INFO("ASSET MANAGER", "Closed asset file %s\n", filepath.buffer);
 		} else {
-			LOG_FATAL("ASSET MANAGER", "Cannot close asset file %s\n", filename);
+			LOG_FATAL("ASSET MANAGER", "Cannot close asset file %s\n", filepath.buffer);
 		}
 	}
 
@@ -769,7 +768,7 @@ void load_asset_by_id(AssetManager* manager, AssetID id) {
 	MapResult<AssetTrackData> result = map_get(&manager->asset_tracker.track_map, id.id);
 	if (!result.found) { assert_fail(); }
 	
-	load_asset_by_name(manager, result.value.filename);
+	load_asset_by_name(manager, result.value.file);
 }
 
 
@@ -791,9 +790,9 @@ AssetID create_material_asset(AssetManager* manager, String path, String name, M
 	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
-
+	String files_str_str(file_str, str_size);
 	// Track the material asset into our system
-	AssetID id = track_asset(&manager->asset_tracker, file_str, str_size);
+	AssetID id = track_asset(&manager->asset_tracker, AssetType::Material, files_str_str);
 	id.type = AssetType::Material;
 
 	FILE* file;
@@ -962,7 +961,8 @@ AssetID import_texture(AssetManager* manager, String file, bool reimport) {
 		String file_with_ext(file_str);
 		platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
 
-		AssetID id = track_asset(&manager->asset_tracker, file_str, file_str_size);
+		String file_str_str(file_str, file_str_size);
+		AssetID id = track_asset(&manager->asset_tracker, AssetType::Texture, file_str_str);
 		id.type = AssetType::Texture;
 
 

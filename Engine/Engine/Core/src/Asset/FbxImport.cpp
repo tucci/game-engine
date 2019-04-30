@@ -61,8 +61,8 @@ static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, F
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
-
-	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	String file_str_str(file_str, str_size);
+	AssetID id = track_asset(importer->tracker, AssetType::StaticMesh, file_str_str);
 	id.type = AssetType::StaticMesh;
 
 	FILE* file;
@@ -189,8 +189,9 @@ static AssetID fbx_convert_mat_and_export(AssetImporter* importer, FBX_ImportDat
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
+	String file_str_str(file_str, str_size);
 	// Track the material asset into our system
-	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	AssetID id = track_asset(importer->tracker, AssetType::Material, file_str_str);
 	id.type = AssetType::Material;
 
 	FILE* file;
@@ -345,7 +346,8 @@ static AssetID fbx_convert_texture_and_export(AssetImporter* importer, FBX_Textu
 	String file_with_ext(file_str);
 	platform_concat_path_and_filename(path, file_with_ext, file_str, file_str_size);
 
-	AssetID id = track_asset(importer->tracker, file_str, file_str_size);
+	String file_str_str(file_str, file_str_size);
+	AssetID id = track_asset(importer->tracker, AssetType::Texture, file_str_str);
 	id.type = AssetType::Texture;
 
 	FILE* file;
@@ -472,8 +474,8 @@ AssetID export_static_mesh(AssetImporter* importer, StaticMesh* mesh, Vec3f pos,
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 	
-
-	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	String file_str_str(file_str, str_size);
+	AssetID id = track_asset(importer->tracker, AssetType::Texture, file_str_str);
 	id.type = AssetType::StaticMesh;
 
 	FILE* file;
@@ -760,8 +762,8 @@ AssetID export_asset_scene(AssetImporter* importer, AssetImport_Scene* scene, St
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 
-
-	AssetID id = track_asset(importer->tracker, file_str, str_size);
+	String file_str_str(file_str, str_size);
+	AssetID id = track_asset(importer->tracker, AssetType::Scene, file_str_str);
 	id.type = AssetType::Scene;
 
 

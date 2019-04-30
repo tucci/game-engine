@@ -15,65 +15,7 @@ void init_asset_tracker(AssetTracker* tracker) {
 	map_grow(&tracker->track_map, 16);
 	arena_init(&tracker->mem);
 
-
-	FILE* file = NULL;
-	errno_t err;
-	const char* track_file = ASSET_TRACKER_FILE;
-
-
-	// try reading first
-	// if the file doesnt exist, then we create it
-	err = fopen_s(&file, track_file, "rb");
-	
-
-	if (err == 0) {
-		// File exists
-		// construct the tracker data from the file
-		void* buffer[256];
-		
-		fread(buffer, sizeof(tracker->last_asset_id), 1, file);
-		tracker->last_asset_id = *cast(u64*)buffer;
-
-		fread(buffer, sizeof(tracker->assets_tracked), 1, file);
-		tracker->assets_tracked = *cast(u64*)buffer;
-
-
-		for (int i = 0; i < tracker->assets_tracked; i++) {
-			AssetTrackData track_data = { 0 };
-
-			
-
-			// Read the id
-			fread(buffer, sizeof(u64), 1, file);
-			AssetID id;
-			id.id = *cast(u64*)buffer;
-
-			// Read the filename length
-			fread(buffer, sizeof(u32), 1, file);
-			track_data.filename_length = *cast(u32*)buffer;
-
-
-			// Read the filename str, and copy it our own memory storage
-			fread(buffer, track_data.filename_length, 1, file);
-			track_data.filename = cast(char*) arena_alloc(&tracker->mem, track_data.filename_length);
-			snprintf(track_data.filename, track_data.filename_length, "%s", buffer);
-			map_put(&tracker->track_map, id.id, track_data);
-			
-		}
-
-		err = fclose(file);
-		if (err == 0) {
-			LOG_INFO("ASSET MANAGER","Closed %s\n", track_file);
-		} else {
-			assert_fail();
-			LOG_FATAL("ASSET MANAGER", "Cannot close to %s\n", track_file);
-		}
-
-	} else {
-		// File doesnt exist, don't do anything, the call to write_tracker_file, will create the file
-	}
-
-	
+	read_tracker_file(tracker);
 
 }
 
@@ -94,15 +36,19 @@ bool is_asset_tracked(AssetTracker* tracker, char* filename) {
 	// Asset is found and tracked
 	return true;
 }
+bool is_asset_tracked(AssetTracker* tracker, AssetID id) {
+	MapResult<AssetTrackData> result = map_get(&tracker->track_map, id.id);
+	return result.found;
+}
 
 void remove_all_tracked_assets(AssetTracker* tracker) {
 	size_t map_size = tracker->track_map.size;
 	// Go over our track map, and look for filename
-	for (int i = 0; i < map_size; i++) {
+	for (size_t i = 0; i < map_size; i++) {
 		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
 		// Check if this is a valid track data
 		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
-			platform_file_delete(track_item.value.filename);
+			platform_file_delete(track_item.value.file.buffer);
 			map_remove(&tracker->track_map, track_item.key);
 		}
 	}
@@ -112,18 +58,26 @@ void remove_all_tracked_assets(AssetTracker* tracker) {
 	
 }
 
+String name_of_asset(AssetTracker* tracker, AssetID id) {
+	MapResult<AssetTrackData> result = map_get(&tracker->track_map, id.id);
+	if (result.found) {
+		return result.value.file;
+	}
+	String no_string("");
+}
+
 // filename should not include the .easset extension
-AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
+AssetID find_asset_by_name(AssetTracker* tracker, String file) {
 	
 	char buffer[260];
 
-	convert_to_os_path(filename, buffer, 260);
+	convert_to_os_path(file.buffer, buffer, 260);
 	
 	
 	size_t filename_len = strlen(buffer);
 	size_t map_size = tracker->track_map.size;
 	// Go over our track map, and look for filename
-	for (int i = 0; i < map_size; i++) {
+	for (size_t i = 0; i < map_size; i++) {
 		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
 		// Check if this is a valid track data
 		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
@@ -139,9 +93,9 @@ AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
 			// we will never need to compare file strings anymore so we wont have to worry about it
 			// Usually in editor/debug mode we refer to assets by name
 			// while in production/game mode, we refer to assets by ids/offsets into the pak files
-			if (strncmp(buffer, track_item.value.filename, filename_len) == 0) {
+			if (strncmp(buffer, track_item.value.file.buffer, filename_len) == 0) {
 				AssetID id;
-				id.id = track_item.key;
+				id = track_item.value.assetid;
 				return id;
 			}
 			
@@ -153,38 +107,50 @@ AssetID find_asset_by_name(AssetTracker* tracker, const char* filename) {
 	id.type = AssetType::None;
 	
 	return id;
+
 }
 
-// Tracking doesnt know anything about the asset type, it just tracks it, and provides the asset id
-AssetID track_asset(AssetTracker* tracker, char* filename, u32 filename_length) {
+AssetID track_asset(AssetTracker* tracker, AssetType asset_type, String file) {
 
 
-	AssetID tracked_id = find_asset_by_name(tracker, filename);
+	AssetID tracked_id = find_asset_by_name(tracker, file);
 
 	// Asset is already tracked, just return the same id
 	if (tracked_id.id != 0) {
+		MapResult<AssetTrackData> result = map_get(&tracker->track_map, tracked_id.id);
+		if (result.found) {
+			AssetTrackData track_data;
+			track_data = result.value;
+			track_data.assetid.type = asset_type;
+			// override or tracker this asset with the given id
+			map_put(&tracker->track_map, tracked_id.id, track_data);
+		}
+
 		return tracked_id;
 	}
 
 	AssetID id;
 	id.id = next_asset_id(tracker);
+	id.type = asset_type;
 	MapResult<AssetTrackData> result = map_get(&tracker->track_map, id.id);
 
 	
 	AssetTrackData track_data;
 	if (result.found) {
-		// This asset is already being, tracked and will be overrided
+		// This asset is already being tracked and will be overrided
 		track_data = result.value;
 	} else {
 		// New asset that hasnt been tracked before	
 		tracker->assets_tracked++;
 	}
 
-	track_data.filename_length = filename_length;
-	// We need to copy the filename to our own memory
-	track_data.filename = cast(char*) arena_alloc(&tracker->mem, filename_length);
-	snprintf(track_data.filename, filename_length, "%s", filename);
+	track_data.assetid = id;
 
+	// We need to copy the filename to our own memory
+	char* filename_copy = cast(char*) arena_alloc(&tracker->mem, file.length);
+	memcpy(filename_copy, file.buffer, file.length);
+
+	track_data.file = String(filename_copy, file.length);
 	// override or tracker this asset with the given id
 	map_put(&tracker->track_map, id.id, track_data);
 	
@@ -214,23 +180,32 @@ void write_tracker_file(AssetTracker* tracker) {
 	err = fopen_s(&file, track_temp_file, "wb");
 
 	
+
+	
 	if (err == 0) {
+
+		u64 tracker_version = TRACKER_FILE_VERSION;
+		fwrite(cast(const void*) &tracker_version, sizeof(tracker_version), 1, file);
 
 		fwrite(cast(const void*) &tracker->last_asset_id, sizeof(tracker->last_asset_id), 1, file);
 		fwrite(cast(const void*) &tracker->assets_tracked, sizeof(tracker->assets_tracked), 1, file);
 
 		size_t map_size = tracker->track_map.size;
 		// Go over our track map, and write the tracked assets to file
-		for (int i = 0; i < map_size; i++) {
+		for (size_t i = 0; i < map_size; i++) {
 			CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
 			// Dont write the item, if the asset id/key is either 0, or a tombstone(deleted value)
 			if (track_item.key != 0 && track_item.key != TOMBSTONE) {
 				// Write the asset id
 				fwrite(cast(const void*) &track_item.key, sizeof(track_item.key), 1, file);
+
+				// Write the asset type
+				fwrite(cast(const void*) &track_item.value.assetid.type, sizeof(track_item.value.assetid.type), 1, file);
+
 				// Write the length of the filename
-				fwrite(cast(const void*) &track_item.value.filename_length, sizeof(track_item.value.filename_length), 1, file);
+				fwrite(cast(const void*) &track_item.value.file.length, sizeof(track_item.value.file.length), 1, file);
 				// Write the actual filename string
-				fwrite(cast(const void*) track_item.value.filename, track_item.value.filename_length, 1, file);
+				fwrite(cast(const void*) track_item.value.file.buffer, track_item.value.file.length, 1, file);
 			}
 		}
 
@@ -254,6 +229,81 @@ void write_tracker_file(AssetTracker* tracker) {
 	} else {
 		LOG_FATAL("ASSET MANAGER", "Cannot close to %s\n", track_temp_file);
 		assert_fail();
+	}
+}
+
+static void read_tracker_file(AssetTracker* tracker) {
+	FILE* file = NULL;
+	errno_t err;
+	const char* track_file = ASSET_TRACKER_FILE;
+
+
+	// try reading first
+	// if the file doesnt exist, then we create it
+	err = fopen_s(&file, track_file, "rb");
+
+
+	if (err == 0) {
+		// File exists
+		// construct the tracker data from the file
+		void* buffer[256];
+
+		u64 tracker_version = 0;
+		fread(buffer, sizeof(tracker_version), 1, file);
+		tracker_version = *cast(u64*)buffer;
+
+
+		fread(buffer, sizeof(tracker->last_asset_id), 1, file);
+		tracker->last_asset_id = *cast(u64*)buffer;
+
+		fread(buffer, sizeof(tracker->assets_tracked), 1, file);
+		tracker->assets_tracked = *cast(u64*)buffer;
+
+
+		for (u64 i = 0; i < tracker->assets_tracked; i++) {
+			AssetTrackData track_data;
+			memset(&track_data, 0, sizeof(AssetTrackData));
+
+
+			// Read the id
+			fread(buffer, sizeof(u64), 1, file);
+			track_data.assetid.id = *cast(u64*)buffer;
+
+			fread(buffer, sizeof(AssetType), 1, file);
+			track_data.assetid.type = *cast(AssetType*)buffer;
+			
+
+			
+			
+			// Read the filename length
+			// Note that the lenth of String length is size_t
+			fread(buffer, sizeof(size_t), 1, file);
+			//track_data.filename_length = *cast(u32*)buffer;
+			size_t filename_length = *cast(size_t*)buffer;
+
+
+			// Read the filename str, and copy it our own memory storage
+			fread(buffer, filename_length, 1, file);
+			char* filename = cast(char*) arena_alloc(&tracker->mem, filename_length);
+			//track_data.filename = cast(char*) arena_alloc(&tracker->mem, track_data.filename_length);
+			memcpy(filename, buffer, filename_length);
+			track_data.file = String(filename, filename_length);
+			map_put(&tracker->track_map, track_data.assetid.id, track_data);
+
+		}
+
+		err = fclose(file);
+		if (err == 0) {
+			LOG_INFO("ASSET MANAGER", "Closed %s\n", track_file);
+		}
+		else {
+			assert_fail();
+			LOG_FATAL("ASSET MANAGER", "Cannot close to %s\n", track_file);
+		}
+
+	}
+	else {
+		// File doesnt exist, don't do anything, the call to write_tracker_file, will create the file
 	}
 }
 

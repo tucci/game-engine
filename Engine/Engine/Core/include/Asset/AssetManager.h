@@ -75,7 +75,7 @@ InternalMaterial* get_material_internal_by_id(AssetManager* manager, MaterialID 
 void import_pak_file(AssetManager* manager, char* pak_file);
 
 
-AssetID load_asset_by_name(AssetManager* manager, char* filename);
+AssetID load_asset_by_name(AssetManager* manager, String file);
 void load_asset_by_id(AssetManager* manager, AssetID id);
 
 

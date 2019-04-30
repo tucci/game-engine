@@ -18,8 +18,10 @@
 #define ASSET_FILE_EXTENSION ".easset"
 #define ASSET_FILE_EXTENSION_LENGTH 7
 
+#define TRACKER_FILE_VERSION (u64)1
 
-enum class AssetType {
+
+enum class AssetType : u32{
 	None,
 	Scene,
 	StaticMesh,
@@ -160,8 +162,8 @@ struct AssetImport_Scene {
 
 
 struct AssetTrackData {
-	u32 filename_length;
-	char* filename;
+	AssetID assetid;
+	String file;
 };
 
 
@@ -188,12 +190,18 @@ void destroy_asset_tracker(AssetTracker* tracker);
 // find_asset_by_name and is_asset_tracked both do the same thing
 // is_asset_tracked is just a convience function over find_asset_by_name
 bool is_asset_tracked(AssetTracker* tracker, char* filename);
+
+bool is_asset_tracked(AssetTracker* tracker, AssetID id);
+
 void remove_all_tracked_assets(AssetTracker* tracker);
-AssetID find_asset_by_name(AssetTracker* tracker, const char* filename);
-AssetID track_asset(AssetTracker* tracker, char* filename, u32 filename_length);
+
+String name_of_asset(AssetTracker* tracker, AssetID id);
+AssetID find_asset_by_name(AssetTracker* tracker, String file);
+AssetID track_asset(AssetTracker* tracker, AssetType asset_type, String file);
 static u64 next_asset_id(AssetTracker* tracker);
 
 void write_tracker_file(AssetTracker* tracker);
+static void read_tracker_file(AssetTracker* tracker);
 
 
 void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_length);
