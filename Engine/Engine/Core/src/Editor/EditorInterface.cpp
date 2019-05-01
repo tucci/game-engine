@@ -425,7 +425,7 @@ void editor_update(EditorInterface* editor) {
 		Vec2i mouse_pos = get_mouse_pos(input);
 
 		// Do a raycast to check which object is pressed
-		LOG_INFO("MOUSE", "Mouse pos %d, %d\n", mouse_pos.x, mouse_pos.y);
+		//LOG_INFO("MOUSE", "Mouse pos %d, %d\n", mouse_pos.x, mouse_pos.y);
 	}
 	
 
@@ -602,7 +602,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	
 	
-	//remove component
+	
 	
 	if (ImGui::CollapsingHeader("Transform")) {
 		Vec3f old_pos = get_position(entity_manager, e);
@@ -616,42 +616,88 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		Vec3f new_scale = old_scale;
 
 		
+		
+		
+
 		ImGui::PushID("pos_default");
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale, true);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale, false);
 		}
 		ImGui::SameLine();
+
+		
+		
 		if (ImGui::DragFloat3("Position", new_pos.data, 1.0f)) {
-			//set_position(entity_manager, e, old_scale);
+			// No Command is sent here, this is just to show that the objects updates as we drag
+			// Gives good instant visual feedback
+			set_position(entity_manager, e, new_pos);
+
+			// Merge this command with previous command. Update with new pos,rot,scale
 			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, new_pos, old_rot, old_scale, true);
 		}
+		
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			// Send this command when we are finished dragging
+			// Once we are done dragging we want to a force a barrier between future drags,
+			// so that multiple drags dont merge into one command
+			cmd_editor_force_no_merge(editor);
+		}
+		
+		
+		
 		ImGui::PopID();
 		
 		ImGui::PushID("rot_default");
 
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale, true);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale, false);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
+			// No Command is sent here, this is just to show that the objects updates as we drag
+			// Gives good instant visual feedback
 			new_rot = euler_to_quat(euler);
-
-			//set_rotation(entity_manager, e, new_rot);
+			set_rotation(entity_manager, e, new_rot);			
+			// Merge this command with previous command. Update with new pos,rot,scale
 			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, new_rot, old_scale, true);
-			
 		}
+
+	
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			// Send this command when we are finished dragging
+			// Once we are done dragging we want to a force a barrier between future drags,
+			// so that multiple drags dont merge into one command
+			cmd_editor_force_no_merge(editor);
+		}
+
+
 		ImGui::PopID();
 
 
 		ImGui::PushID("scale_default");
 		
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1), true);
+			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1), false);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Scale", new_scale.data, 1.0f)) {
+			// No Command is sent here, this is just to show that the objects updates as we drag
+			// Gives good instant visual feedback
+			set_scale(entity_manager, e, new_scale);
+			// Merge this command with previous command. Update with new pos,rot,scale
 			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, new_scale, true);
 		}
+
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			// Send this command when we are finished dragging
+			// Once we are done dragging we want to a force a barrier between future drags,
+			// so that multiple drags dont merge into one command
+			cmd_editor_force_no_merge(editor);
+		}
+
 		ImGui::PopID();
 		
 
@@ -862,12 +908,11 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 				// Check if this is a valid track data
 				if (track_item.key != 0 && track_item.key != TOMBSTONE) {
 
-
-					//need to update the asset tracker file with the asset types
-
+					// Only show Static mesh assets
 					if (track_item.value.assetid.type == AssetType::StaticMesh) {
 						if (ImGui::Button(track_item.value.file.buffer)) {
-							set_static_mesh(entity_manager, e, track_item.value.assetid.mesh);
+							cmd_editor_set_staticmesh(editor, e, mesh_id, track_item.value.assetid.mesh);
+							
 						}
 					}
 				}
@@ -922,7 +967,7 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 
 					if (track_item.value.assetid.type == AssetType::Material) {
 						if (ImGui::Button(track_item.value.file.buffer)) {
-							set_render_material(entity_manager, e, track_item.value.assetid.material);
+							cmd_editor_set_material(editor, e, mat_id, track_item.value.assetid.material);
 						}
 					}
 				}
@@ -1042,35 +1087,35 @@ static void draw_window_entity_components(EditorInterface* editor) {
 	}
 	ImGui::End();
 
-	if (ImGui::Begin("Render Components")) {
-		RenderManager* rm = &entity_manager->render_manager;
-		ImGui::Text("Capacity %d", rm->total_count);
-		ImGui::Text("Enabled %d", rm->enabled_count);
-
-		for (u64 i = 0; i < rm->enabled_count; i++) {
-			ImGui::Text("%d ", rm->entitys[i].id);
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-		for (u64 i = 0; i < rm->total_count; i++) {
-			ImGui::Text("%d ", rm->entitys[i].id);
-			ImGui::SameLine();
-		}
-
-		ImGui::NewLine();
-		size_t map_size = rm->id_map.size;
-		// Go over our track map, and look for filename
-		for (int i = 0; i < map_size; i++) {
-			CompactMapItem<u64> item = rm->id_map.map[i];
-			
-			// Check if this is a valid track data
-			if (item.key!= 0 && item.key != TOMBSTONE) {
-				ImGui::Text("%llu -> %llu", item.key, item.value);
-			}
-		}
-
-	}
-	ImGui::End();
+	//if (ImGui::Begin("Render Components")) {
+	//	RenderManager* rm = &entity_manager->render_manager;
+	//	ImGui::Text("Capacity %d", rm->total_count);
+	//	ImGui::Text("Enabled %d", rm->enabled_count);
+	//
+	//	for (u64 i = 0; i < rm->enabled_count; i++) {
+	//		ImGui::Text("%d ", rm->entitys[i].id);
+	//		ImGui::SameLine();
+	//	}
+	//	ImGui::NewLine();
+	//	for (u64 i = 0; i < rm->total_count; i++) {
+	//		ImGui::Text("%d ", rm->entitys[i].id);
+	//		ImGui::SameLine();
+	//	}
+	//
+	//	ImGui::NewLine();
+	//	size_t map_size = rm->id_map.size;
+	//	// Go over our track map, and look for filename
+	//	for (int i = 0; i < map_size; i++) {
+	//		CompactMapItem<u64> item = rm->id_map.map[i];
+	//		
+	//		// Check if this is a valid track data
+	//		if (item.key!= 0 && item.key != TOMBSTONE) {
+	//			ImGui::Text("%llu -> %llu", item.key, item.value);
+	//		}
+	//	}
+	//
+	//}
+	//ImGui::End();
 		
 
 }
@@ -1281,64 +1326,64 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 	}
 	ImGui::End();
 
-	if (ImGui::Begin("Transform Components")) {
-		TransformManager* rm = &entity_manager->transform_manager;
-		ImGui::Text("Capacity %d", rm->total_count);
-		ImGui::Text("Enabled %d", rm->enabled_count);
-
-		//for (u64 i = 0; i < rm->enabled_count; i++) {
-		//	ImGui::Text("%d ", rm->entitys[i].id);
-		//	ImGui::SameLine();
-		//}
-		//ImGui::NewLine();
-		//for (u64 i = 0; i < rm->capacity; i++) {
-		//	ImGui::Text("%d ", rm->entitys[i].id);
-		//	ImGui::SameLine();
-		//}
-		//
-		//ImGui::NewLine();
-		//size_t map_size = rm->id_map.size;
-		//// Go over our track map, and look for filename
-		//for (int i = 0; i < map_size; i++) {
-		//	CompactMapItem<u64> item = rm->id_map.map[i];
-		//
-		//	// Check if this is a valid track data
-		//	if (item.key != 0 && item.key != TOMBSTONE) {
-		//		ImGui::Text("%llu -> %llu", item.key, item.value);
-		//	}
-		//}
-
-		ImGui::Text("Parents");
-		ImGui::SameLine();
-		for (u64 i = 0; i < rm->enabled_count; i++) {
-			ImGui::Text("%llu ", rm->parent[i]);
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-
-		ImGui::Text("1childs");
-		ImGui::SameLine();
-		for (u64 i = 0; i < rm->enabled_count; i++) {
-			ImGui::Text("%llu ", rm->first_child[i]);
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-		ImGui::Text("Nxtsibs");
-		ImGui::SameLine();
-		for (u64 i = 0; i < rm->enabled_count; i++) {
-			ImGui::Text("%llu ", rm->next_sibling[i]);
-			ImGui::SameLine();
-		}
-		ImGui::NewLine();
-		ImGui::Text("Prvsibs");
-		ImGui::SameLine();
-		for (u64 i = 0; i < rm->enabled_count; i++) {
-			ImGui::Text("%llu ", rm->prev_sibling[i]);
-			ImGui::SameLine();
-		}
-
-	}
-	ImGui::End();
+	//if (ImGui::Begin("Transform Components")) {
+	//	TransformManager* rm = &entity_manager->transform_manager;
+	//	ImGui::Text("Capacity %d", rm->total_count);
+	//	ImGui::Text("Enabled %d", rm->enabled_count);
+	//
+	//	//for (u64 i = 0; i < rm->enabled_count; i++) {
+	//	//	ImGui::Text("%d ", rm->entitys[i].id);
+	//	//	ImGui::SameLine();
+	//	//}
+	//	//ImGui::NewLine();
+	//	//for (u64 i = 0; i < rm->capacity; i++) {
+	//	//	ImGui::Text("%d ", rm->entitys[i].id);
+	//	//	ImGui::SameLine();
+	//	//}
+	//	//
+	//	//ImGui::NewLine();
+	//	//size_t map_size = rm->id_map.size;
+	//	//// Go over our track map, and look for filename
+	//	//for (int i = 0; i < map_size; i++) {
+	//	//	CompactMapItem<u64> item = rm->id_map.map[i];
+	//	//
+	//	//	// Check if this is a valid track data
+	//	//	if (item.key != 0 && item.key != TOMBSTONE) {
+	//	//		ImGui::Text("%llu -> %llu", item.key, item.value);
+	//	//	}
+	//	//}
+	//
+	//	ImGui::Text("Parents");
+	//	ImGui::SameLine();
+	//	for (u64 i = 0; i < rm->enabled_count; i++) {
+	//		ImGui::Text("%llu ", rm->parent[i]);
+	//		ImGui::SameLine();
+	//	}
+	//	ImGui::NewLine();
+	//
+	//	ImGui::Text("1childs");
+	//	ImGui::SameLine();
+	//	for (u64 i = 0; i < rm->enabled_count; i++) {
+	//		ImGui::Text("%llu ", rm->first_child[i]);
+	//		ImGui::SameLine();
+	//	}
+	//	ImGui::NewLine();
+	//	ImGui::Text("Nxtsibs");
+	//	ImGui::SameLine();
+	//	for (u64 i = 0; i < rm->enabled_count; i++) {
+	//		ImGui::Text("%llu ", rm->next_sibling[i]);
+	//		ImGui::SameLine();
+	//	}
+	//	ImGui::NewLine();
+	//	ImGui::Text("Prvsibs");
+	//	ImGui::SameLine();
+	//	for (u64 i = 0; i < rm->enabled_count; i++) {
+	//		ImGui::Text("%llu ", rm->prev_sibling[i]);
+	//		ImGui::SameLine();
+	//	}
+	//
+	//}
+	//ImGui::End();
 	
 }
 
@@ -1805,6 +1850,14 @@ static void perform_undo_operation(EditorInterface* editor) {
 			
 		}
 
+
+		if (last_command.type == EditorCommandType::COMMAND_FORCE_NO_MERGE) {
+			// pop this command
+			// And perform the next operation
+			perform_undo_operation(editor);
+				
+		}
+
 		
 
 	
@@ -1847,6 +1900,13 @@ static void perform_redo_operation(EditorInterface* editor) {
 		}
 
 
+		// We need to peek the redo stack for the no merge command
+		if (editor->cmd_buffer.command_redo_stack_count > 0) { // Check if that there is commands on the redo stack. prevent buffer underflow
+			EditorCommand peek_next_command = editor->cmd_buffer.command_redo_stack[editor->cmd_buffer.command_redo_stack_count - 1];
+			if (peek_next_command.type == EditorCommandType::COMMAND_FORCE_NO_MERGE) {
+				perform_redo_operation(editor);
+			}
+		}
 		
 
 		assert(editor->cmd_buffer.command_redo_stack_count >= 0);
@@ -1866,6 +1926,9 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 		}
 		case EditorCommandType::COMMAND_GROUP_END: {
 			EditorCommandGroup group = command.cmd.group;
+			break;
+		}
+		case EditorCommandType::COMMAND_FORCE_NO_MERGE: {
 			break;
 		}
 		case EditorCommandType::NEW_ENTITY: {
@@ -1955,8 +2018,8 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 		case EditorCommandType::DUPLICATE_ENTITY: {
 			break;
 		}
-		case EditorCommandType::SET_TRANSFORM: {
-			EditorCommand_SetTransform set_transform = command.cmd.set_transform;
+		case EditorCommandType::SET_TRANSFORM_COMPONENT: {
+			EditorCommand_SetTransformComponent set_transform = command.cmd.set_transform;
 			EntityManager* entity_manager = editor->api.entity_manager;
 			if (undo) {
 				set_position(entity_manager, set_transform.entity, set_transform.old_position);
@@ -1968,6 +2031,29 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 				set_position(entity_manager, set_transform.entity, set_transform.position);
 				set_rotation(entity_manager, set_transform.entity, set_transform.rotation);
 				set_scale(entity_manager, set_transform.entity, set_transform.scale);
+			}
+			break;
+		}
+		case EditorCommandType::SET_STATICMESH_COMPONENT: {
+			EditorCommand_SetStaticMeshComponent set_staticmesh = command.cmd.set_staticmesh;
+			EntityManager* entity_manager = editor->api.entity_manager;
+			if (undo) {
+				set_static_mesh(entity_manager, set_staticmesh.entity, set_staticmesh.old_id);
+			}
+			else {
+				set_static_mesh(entity_manager, set_staticmesh.entity, set_staticmesh.new_id);
+			}
+			break;
+		}
+
+		case EditorCommandType::SET_MATERIAL_COMPONENT: {
+			EditorCommand_SetMaterialComponent set_material = command.cmd.set_material;
+			EntityManager* entity_manager = editor->api.entity_manager;
+			if (undo) {
+				set_render_material(entity_manager, set_material.entity, set_material.old_id);
+			}
+			else {
+				set_render_material(entity_manager, set_material.entity, set_material.new_id);
 			}
 			break;
 		}
@@ -1990,8 +2076,6 @@ static void process_editor_command_buffer(EditorInterface* editor) {
 	for (size_t i = 0; i < command_count; i++) {
 		const EditorCommand& command = cmd_buffer->commands[i];
 		perform_command(editor, command, false);
-
-		
 	}
 
 	
@@ -2043,6 +2127,12 @@ static void cmd_editor_group_end(EditorInterface* editor) {
 	//editor->cmd_buffer.current_group.in_group_transaction = false;
 
 	
+}
+
+static void cmd_editor_force_no_merge(EditorInterface* editor) {
+	EditorCommand command;
+	command.type = EditorCommandType::COMMAND_FORCE_NO_MERGE;
+	push_editor_command(editor, command);
 }
 
 static void cmd_editor_create_emtpy_entity(EditorInterface* editor) {
@@ -2187,9 +2277,9 @@ static void cmd_editor_deselect_all_entitys(EditorInterface* editor) {
 }
 
 
-static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool update_if_top) {
+static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool merge_if_top) {
 	EditorCommand command;
-	command.type = EditorCommandType::SET_TRANSFORM;
+	command.type = EditorCommandType::SET_TRANSFORM_COMPONENT;
 	command.cmd.set_transform.entity = e;
 
 
@@ -2202,27 +2292,45 @@ static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f ol
 	command.cmd.set_transform.rotation = rot;
 	command.cmd.set_transform.old_rotation = old_rot;
 	
-	if (update_if_top) {
+	// We only merge commands that are on the undo stack
+	// This is usually used for when we starts a command on one frame, but need to end a command on another frame
+	// For example if you start dragging a transform one frame 1, it might not also end on frame 1. So we need to merge multiple frames for one command
+	// Therefore a simple way to solve this problem is to merge two commands
+	if (merge_if_top) {
 		size_t top = editor->cmd_buffer.command_undo_stack_count;
 		if (top > 0) {
 			EditorCommand* top_command = &editor->cmd_buffer.command_undo_stack[top - 1];
-			if (top_command->type == EditorCommandType::SET_TRANSFORM) {
+			if (top_command->type == EditorCommandType::SET_TRANSFORM_COMPONENT) {
 				top_command->cmd.set_transform.position = pos;
 				top_command->cmd.set_transform.scale = scale;
 				top_command->cmd.set_transform.rotation = rot;
-
-				set_position(editor->api.entity_manager, e, pos);
-				set_scale(editor->api.entity_manager, e, scale);
-				set_rotation(editor->api.entity_manager, e, rot);
-			} else {
-				push_editor_command(editor, command);
+				return;
 			}
-		} else {
-			push_editor_command(editor, command);
 		}
-		
-	} else {
-		push_editor_command(editor, command);
 	}
+	push_editor_command(editor, command);
 	
+}
+
+
+static void cmd_editor_set_staticmesh(EditorInterface* editor, Entity e, StaticMeshID old_id, StaticMeshID new_id) {
+	EditorCommand command;
+	command.type = EditorCommandType::SET_STATICMESH_COMPONENT;
+	command.cmd.set_staticmesh.entity = e;
+	command.cmd.set_staticmesh.old_id = old_id;
+	command.cmd.set_staticmesh.new_id = new_id;
+
+	push_editor_command(editor, command);
+	
+}
+
+
+static void cmd_editor_set_material(EditorInterface* editor, Entity e, MaterialID old_id, MaterialID new_id) {
+	EditorCommand command;
+	command.type = EditorCommandType::SET_MATERIAL_COMPONENT;
+	command.cmd.set_material.entity = e;
+	command.cmd.set_material.old_id = old_id;
+	command.cmd.set_material.new_id = new_id;
+
+	push_editor_command(editor, command);
 }

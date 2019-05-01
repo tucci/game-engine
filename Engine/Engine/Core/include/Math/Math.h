@@ -17,12 +17,13 @@
 #define RAD2DEG(rad) ((rad) * 180.0f / PI)
 
 
+// Taken from http://realtimecollisiondetection.net/blog/?p=89
 // Good for small floating pts, bad for large pts
 #define F_EQUAL_ABS(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON)
 // Bad for small floating pts, Good for large pts
-#define F_EQUAL_REL(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON * MAX(ABS(x), ABS(y)) 
+#define F_EQUAL_REL(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON * MAX(ABS(x), ABS(y)) )
 // A basic balance between relative and absolute comparision
-#define F_EQUAL_BALANCE(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON * MAX(1.0f, ABS(x), ABS(y))
+#define F_EQUAL_BALANCE(x, y, EPSILON) (int)(ABS((x) - (y)) <= EPSILON * MAX(1.0f, ABS(x), ABS(y)))
 // A more controlled floating pt equal with control for relative and absolute
 #define F_EQUAL_CONTROL(x, y, relTol, absTol) (int)(ABS((x) - (y)) <= MAX(absTol, relTol * MAX(ABS(x), ABS(y))))
 

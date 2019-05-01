@@ -52,7 +52,7 @@ struct EditorCommand_SelectEntity {
 // That would use less size then storing old/new for each
 // But this is much simpler, faster, easier to debug, and we can rollback to the old data without having to recompute all kinds of deltas
 // and we dont have to worry about inverse quaterions and rotations
-struct EditorCommand_SetTransform {
+struct EditorCommand_SetTransformComponent {
 	Entity entity;
 
 	Vec3f position;
@@ -66,6 +66,24 @@ struct EditorCommand_SetTransform {
 
 };
 
+struct EditorCommand_SetStaticMeshComponent {
+	Entity entity;
+
+	StaticMeshID old_id;
+	StaticMeshID new_id;
+
+
+};
+
+
+struct EditorCommand_SetMaterialComponent {
+	Entity entity;
+
+	MaterialID old_id;
+	MaterialID new_id;
+
+
+};
 
 
 struct EditorCommandGroup {
@@ -85,7 +103,9 @@ union EditorCommandData {
 	EditorCommand_NewEntity new_entity;
 	EditorCommand_DeleteEntity delete_entity;
 	EditorCommand_SelectEntity select_entity;
-	EditorCommand_SetTransform set_transform;
+	EditorCommand_SetTransformComponent set_transform;
+	EditorCommand_SetStaticMeshComponent set_staticmesh;
+	EditorCommand_SetMaterialComponent set_material;
 	EditorCommandGroup group;
 	EditorCommandData() {};
 };
