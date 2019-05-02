@@ -621,7 +621,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 
 		ImGui::PushID("pos_default");
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale, false);
+			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale, true);
 		}
 		ImGui::SameLine();
 
@@ -633,7 +633,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 			set_position(entity_manager, e, new_pos);
 
 			// Merge this command with previous command. Update with new pos,rot,scale
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, new_pos, old_rot, old_scale, true);
+			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, new_pos, old_rot, old_scale, true);
 		}
 		
 
@@ -651,7 +651,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		ImGui::PushID("rot_default");
 
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale, false);
+			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale, false);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Rotation", euler.data, 1.0f)) {
@@ -660,7 +660,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 			new_rot = euler_to_quat(euler);
 			set_rotation(entity_manager, e, new_rot);			
 			// Merge this command with previous command. Update with new pos,rot,scale
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, new_rot, old_scale, true);
+			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, old_pos, new_rot, old_scale, true);
 		}
 
 	
@@ -672,6 +672,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 			cmd_editor_force_no_merge(editor);
 		}
 
+		
 
 		ImGui::PopID();
 
@@ -679,7 +680,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		ImGui::PushID("scale_default");
 		
 		if (ImGui::SmallButton("z")) {
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1), false);
+			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1), false);
 		}
 		ImGui::SameLine();
 		if (ImGui::DragFloat3("Scale", new_scale.data, 1.0f)) {
@@ -687,7 +688,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 			// Gives good instant visual feedback
 			set_scale(entity_manager, e, new_scale);
 			// Merge this command with previous command. Update with new pos,rot,scale
-			cmd_edtior_set_transform(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, new_scale, true);
+			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, new_scale, true);
 		}
 
 
@@ -721,78 +722,153 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 		ImGui::Checkbox("Enabled", &comp_enabled);
 			
 		
-		Camera* cam = get_camera(entity_manager, e);
+		
+		const Camera* const old_cam = get_camera(entity_manager, e);
+		Camera new_camera = *old_cam;
 		//ImGui::DragFloat("Aspect Ratio", &cam->aspect_ratio);
 
-		int projection = (int)cam->projection;
+		int projection = (int)old_cam->projection;
 		if (ImGui::Combo("Projection", &projection, "Perspective\0Orthographic\0\0")) {
-			cam->projection = (CameraProjection)projection;
+			new_camera.projection = (CameraProjection)projection;
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, false);
+			cmd_editor_force_no_merge(editor);
 		}
 
 		ImGui::PushID("camera_fov_default");
 		if (ImGui::SmallButton("z")) {
-			cam->fov = 90.0f;
+			new_camera.fov = 90.0f;
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+
 		}
 		ImGui::SameLine();
-		ImGui::SliderFloat("Field Of View", &cam->fov, 30.0f, 120.0f);
+		if (ImGui::SliderFloat("Field Of View", &new_camera.fov, 30.0f, 120.0f)) {
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+		}
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			// Send this command when we are finished dragging
+			// Once we are done dragging we want to a force a barrier between future drags,
+			// so that multiple drags dont merge into one command
+			cmd_editor_force_no_merge(editor);
+		}
 		ImGui::PopID();
 
 		ImGui::PushID("camera_near_default");
 		if (ImGui::SmallButton("z")) {
-			cam->near_clip = 0.01f;
+			new_camera.near_clip = 0.01f;
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 		}
 		ImGui::SameLine();
-		ImGui::DragFloat("Near", &cam->near_clip, 1.0f, 0.0f, FLT_MAX);
+		if (ImGui::DragFloat("Near", &new_camera.near_clip, 1.0f, 0.0f, FLT_MAX)) {
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+		}
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			// Send this command when we are finished dragging
+			// Once we are done dragging we want to a force a barrier between future drags,
+			// so that multiple drags dont merge into one command
+			cmd_editor_force_no_merge(editor);
+		}
+
 		ImGui::PopID();
 
 		ImGui::PushID("camera_far_default");
 		if (ImGui::SmallButton("z")) {
-			cam->far_clip = 100.0f;
+			new_camera.far_clip = 100.0f;
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 		}
 		ImGui::SameLine();
 
-		ImGui::DragFloat("Far", &cam->far_clip, 1.0f, 0.0f, FLT_MAX);
+		if (ImGui::DragFloat("Far", &new_camera.far_clip, 1.0f, 0.0f, FLT_MAX)) {
+			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+		}
+
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
+			// Send this command when we are finished dragging
+			// Once we are done dragging we want to a force a barrier between future drags,
+			// so that multiple drags dont merge into one command
+			cmd_editor_force_no_merge(editor);
+		}
+
 		ImGui::PopID();
 
 
-		if (cam->projection == CameraProjection::Orthographic) {
+		if (old_cam->projection == CameraProjection::Orthographic) {
 
-			ImGui::Separator();
-			ImGui::Text("Orthographic Settings");
+			//ImGui::Separator();
+			//ImGui::Text("Orthographic Settings");
 
 			ImGui::PushID("camera_left_default");
 			if (ImGui::SmallButton("z")) {
-				cam->left = 0.0f;
+				new_camera.left = 0.0f;
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 			}
 			ImGui::SameLine();
-			ImGui::DragFloat("Left", &cam->left, 1.0f, 0.0f, FLT_MAX);
+			if (ImGui::DragFloat("Left", &new_camera.left, 1.0f, 0.0f, FLT_MAX)) {
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				// Send this command when we are finished dragging
+				// Once we are done dragging we want to a force a barrier between future drags,
+				// so that multiple drags dont merge into one command
+				cmd_editor_force_no_merge(editor);
+			}
 			ImGui::PopID();
 
 			ImGui::PushID("camera_right_default");
 			if (ImGui::SmallButton("z")) {
-				cam->right = 100.0f;
+				new_camera.right = 100.0f;
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 			}
 			ImGui::SameLine();
-			ImGui::DragFloat("Right", &cam->right, 1.0f, 0.0f, FLT_MAX);
+			if (ImGui::DragFloat("Right", &new_camera.right, 1.0f, 0.0f, FLT_MAX)) {
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+			}
+
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				// Send this command when we are finished dragging
+				// Once we are done dragging we want to a force a barrier between future drags,
+				// so that multiple drags dont merge into one command
+				cmd_editor_force_no_merge(editor);
+			}
 			ImGui::PopID();
 
 			ImGui::PushID("camera_top_default");
 			if (ImGui::SmallButton("z")) {
-				cam->top = 0.0f;
+				new_camera.top = 0.0f;
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 			}
 			ImGui::SameLine();
-			ImGui::DragFloat("Top", &cam->top, 1.0f, 0.0f, FLT_MAX);
+			if (ImGui::DragFloat("Top", &new_camera.top, 1.0f, 0.0f, FLT_MAX)) {
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				// Send this command when we are finished dragging
+				// Once we are done dragging we want to a force a barrier between future drags,
+				// so that multiple drags dont merge into one command
+				cmd_editor_force_no_merge(editor);
+			}
 			ImGui::PopID();
 
 			ImGui::PushID("camera_bottom_default");
 			if (ImGui::SmallButton("z")) {
-				cam->bottom = 100.0f;
+				new_camera.bottom = 100.0f;
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 			}
 			ImGui::SameLine();
 
-			ImGui::DragFloat("Bottom", &cam->bottom, 1.0f, 0.0f, FLT_MAX);
+			if (ImGui::DragFloat("Bottom", &new_camera.bottom, 1.0f, 0.0f, FLT_MAX)) {
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				// Send this command when we are finished dragging
+				// Once we are done dragging we want to a force a barrier between future drags,
+				// so that multiple drags dont merge into one command
+				cmd_editor_force_no_merge(editor);
+			}
 			ImGui::PopID();
 		}
+
+		set_camera(entity_manager, e, new_camera);
 	}
 	if (!open) {
 		remove_component(entity_manager, e, ComponentType::Camera);
@@ -817,41 +893,75 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 		
 		
 
-		Light light =  get_light(entity_manager, e);
-		int light_type = (int)light.type;
+		const Light old_light =  get_light(entity_manager, e);
+		Light new_light = old_light;
+		int light_type = (int)old_light.type;
 		if (ImGui::Combo("Type", &light_type, "None\0Directional Light\0Point Light\0\0")) {
-			light.type = (LightType)light_type;
+			new_light.type = (LightType)light_type;
+			cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 		}
 
-		switch (light.type) {
+		switch (old_light.type) {
 			case LightType::DirectionalLight: {
 
 
 				ImGui::PushID("dir_direction_default");
 				if (ImGui::SmallButton("z")) {
-					light.dir_light.direction = Vec3f(0, 0, 0);
+					new_light.dir_light.direction = Vec3f(0, 0, 0);
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
 				ImGui::SameLine();
-				ImGui::DragFloat3("Direction", light.dir_light.direction.data);
+				if (ImGui::DragFloat3("Direction", new_light.dir_light.direction.data)) {
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
+				}
+
+				if (ImGui::IsItemDeactivatedAfterEdit()) {
+					// Send this command when we are finished dragging
+					// Once we are done dragging we want to a force a barrier between future drags,
+					// so that multiple drags dont merge into one command
+					cmd_editor_force_no_merge(editor);
+				}
+
 				ImGui::PopID();
 
 				ImGui::PushID("dir_color_default");
 				if (ImGui::SmallButton("z")) {
-					light.dir_light.color = Vec3f(1, 1, 1);
+					new_light.dir_light.color = Vec3f(1, 1, 1);
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
+
 				ImGui::SameLine();
-				ImGui::ColorEdit3("Color", light.dir_light.color.data);
+				if (ImGui::ColorEdit3("Color", new_light.dir_light.color.data)) {
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
+				}
+
+				if (ImGui::IsItemDeactivatedAfterEdit()) {
+					// Send this command when we are finished dragging
+					// Once we are done dragging we want to a force a barrier between future drags,
+					// so that multiple drags dont merge into one command
+					cmd_editor_force_no_merge(editor);
+				}
 				ImGui::PopID();
 
-
+				
 
 				ImGui::PushID("dir_intensity_default");
 				if (ImGui::SmallButton("z")) {
-					light.dir_light.intensity = 0;
+					new_light.dir_light.intensity = 0;
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
 				ImGui::SameLine();
 
-				ImGui::DragFloat("Intensity", &light.dir_light.intensity, 1.0f, 0.0f, 100000.0f);
+				if (ImGui::DragFloat("Intensity", &new_light.dir_light.intensity, 1.0f, 0.0f, 100000.0f)) {
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
+				}
+
+				if (ImGui::IsItemDeactivatedAfterEdit()) {
+					// Send this command when we are finished dragging
+					// Once we are done dragging we want to a force a barrier between future drags,
+					// so that multiple drags dont merge into one command
+					cmd_editor_force_no_merge(editor);
+				}
 				ImGui::PopID();
 
 				
@@ -861,16 +971,25 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 			case LightType::PointLight: {
 				ImGui::PushID("point_color_default");
 				if (ImGui::SmallButton("z")) {
-					light.point_light.color = Vec3f(1,1,1);
+					new_light.point_light.color = Vec3f(1,1,1);
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
 				ImGui::SameLine();
-				ImGui::ColorEdit3("Color", light.point_light.color.data);
+				if (ImGui::ColorEdit3("Color", new_light.point_light.color.data)) {
+					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
+				}
+				if (ImGui::IsItemDeactivatedAfterEdit()) {
+					// Send this command when we are finished dragging
+					// Once we are done dragging we want to a force a barrier between future drags,
+					// so that multiple drags dont merge into one command
+					cmd_editor_force_no_merge(editor);
+				}
 				ImGui::PopID();
 				break;
 			}
 		}
 
-		set_light(entity_manager, e, light);
+		set_light(entity_manager, e, new_light);
 		
 		
 	}
@@ -911,7 +1030,7 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 					// Only show Static mesh assets
 					if (track_item.value.assetid.type == AssetType::StaticMesh) {
 						if (ImGui::Button(track_item.value.file.buffer)) {
-							cmd_editor_set_staticmesh(editor, e, mesh_id, track_item.value.assetid.mesh);
+							cmd_editor_set_staticmesh_component(editor, e, mesh_id, track_item.value.assetid.mesh);
 							
 						}
 					}
@@ -967,7 +1086,7 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 
 					if (track_item.value.assetid.type == AssetType::Material) {
 						if (ImGui::Button(track_item.value.file.buffer)) {
-							cmd_editor_set_material(editor, e, mat_id, track_item.value.assetid.material);
+							cmd_editor_set_material_component(editor, e, mat_id, track_item.value.assetid.material);
 						}
 					}
 				}
@@ -2004,15 +2123,6 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 					editor->entity_selected_count--;
 				}
 			}
-
-			
-			
-
-			
-
-			
-			
-			
 			break;
 		}
 		case EditorCommandType::DUPLICATE_ENTITY: {
@@ -2054,6 +2164,28 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 			}
 			else {
 				set_render_material(entity_manager, set_material.entity, set_material.new_id);
+			}
+			break;
+		}
+		case EditorCommandType::SET_LIGHT_COMPONENT: {
+			EditorCommand_SetLightComponent set_light_data = command.cmd.set_light;
+			EntityManager* entity_manager = editor->api.entity_manager;
+			if (undo) {
+				set_light(entity_manager, set_light_data.entity, set_light_data.old_light);
+			}
+			else {
+				set_light(entity_manager, set_light_data.entity, set_light_data.new_light);
+			}
+			break;
+		}
+		case EditorCommandType::SET_CAMERA_COMPONENT: {
+			EditorCommand_SetCameraComponent set_camera_data = command.cmd.set_camera;
+			EntityManager* entity_manager = editor->api.entity_manager;
+			if (undo) {
+				set_camera(entity_manager, set_camera_data.entity, set_camera_data.old_camera);
+			}
+			else {
+				set_camera(entity_manager, set_camera_data.entity, set_camera_data.new_camera);
 			}
 			break;
 		}
@@ -2277,7 +2409,7 @@ static void cmd_editor_deselect_all_entitys(EditorInterface* editor) {
 }
 
 
-static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool merge_if_top) {
+static void cmd_edtior_set_transform_component(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool merge_if_top) {
 	EditorCommand command;
 	command.type = EditorCommandType::SET_TRANSFORM_COMPONENT;
 	command.cmd.set_transform.entity = e;
@@ -2313,7 +2445,7 @@ static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f ol
 }
 
 
-static void cmd_editor_set_staticmesh(EditorInterface* editor, Entity e, StaticMeshID old_id, StaticMeshID new_id) {
+static void cmd_editor_set_staticmesh_component(EditorInterface* editor, Entity e, StaticMeshID old_id, StaticMeshID new_id) {
 	EditorCommand command;
 	command.type = EditorCommandType::SET_STATICMESH_COMPONENT;
 	command.cmd.set_staticmesh.entity = e;
@@ -2325,12 +2457,57 @@ static void cmd_editor_set_staticmesh(EditorInterface* editor, Entity e, StaticM
 }
 
 
-static void cmd_editor_set_material(EditorInterface* editor, Entity e, MaterialID old_id, MaterialID new_id) {
+static void cmd_editor_set_material_component(EditorInterface* editor, Entity e, MaterialID old_id, MaterialID new_id) {
 	EditorCommand command;
 	command.type = EditorCommandType::SET_MATERIAL_COMPONENT;
 	command.cmd.set_material.entity = e;
 	command.cmd.set_material.old_id = old_id;
 	command.cmd.set_material.new_id = new_id;
+
+	push_editor_command(editor, command);
+}
+
+static void cmd_editor_set_light_component(EditorInterface* editor, Entity e, Light old_light, Light new_light, bool merge_if_top) {
+	EditorCommand command;
+	command.type = EditorCommandType::SET_LIGHT_COMPONENT;
+	command.cmd.set_light.entity = e;
+	command.cmd.set_light.old_light = old_light;
+	command.cmd.set_light.new_light = new_light;
+
+	if (merge_if_top) {
+		size_t top = editor->cmd_buffer.command_undo_stack_count;
+		if (top > 0) {
+			EditorCommand* top_command = &editor->cmd_buffer.command_undo_stack[top - 1];
+			if (top_command->type == EditorCommandType::SET_LIGHT_COMPONENT) {
+				top_command->cmd.set_light.new_light = new_light;
+				return;
+			}
+		}
+	}
+
+	push_editor_command(editor, command);
+}
+
+static void cmd_editor_set_camera_component(EditorInterface* editor, Entity e, Camera old_camera, Camera new_camera, bool merge_if_top) {
+	EditorCommand command;
+	command.type = EditorCommandType::SET_CAMERA_COMPONENT;
+
+	
+	
+	command.cmd.set_camera.entity = e;
+	command.cmd.set_camera.old_camera = old_camera;
+	command.cmd.set_camera.new_camera = new_camera;
+
+	if (merge_if_top) {
+		size_t top = editor->cmd_buffer.command_undo_stack_count;
+		if (top > 0) {
+			EditorCommand* top_command = &editor->cmd_buffer.command_undo_stack[top - 1];
+			if (top_command->type == EditorCommandType::SET_CAMERA_COMPONENT) {
+				top_command->cmd.set_camera.new_camera = new_camera;
+				return;
+			}
+		}
+	}
 
 	push_editor_command(editor, command);
 }

@@ -85,6 +85,18 @@ struct EditorCommand_SetMaterialComponent {
 
 };
 
+struct EditorCommand_SetLightComponent {
+	Entity entity;
+	Light old_light;
+	Light new_light;
+};
+
+struct EditorCommand_SetCameraComponent {
+	Entity entity;
+	Camera old_camera;
+	Camera new_camera;
+};
+
 
 struct EditorCommandGroup {
 	// stack_level indicates what the id/index/level the current group is in.
@@ -106,6 +118,8 @@ union EditorCommandData {
 	EditorCommand_SetTransformComponent set_transform;
 	EditorCommand_SetStaticMeshComponent set_staticmesh;
 	EditorCommand_SetMaterialComponent set_material;
+	EditorCommand_SetLightComponent set_light;
+	EditorCommand_SetCameraComponent set_camera;
 	EditorCommandGroup group;
 	EditorCommandData() {};
 };

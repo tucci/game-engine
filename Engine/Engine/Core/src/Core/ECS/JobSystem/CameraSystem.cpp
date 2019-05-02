@@ -11,6 +11,13 @@ Camera* get_camera(EntityManager* manager, Entity entity) {
 	return &manager->camera_manager.enabled_cameras[index];
 }
 
+void set_camera(EntityManager* manager, Entity entity, Camera camera) {
+	set_camera_params(manager, entity, camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
+	set_camera_projection(manager, entity, camera.projection);
+	set_camera_orto_params(manager, entity, camera.top, camera.bottom, camera.left, camera.right);
+}
+
+
 void set_camera_params(EntityManager* manager, Entity entity,
 	float near_clip,
 	float far_clip,
@@ -25,6 +32,18 @@ void set_camera_params(EntityManager* manager, Entity entity,
 	cam->far_clip = far_clip;
 	cam->fov = fov;
 	cam->aspect_ratio = aspect_ratio;
+}
+
+void set_camera_orto_params(EntityManager* manager, Entity entity, float top, float bottom, float left, float right) {
+	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+
+	u64 index = result.value;
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
+
+	cam->top = top;
+	cam->bottom = bottom;
+	cam->left = left;
+	cam->right = right;
 }
 
 void set_camera_projection(EntityManager* manager, Entity entity, CameraProjection projection) {

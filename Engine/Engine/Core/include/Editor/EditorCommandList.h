@@ -21,6 +21,8 @@ enum struct EditorCommandType : s32 {
 	SET_TRANSFORM_COMPONENT,
 	SET_STATICMESH_COMPONENT,
 	SET_MATERIAL_COMPONENT,
+	SET_LIGHT_COMPONENT,
+	SET_CAMERA_COMPONENT,
 };
 
 
@@ -43,7 +45,9 @@ static void cmd_editor_create_camera(EditorInterface* editor);
 
 static void cmd_editor_select_entity(EditorInterface* editor, Entity entity, bool selected);
 static void cmd_editor_deselect_all_entitys(EditorInterface* editor);
-static void cmd_edtior_set_transform(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool merge_if_top);
 
-static void cmd_editor_set_staticmesh(EditorInterface* editor, Entity e, StaticMeshID old_id, StaticMeshID new_id);
-static void cmd_editor_set_material(EditorInterface* editor, Entity e, MaterialID old_id, MaterialID new_id);
+static void cmd_edtior_set_transform_component(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool merge_if_top);
+static void cmd_editor_set_staticmesh_component(EditorInterface* editor, Entity e, StaticMeshID old_id, StaticMeshID new_id);
+static void cmd_editor_set_material_component(EditorInterface* editor, Entity e, MaterialID old_id, MaterialID new_id);
+static void cmd_editor_set_light_component(EditorInterface* editor, Entity e, Light old_light, Light new_light, bool merge_if_top);
+static void cmd_editor_set_camera_component(EditorInterface* editor, Entity e, Camera old_camera, Camera new_camera, bool merge_if_top);
