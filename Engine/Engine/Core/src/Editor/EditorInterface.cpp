@@ -145,6 +145,8 @@ static void set_editor_layout(EditorInterface* editor) {
 		ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, NULL, &dock_main_id);
 		ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.35f, NULL, &dock_main_id);
 
+		ImGuiID dock_id_left_bottom = ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Down, 0.20f, NULL, &dock_id_left);
+
 
 
 		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
@@ -154,6 +156,10 @@ static void set_editor_layout(EditorInterface* editor) {
 
 		ImGui::DockBuilderDockWindow("Asset Browser", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Render Stats", dock_id_bottom);
+
+		ImGui::DockBuilderDockWindow("Command History", dock_id_left_bottom);
+		
+		
 
 		ImGui::DockBuilderFinish(editor->dockspace_id);
 	}
@@ -2222,8 +2228,28 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 }
 
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
-	if (ImGui::Begin("Command Undo Stack")) {
+	if (ImGui::Begin("Command History")) {
+		float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+			perform_undo_operation(editor);
+		}
+		ImGui::SameLine(0.0f, spacing);
+		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
+			perform_redo_operation(editor);
+		}
 
+		ImGui::Columns(2, "undo_redo_header", true);
+
+		ImGui::Text("Undo");
+		ImGui::NextColumn();
+
+		ImGui::Text("Redo");
+		ImGui::Separator();
+
+		ImGui::Columns(1);
+
+		ImGui::Columns(2, "undo_redo_stack", true);
+		
 		size_t undo_stack_count = editor->cmd_buffer.command_undo_stack_count;
 		EditorCommand* undo_stack = editor->cmd_buffer.command_undo_stack;
 		for (size_t i = 0; i < undo_stack_count; i++) {
@@ -2238,25 +2264,31 @@ static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 			}
 			
 		}
-	}
-	ImGui::End();
 
-	if (ImGui::Begin("Command Redo Stack")) {
-
+		ImGui::NextColumn();
+		
+		
+		
 		size_t redo_stack_count = editor->cmd_buffer.command_redo_stack_count;
 		EditorCommand* redo_stack = editor->cmd_buffer.command_redo_stack;
 		for (size_t i = 0; i < redo_stack_count; i++) {
 			EditorCommand cmd = redo_stack[i];
 			if (cmd.type == EditorCommandType::COMMAND_GROUP_START) {
 				ImGui::Text("Cmd Group Start: ID %llu", cmd.cmd.group.stack_level);
-			} else if (cmd.type == EditorCommandType::COMMAND_GROUP_END) {
+			}
+			else if (cmd.type == EditorCommandType::COMMAND_GROUP_END) {
 				ImGui::Text("Cmd Group End: ID %llu", cmd.cmd.group.stack_level);
-			} else {
+			}
+			else {
 				ImGui::Text("Cmd type %d", cmd.type);
 			}
 		}
+		ImGui::Columns(1);
+
 	}
 	ImGui::End();
+
+
 }
 
 
