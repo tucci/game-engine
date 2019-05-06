@@ -4,6 +4,8 @@
 #include "Logger.h"
 
 
+
+
 #include "SDL_syswm.h"
 
 
@@ -90,6 +92,75 @@ Entity import_scene(EditorInterface* editor, SceneID id) {
 
 	import_scene_node(editor, scene, scene->root, root);
 	return root;
+}
+
+
+static void set_editor_layout(EditorInterface* editor) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+	bool p_open = true;
+	static bool opt_fullscreen_persistant = true;
+	bool opt_fullscreen = opt_fullscreen_persistant;
+	static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+	// because it would be confusing to have two docking targets within each others.
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (opt_fullscreen) {
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	}
+
+	// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+	if (opt_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace", &p_open, window_flags);
+	ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+		ImGui::PopStyleVar(2);
+
+	// Dockspace
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+		editor->dockspace_id = ImGui::GetID("EditorDockspace");
+	}
+
+	if (ImGui::DockBuilderGetNode(editor->dockspace_id) == NULL) {
+		// Set default layout
+		ImGui::DockBuilderRemoveNode(editor->dockspace_id); // Clear out existing layout
+		ImGui::DockBuilderAddNode(editor->dockspace_id, ImGuiDockNodeFlags_DockSpace); // Add empty node
+		ImGui::DockBuilderSetNodeSize(editor->dockspace_id, ImGui::GetMainViewport()->Size);
+
+		ImGuiID dock_main_id = editor->dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+		ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
+		ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, NULL, &dock_main_id);
+		ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.35f, NULL, &dock_main_id);
+
+
+
+		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
+		ImGui::DockBuilderDockWindow("Entity Scene Tree", dock_id_left);
+		ImGui::DockBuilderDockWindow("Game Loop", dock_id_bottom);
+		ImGui::DockBuilderDockWindow("Log", dock_id_bottom);
+
+		ImGui::DockBuilderDockWindow("Asset Browser", dock_id_bottom);
+		ImGui::DockBuilderDockWindow("Render Stats", dock_id_bottom);
+
+		ImGui::DockBuilderFinish(editor->dockspace_id);
+	}
+
+	ImGui::DockSpace(editor->dockspace_id, ImVec2(0,0), opt_flags);
+
+	ImGui::End();
 }
 
 
@@ -185,6 +256,7 @@ static void set_editor_style(EditorInterface* editor) {
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
 
 
+	
 
 
 
@@ -648,8 +720,9 @@ void editor_update(EditorInterface* editor) {
 
 	
 	
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ShowStyleEditor(style);
+	//  Used to style the editor
+	//ImGuiStyle* style = &ImGui::GetStyle();
+	//ShowStyleEditor(style);
 	
 
 	// Need to move key presses to use repeats and add key modifiers
@@ -680,68 +753,34 @@ void editor_update(EditorInterface* editor) {
 
 	if (editor->show_editor) {
 
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
-		bool p_open = true;
-		static bool opt_fullscreen_persistant = true;
-		static ImGuiDockNodeFlags opt_flags = ImGuiDockNodeFlags_PassthruDockspace;
-		bool opt_fullscreen = opt_fullscreen_persistant;
-
-		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen) {
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->Pos);
-			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-		}
-
-		// When using ImGuiDockNodeFlags_PassthruDockspace, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
-		if (opt_flags & ImGuiDockNodeFlags_PassthruDockspace)
-			window_flags |= ImGuiWindowFlags_NoBackground;
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-		ImGui::PopStyleVar();
-
-		if (opt_fullscreen)
-			ImGui::PopStyleVar(2);
-
-		// Dockspace
-		//ImGuiIO& io = ImGui::GetIO();
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-			ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), opt_flags);
-
-		} else {
-			
-		}
-		ImGui::End();
-
-		see if we can pre dock all the tabs
-
+		
 		
 
-
-	
-
+		
+		
+		set_editor_layout(editor);
+		
 
 		draw_main_menu_bar(editor);
+		
 		draw_window_entity_components(editor);
+
+		
 		draw_window_scene_hierarchy(editor);
 
+		
 		draw_window_engine_timer(editor);
+
+		
 		draw_window_log(editor);
+
+		
 		draw_window_assets(editor);
 		//draw_window_scene_viewports(editor);
-
+		
 		draw_window_renderer_stats(editor);
+		
+		
 		draw_editor_command_undo_and_redo_stack(editor);
 
 		

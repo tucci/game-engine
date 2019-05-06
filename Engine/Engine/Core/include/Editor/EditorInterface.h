@@ -24,6 +24,12 @@
 
 #include "../../imgui/imgui.h"
 
+#ifndef IMGUI_PROTO_API_USE
+#define IMGUI_INTERNAL_API_USE
+#include "../../imgui/imgui_internal.h"
+#endif
+
+
 #define EDITOR_MEMORY MEGABYTES(100)
 
 
@@ -192,6 +198,7 @@ struct EditorInterface {
 
 	bool was_last_frame_using_right_click;
 
+	ImGuiID dockspace_id = NULL;
 	// Game clock vars
 	int fps_history_index = 0;
 	float fps_history[FPS_HISTORY_COUNT] = { 0 };
