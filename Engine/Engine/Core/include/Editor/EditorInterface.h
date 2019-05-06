@@ -133,10 +133,11 @@ struct EditorCommand {
 
 
 
+
 #define EDITOR_COMMAND_BUFFER_CAPACITY 32
 
 // TODO: this should probably not be fixed, but left as an option to the user to define how many undos they want to have
-#define EDITOR_COMMAND_UNDO_BUFFER_CAPACITY 128
+#define EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY 128
 #define EDITOR_COMMAND_GROUP_STACK_COUNT 32
 
 
@@ -152,11 +153,13 @@ struct EditorCommandBuffer {
 	size_t command_group_stack_count = 0;
 
 	
-
-
+	
+	// How many commands can be send in one frame
+	// After every frame, the commands are reset and set back to zero
 	EditorCommand commands[EDITOR_COMMAND_BUFFER_CAPACITY];
-	EditorCommand command_undo_stack[EDITOR_COMMAND_UNDO_BUFFER_CAPACITY];
-	EditorCommand command_redo_stack[EDITOR_COMMAND_UNDO_BUFFER_CAPACITY];
+	// This is the undo history of commands
+	EditorCommand command_undo_stack[EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY];
+	EditorCommand command_redo_stack[EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY];
 
 	EditorCommandGroup group_stack[EDITOR_COMMAND_GROUP_STACK_COUNT];
 };
@@ -239,6 +242,7 @@ static void process_editor_command_buffer(EditorInterface* editor);
 
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api);
+
 void destroy_editor_interface(EditorInterface* editor);
 
 void editor_update(EditorInterface* editor);

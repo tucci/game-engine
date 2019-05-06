@@ -94,9 +94,344 @@ Entity import_scene(EditorInterface* editor, SceneID id) {
 
 
 
+static void set_editor_style(EditorInterface* editor) {
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	
+	style.WindowPadding = ImVec2(8, 8);
+	style.FramePadding = ImVec2(4, 7);
+	style.ItemSpacing = ImVec2(8, 6);
+	style.ItemInnerSpacing = ImVec2(8, 7);
+	style.TouchExtraPadding = ImVec2(0, 0);
+
+	style.IndentSpacing = 22;
+	style.ScrollbarSize = 20;
+	style.GrabMinSize = 16;
+	
+	style.WindowBorderSize = 1;
+	style.ChildBorderSize = 0;
+	style.PopupBorderSize = 1;
+	style.FrameBorderSize = 0;
+	
+	style.WindowRounding = 0;
+	style.ChildRounding = 0;
+	style.FrameRounding = 2;
+	style.PopupRounding = 2;
+	style.ScrollbarRounding = 2;
+	style.GrabRounding = 2;
+	style.TabRounding = 2;
+	
+	style.WindowTitleAlign = ImVec2(0, 0.5f);
+	style.ButtonTextAlign= ImVec2(0.5f, 0.5f);
+	
+	ImVec4* colors = ImGui::GetStyle().Colors; 
+
+
+	
+
+	ImVec4 dark_accent = ImVec4(0.12f, 0.29f, 0.62f, 1.00f);
+	ImVec4 light_accent = ImVec4(0.29f, 0.53f, 1.00f, 1.00f);
+	
+
+	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.07f, 0.07f, 0.07f, 1.00f);
+	colors[ImGuiCol_ChildBg] = ImVec4(0.28f, 0.28f, 0.28f, 0.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.07f, 0.07f, 0.07f, 1.00f);
+	colors[ImGuiCol_Border] = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_FrameBg] = ImVec4(0.16f, 0.16f, 0.16f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = light_accent;
+	colors[ImGuiCol_TitleBg] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.15f, 0.15f, 0.15f, 1.00f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.53f, 0.53f, 0.53f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.30f, 0.30f, 0.31f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabActive] = dark_accent;
+	colors[ImGuiCol_CheckMark] = light_accent;
+	colors[ImGuiCol_SliderGrab] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+	colors[ImGuiCol_SliderGrabActive] = dark_accent;
+	colors[ImGuiCol_Button] = dark_accent;
+	colors[ImGuiCol_ButtonHovered] = light_accent;
+	colors[ImGuiCol_ButtonActive] = dark_accent;
+	colors[ImGuiCol_Header] = dark_accent;
+	colors[ImGuiCol_HeaderHovered] = light_accent;
+	colors[ImGuiCol_HeaderActive] = ImVec4(0.47f, 0.47f, 0.47f, 1.00f);
+	colors[ImGuiCol_Separator] = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
+	colors[ImGuiCol_SeparatorHovered] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
+	colors[ImGuiCol_SeparatorActive] = light_accent;
+	colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.25f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(1.00f, 1.00f, 1.00f, 0.67f);
+	colors[ImGuiCol_ResizeGripActive] = light_accent;
+	colors[ImGuiCol_Tab] = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+	colors[ImGuiCol_TabHovered] = dark_accent;
+	colors[ImGuiCol_TabActive] = dark_accent;
+	colors[ImGuiCol_TabUnfocused] = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+	colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.19f, 0.19f, 0.19f, 1.00f);
+	colors[ImGuiCol_DockingPreview] = dark_accent;
+	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
+	colors[ImGuiCol_PlotLines] = light_accent;
+	colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.99f, 0.08f, 0.08f, 1.00f);
+	colors[ImGuiCol_PlotHistogram] = light_accent;
+	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.00f, 0.00f, 0.00f, 1.00f);
+	colors[ImGuiCol_TextSelectedBg] = light_accent;
+	colors[ImGuiCol_DragDropTarget] = light_accent;
+	colors[ImGuiCol_NavHighlight] = light_accent;
+	colors[ImGuiCol_NavWindowingHighlight] = light_accent;
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
+
+
+
+
+
+}
+
+static void ShowStyleEditor(ImGuiStyle* ref)
+{
+	// You can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it compares to an internally stored reference)
+	ImGuiStyle& style = ImGui::GetStyle();
+	static ImGuiStyle ref_saved_style;
+
+	// Default to using internal storage as reference
+	static bool init = true;
+	if (init && ref == NULL)
+		ref_saved_style = style;
+	init = false;
+	if (ref == NULL)
+		ref = &ref_saved_style;
+
+	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
+
+	if (ImGui::ShowStyleSelector("Colors##Selector"))
+		ref_saved_style = style;
+	ImGui::ShowFontSelector("Fonts##Selector");
+
+	// Simplified Settings
+	if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
+		style.GrabRounding = style.FrameRounding; // Make GrabRounding always the same value as FrameRounding
+	{ bool window_border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &window_border)) style.WindowBorderSize = window_border ? 1.0f : 0.0f; }
+	ImGui::SameLine();
+	{ bool frame_border = (style.FrameBorderSize > 0.0f); if (ImGui::Checkbox("FrameBorder", &frame_border)) style.FrameBorderSize = frame_border ? 1.0f : 0.0f; }
+	ImGui::SameLine();
+	{ bool popup_border = (style.PopupBorderSize > 0.0f); if (ImGui::Checkbox("PopupBorder", &popup_border)) style.PopupBorderSize = popup_border ? 1.0f : 0.0f; }
+
+	// Save/Revert button
+	if (ImGui::Button("Save Ref"))
+		* ref = ref_saved_style = style;
+	ImGui::SameLine();
+	if (ImGui::Button("Revert Ref"))
+		style = *ref;
+	ImGui::SameLine();
+	
+
+	ImGui::Separator();
+
+	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None))
+	{
+		if (ImGui::BeginTabItem("Sizes"))
+		{
+			ImGui::Text("Main");
+			ImGui::SliderFloat2("WindowPadding", (float*)& style.WindowPadding, 0.0f, 20.0f, "%.0f");
+			ImGui::SliderFloat2("FramePadding", (float*)& style.FramePadding, 0.0f, 20.0f, "%.0f");
+			ImGui::SliderFloat2("ItemSpacing", (float*)& style.ItemSpacing, 0.0f, 20.0f, "%.0f");
+			ImGui::SliderFloat2("ItemInnerSpacing", (float*)& style.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
+			ImGui::SliderFloat2("TouchExtraPadding", (float*)& style.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
+			ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 30.0f, "%.0f");
+			ImGui::SliderFloat("ScrollbarSize", &style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
+			ImGui::SliderFloat("GrabMinSize", &style.GrabMinSize, 1.0f, 20.0f, "%.0f");
+			ImGui::Text("Borders");
+			ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
+			ImGui::SliderFloat("ChildBorderSize", &style.ChildBorderSize, 0.0f, 1.0f, "%.0f");
+			ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 1.0f, "%.0f");
+			ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 1.0f, "%.0f");
+			ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 1.0f, "%.0f");
+			ImGui::Text("Rounding");
+			ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::SliderFloat("ChildRounding", &style.ChildRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::SliderFloat("ScrollbarRounding", &style.ScrollbarRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::SliderFloat("TabRounding", &style.TabRounding, 0.0f, 12.0f, "%.0f");
+			ImGui::Text("Alignment");
+			ImGui::SliderFloat2("WindowTitleAlign", (float*)& style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+			ImGui::SliderFloat2("ButtonTextAlign", (float*)& style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine();
+			ImGui::SliderFloat2("SelectableTextAlign", (float*)& style.SelectableTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine();
+			ImGui::Text("Safe Area Padding"); ImGui::SameLine();
+			ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)& style.DisplaySafeAreaPadding, 0.0f, 30.0f, "%.0f");
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Colors"))
+		{
+			static int output_dest = 0;
+			static bool output_only_modified = true;
+			if (ImGui::Button("Export Unsaved"))
+			{
+				if (output_dest == 0)
+					ImGui::LogToClipboard();
+				else
+					ImGui::LogToTTY();
+				ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;");
+				for (int i = 0; i < ImGuiCol_COUNT; i++)
+				{
+					const ImVec4& col = style.Colors[i];
+					const char* name = ImGui::GetStyleColorName(i);
+					if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
+						ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);", name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
+				}
+				ImGui::LogFinish();
+			}
+			ImGui::SameLine(); ImGui::PushItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0"); ImGui::PopItemWidth();
+			ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
+
+			static ImGuiTextFilter filter;
+			filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+
+			static ImGuiColorEditFlags alpha_flags = 0;
+			ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
+			ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
+			ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf); ImGui::SameLine();
+			
+
+			ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+			ImGui::PushItemWidth(-160);
+			for (int i = 0; i < ImGuiCol_COUNT; i++)
+			{
+				const char* name = ImGui::GetStyleColorName(i);
+				if (!filter.PassFilter(name))
+					continue;
+				ImGui::PushID(i);
+				ImGui::ColorEdit4("##color", (float*)& style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
+				if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
+				{
+					// Tips: in a real user application, you may want to merge and use an icon font into the main font, so instead of "Save"/"Revert" you'd use icons.
+					// Read the FAQ and misc/fonts/README.txt about using icon fonts. It's really easy and super convenient!
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
+					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
+				}
+				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+				ImGui::TextUnformatted(name);
+				ImGui::PopID();
+			}
+			ImGui::PopItemWidth();
+			ImGui::EndChild();
+
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Fonts"))
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			ImFontAtlas* atlas = io.Fonts;
+			
+			ImGui::PushItemWidth(120);
+			for (int i = 0; i < atlas->Fonts.Size; i++)
+			{
+				ImFont* font = atlas->Fonts[i];
+				ImGui::PushID(font);
+				bool font_details_opened = ImGui::TreeNode(font, "Font %d: \"%s\"\n%.2f px, %d glyphs, %d file(s)", i, font->ConfigData ? font->ConfigData[0].Name : "", font->FontSize, font->Glyphs.Size, font->ConfigDataCount);
+				ImGui::SameLine(); if (ImGui::SmallButton("Set as default")) { io.FontDefault = font; }
+				if (font_details_opened)
+				{
+					ImGui::PushFont(font);
+					ImGui::Text("The quick brown fox jumps over the lazy dog");
+					ImGui::PopFont();
+					ImGui::DragFloat("Font scale", &font->Scale, 0.005f, 0.3f, 2.0f, "%.1f");   // Scale only this font
+					ImGui::SameLine();
+					ImGui::InputFloat("Font offset", &font->DisplayOffset.y, 1, 1, "%.0f");
+					ImGui::Text("Ascent: %f, Descent: %f, Height: %f", font->Ascent, font->Descent, font->Ascent - font->Descent);
+					ImGui::Text("Fallback character: '%c' (%d)", font->FallbackChar, font->FallbackChar);
+					const float surface_sqrt = sqrtf((float)font->MetricsTotalSurface);
+					ImGui::Text("Texture surface: %d pixels (approx) ~ %dx%d", font->MetricsTotalSurface, (int)surface_sqrt, (int)surface_sqrt);
+					for (int config_i = 0; config_i < font->ConfigDataCount; config_i++)
+						if (const ImFontConfig * cfg = &font->ConfigData[config_i])
+							ImGui::BulletText("Input %d: \'%s\', Oversample: (%d,%d), PixelSnapH: %d", config_i, cfg->Name, cfg->OversampleH, cfg->OversampleV, cfg->PixelSnapH);
+					if (ImGui::TreeNode("Glyphs", "Glyphs (%d)", font->Glyphs.Size))
+					{
+						// Display all glyphs of the fonts in separate pages of 256 characters
+						for (int base = 0; base < 0x10000; base += 256)
+						{
+							int count = 0;
+							for (int n = 0; n < 256; n++)
+								count += font->FindGlyphNoFallback((ImWchar)(base + n)) ? 1 : 0;
+							if (count > 0 && ImGui::TreeNode((void*)(intptr_t)base, "U+%04X..U+%04X (%d %s)", base, base + 255, count, count > 1 ? "glyphs" : "glyph"))
+							{
+								float cell_size = font->FontSize * 1;
+								float cell_spacing = style.ItemSpacing.y;
+								ImVec2 base_pos = ImGui::GetCursorScreenPos();
+								ImDrawList* draw_list = ImGui::GetWindowDrawList();
+								for (int n = 0; n < 256; n++)
+								{
+									ImVec2 cell_p1(base_pos.x + (n % 16) * (cell_size + cell_spacing), base_pos.y + (n / 16) * (cell_size + cell_spacing));
+									ImVec2 cell_p2(cell_p1.x + cell_size, cell_p1.y + cell_size);
+									const ImFontGlyph * glyph = font->FindGlyphNoFallback((ImWchar)(base + n));
+									draw_list->AddRect(cell_p1, cell_p2, glyph ? IM_COL32(255, 255, 255, 100) : IM_COL32(255, 255, 255, 50));
+									if (glyph)
+										font->RenderChar(draw_list, cell_size, cell_p1, ImGui::GetColorU32(ImGuiCol_Text), (ImWchar)(base + n)); // We use ImFont::RenderChar as a shortcut because we don't have UTF-8 conversion functions available to generate a string.
+									if (glyph && ImGui::IsMouseHoveringRect(cell_p1, cell_p2))
+									{
+										ImGui::BeginTooltip();
+										ImGui::Text("Codepoint: U+%04X", base + n);
+										ImGui::Separator();
+										ImGui::Text("AdvanceX: %.1f", glyph->AdvanceX);
+										ImGui::Text("Pos: (%.2f,%.2f)->(%.2f,%.2f)", glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
+										ImGui::Text("UV: (%.3f,%.3f)->(%.3f,%.3f)", glyph->U0, glyph->V0, glyph->U1, glyph->V1);
+										ImGui::EndTooltip();
+									}
+								}
+								ImGui::Dummy(ImVec2((cell_size + cell_spacing) * 16, (cell_size + cell_spacing) * 16));
+								ImGui::TreePop();
+							}
+						}
+						ImGui::TreePop();
+					}
+					ImGui::TreePop();
+				}
+				ImGui::PopID();
+			}
+			if (ImGui::TreeNode("Atlas texture", "Atlas texture (%dx%d pixels)", atlas->TexWidth, atlas->TexHeight))
+			{
+				ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexWidth, (float)atlas->TexHeight), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+				ImGui::TreePop();
+			}
+
+			static float window_scale = 1.0f;
+			if (ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.2f"))   // scale only this window
+				ImGui::SetWindowFontScale(window_scale);
+			ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, 0.3f, 2.0f, "%.2f");      // scale everything
+			ImGui::PopItemWidth();
+
+			ImGui::EndTabItem();
+		}
+
+		if (ImGui::BeginTabItem("Rendering"))
+		{
+			ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines); ImGui::SameLine();
+			ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
+			ImGui::PushItemWidth(100);
+			ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, FLT_MAX, "%.2f", 2.0f);
+			if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+			ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+			ImGui::PopItemWidth();
+
+			ImGui::EndTabItem();
+		}
+
+		ImGui::EndTabBar();
+	}
+
+	ImGui::PopItemWidth();
+}
 
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
+
+	set_editor_style(editor);
 
 	map_init(&editor->entity_selected);
 	editor->show_editor = true;
@@ -288,6 +623,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//}
 	
 
+	
 	return true;
 }
 
@@ -312,7 +648,8 @@ void editor_update(EditorInterface* editor) {
 
 	
 	
-
+	ImGuiStyle* style = &ImGui::GetStyle();
+	ShowStyleEditor(style);
 	
 
 	// Need to move key presses to use repeats and add key modifiers
@@ -387,6 +724,7 @@ void editor_update(EditorInterface* editor) {
 		}
 		ImGui::End();
 
+		see if we can pre dock all the tabs
 
 		
 
@@ -620,7 +958,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		
 
 		ImGui::PushID("pos_default");
-		if (ImGui::SmallButton("z")) {
+		if (ImGui::Button("z")) {
 			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, Vec3f(0, 0, 0), old_rot, old_scale, true);
 		}
 		ImGui::SameLine();
@@ -650,7 +988,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		
 		ImGui::PushID("rot_default");
 
-		if (ImGui::SmallButton("z")) {
+		if (ImGui::Button("z")) {
 			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, old_pos, Quat(), old_scale, false);
 		}
 		ImGui::SameLine();
@@ -679,7 +1017,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 
 		ImGui::PushID("scale_default");
 		
-		if (ImGui::SmallButton("z")) {
+		if (ImGui::Button("z")) {
 			cmd_edtior_set_transform_component(editor, e, old_pos, old_rot, old_scale, old_pos, old_rot, Vec3f(1, 1, 1), false);
 		}
 		ImGui::SameLine();
@@ -1884,10 +2222,13 @@ static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 
 
 static void push_editor_undo_command(EditorInterface* editor, const EditorCommand& command) {
+
+	
 	editor->cmd_buffer.command_undo_stack[editor->cmd_buffer.command_undo_stack_count] = command;
 	editor->cmd_buffer.command_undo_stack_count++;
+	//editor->cmd_buffer.command_undo_stack_count = (editor->cmd_buffer.command_undo_stack_count + 1) % EDITOR_COMMAND_UNDO_BUFFER_CAPACITY;
 	// Too many commands were sent this frame
-	assert(editor->cmd_buffer.command_undo_stack_count < EDITOR_COMMAND_UNDO_BUFFER_CAPACITY);
+	assert(editor->cmd_buffer.command_undo_stack_count < EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY);
 }
 
 static void push_editor_command(EditorInterface* editor, const EditorCommand& command) {
@@ -1912,7 +2253,7 @@ static void push_editor_redo_command(EditorInterface* editor, const EditorComman
 	editor->cmd_buffer.command_redo_stack[editor->cmd_buffer.command_redo_stack_count] = command;
 	editor->cmd_buffer.command_redo_stack_count++;
 	// Too many commands were sent this frame
-	assert(editor->cmd_buffer.command_redo_stack_count < EDITOR_COMMAND_UNDO_BUFFER_CAPACITY);
+	assert(editor->cmd_buffer.command_redo_stack_count < EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY);
 }
 
 
