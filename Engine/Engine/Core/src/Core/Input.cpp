@@ -21,6 +21,63 @@ bool is_key_pressed(Input* input, Keycode keycode) {
 	return input->keys[scancode].just_pressed;
 }
 
+bool is_keymod_down(Input* input, Keymod keymod) {
+	switch (keymod)
+	{
+	case KEYMOD_NONE:
+		return false;
+		break;
+	case KEYMOD_LSHIFT:
+		return is_key_down(input, KEYCODE_LSHIFT);
+		break;
+	case KEYMOD_RSHIFT:
+		return is_key_down(input, KEYCODE_RSHIFT);
+		break;
+	case KEYMOD_LCTRL:
+		return is_key_down(input, KEYCODE_LCTRL);
+		break;
+	case KEYMOD_RCTRL:
+		return is_key_down(input, KEYCODE_RCTRL);
+		break;
+	case KEYMOD_LALT:
+		return is_key_down(input, KEYCODE_LALT);
+		break;
+	case KEYMOD_RALT:
+		return is_key_down(input, KEYCODE_RALT);
+		break;
+	case KEYMOD_LGUI:
+		return is_key_down(input, KEYCODE_LGUI);
+		break;
+	case KEYMOD_RGUI:
+		return is_key_down(input, KEYCODE_RGUI);
+		break;
+	case KEYMOD_NUM:
+		return is_key_down(input, KEYCODE_NUMLOCKCLEAR);
+		break;
+	case KEYMOD_CAPS:
+		return is_key_down(input, KEYCODE_CAPSLOCK);
+		break;
+	case KEYMOD_MODE:
+		return is_key_down(input, KEYCODE_MODE);
+		break;
+	case KEYMOD_CTRL:
+		return is_key_down(input, KEYCODE_LCTRL) || is_key_down(input, KEYCODE_RCTRL);
+		break;
+	case KEYMOD_SHIFT:
+		return is_key_down(input, KEYCODE_LSHIFT) || is_key_down(input, KEYCODE_RSHIFT);
+		break;
+	case KEYMOD_ALT:
+		return is_key_down(input, KEYCODE_LALT) || is_key_down(input, KEYCODE_RALT);
+		break;
+	case KEYMOD_GUI:
+		return is_key_down(input, KEYCODE_LGUI) || is_key_down(input, KEYCODE_RGUI);
+		break;
+	default:
+		break;
+	}
+
+}
+
 
 bool is_mouse_down(Input* input, MouseButton which) {
 	

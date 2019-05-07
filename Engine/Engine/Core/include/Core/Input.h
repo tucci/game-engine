@@ -309,6 +309,29 @@ enum Keycode {
 
 };
 
+// Our keymods are the same as the sdl keymods for interop reasons
+// Why didn't we just use SDK_Keymod?
+// Because it is nicer to have our own keycode enums so that in the future, if we want to remove sdl, we can still do it
+// and game code and other systems so have to edit all their KMOD_.... codes everywhere.
+enum Keymod {
+	KEYMOD_NONE = KMOD_NONE,
+	KEYMOD_LSHIFT = KMOD_LSHIFT,
+	KEYMOD_RSHIFT = KMOD_RSHIFT,
+	KEYMOD_LCTRL = KMOD_LCTRL,
+	KEYMOD_RCTRL = KMOD_RCTRL,
+	KEYMOD_LALT = KMOD_LALT,
+	KEYMOD_RALT = KMOD_RALT,
+	KEYMOD_LGUI = KMOD_LGUI,
+	KEYMOD_RGUI = KMOD_RGUI,
+	KEYMOD_NUM = KMOD_NUM,
+	KEYMOD_CAPS = KMOD_CAPS,
+	KEYMOD_MODE = KMOD_MODE,
+	KEYMOD_CTRL = KMOD_CTRL,
+	KEYMOD_SHIFT = KMOD_SHIFT,
+	KEYMOD_ALT = KMOD_ALT,
+	KEYMOD_GUI = KMOD_GUI,
+};
+
 
 static inline SDL_Keycode keycode_to_sdl_keycode(Keycode keycode) {
 	// Since our mapping is the same as the keycodes, we just need to cast it
@@ -316,9 +339,11 @@ static inline SDL_Keycode keycode_to_sdl_keycode(Keycode keycode) {
 	return sdl_keycode;
 }
 
+
 bool is_key_down(Input* input, Keycode keycode);
 bool is_key_released(Input* input, Keycode keycode);
 bool is_key_pressed(Input* input, Keycode keycode);
+bool is_keymod_down(Input* input, Keymod keymod);
 
 bool is_mouse_down(Input* input, MouseButton which);
 bool is_mouse_released(Input* input, MouseButton which);

@@ -724,30 +724,63 @@ void editor_update(EditorInterface* editor) {
 	Renderer* renderer = editor->api.renderer;
 	Window* window = editor->api.window;
 
+	Camera* camera = get_camera(entity_manager, editor->editor_camera);
+	EditorControlsData* editor_control_data = &editor->editor_control_data;
 	
 	
 	//  Used to style the editor
 	//ImGuiStyle* style = &ImGui::GetStyle();
 	//ShowStyleEditor(style);
 	
-
-	// Need to move key presses to use repeats and add key modifiers
-	if (is_key_pressed(input, KEYCODE_Z) && is_key_down(input, KEYCODE_LCTRL)) {
+	float delta_time = get_delta_time(timer);
+	
+	// Check for undo key and undo repeat
+	bool is_ctrl_down = is_keymod_down(input, KEYMOD_CTRL);
+	if (is_key_pressed(input, KEYCODE_Z) && is_ctrl_down) {
+		// If the user pressed ctrl + z, always do it right away, do not wait for repeat/delay
+		editor_control_data->last_undo_time = timer->milliseconds;
+		editor_control_data->undo_repeat_count = 0;
 		perform_undo_operation(editor);
+	} else {	
+		// If ctrl + z is repeated, check for the key delay
+		if (is_key_down(input, KEYCODE_Z) && is_ctrl_down) {
+			if (timer->milliseconds - editor_control_data->last_undo_time > (EditorControlsData::REPEAT_DELAY_TIME - (editor_control_data->undo_repeat_count * EditorControlsData::INCREMENT_REPEAT_TIME))) {
+				editor_control_data->last_undo_time = timer->milliseconds;
+				editor_control_data->undo_repeat_count = MIN(editor_control_data->undo_repeat_count + 1, EditorControlsData::MAX_INCREMENT);
+				perform_undo_operation(editor);
+			}
+		}
 	}
 
+	
 
-	if (is_key_pressed(input, KEYCODE_Y) && is_key_down(input, KEYCODE_LCTRL)) {
+	// Check for redo key and redo repeat
+	if (is_key_pressed(input, KEYCODE_Y) && is_ctrl_down) {
+		// If the user pressed ctrl + y, always do it right away, do not wait for repeat/delay
+		editor_control_data->last_redo_time = timer->milliseconds;
+		editor_control_data->redo_repeat_count = 0;
 		perform_redo_operation(editor);
+	} else {
+		if (is_key_down(input, KEYCODE_Y) && is_ctrl_down) {
+			// If ctrl + y is repeated, check for the key delay
+			if (timer->milliseconds - editor_control_data->last_redo_time > (EditorControlsData::REPEAT_DELAY_TIME - (editor_control_data->redo_repeat_count * EditorControlsData::INCREMENT_REPEAT_TIME))) {
+				editor_control_data->last_redo_time = timer->milliseconds;
+				editor_control_data->redo_repeat_count = MIN(editor_control_data->redo_repeat_count + 1, EditorControlsData::MAX_INCREMENT);
+				perform_redo_operation(editor);
+			}
+		}
 	}
 
-	if (is_key_pressed(input, KEYCODE_C) && is_key_down(input, KEYCODE_LCTRL)) {
+
+
+
+	if (is_key_pressed(input, KEYCODE_C) && is_ctrl_down) {
 		LOG_INFO("Editor", "perform copy command");
 	}
-	if (is_key_pressed(input, KEYCODE_V) && is_key_down(input, KEYCODE_LCTRL)) {
+	if (is_key_pressed(input, KEYCODE_V) && is_ctrl_down) {
 		LOG_INFO("Editor", "perform paste command");
 	}
-	if (is_key_pressed(input, KEYCODE_D) && is_key_down(input, KEYCODE_LCTRL)) {
+	if (is_key_pressed(input, KEYCODE_D) && is_ctrl_down) {
 		LOG_INFO("Editor", "perform duplicate command");
 	}
 
@@ -756,54 +789,6 @@ void editor_update(EditorInterface* editor) {
 	}
 
 	
-
-	if (editor->show_editor) {
-
-		
-		
-
-		
-		
-		set_editor_layout(editor);
-		
-
-		draw_main_menu_bar(editor);
-		
-		draw_window_entity_components(editor);
-
-		
-		draw_window_scene_hierarchy(editor);
-
-		
-		draw_window_engine_timer(editor);
-
-		
-		draw_window_log(editor);
-
-		
-		draw_window_assets(editor);
-		//draw_window_scene_viewports(editor);
-		
-		draw_window_renderer_stats(editor);
-		
-		
-		draw_editor_command_undo_and_redo_stack(editor);
-
-		
-		
-	
-	} // END OF SHOW EDITOR
-
-	
-
-	
-	
-
-
-	
-
-	
-
 	if (is_mouse_pressed(input, MouseButton::Left)) {
 		Vec2i mouse_pos = get_mouse_pos(input);
 
@@ -812,18 +797,7 @@ void editor_update(EditorInterface* editor) {
 	}
 	
 
-
-
-
-	float delta_time = timer->delta_time;
-	Camera* camera = get_camera(entity_manager, editor->editor_camera);
-
-
-
-
 	Vec2i scroll = get_scroll_delta(input);
-
-	
 	
 	// Capture scolling to move camera forward and back
 	if (scroll.y != 0) {
@@ -836,10 +810,6 @@ void editor_update(EditorInterface* editor) {
 		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
 		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
 	}
-
-
-
-
 
 	int x = input->mouse.pos.x;
 	int y = input->mouse.pos.y;
@@ -906,6 +876,22 @@ void editor_update(EditorInterface* editor) {
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 		
+
+	if (editor->show_editor) {
+
+		set_editor_layout(editor);
+		draw_main_menu_bar(editor);
+		draw_window_entity_components(editor);
+		draw_window_scene_hierarchy(editor);
+		draw_window_engine_timer(editor);
+		draw_window_log(editor);
+		draw_window_assets(editor);
+		//draw_window_scene_viewports(editor);
+		draw_window_renderer_stats(editor);
+		draw_editor_command_undo_and_redo_stack(editor);
+	} // END OF SHOW EDITOR
+
+
 	process_editor_command_buffer(editor);
 }
 

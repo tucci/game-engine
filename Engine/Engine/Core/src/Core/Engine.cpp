@@ -15,6 +15,7 @@
 #include "Logger.h"
 
 //#if ENGINE_MODE_EDITOR
+
 #include "../../imgui/imgui.h"
 #include "../../imgui/imgui_impl_sdl.h"
 #include "../../imgui/imgui_impl_opengl3.h"
@@ -72,6 +73,7 @@ static void process_event_queue(Engine* engine) {
             
 			case EventKind::Key_Down:{
 				debug_print("Key Down: %d\n", event.event.key_event.key);
+				
 				update_button_state(&engine->input.keys[event.event.key_event.key], true);
 				
 				break;
@@ -614,7 +616,10 @@ static void poll_inputs(Engine* engine) {
 				if (scancode) {
 					Event event;
 					event.kind = sdl_event.type == SDL_KEYDOWN ? EventKind::Key_Down : EventKind::Key_Up;
+					u8 repeat = sdl_event.key.repeat;
+
 					event.event.key_event.key = scancode;
+					event.event.key_event.repeat = repeat > 0;
 					push_to_event_queue(engine, event);
 				}
 				break;

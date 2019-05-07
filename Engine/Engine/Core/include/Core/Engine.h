@@ -61,6 +61,7 @@ enum class EventKind {
 
 struct KeyEvent {
 	int key;
+	bool repeat;
 };
 
 struct MouseButtonEvent {

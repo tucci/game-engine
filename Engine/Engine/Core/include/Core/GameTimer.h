@@ -41,7 +41,7 @@ struct GameTimer {
 };
 
 
-inline float delta_time(GameTimer* gt) {
+inline float get_delta_time(GameTimer* gt) {
 	//return gt->delta_time;
 	return gt->delta_time;
 }

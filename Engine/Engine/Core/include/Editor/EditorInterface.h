@@ -172,6 +172,16 @@ struct EditorCommandBuffer {
 
 
 
+struct EditorControlsData {
+	enum {REPEAT_DELAY_TIME = 200, INCREMENT_REPEAT_TIME = 10, MAX_INCREMENT = (REPEAT_DELAY_TIME - INCREMENT_REPEAT_TIME)/ INCREMENT_REPEAT_TIME
+	};
+	u64 last_undo_time = 0;
+	u64 undo_repeat_count = 0;
+	u64 last_redo_time = 0;
+	u64 redo_repeat_count = 0;
+};
+
+
 #define FPS_HISTORY_COUNT 240
 struct EditorInterface {
 
@@ -194,7 +204,7 @@ struct EditorInterface {
 	HDR_SkyMap hdr_skymap;
 
 	bool show_editor;
-
+	EditorControlsData editor_control_data;
 
 	bool was_last_frame_using_right_click;
 
@@ -202,6 +212,8 @@ struct EditorInterface {
 	// Game clock vars
 	int fps_history_index = 0;
 	float fps_history[FPS_HISTORY_COUNT] = { 0 };
+
+	int ms_key_delay = 0;
 
 	// Log vars
 	bool show_info;
