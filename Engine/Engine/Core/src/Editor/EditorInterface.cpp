@@ -729,8 +729,8 @@ void editor_update(EditorInterface* editor) {
 	
 	
 	//  Used to style the editor
-	//ImGuiStyle* style = &ImGui::GetStyle();
-	//ShowStyleEditor(style);
+	ImGuiStyle* style = &ImGui::GetStyle();
+	ShowStyleEditor(style);
 	
 	float delta_time = get_delta_time(timer);
 	
@@ -973,7 +973,8 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 	
 	
 	
-	if (ImGui::CollapsingHeader("Transform")) {
+	ImGui::PushID("transform_component");
+	if (ImGui::CollapsingHeader("Transform", 0, ImGuiTreeNodeFlags_DefaultOpen)) {
 		Vec3f old_pos = get_position(entity_manager, e);
 		Vec3f new_pos = old_pos;
 
@@ -1078,15 +1079,16 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 		
 	}
 
-	
+	ImGui::PopID();
 }
 
 
 static void draw_component_camera(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
+	ImGui::PushID("camera_component");
 	bool open = true;
-	if (ImGui::CollapsingHeader("Camera", &open)) {
+	if (ImGui::CollapsingHeader("Camera", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		bool comp_enabled = true;
 		ImGui::Checkbox("Enabled", &comp_enabled);
 			
@@ -1242,14 +1244,15 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 	if (!open) {
 		remove_component(entity_manager, e, ComponentType::Camera);
 	}
+	ImGui::PopID();
 }
 
 
 static void draw_component_light(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
-	
+	ImGui::PushID("light_component");
 	bool open = true;
-	if (ImGui::CollapsingHeader("Light", &open)) {
+	if (ImGui::CollapsingHeader("Light", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		
 		bool comp_enabled = is_component_enabled(entity_manager, e, ComponentType::Light);
 		ImGui::PushID("light_enabled");
@@ -1366,20 +1369,21 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 	if (!open) {
 		remove_component(entity_manager, e, ComponentType::Light);
 	}
+	ImGui::PopID();
 }
 
 static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
-
+	ImGui::PushID("mesh_component");
 	bool open = true;
-	if (ImGui::CollapsingHeader("Static Mesh", &open)) {
+	if (ImGui::CollapsingHeader("Static Mesh", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
 		AssetID assetid;
 		assetid.mesh = mesh_id;
 		String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
 		ImGui::Text(name.buffer);
-
-		if (ImGui::Button("Select Mesh")) {
+		ImGui::SameLine();
+		if (ImGui::SmallButton("...")) {
 			ImGui::OpenPopup("Select Mesh");
 		}
 		
@@ -1416,12 +1420,14 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	if (!open) {
 		remove_component(entity_manager, e, ComponentType::StaticMesh);
 	}
+	ImGui::PopID();
 }
 
 static void draw_component_render(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
+	ImGui::PushID("render_component");
 	bool open = true;
-	if (ImGui::CollapsingHeader("Render", &open)) {
+	if (ImGui::CollapsingHeader("Render", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		bool comp_enabled = is_component_enabled(entity_manager, e, ComponentType::Render);
 		ImGui::PushID("render_enabled");
 		if (ImGui::Checkbox("Enabled", &comp_enabled)) {
@@ -1437,7 +1443,8 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 		String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
 		ImGui::Text(name.buffer);
 
-		if (ImGui::Button("Select Material")) {
+		ImGui::SameLine();
+		if (ImGui::SmallButton("...")) {
 			ImGui::OpenPopup("Select Material");
 		}
 
@@ -1472,6 +1479,7 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 	if (!open) {
 		remove_component(entity_manager, e, ComponentType::Render);
 	}
+	ImGui::PopID();
 }
 
 
@@ -2123,13 +2131,21 @@ static void draw_window_assets(EditorInterface* editor) {
 		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {  }
 		ImGui::SameLine(0.0f, spacing);
 		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {  }
-		//ImGui::SameLine(0.0f, spacing);
+		ImGui::SameLine(0.0f, spacing);
 		
 		ImGui::Button("Assets");
 		ImGui::SameLine(0.0f, spacing);
-		ImGui::SmallButton("<");
-		ImGui::SameLine(0.0f, spacing);
-		ImGui::Button("textures");
+		ImGui::SmallButton(">");
+		editor->asset_filter.Draw("Filter");
+
+		
+
+		ImGui::Checkbox("Scene", &editor->asset_scene_filter); ImGui::SameLine(0.0f, spacing);
+		ImGui::Checkbox("Static Mesh", &editor->asset_mesh_filter); ImGui::SameLine(0.0f, spacing);
+		ImGui::Checkbox("Material", &editor->asset_material_filter); ImGui::SameLine(0.0f, spacing);
+		ImGui::Checkbox("Texture", &editor->asset_texture_filter);
+
+		ImGui::Separator();
 		
 
 		AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
@@ -2140,7 +2156,29 @@ static void draw_window_assets(EditorInterface* editor) {
 			// Check if this is a valid track data
 			if (track_item.key != 0 && track_item.key != TOMBSTONE) {
 				AssetID assetid = find_asset_by_name(tracker, track_item.value.file.buffer);
-				ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
+				bool filter_pass = false;
+
+			
+
+				if (editor->asset_filter.PassFilter(track_item.value.file.buffer, track_item.value.file.buffer + track_item.value.file.length)) {
+					
+					if (editor->asset_scene_filter && assetid.type == AssetType::Scene) {
+						filter_pass = true;
+					}
+					else if (editor->asset_mesh_filter && assetid.type == AssetType::StaticMesh) {
+						filter_pass = true;
+					}
+					else if (editor->asset_material_filter && assetid.type == AssetType::Material) {
+						filter_pass = true;
+					}
+					else if (editor->asset_texture_filter && assetid.type == AssetType::Texture) {
+						filter_pass = true;
+					}
+				}
+
+				if (filter_pass) {
+					ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
+				}
 			}
 		}
 	}
@@ -2215,6 +2253,7 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 	if (ImGui::Begin("Command History")) {
+		
 		float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
 			perform_undo_operation(editor);
@@ -2223,6 +2262,8 @@ static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {
 			perform_redo_operation(editor);
 		}
+		ImGui::SameLine(0.0f, spacing);
+		ImGui::Text("Command Count %llu", editor->cmd_buffer.command_undo_stack_count);
 
 		ImGui::Columns(2, "undo_redo_header", true);
 

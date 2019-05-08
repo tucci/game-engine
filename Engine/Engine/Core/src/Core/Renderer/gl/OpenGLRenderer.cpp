@@ -1108,6 +1108,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 	glUseProgram(current_shader);
 		
+	// TODO: glGetUniformLocation is slow, we should cache shader params. Need to create a shader compiler/cacher
 	glUniformMatrix4fv(glGetUniformLocation(current_shader, "projection_view"), 1, GL_FALSE, pv_mat.mat1d);
 	
 	glUniform3f(glGetUniformLocation(current_shader, "camera_pos"), uniform3f_pack(cam_pos));

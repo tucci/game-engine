@@ -213,7 +213,7 @@ struct EditorInterface {
 	int fps_history_index = 0;
 	float fps_history[FPS_HISTORY_COUNT] = { 0 };
 
-	int ms_key_delay = 0;
+	
 
 	// Log vars
 	bool show_info;
@@ -232,11 +232,12 @@ struct EditorInterface {
 
 	
 	bool auto_scroll;
+
 	ImGuiTextFilter scene_tree_entity_filter;
+	ImGuiTextFilter log_filter;
+	ImGuiTextFilter asset_filter;
 
 	bool window_scene_tree_open;
-
-	ImGuiTextFilter log_filter;
 	bool window_log_open;
 	bool window_asset_browser_open;
 	bool window_entity_components_open;
@@ -244,6 +245,10 @@ struct EditorInterface {
 	bool window_render_stats;
 
 	
+	bool asset_mesh_filter = true;
+	bool asset_material_filter = true;
+	bool asset_texture_filter = true;
+	bool asset_scene_filter = true;
 	
 };
 
