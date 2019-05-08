@@ -300,11 +300,12 @@ AssetID load_asset_by_name(AssetManager* manager, String filepath) {
 
 
 	// first 8 bytes are the asset id
-	fread(buffer, 8, 1, file);
+	
+	fread(buffer, sizeof(AssetID::id), 1, file);
 	asset.id = *(u64*)buffer;
 
 	// next 4 bytes are the asset type
-	fread(buffer, 4, 1, file);
+	fread(buffer, sizeof(AssetType), 1, file);
 	asset.type = *(AssetType*)buffer;
 	
 
@@ -788,6 +789,8 @@ AssetID create_material_asset(AssetManager* manager, String path, String name, M
 	snprintf(file_str, str_size, "%s_mat%s", name.buffer, ASSET_FILE_EXTENSION);
 
 	String file_with_ext(file_str);
+	
+
 	platform_concat_path_and_filename(path, file_with_ext, file_str, str_size);
 
 	String files_str_str(file_str, str_size);

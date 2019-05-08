@@ -202,10 +202,13 @@ void write_tracker_file(AssetTracker* tracker) {
 				// Write the asset type
 				fwrite(cast(const void*) &track_item.value.assetid.type, sizeof(track_item.value.assetid.type), 1, file);
 
+				char buffer[512];
+				convert_to_os_path(track_item.value.file.buffer, buffer, track_item.value.file.length);
+
 				// Write the length of the filename
 				fwrite(cast(const void*) &track_item.value.file.length, sizeof(track_item.value.file.length), 1, file);
 				// Write the actual filename string
-				fwrite(cast(const void*) track_item.value.file.buffer, track_item.value.file.length, 1, file);
+				fwrite(cast(const void*) buffer, track_item.value.file.length, 1, file);
 			}
 		}
 

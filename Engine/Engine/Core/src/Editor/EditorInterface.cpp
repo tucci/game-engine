@@ -584,8 +584,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//AssetID tmetallic = import_texture(editor->api.asset_manager,	String("Assets/textures/plastic/scuffed-plastic-metal.png"), true);
 	//AssetID troughness = import_texture(editor->api.asset_manager,	String("Assets/textures/plastic/scuffed-plastic-rough.png"), true);
 	//AssetID tao = import_texture(editor->api.asset_manager,			String("Assets/textures/plastic/scuffed-plastic-ao.png"), true);
-	////AssetID theight = import_texture(editor->api.asset_manager, String("Assets/textures/wet_stone/slipperystonework-height.png"), true);
-	//
+	//////AssetID theight = import_texture(editor->api.asset_manager, String("Assets/textures/wet_stone/slipperystonework-height.png"), true);
+	////
 	//Material test_mat;
 	//init_material_defaults(&test_mat);
 	//
@@ -596,17 +596,17 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//test_mat.ao = tao.texture;
 	////test_mat.height = theight.texture;
 	//
-	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets/textures/plastic/", "plastic", &test_mat);
+	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets\\textures\\plastic\\", "plastic", &test_mat);
 	//editor->test_mat = mat_id;
 
 	
 
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
-	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat.easset");
+	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_green_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/wet_stone/slipperystonework_mat.easset");
-	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold_mat.easset");
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold_mat.easset");
 
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_iron_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
@@ -2155,10 +2155,8 @@ static void draw_window_assets(EditorInterface* editor) {
 			CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
 			// Check if this is a valid track data
 			if (track_item.key != 0 && track_item.key != TOMBSTONE) {
-				AssetID assetid = find_asset_by_name(tracker, track_item.value.file.buffer);
 				bool filter_pass = false;
-
-			
+				AssetID assetid = track_item.value.assetid;
 
 				if (editor->asset_filter.PassFilter(track_item.value.file.buffer, track_item.value.file.buffer + track_item.value.file.length)) {
 					
@@ -2168,16 +2166,22 @@ static void draw_window_assets(EditorInterface* editor) {
 					else if (editor->asset_mesh_filter && assetid.type == AssetType::StaticMesh) {
 						filter_pass = true;
 					}
-					else if (editor->asset_material_filter && assetid.type == AssetType::Material) {
+					
+					if (editor->asset_material_filter && assetid.type == AssetType::Material) {
+					
 						filter_pass = true;
 					}
 					else if (editor->asset_texture_filter && assetid.type == AssetType::Texture) {
 						filter_pass = true;
 					}
+					
 				}
+				
 
 				if (filter_pass) {
 					ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
+					//ImGui::Text("%llu, %lu, %s", track_item.value.assetid.id, track_item.value.assetid.type, track_item.value.file.buffer);
+					
 				}
 			}
 		}
