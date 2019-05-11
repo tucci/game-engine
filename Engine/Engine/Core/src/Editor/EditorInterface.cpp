@@ -1309,7 +1309,7 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 
 
 				ImGui::PushID("dir_direction_default");
-				if (ImGui::SmallButton("z")) {
+				if (ImGui::Button("z")) {
 					new_light.dir_light.direction = Vec3f(0, 0, 0);
 					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
@@ -1328,7 +1328,7 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 				ImGui::PopID();
 
 				ImGui::PushID("dir_color_default");
-				if (ImGui::SmallButton("z")) {
+				if (ImGui::Button("z")) {
 					new_light.dir_light.color = Vec3f(1, 1, 1);
 					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
@@ -1349,7 +1349,7 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 				
 
 				ImGui::PushID("dir_intensity_default");
-				if (ImGui::SmallButton("z")) {
+				if (ImGui::Button("z")) {
 					new_light.dir_light.intensity = 0;
 					cmd_editor_set_light_component(editor, e, old_light, new_light, true);
 				}
@@ -1902,11 +1902,20 @@ static void draw_window_log(EditorInterface* editor) {
 
 		editor->log_filter.Draw("Filter");
 		ImGui::SameLine();
+		
+
+		const float ItemSpacing = ImGui::GetStyle().ItemSpacing.x;
+		static float HostButtonWidth = 100.0f; //The 100.0f is just a guess size for the first frame.
+		float pos = HostButtonWidth + ItemSpacing;
+
+		ImGui::SameLine(ImGui::GetWindowWidth() - pos);
+
 		if (ImGui::Button("Clear")) {
 			editor->log_start_offset = logs.log_count;
 		}
+		HostButtonWidth = ImGui::GetItemRectSize().x; //Get the actual width for next frame.
 
-		ImGui::Checkbox("Auto Scroll", &editor->auto_scroll);
+		ImGui::Separator();
 
 
 		ImGui::Checkbox("Info", &editor->show_info);
@@ -1914,14 +1923,8 @@ static void draw_window_log(EditorInterface* editor) {
 		ImGui::Checkbox("Warning", &editor->show_warning);
 		ImGui::SameLine();
 		ImGui::Checkbox("Fatal", &editor->show_fatal);
-
-
-		ImGui::Text("Filter Columns");
 		ImGui::SameLine();
-
 		
-		
-
 
 
 		static const char* str_time = "Time";
@@ -1932,14 +1935,39 @@ static void draw_window_log(EditorInterface* editor) {
 		static const char* str_line = "Line";
 		static const char* str_msg = "Message";
 
+		
 
-		ImGui::Checkbox(str_time, &editor->show_time); ImGui::SameLine();
-		ImGui::Checkbox(str_tag, &editor->show_tag); ImGui::SameLine();
-		ImGui::Checkbox(str_thread_id, &editor->show_thread_id); ImGui::SameLine();
-		ImGui::Checkbox(str_filename, &editor->show_filename); ImGui::SameLine();
-		ImGui::Checkbox(str_function, &editor->show_function); ImGui::SameLine();
-		ImGui::Checkbox(str_line, &editor->show_line); ImGui::SameLine();
-		ImGui::Checkbox(str_msg, &editor->show_message); ImGui::SameLine();
+		const float ItemSpacing2 = ImGui::GetStyle().ItemSpacing.x;
+		static float HostButtonWidth2 = 100.0f; //The 100.0f is just a guess size for the first frame.
+		float pos2 = HostButtonWidth2 + ItemSpacing2;
+
+		ImGui::SameLine(ImGui::GetWindowWidth() - pos2);
+
+		if (ImGui::Button("Options")) {
+			ImGui::OpenPopup("log_options_popup");
+		}
+		HostButtonWidth2 = ImGui::GetItemRectSize().x; //Get the actual width for next frame.
+
+		
+
+		
+		
+		
+
+		if (ImGui::BeginPopup("log_options_popup"))
+		{
+			ImGui::Checkbox("Auto Scroll", &editor->auto_scroll);
+			ImGui::Separator();
+			ImGui::Text("Column Filters");
+			ImGui::Checkbox(str_time, &editor->show_time); ImGui::SameLine();
+			ImGui::Checkbox(str_tag, &editor->show_tag); ImGui::SameLine();
+			ImGui::Checkbox(str_thread_id, &editor->show_thread_id); ImGui::SameLine();
+			ImGui::Checkbox(str_filename, &editor->show_filename); ImGui::SameLine();
+			ImGui::Checkbox(str_function, &editor->show_function); ImGui::SameLine();
+			ImGui::Checkbox(str_line, &editor->show_line); ImGui::SameLine();
+			//ImGui::Checkbox(str_msg, &editor->show_message); ImGui::SameLine();
+			ImGui::EndPopup();
+		}
 
 		ImGui::Spacing();
 		ImGui::Separator();
@@ -2187,30 +2215,48 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 	AssetBrowserFileNode* node = asset_browser->current_directory->first_child;
 
-	float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	
 	
 	asset_browser->asset_browser_filter.Draw("Search");
 
+	ImGui::Checkbox("Scene", &asset_browser->asset_scene_filter); ImGui::SameLine();
+	ImGui::Checkbox("Static Mesh", &asset_browser->asset_mesh_filter); ImGui::SameLine();
+	ImGui::Checkbox("Material", &asset_browser->asset_material_filter); ImGui::SameLine();
+	ImGui::Checkbox("Texture", &asset_browser->asset_texture_filter); ImGui::SameLine();
+	
 	
 
-	
-	ImGui::Checkbox("Scene", &asset_browser->asset_scene_filter); ImGui::SameLine(0.0f, spacing);
-	ImGui::Checkbox("Static Mesh", &asset_browser->asset_mesh_filter); ImGui::SameLine(0.0f, spacing);
-	ImGui::Checkbox("Material", &asset_browser->asset_material_filter); ImGui::SameLine(0.0f, spacing);
-	ImGui::Checkbox("Texture", &asset_browser->asset_texture_filter); ImGui::SameLine(0.0f, spacing);
-	
-	static int scroll_count = 0;
+	static int scale_count = 0;
 
-	ImGui::SetNextItemWidth(50);
-	ImGui::PushItemWidth(-(ImGui::GetWindowContentRegionWidth() - ImGui::CalcItemWidth()));
-	ImGui::SliderInt("Scale", &scroll_count, 0, 4, "");
+
+	const float ItemSpacing3 = ImGui::GetStyle().ItemSpacing.x;
+	static float HostButtonWidth3 = 100.0f; //The 100.0f is just a guess size for the first frame.
+	float pos3 = HostButtonWidth3 + ItemSpacing3;
+	
+	ImGui::SameLine(ImGui::GetColumnWidth() - pos3);
+	
+
+	if (ImGui::Button("Options")) {
+		ImGui::OpenPopup("asset_options_popup");
+	}
+	HostButtonWidth3 = ImGui::GetItemRectSize().x; //Get the actual width for next frame.
+
+
+	if (ImGui::BeginPopup("asset_options_popup")) {
+		ImGui::SetNextItemWidth(50);
+		ImGui::SliderInt("Scale", &scale_count, 0, 4, "");
+		ImGui::EndPopup();
+	}
+
+	
+
 
 	ImGui::BeginChild("Asset Browser");
 	ImGui::Separator();
 
 	
 			
-	if (scroll_count == 0) {
+	if (scale_count == 0) {
 				// Detail View
 				ImGui::Columns(3);
 
@@ -2301,7 +2347,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 				// Tile View
 				int buttons_count = 10;
 				ImGuiStyle& style = ImGui::GetStyle();
-				ImVec2 button_sz(scroll_count * 40, scroll_count * 40);
+				ImVec2 button_sz(scale_count * 40, scale_count * 40);
 				int n = 0;
 				ImGui::BeginChild("Tile Scroll");
 				ImVec2 window_size = ImGui::GetWindowSize();
