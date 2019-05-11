@@ -141,6 +141,7 @@ static void set_editor_layout(EditorInterface* editor) {
 		ImGui::DockBuilderSetNodeSize(editor->dockspace_id, ImGui::GetMainViewport()->Size);
 
 		ImGuiID dock_main_id = editor->dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
+		
 		ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
 		ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, NULL, &dock_main_id);
 		ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.35f, NULL, &dock_main_id);
@@ -149,13 +150,18 @@ static void set_editor_layout(EditorInterface* editor) {
 
 
 
-		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
 		ImGui::DockBuilderDockWindow("Entity Scene Tree", dock_id_left);
-		ImGui::DockBuilderDockWindow("Game Loop", dock_id_bottom);
-		ImGui::DockBuilderDockWindow("Log", dock_id_bottom);
+		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
+		
+		
 
+		ImGui::DockBuilderDockWindow("Game Loop", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Asset Browser", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Render Stats", dock_id_bottom);
+		ImGui::DockBuilderDockWindow("Log", dock_id_bottom);
+
+		
+
 
 		ImGui::DockBuilderDockWindow("Command History", dock_id_left_bottom);
 		
@@ -203,7 +209,7 @@ static void set_editor_style(EditorInterface* editor) {
 	
 	ImVec4* colors = ImGui::GetStyle().Colors; 
 
-
+	
 	
 
 	ImVec4 dark_accent = ImVec4(0.12f, 0.29f, 0.62f, 1.00f);
@@ -552,7 +558,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 	
 	init_asset_importer(&editor->importer, &editor->api.asset_manager->asset_tracker);
-
+	editor->asset_browser.current_directory = editor->api.asset_manager->asset_tracker.dir_root->first_child;
 	
 
 	map_put(&editor->entity_selected, editor->api.entity_manager->root.id, false);
@@ -599,14 +605,38 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets\\textures\\plastic\\", "plastic", &test_mat);
 	//editor->test_mat = mat_id;
 
+	//AssetID tcolor = import_texture(editor->api.asset_manager, String("Assets/textures/gold/gold-scuffed_basecolor.png"), true);
+	//AssetID tnormal = import_texture(editor->api.asset_manager, String("Assets/textures/gold/gold-scuffed_normal.png"), true);
+	//AssetID tmetallic = import_texture(editor->api.asset_manager, String("Assets/textures/gold/gold-scuffed_metallic.png"), true);
+	//AssetID troughness = import_texture(editor->api.asset_manager, String("Assets/textures/gold/gold-scuffed_roughness.png"), true);
+	//AssetID tao = import_texture(editor->api.asset_manager, String("Assets/textures/gold/gold-scuffed_metallic.png"), true);
+	//////AssetID theight = import_texture(editor->api.asset_manager, String("Assets/textures/wet_stone/slipperystonework-height.png"), true);
+	////
+	//Material test_mat;
+	//init_material_defaults(&test_mat);
+	//
+	//test_mat.albedo = tcolor.texture;
+	//test_mat.normal = tnormal.texture;
+	//test_mat.metal = tmetallic.texture;
+	//test_mat.roughness = troughness.texture;
+	//test_mat.ao = tao.texture;
+	////test_mat.height = theight.texture;
+	//
+	//AssetID mat_id = create_material_asset(editor->api.asset_manager, "Assets\\textures\\gold\\", "gold", &test_mat);
+	//editor->test_mat = mat_id;
+
+
+
+
+
 	
 
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
-	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat.easset");
+	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_green_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/wet_stone/slipperystonework_mat.easset");
-	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold_mat.easset");
+	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold_mat.easset");
 
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_iron_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
@@ -634,6 +664,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	attach_child_entity(entity_manager, e4, e5);
 	attach_child_entity(entity_manager, e3, e6);
 	attach_child_entity(entity_manager, e3, editor->test_mesh);
+
 
 	
 
@@ -888,7 +919,7 @@ void editor_update(EditorInterface* editor) {
 		draw_window_assets(editor);
 		//draw_window_scene_viewports(editor);
 		draw_window_renderer_stats(editor);
-		draw_editor_command_undo_and_redo_stack(editor);
+		//draw_editor_command_undo_and_redo_stack(editor);
 	} // END OF SHOW EDITOR
 
 
@@ -1728,7 +1759,7 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		return;
 	}
 	EntityManager* entity_manager = editor->api.entity_manager;
-	if (ImGui::Begin("Entity Scene Tree", &editor->window_scene_tree_open, ImGuiWindowFlags_DockNodeHost)) {
+	if (ImGui::Begin("Entity Scene Tree", &editor->window_scene_tree_open)) {
 		
 		
 		
@@ -1822,64 +1853,6 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 	}
 	ImGui::End();
 
-	//if (ImGui::Begin("Transform Components")) {
-	//	TransformManager* rm = &entity_manager->transform_manager;
-	//	ImGui::Text("Capacity %d", rm->total_count);
-	//	ImGui::Text("Enabled %d", rm->enabled_count);
-	//
-	//	//for (u64 i = 0; i < rm->enabled_count; i++) {
-	//	//	ImGui::Text("%d ", rm->entitys[i].id);
-	//	//	ImGui::SameLine();
-	//	//}
-	//	//ImGui::NewLine();
-	//	//for (u64 i = 0; i < rm->capacity; i++) {
-	//	//	ImGui::Text("%d ", rm->entitys[i].id);
-	//	//	ImGui::SameLine();
-	//	//}
-	//	//
-	//	//ImGui::NewLine();
-	//	//size_t map_size = rm->id_map.size;
-	//	//// Go over our track map, and look for filename
-	//	//for (int i = 0; i < map_size; i++) {
-	//	//	CompactMapItem<u64> item = rm->id_map.map[i];
-	//	//
-	//	//	// Check if this is a valid track data
-	//	//	if (item.key != 0 && item.key != TOMBSTONE) {
-	//	//		ImGui::Text("%llu -> %llu", item.key, item.value);
-	//	//	}
-	//	//}
-	//
-	//	ImGui::Text("Parents");
-	//	ImGui::SameLine();
-	//	for (u64 i = 0; i < rm->enabled_count; i++) {
-	//		ImGui::Text("%llu ", rm->parent[i]);
-	//		ImGui::SameLine();
-	//	}
-	//	ImGui::NewLine();
-	//
-	//	ImGui::Text("1childs");
-	//	ImGui::SameLine();
-	//	for (u64 i = 0; i < rm->enabled_count; i++) {
-	//		ImGui::Text("%llu ", rm->first_child[i]);
-	//		ImGui::SameLine();
-	//	}
-	//	ImGui::NewLine();
-	//	ImGui::Text("Nxtsibs");
-	//	ImGui::SameLine();
-	//	for (u64 i = 0; i < rm->enabled_count; i++) {
-	//		ImGui::Text("%llu ", rm->next_sibling[i]);
-	//		ImGui::SameLine();
-	//	}
-	//	ImGui::NewLine();
-	//	ImGui::Text("Prvsibs");
-	//	ImGui::SameLine();
-	//	for (u64 i = 0; i < rm->enabled_count; i++) {
-	//		ImGui::Text("%llu ", rm->prev_sibling[i]);
-	//		ImGui::SameLine();
-	//	}
-	//
-	//}
-	//ImGui::End();
 	
 }
 
@@ -2119,7 +2092,290 @@ static void draw_window_log(EditorInterface* editor) {
 	ImGui::End();
 }
 
+
+static void push_asset_directory_change(AssetBrowserData* asset_browser, AssetBrowserFileNode* node) {
+	asset_browser->current_directory = node;
+}
+
+static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* leaf_node) {
+	AssetBrowserData* asset_browser = &editor->asset_browser;
+	if (leaf_node->node_type == AssetBrowserFileNodeType::Root) {
+		return;
+	} 
+	draw_path_reverse(editor, tracker, leaf_node->parent);
+	
+	
+	
+	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+	
+	
+	if (ImGui::Button(leaf_node->name.buffer)) {
+		push_asset_directory_change(asset_browser, leaf_node);
+	}
+	ImGui::PopStyleColor(1);
+
+	ImGui::SameLine();
+	if (leaf_node != asset_browser->current_directory) {
+		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+		ImGui::ArrowButton("##right", ImGuiDir_Right);
+		ImGui::PopStyleColor(3);
+		
+	}
+	ImGui::SameLine();
+	
+	
+	
+}
+
+static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* node) {
+	
+	AssetBrowserData* asset_browser = &editor->asset_browser;
+
+	ImGui::BeginChild("Asset Tree View");
+	
+	if (node->node_type == AssetBrowserFileNodeType::Directory ) {
+
+		if (node->has_child_directorys) {
+			bool selected = asset_browser->current_directory == node;
+			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((selected) ? ImGuiTreeNodeFlags_Selected : 0);
+
+			bool open = ImGui::TreeNodeEx(node->name.buffer, node_flags);
+			
+			if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
+			{
+				// The item is clicked
+				push_asset_directory_change(asset_browser, node);
+			}
+			else {
+				// Arrow is clicked
+			}
+			
+			if (open) {
+				AssetBrowserFileNode* child = node->first_child;
+				while (child != NULL) {
+					draw_asset_tree(editor, tracker, child);
+					child = child->next_sibling;
+				}
+
+				ImGui::TreePop();
+
+			}
+		}
+		else {
+			bool selected = asset_browser->current_directory == node;
+			bool open = ImGui::Selectable(node->name.buffer, &selected);
+			if (ImGui::IsItemClicked()) {
+				push_asset_directory_change(asset_browser, node);
+			}
+		}
+		
+
+		
+	}
+	
+	ImGui::EndChild();
+	
+	
+}
+
+
+
+static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
+	AssetBrowserData* asset_browser = &editor->asset_browser;
+
+	AssetBrowserFileNode* node = asset_browser->current_directory->first_child;
+
+	float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	
+	asset_browser->asset_browser_filter.Draw("Search");
+
+	
+
+	
+	ImGui::Checkbox("Scene", &asset_browser->asset_scene_filter); ImGui::SameLine(0.0f, spacing);
+	ImGui::Checkbox("Static Mesh", &asset_browser->asset_mesh_filter); ImGui::SameLine(0.0f, spacing);
+	ImGui::Checkbox("Material", &asset_browser->asset_material_filter); ImGui::SameLine(0.0f, spacing);
+	ImGui::Checkbox("Texture", &asset_browser->asset_texture_filter); ImGui::SameLine(0.0f, spacing);
+	
+	static int scroll_count = 0;
+
+	ImGui::SetNextItemWidth(50);
+	ImGui::PushItemWidth(-(ImGui::GetWindowContentRegionWidth() - ImGui::CalcItemWidth()));
+	ImGui::SliderInt("Scale", &scroll_count, 0, 4, "");
+
+	ImGui::BeginChild("Asset Browser");
+	ImGui::Separator();
+
+	
+			
+	if (scroll_count == 0) {
+				// Detail View
+				ImGui::Columns(3);
+
+				ImGui::Text("Name");
+				ImGui::NextColumn();
+
+				ImGui::Text("Asset ID");
+				ImGui::NextColumn();
+
+				ImGui::Text("Asset Type");
+				ImGui::Columns(1);
+
+				ImGui::Separator();
+
+
+				while (node != NULL) {
+
+
+					ImGui::Columns(3);
+
+					if (node->node_type == AssetBrowserFileNodeType::Directory) {
+						bool filter_pass = false;
+						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
+							filter_pass = true;
+						}
+						if (filter_pass) {
+							bool selected = false;
+
+
+							
+							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
+								push_asset_directory_change(asset_browser, node);
+							}
+							ImGui::SetItemAllowOverlap();
+							ImGui::NextColumn();
+							ImGui::Text("-");
+
+							ImGui::SetItemAllowOverlap();
+							ImGui::NextColumn();
+							ImGui::Text("-");
+
+
+							ImGui::Columns(1);
+
+						}
+
+
+					}
+					else if (node->node_type == AssetBrowserFileNodeType::File) {
+
+
+						bool filter_pass = false;
+						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
+							if (asset_browser->asset_scene_filter && node->asset.type == AssetType::Scene) { filter_pass = true; }
+							else if (asset_browser->asset_mesh_filter && node->asset.type == AssetType::StaticMesh) { filter_pass = true; }
+							else if (asset_browser->asset_material_filter && node->asset.type == AssetType::Material) { filter_pass = true; }
+							else if (asset_browser->asset_texture_filter && node->asset.type == AssetType::Texture) { filter_pass = true; }
+						}
+
+						if (filter_pass) {
+							//ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
+							//ImGui::Text("%llu, %lu, %s", track_item.value.assetid.id, track_item.value.assetid.type, track_item.value.file.buffer);
+							bool selected = false;
+							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
+								// open asset viewer for that specific asset type
+							}
+							ImGui::SetItemAllowOverlap();
+							ImGui::NextColumn();
+							ImGui::Text("%llu", node->asset.id);
+
+							ImGui::NextColumn();
+							const char* asset_type_name = asset_type_to_string(node->asset.type);
+							ImGui::Text(asset_type_name);
+
+
+
+						}
+
+
+					}
+
+
+					ImGui::Columns(1);
+					node = node->next_sibling;
+				}
+			}
+	else {
+				// Tile View
+				int buttons_count = 10;
+				ImGuiStyle& style = ImGui::GetStyle();
+				ImVec2 button_sz(scroll_count * 40, scroll_count * 40);
+				int n = 0;
+				ImGui::BeginChild("Tile Scroll");
+				ImVec2 window_size = ImGui::GetWindowSize();
+				ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(window_size.x, window_size.y - 50));
+				float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+				while (node != NULL) {
+
+					if (node->node_type == AssetBrowserFileNodeType::Directory) {
+						bool filter_pass = false;
+						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
+							filter_pass = true;
+						}
+						if (filter_pass) {
+							bool selected = false;
+							if (ImGui::Button(node->name.buffer, button_sz)) {
+								push_asset_directory_change(asset_browser, node);
+							}
+
+							if (ImGui::IsItemHovered()) {
+								ImGui::SetTooltip(node->name.buffer);
+							}
+							float last_button_x2 = ImGui::GetItemRectMax().x;
+							float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
+							if (n + 1 < buttons_count && next_button_x2 < window_visible_x2)
+								ImGui::SameLine();
+
+						}
+					}
+					else if (node->node_type == AssetBrowserFileNodeType::File) {
+
+
+						bool filter_pass = false;
+						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
+							if (asset_browser->asset_scene_filter && node->asset.type == AssetType::Scene) { filter_pass = true; }
+							else if (asset_browser->asset_mesh_filter && node->asset.type == AssetType::StaticMesh) { filter_pass = true; }
+							else if (asset_browser->asset_material_filter && node->asset.type == AssetType::Material) { filter_pass = true; }
+							else if (asset_browser->asset_texture_filter && node->asset.type == AssetType::Texture) { filter_pass = true; }
+						}
+
+						if (filter_pass) {
+							//ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
+							//ImGui::Text("%llu, %lu, %s", track_item.value.assetid.id, track_item.value.assetid.type, track_item.value.file.buffer);
+							bool selected = false;
+							if (ImGui::Button(node->name.buffer, button_sz)) {
+								// open asset viewer for that specific asset type
+							}
+							if (ImGui::IsItemHovered()) {
+								ImGui::SetTooltip(node->name.buffer);
+							}
+							float last_button_x2 = ImGui::GetItemRectMax().x;
+							float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
+							if (n + 1 < buttons_count && next_button_x2 < window_visible_x2)
+								ImGui::SameLine();
+
+
+						}
+
+
+					}
+
+					node = node->next_sibling;
+					n++;
+				}
+				ImGui::EndChild();
+
+				
+			}
+
+	ImGui::EndChild();
+	
+}
+
 static void draw_window_assets(EditorInterface* editor) {
+	AssetBrowserData* asset_browser = &editor->asset_browser;
 
 	if (!editor->window_asset_browser_open) {
 		return;
@@ -2127,64 +2383,43 @@ static void draw_window_assets(EditorInterface* editor) {
 
 	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
 
-		float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {  }
-		ImGui::SameLine(0.0f, spacing);
-		if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {  }
-		ImGui::SameLine(0.0f, spacing);
-		
-		ImGui::Button("Assets");
-		ImGui::SameLine(0.0f, spacing);
-		ImGui::SmallButton(">");
-		editor->asset_filter.Draw("Filter");
-
-		
-
-		ImGui::Checkbox("Scene", &editor->asset_scene_filter); ImGui::SameLine(0.0f, spacing);
-		ImGui::Checkbox("Static Mesh", &editor->asset_mesh_filter); ImGui::SameLine(0.0f, spacing);
-		ImGui::Checkbox("Material", &editor->asset_material_filter); ImGui::SameLine(0.0f, spacing);
-		ImGui::Checkbox("Texture", &editor->asset_texture_filter);
-
-		ImGui::Separator();
-		
-
 		AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
-		size_t map_size = tracker->track_map.size;
-		// Go over our track map, and look for filename
-		for (int i = 0; i < map_size; i++) {
-			CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
-			// Check if this is a valid track data
-			if (track_item.key != 0 && track_item.key != TOMBSTONE) {
-				bool filter_pass = false;
-				AssetID assetid = track_item.value.assetid;
 
-				if (editor->asset_filter.PassFilter(track_item.value.file.buffer, track_item.value.file.buffer + track_item.value.file.length)) {
-					
-					if (editor->asset_scene_filter && assetid.type == AssetType::Scene) {
-						filter_pass = true;
-					}
-					else if (editor->asset_mesh_filter && assetid.type == AssetType::StaticMesh) {
-						filter_pass = true;
-					}
-					
-					if (editor->asset_material_filter && assetid.type == AssetType::Material) {
-					
-						filter_pass = true;
-					}
-					else if (editor->asset_texture_filter && assetid.type == AssetType::Texture) {
-						filter_pass = true;
-					}
-					
-				}
-				
+		
 
-				if (filter_pass) {
-					ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
-					//ImGui::Text("%llu, %lu, %s", track_item.value.assetid.id, track_item.value.assetid.type, track_item.value.file.buffer);
-					
-				}
-			}
-		}
+		// TODO: Need to implement history
+		//if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+		//	if (asset_browser->current_directory->parent->node_type != AssetBrowserFileNodeType::Root) {
+		//		asset_browser->current_directory = asset_browser->current_directory->parent;
+		//	}
+		//}
+		//ImGui::SameLine();
+		//if (ImGui::ArrowButton("##right", ImGuiDir_Right)) {  }
+		//ImGui::SameLine();
+		//ImGui::VerticalSeparator();
+		//ImGui::SameLine();
+		
+		//ImGui::Button("Import");
+		//ImGui::SameLine();
+
+		ImGui::PushID("asset_browser_path");
+		// Since imgui draws buttons left to right, we need to use recursion to draw right to left
+		draw_path_reverse(editor, tracker, asset_browser->current_directory);
+		ImGui::NewLine();
+		ImGui::Separator();
+		ImGui::PopID();
+
+		
+
+		ImGui::Columns(2, "asset_tree_and_browser", true);
+		static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
+		asset_browser->asset_tree_filter.Draw("Search Folders");
+		draw_asset_tree(editor, tracker, tracker->dir_root->first_child);
+		ImGui::NextColumn();
+
+		draw_asset_browser(editor, tracker);
+		ImGui::Columns(1);
+	
 	}
 	ImGui::End();
 }
@@ -2260,6 +2495,7 @@ static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 		
 		float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
+			perform_undo_operation(editor);
 			perform_undo_operation(editor);
 		}
 		ImGui::SameLine(0.0f, spacing);

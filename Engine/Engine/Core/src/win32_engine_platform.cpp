@@ -270,6 +270,8 @@ bool platform_pathfile_exists(const char* path) {
 	return PathFileExists(path);
 }
 
+
+
 s64 platform_ms_since_epoch() {
 	// Modified from https://git.postgresql.org/gitweb/?p=postgresql.git;a=blob;f=src/port/gettimeofday.c;h=75a91993b74414c0a1c13a2a09ce739cb8aa8a08;hb=HEAD
 
@@ -290,7 +292,7 @@ s64 platform_ms_since_epoch() {
 
 	s64 seconds_to_ms = (s64)tp.tv_sec * 1000;
 	// There should be no overflow since LONG_MAX * 1000 < _I64_MAX
-	// but safe t check
+	// but safe check
 	assert(seconds_to_ms >= 0);
 	assert(seconds_to_ms < _I64_MAX);
 

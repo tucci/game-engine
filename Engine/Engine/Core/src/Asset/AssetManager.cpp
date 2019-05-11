@@ -50,11 +50,13 @@ void init_asset_manager(AssetManager* manager) {
 	// default texture
 	// cube/plane/sphere meshes
 
-	//String path = "Assets";
-	//String name = "Default";
-	//Material default_mat;
-	//init_material_defaults(&default_mat);
-	//manager->default_mat = create_material_asset(manager, path, name, &default_mat);
+	
+
+	String path = "Assets";
+	String name = "Default";
+	Material default_mat;
+	init_material_defaults(&default_mat);
+	manager->default_mat = create_material_asset(manager, path, name, &default_mat);
 
 
 

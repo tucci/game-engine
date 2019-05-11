@@ -80,6 +80,22 @@ struct AssetID {
 };
 
 
+inline const char* asset_type_to_string(AssetType asset_type) {
+	switch (asset_type)
+	{
+	case AssetType::None: { return "None"; }
+	case AssetType::Scene: { return "Scene"; }
+	case AssetType::StaticMesh: { return "Static Mesh"; }
+	case AssetType::Material: { return "Material"; }
+	case AssetType::Light: { return "Light"; }
+	case AssetType::Camera: { return "Camera"; }
+	case AssetType::Animation: { return "Animation"; }
+	case AssetType::Texture: { return "Texture"; }
+	default: {break; }
+		break;
+	}
+}
+
 
 
 
@@ -167,8 +183,31 @@ struct AssetTrackData {
 };
 
 
+enum class AssetBrowserFileNodeType {
+	None,
+	Root,
+	File,
+	Directory,
+};
+
+struct AssetBrowserFileNode {
+	AssetBrowserFileNodeType node_type;
+	AssetID asset;
+	String name;
+
+	s32 children_count;
+	struct AssetBrowserFileNode* parent;
+	struct AssetBrowserFileNode* first_child;
+	struct AssetBrowserFileNode* next_sibling;
+	bool has_child_directorys;
+	
+};
+
+
 #define ASSET_TRACKER_FILE "Assets.trak"
 #define ASSET_TRACKER_TMP_SWAP_FILE "Assets.trak.tmp"
+
+
 
 struct AssetTracker {
 	Arena mem;
@@ -176,7 +215,10 @@ struct AssetTracker {
 	u64 assets_tracked;
 	CompactMap<AssetTrackData> track_map;
 
-	//todo asset tree/file path
+	
+	AssetBrowserFileNode* dir_root;
+	
+
 	
 };
 
@@ -202,6 +244,8 @@ static u64 next_asset_id(AssetTracker* tracker);
 
 void write_tracker_file(AssetTracker* tracker);
 static void read_tracker_file(AssetTracker* tracker);
+
+static void construct_asset_brower_tree(AssetTracker* tracker);
 
 
 void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_length);

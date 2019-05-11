@@ -16,6 +16,7 @@ void init_asset_tracker(AssetTracker* tracker) {
 	arena_init(&tracker->mem);
 
 	read_tracker_file(tracker);
+	construct_asset_brower_tree(tracker);
 
 }
 
@@ -310,6 +311,141 @@ static void read_tracker_file(AssetTracker* tracker) {
 	}
 }
 
+
+static AssetBrowserFileNode* try_find_child_node_already_created_in_parent_node(AssetBrowserFileNode* parent, String token) {
+
+	// If the parent has no children then there are no nodes to find
+	if (parent->first_child != NULL) {
+		AssetBrowserFileNode* child_node = parent->first_child;
+		while (child_node != NULL) {
+			if (strncmp(token.buffer, child_node->name.buffer, token.length) == 0) {
+				return child_node;
+			}
+			child_node = child_node->next_sibling;
+		}
+	}
+	return NULL;
+}
+
+static void construct_asset_brower_tree(AssetTracker* tracker) {
+	size_t map_size = tracker->track_map.size;
+	tracker->dir_root = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+
+	tracker->dir_root->node_type = AssetBrowserFileNodeType::Root;
+	tracker->dir_root->asset = AssetID();
+	tracker->dir_root->children_count = 0;
+	tracker->dir_root->parent = NULL;
+	tracker->dir_root->first_child = NULL;
+	tracker->dir_root->next_sibling = NULL;
+	tracker->dir_root->has_child_directorys = false;
+
+	for (size_t i = 0; i < map_size; i++) {
+		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
+
+		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
+			String fullpath = track_item.value.file;
+
+			
+			AssetBrowserFileNode* parent_node = tracker->dir_root;
+
+			char* data = (char*)fullpath.buffer;
+			char* next;
+			char* curr = data;
+
+			
+			while ((next = strchr(curr, '\\')) != NULL) {
+				
+
+				size_t len = next - curr;
+				String token(curr, len);
+				AssetBrowserFileNode* dir_node;
+				
+				AssetBrowserFileNode* tryfind_dir_node = try_find_child_node_already_created_in_parent_node(parent_node, token);
+				if (tryfind_dir_node != NULL) {
+					dir_node = tryfind_dir_node;
+				} else {
+					dir_node = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+
+					if (*next == '\\') {
+						dir_node->node_type = AssetBrowserFileNodeType::Directory;
+						dir_node->asset = AssetID();
+					}
+					else {
+						assert("This is not a directory, but shouldnt get here");
+					}
+
+					// Copy name
+					char* name = (char*)arena_alloc(&tracker->mem, token.length + 1); // +1 for '\0' terminator
+					memcpy(name, token.buffer, token.length);
+					name[token.length] = '\0';
+					dir_node->name = String(name, token.length);
+
+					dir_node->parent = parent_node;
+					dir_node->children_count = 0;
+					dir_node->has_child_directorys = false;
+					parent_node->children_count++;
+
+					parent_node->has_child_directorys = true;
+					// Attach this child node to the parent
+					// If there is no parent first child, then we assign this node to the first_child
+					if (parent_node->first_child == NULL) {
+						parent_node->first_child = dir_node;
+						
+					}
+					else {
+						// If the parent does have a first child, then we need to assign this node to the right most next sibling
+						AssetBrowserFileNode* child_node = parent_node->first_child;
+						while (child_node->next_sibling != NULL) {
+							child_node = child_node->next_sibling;
+						}
+						child_node->next_sibling = dir_node;
+					}
+				}
+
+
+				
+
+				parent_node = dir_node;
+
+				curr = next + 1;
+			}
+			AssetBrowserFileNode* file_node = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+			file_node->node_type = AssetBrowserFileNodeType::File;
+
+			// Copy name
+			String token = String(curr, strlen(curr));
+			char* name = (char*)arena_alloc(&tracker->mem, token.length + 1);
+			memcpy(name, token.buffer, token.length);
+			name[token.length] = '\0';
+			file_node->name = String(name, token.length);
+
+			
+			file_node->asset = track_item.value.assetid;
+			file_node->children_count = 0;
+			file_node->parent = parent_node;
+			file_node->first_child = NULL;
+			file_node->next_sibling = NULL;
+			parent_node->children_count++;
+
+			if (parent_node->first_child == NULL) {
+				parent_node->first_child = file_node;
+			}
+			else {
+				// If the parent does have a first child, then we need to assign this node to the right most next sibling
+				AssetBrowserFileNode* child_node = parent_node->first_child;
+				while (child_node->next_sibling != NULL) {
+					child_node = child_node->next_sibling;
+				}
+				child_node->next_sibling = file_node;
+			}
+
+			
+
+			
+		}
+	}
+
+}
 
 void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_length) {
 	node->id = id;

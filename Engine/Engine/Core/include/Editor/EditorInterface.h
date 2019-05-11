@@ -181,6 +181,21 @@ struct EditorControlsData {
 	u64 redo_repeat_count = 0;
 };
 
+// Ideally We want to be able to have multiple browsers open
+struct AssetBrowserData {
+	// Asset Browser Data
+	AssetBrowserFileNode* current_directory;
+	
+
+
+	ImGuiTextFilter asset_browser_filter;
+	ImGuiTextFilter asset_tree_filter;
+	bool asset_mesh_filter = true;
+	bool asset_material_filter = true;
+	bool asset_texture_filter = true;
+	bool asset_scene_filter = true;
+};
+
 
 #define FPS_HISTORY_COUNT 240
 struct EditorInterface {
@@ -213,6 +228,7 @@ struct EditorInterface {
 	int fps_history_index = 0;
 	float fps_history[FPS_HISTORY_COUNT] = { 0 };
 
+	AssetBrowserData asset_browser;
 	
 
 	// Log vars
@@ -235,7 +251,6 @@ struct EditorInterface {
 
 	ImGuiTextFilter scene_tree_entity_filter;
 	ImGuiTextFilter log_filter;
-	ImGuiTextFilter asset_filter;
 
 	bool window_scene_tree_open;
 	bool window_log_open;
@@ -243,12 +258,6 @@ struct EditorInterface {
 	bool window_entity_components_open;
 	bool window_engine_timers_open;
 	bool window_render_stats;
-
-	
-	bool asset_mesh_filter = true;
-	bool asset_material_filter = true;
-	bool asset_texture_filter = true;
-	bool asset_scene_filter = true;
 	
 };
 

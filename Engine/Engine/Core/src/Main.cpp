@@ -131,9 +131,15 @@ int main(int argc, char* argv[]) {
 	//
 	//main_test();
 
+	String path = "test\\dir\\";
+	String filename = "filetest.txt";
+	char buf[512];
+
+	platform_concat_path_and_filename(path, filename, buf, 512);
+
 
 	
-	
+	DEBUG_BREAK;
 
 #else
 	
