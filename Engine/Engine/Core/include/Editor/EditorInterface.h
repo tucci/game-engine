@@ -290,6 +290,7 @@ static void draw_component_render(EditorInterface* editor, Entity e);
 
 
 static void draw_main_menu_bar(EditorInterface* editor);
+static void draw_toolbar(EditorInterface* editor);
 static void draw_window_entity_components(EditorInterface* editor);
 static void draw_window_scene_hierarchy(EditorInterface* editor);
 static void draw_window_engine_timer(EditorInterface* editor);

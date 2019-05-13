@@ -142,13 +142,17 @@ static void set_editor_layout(EditorInterface* editor) {
 
 		ImGuiID dock_main_id = editor->dockspace_id; // This variable will track the document node, however we are not using it here as we aren't docking anything into it.
 		
+		
 		ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
 		ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, NULL, &dock_main_id);
 		ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.35f, NULL, &dock_main_id);
+		ImGuiID dock_id_top = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.1f, NULL, &dock_main_id);
 
 		ImGuiID dock_id_left_bottom = ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Down, 0.20f, NULL, &dock_id_left);
 
 
+
+		ImGui::DockBuilderDockWindow("Toolbar", dock_id_top);
 
 		ImGui::DockBuilderDockWindow("Entity Scene Tree", dock_id_left);
 		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
@@ -912,6 +916,7 @@ void editor_update(EditorInterface* editor) {
 
 		set_editor_layout(editor);
 		draw_main_menu_bar(editor);
+		draw_toolbar(editor);
 		draw_window_entity_components(editor);
 		draw_window_scene_hierarchy(editor);
 		draw_window_engine_timer(editor);
@@ -996,6 +1001,30 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 		ImGui::EndMainMenuBar();
 	}
 
+}
+
+static void draw_toolbar(EditorInterface* editor) {
+	bool open = true;
+	auto flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar;
+	if (ImGui::Begin("Toolbar", &open, flags)) {
+		ImGui::Button("Save"); ImGui::SameLine();
+		if (ImGui::Button("Undo")) {
+			perform_undo_operation(editor);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Redo")) {
+			perform_redo_operation(editor);
+		}
+		ImGui::SameLine();
+		ImGui::Button("Translate"); ImGui::SameLine();
+		ImGui::Button("Rotate"); ImGui::SameLine();
+		ImGui::Button("Scale"); ImGui::SameLine();
+
+		
+
+		ImGui::Button("Play"); ImGui::SameLine();
+	}
+	ImGui::End();
 }
 
 static void draw_component_transform(EditorInterface* editor, Entity e) {
@@ -1515,6 +1544,7 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 
 
 
+
 static void draw_window_entity_components(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
@@ -1677,6 +1707,8 @@ static void draw_entity_item_context_menu(EditorInterface* editor, Entity e) {
 	}
 }
 
+
+
 static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 	//if (editor->editor_camera == e) {
@@ -1687,18 +1719,19 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 	bool entity_selected = is_entity_selected(editor, e);
 
-	auto em = editor->api.entity_manager;
+	EntityManager* em = editor->api.entity_manager;
 	// We need to recursivly draw the children
 	Entity child = first_child(em, e);
 
 
 	String name = get_name(&em->meta_manager, e);
 	
+	
+
 	ImGui::PushID(e.id);
 	if (child.id == NO_ENTITY_ID) {
 		// This is a leaf node
 		ImGui::Indent();
-		
 		if (ImGui::Selectable(name.buffer, entity_selected)) {
 			cmd_editor_group_begin(editor);
 			if (!ImGui::GetIO().KeyCtrl) {
@@ -1721,15 +1754,13 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 		// This is a node that has children
 
 		ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((entity_selected) ? ImGuiTreeNodeFlags_Selected : 0);
+		
+		
 
 		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
-		if (ImGui::IsItemHovered()) {
-			ImGui::SetTooltip("EntityID %llu", e.id);
-		}
-		draw_entity_item_context_menu(editor, e);
-
-
-		if (ImGui::IsItemClicked()) {
+		if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
+		{
+			// The item is clicked
 			cmd_editor_group_begin(editor);
 			if (!ImGui::GetIO().KeyCtrl) {
 				// Clear selection when CTRL is not held
@@ -1737,8 +1768,18 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 			}
 			cmd_editor_select_entity(editor, e.id, !entity_selected);
 			cmd_editor_group_end(editor);
-
 		}
+		else {
+			// Arrow is clicked
+		}
+
+		if (ImGui::IsItemHovered()) {
+			ImGui::SetTooltip("EntityID %llu", e.id);
+		}
+
+		draw_entity_item_context_menu(editor, e);
+
+		
 		if (node_open) {
 			while (child.id != NO_ENTITY_ID) {
 				draw_entity_tree(editor, child);
@@ -1778,31 +1819,47 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 
 		ImGui::Separator();
 
-		
-		
+		if (editor->scene_tree_entity_filter.IsActive()) {
+			// Draw as linear list when filtered
+			u64 count = entity_manager->entity_count;
+			for (int i = 0; i < count; i++) {
+				Entity e = entity_manager->entity_list[i];
+				String name = get_name(&editor->api.entity_manager->meta_manager, e);
 
-		for (int i = 0; i < entity_manager->entity_count; i++) {
-			Entity e = entity_manager->entity_list[i];
-		
-			String name = get_name(&entity_manager->meta_manager, e);
-			const char* start = name.buffer;
-			const char* end = name.buffer + name.length;
-			if (!editor->scene_tree_entity_filter.PassFilter(name.buffer, name.buffer + name.length)) {
-				// TODO: children filtering
-				continue;
+				if (editor->scene_tree_entity_filter.PassFilter(name.buffer, name.buffer + name.length)) {
+					bool entity_selected = is_entity_selected(editor, e);
+
+					if (ImGui::Selectable(name.buffer, entity_selected)) {
+						cmd_editor_group_begin(editor);
+						if (!ImGui::GetIO().KeyCtrl) {
+							cmd_editor_deselect_all_entitys(editor);
+						}
+						cmd_editor_select_entity(editor, e.id, !entity_selected);
+						cmd_editor_group_end(editor);
+					}
+				}
+				
+
 			}
-		
-		
-			Entity parent_entity = parent(entity_manager, e);
-		
-			if (parent_entity == entity_manager->root) {
-				draw_entity_tree(editor, e);
-			}
-			
+
 		}
+		else {
+			// Draw as tree when not filtered
+
+			// Draw all the child entities of the root entity
+			Entity root_child = first_child(entity_manager, entity_manager->root);
+			while (root_child.id != NO_ENTITY_ID) {
+				draw_entity_tree(editor, root_child);
+				root_child = next_sibling(entity_manager, root_child);
+			}
+		}
+
+		
+		
 
 		ImGui::BeginChild("scene_internal");
 
+		
 		if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
 			cmd_editor_deselect_all_entitys(editor);
 		}
@@ -1934,7 +1991,8 @@ static void draw_window_log(EditorInterface* editor) {
 		static const char* str_function = "Function";
 		static const char* str_line = "Line";
 		static const char* str_msg = "Message";
-
+		
+		
 		
 
 		const float ItemSpacing2 = ImGui::GetStyle().ItemSpacing.x;
@@ -2135,6 +2193,7 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 	
 	
 	ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+
 	
 	
 	if (ImGui::Button(leaf_node->name.buffer)) {
@@ -2143,12 +2202,29 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 	ImGui::PopStyleColor(1);
 
 	ImGui::SameLine();
-	if (leaf_node != asset_browser->current_directory) {
+	if (leaf_node->has_child_directorys) {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::ArrowButton("##right", ImGuiDir_Right);
-		ImGui::PopStyleColor(3);
+		ImGui::PushID(leaf_node->parent->name.buffer == NULL ? "RootAsset" : leaf_node->parent->name.buffer);
+		if (ImGui::ArrowButton(leaf_node->name.buffer, ImGuiDir_Right)) {
+			// Show popups listing all child directories
+			ImGui::OpenPopup("asset_path_popup");
+		}
+		if (ImGui::BeginPopup("asset_path_popup")) {
+			AssetBrowserFileNode* children_directories = leaf_node->first_child;
+			while (children_directories != NULL) {
+				if (children_directories->node_type == AssetBrowserFileNodeType::Directory) {
+					if (ImGui::Selectable(children_directories->name.buffer)) {
+						push_asset_directory_change(asset_browser, children_directories);
+					}
+				}
+				children_directories = children_directories->next_sibling;
+			}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
+		
+
+		ImGui::PopStyleColor(1);
 		
 	}
 	ImGui::SameLine();
@@ -2157,12 +2233,33 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 	
 }
 
-static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* node) {
-	
+// We want to know if we should draw a tree based on the filter text. If a node is deep in the tree hierarchy
+// we want to draw that node and all the parent nodes
+static bool should_draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node) {
 	AssetBrowserData* asset_browser = &editor->asset_browser;
 
-	ImGui::BeginChild("Asset Tree View");
+	if (asset_browser->asset_tree_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
+		return true;
+	}
+	bool should_draw = false;
+	AssetBrowserFileNode* child = node->first_child;
+	while (child != NULL) {
+		should_draw = should_draw_asset_tree(editor, child);
+		if (should_draw) { return should_draw; }
+		child = child->next_sibling;
+	}
 	
+	return should_draw;
+}
+
+static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* node) {
+	
+	if (!should_draw_asset_tree(editor, node)) {
+		return;
+	}
+
+	AssetBrowserData* asset_browser = &editor->asset_browser;
+	ImGui::BeginChild("Asset Tree View");
 	if (node->node_type == AssetBrowserFileNodeType::Directory ) {
 
 		if (node->has_child_directorys) {
@@ -2460,6 +2557,7 @@ static void draw_window_assets(EditorInterface* editor) {
 		ImGui::Columns(2, "asset_tree_and_browser", true);
 		static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
 		asset_browser->asset_tree_filter.Draw("Search Folders");
+		
 		draw_asset_tree(editor, tracker, tracker->dir_root->first_child);
 		ImGui::NextColumn();
 
