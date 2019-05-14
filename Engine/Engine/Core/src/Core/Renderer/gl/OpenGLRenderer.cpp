@@ -614,6 +614,66 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 
 	return handle;
 }
+
+void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_resource) {
+	switch (render_resource.type)
+	{
+
+	case RenderResourceType::TEXTURE: {
+		return (void*)opengl->textures[render_resource.handle];
+		
+	}
+	case RenderResourceType::SHADER: {
+		return (void*)opengl->shaders[render_resource.handle].program;
+	}
+		case RenderResourceType::VERTEX_BUFFER: {
+			return (void*)opengl->vbos[render_resource.handle];
+		}
+		case RenderResourceType::INDEX_BUFFER: {
+			return (void*)opengl->ebos[render_resource.handle];
+	
+		}
+		case RenderResourceType::VERTEX_DECLARATION: {
+			return (void*)opengl->vaos[render_resource.handle];
+		}
+		case RenderResourceType::RENDER_TARGET: {
+			return (void*)opengl->rbos[render_resource.handle];
+			break;
+		}
+		case RenderResourceType::FRAME_BUFFER: {
+			return (void*)opengl->fbos[render_resource.handle];
+			break;
+		}
+		
+		case RenderResourceType::DEPENDENT_RENDER_TARGET: {
+			assert("Getting IDs for this resource is not supported" == 0);
+			return NULL;
+		}
+		case RenderResourceType::BACK_BUFFER_WRAPPER: {
+			assert("Getting IDs for this resource is not supported" == 0);
+			return NULL;
+		}
+		case RenderResourceType::CONSTANT_BUFFER: {
+			assert("Getting IDs for this resource is not supported" == 0);
+			return NULL;
+		}
+		case RenderResourceType::RAW_BUFFER: {
+			assert("Getting IDs for this resource is not supported" == 0);
+			return NULL;
+		}
+		case RenderResourceType::BATCH_INFO: {
+			assert("Getting IDs for this resource is not supported" == 0);
+			return NULL;
+		}
+		case RenderResourceType::NOT_INITIALIZED: {
+			assert("Getting IDs for this resource is not supported" == 0);
+			return NULL;
+		}
+	default:
+		break;
+
+	}
+}
 static void init_gl_extensions(OpenGLRenderer* opengl) {
 	glewExperimental = true; // Needed in core profile
 	if (glewInit() != GLEW_OK) {

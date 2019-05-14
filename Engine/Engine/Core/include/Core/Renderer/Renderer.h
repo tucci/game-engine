@@ -58,4 +58,6 @@ RenderResource create_texture_resource(Renderer* renderer, Texture2D* texture, b
 // TODO: implement generic shader abstraction filenames
 RenderResource create_shader_resource(Renderer* renderer, const char* vertex_file, const char* fragment_file);
 
- 
+
+void* render_resource_to_id(Renderer* renderer, RenderResource resource);
+

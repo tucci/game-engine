@@ -184,6 +184,7 @@ struct EditorControlsData {
 // Ideally We want to be able to have multiple browsers open
 struct AssetBrowserData {
 	// Asset Browser Data
+	AssetBrowserFileNode* root;
 	AssetBrowserFileNode* current_directory;
 	
 
@@ -195,6 +196,8 @@ struct AssetBrowserData {
 	bool asset_texture_filter = true;
 	bool asset_scene_filter = true;
 };
+
+
 
 
 #define FPS_HISTORY_COUNT 240
@@ -220,6 +223,12 @@ struct EditorInterface {
 
 	bool show_editor;
 	EditorControlsData editor_control_data;
+
+	RenderResource res_folder_icon_texture;
+	RenderResource res_asset_icon_texture;
+
+	Texture2D folder_icon_texture;
+	Texture2D asset_icon_texture;
 
 	bool was_last_frame_using_right_click;
 

@@ -200,6 +200,7 @@ struct AssetBrowserFileNode {
 	struct AssetBrowserFileNode* first_child;
 	struct AssetBrowserFileNode* next_sibling;
 	bool has_child_directorys;
+	bool selected = false;
 	
 };
 

@@ -205,3 +205,14 @@ RenderResource create_shader_resource(Renderer* renderer, const char* vertex_fil
 	return handle;
 }
 
+
+
+void* render_resource_to_id(Renderer* renderer, RenderResource resource) {
+	
+	switch (renderer->type) {
+		case BackenedRendererType::OpenGL: {
+			return gl_render_resource_to_id(&renderer->opengl, resource);
+		}	
+	}
+	return NULL;
+}

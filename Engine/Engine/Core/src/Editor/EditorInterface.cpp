@@ -562,6 +562,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 	
 	init_asset_importer(&editor->importer, &editor->api.asset_manager->asset_tracker);
+	editor->asset_browser.root = editor->api.asset_manager->asset_tracker.dir_root;
 	editor->asset_browser.current_directory = editor->api.asset_manager->asset_tracker.dir_root->first_child;
 	
 
@@ -582,10 +583,15 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	create_skymap(api.renderer, &editor->hdr_skymap);
 	create_shadowmap(api.renderer);
 
+	
+	load_texture("editor_resources/thumbnails/Folder-Icon.png", &editor->folder_icon_texture, &editor->arena, false);
+	load_texture("editor_resources/thumbnails/Asset-Icon.png", &editor->asset_icon_texture, &editor->arena, false);
 
+	editor->res_folder_icon_texture = create_texture_resource(editor->api.renderer, &editor->folder_icon_texture, false);
+	editor->res_asset_icon_texture = create_texture_resource(editor->api.renderer, &editor->asset_icon_texture, false);
+	
 
-
-
+	
 
 
 	
@@ -2179,6 +2185,25 @@ static void draw_window_log(EditorInterface* editor) {
 }
 
 
+
+
+
+static void recursive_deselect(AssetBrowserFileNode* root) {
+	root->selected = false;
+	AssetBrowserFileNode* child = root->first_child;
+	while (child != NULL) {
+		recursive_deselect(child);
+		child = child->next_sibling;
+	}
+}
+static void push_assetbrowserfilenode_selected(AssetBrowserData* asset_browser, AssetBrowserFileNode* node, bool additive_select, bool selected) {
+	if (!additive_select) {
+		// if we are not a additive/multi selection, then we need to clear all the previously selected nodes
+		recursive_deselect(asset_browser->root);
+	}
+	node->selected = selected;
+}
+
 static void push_asset_directory_change(AssetBrowserData* asset_browser, AssetBrowserFileNode* node) {
 	asset_browser->current_directory = node;
 }
@@ -2260,6 +2285,8 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 
 	AssetBrowserData* asset_browser = &editor->asset_browser;
 	ImGui::BeginChild("Asset Tree View");
+	
+
 	if (node->node_type == AssetBrowserFileNodeType::Directory ) {
 
 		if (node->has_child_directorys) {
@@ -2307,6 +2334,37 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 
 
 
+static void draw_asset_browser_context_menu(EditorInterface* editor, AssetTracker* tracker) {
+	if (ImGui::BeginPopupContextWindow()) {
+
+		if (ImGui::BeginMenu("Create")) {
+			if (ImGui::MenuItem("Folder")) {}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Create Material")) {}
+			ImGui::EndMenu();
+		}
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Show In File Explorer")) {}
+		if (ImGui::MenuItem("Open")) {}
+		if (ImGui::MenuItem("Delete")) {}
+
+		if (ImGui::MenuItem("Rename")) {}
+
+		if (ImGui::MenuItem("Copy path to clipboard")) {}
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Import")) {}
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Refresh")) {}
+		if (ImGui::MenuItem("Reimport")) {}
+
+		ImGui::EndPopup();
+	}
+}
 static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	AssetBrowserData* asset_browser = &editor->asset_browser;
 
@@ -2349,8 +2407,18 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 
 	ImGui::BeginChild("Asset Browser");
-	ImGui::Separator();
 
+	if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
+		recursive_deselect(asset_browser->root);
+	}
+
+	draw_asset_browser_context_menu(editor, tracker);
+	
+
+	
+
+	ImGui::Separator();
+	
 	
 			
 	if (scale_count == 0) {
@@ -2380,12 +2448,18 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 							filter_pass = true;
 						}
 						if (filter_pass) {
-							bool selected = false;
+							bool selected = node->selected;
 
 
 							
-							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
-								push_asset_directory_change(asset_browser, node);
+							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap | ImGuiSelectableFlags_AllowDoubleClick)) {
+								if (ImGui::IsMouseDoubleClicked(0)) {
+									push_asset_directory_change(asset_browser, node);
+								}
+								else {
+									bool multi_select = ImGui::GetIO().KeyCtrl;
+									push_assetbrowserfilenode_selected(asset_browser, node, multi_select, !node->selected);
+								}
 							}
 							ImGui::SetItemAllowOverlap();
 							ImGui::NextColumn();
@@ -2414,11 +2488,16 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 						}
 
 						if (filter_pass) {
-							//ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
-							//ImGui::Text("%llu, %lu, %s", track_item.value.assetid.id, track_item.value.assetid.type, track_item.value.file.buffer);
-							bool selected = false;
-							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap)) {
-								// open asset viewer for that specific asset type
+							bool selected = node->selected;
+							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap | ImGuiSelectableFlags_AllowDoubleClick)) {
+								
+								if (ImGui::IsMouseDoubleClicked(0)) {
+									// open asset viewer for that specific asset type
+								}
+								else {
+									bool multi_select = ImGui::GetIO().KeyCtrl;
+									push_assetbrowserfilenode_selected(asset_browser, node, multi_select, !node->selected);
+								}
 							}
 							ImGui::SetItemAllowOverlap();
 							ImGui::NextColumn();
@@ -2446,61 +2525,92 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 				ImGuiStyle& style = ImGui::GetStyle();
 				ImVec2 button_sz(scale_count * 40, scale_count * 40);
 				int n = 0;
-				ImGui::BeginChild("Tile Scroll");
+				
 				ImVec2 window_size = ImGui::GetWindowSize();
 				ImGui::SetNextWindowSizeConstraints(ImVec2(0, 0), ImVec2(window_size.x, window_size.y - 50));
 				float window_visible_x2 = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 				while (node != NULL) {
 
+					bool filter_pass = false;
+					void* icon_id = NULL;
+
 					if (node->node_type == AssetBrowserFileNodeType::Directory) {
-						bool filter_pass = false;
 						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 							filter_pass = true;
+							icon_id = render_resource_to_id(editor->api.renderer, editor->res_folder_icon_texture);
 						}
-						if (filter_pass) {
-							bool selected = false;
-							if (ImGui::Button(node->name.buffer, button_sz)) {
-								push_asset_directory_change(asset_browser, node);
-							}
 
-							if (ImGui::IsItemHovered()) {
-								ImGui::SetTooltip(node->name.buffer);
-							}
-							float last_button_x2 = ImGui::GetItemRectMax().x;
-							float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
-							if (n + 1 < buttons_count && next_button_x2 < window_visible_x2)
-								ImGui::SameLine();
-
-						}
 					}
 					else if (node->node_type == AssetBrowserFileNodeType::File) {
 
-
-						bool filter_pass = false;
 						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 							if (asset_browser->asset_scene_filter && node->asset.type == AssetType::Scene) { filter_pass = true; }
 							else if (asset_browser->asset_mesh_filter && node->asset.type == AssetType::StaticMesh) { filter_pass = true; }
 							else if (asset_browser->asset_material_filter && node->asset.type == AssetType::Material) { filter_pass = true; }
 							else if (asset_browser->asset_texture_filter && node->asset.type == AssetType::Texture) { filter_pass = true; }
+
+							icon_id = render_resource_to_id(editor->api.renderer, editor->res_asset_icon_texture);
+						}
+					}
+
+
+					if (filter_pass) {
+						ImGui::BeginGroup();
+
+						// Get the starting position for where this group will be in the layout
+						ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+						ImGui::Image(icon_id, button_sz);
+
+						ImVec2 txt_size = ImGui::CalcTextSize(node->name.buffer);
+						ImVec2 txt_pos = ImGui::GetCursorScreenPos();
+						ImVec4 txt_clip_rect(txt_pos.x, txt_pos.y, txt_pos.x + button_sz.x, txt_pos.y + button_sz.y);
+						if (txt_size.x > button_sz.x) {
+							// Text will clip
+							// So just draw all the way to left, and dont center
+							ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(txt_pos.x, txt_pos.y), IM_COL32(255, 255, 255, 255), node->name.buffer, NULL, 0.0f, &txt_clip_rect);
+						}
+						else {
+							// Center text if there is room
+							txt_pos.x = txt_pos.x + ((button_sz.x - txt_size.x) * 0.5f);
+							ImGui::GetWindowDrawList()->AddText(ImGui::GetFont(), ImGui::GetFontSize(), ImVec2(txt_pos.x, txt_pos.y), IM_COL32(255, 255, 255, 255), node->name.buffer, NULL, 0.0f, &txt_clip_rect);
+						}
+						// Add dummy for spacing
+						ImGui::Dummy(ImVec2(button_sz.x, txt_size.y));
+
+						bool selected = node->selected;
+						if (selected) {
+							// If this node is selected, we want to put a higlight over it
+							ImVec4 color = style.Colors[ImGuiCol_Header];
+							ImVec2 rect(start_group_pos.x + button_sz.x, start_group_pos.y + button_sz.y + txt_size.y + style.ItemSpacing.y);
+							ImGui::GetWindowDrawList()->AddRectFilled(start_group_pos, rect, IM_COL32((int)(color.x * 255), (int)(color.y * 255), (int)(color.z * 255), 128));
 						}
 
-						if (filter_pass) {
-							//ImGui::Text("%llu, %lu, %s", assetid.id, assetid.type, track_item.value.file.buffer);
-							//ImGui::Text("%llu, %lu, %s", track_item.value.assetid.id, track_item.value.assetid.type, track_item.value.file.buffer);
-							bool selected = false;
-							if (ImGui::Button(node->name.buffer, button_sz)) {
-								// open asset viewer for that specific asset type
+						ImGui::EndGroup();
+						if (ImGui::IsItemHovered()) {
+							if (ImGui::IsMouseDoubleClicked(0)) {
+								if (node->node_type == AssetBrowserFileNodeType::Directory) {
+									// If this node is a directory, we want to go inside that directory
+									push_asset_directory_change(asset_browser, node);
+								}
+								else if (node->node_type == AssetBrowserFileNodeType::File) {
+									// If this node is a file, we want to open the file with a viewer
+									
+									
+								}
 							}
-							if (ImGui::IsItemHovered()) {
-								ImGui::SetTooltip(node->name.buffer);
+							else if (ImGui::IsItemClicked()) {
+								// Select/Deselect
+								bool multi_select = ImGui::GetIO().KeyCtrl;
+								push_assetbrowserfilenode_selected(asset_browser, node, multi_select, !node->selected);
 							}
-							float last_button_x2 = ImGui::GetItemRectMax().x;
-							float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
-							if (n + 1 < buttons_count && next_button_x2 < window_visible_x2)
-								ImGui::SameLine();
 
-
+							ImGui::SetTooltip(node->name.buffer);
 						}
+
+						float last_button_x2 = ImGui::GetItemRectMax().x;
+						float next_button_x2 = last_button_x2 + style.ItemSpacing.x + button_sz.x; // Expected position if next button was on same line
+						if (n + 1 < buttons_count && next_button_x2 < window_visible_x2)
+							ImGui::SameLine();
 
 
 					}
@@ -2508,12 +2618,15 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 					node = node->next_sibling;
 					n++;
 				}
-				ImGui::EndChild();
+				
 
 				
 			}
 
+	
 	ImGui::EndChild();
+
+
 	
 }
 
@@ -2525,6 +2638,8 @@ static void draw_window_assets(EditorInterface* editor) {
 	}
 
 	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
+		
+		
 
 		AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
 
@@ -2563,6 +2678,20 @@ static void draw_window_assets(EditorInterface* editor) {
 
 		draw_asset_browser(editor, tracker);
 		ImGui::Columns(1);
+
+
+		
+
+
+		
+		
+
+
+
+
+
+
+		
 	
 	}
 	ImGui::End();
