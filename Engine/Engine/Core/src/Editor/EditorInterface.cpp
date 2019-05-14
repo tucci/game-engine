@@ -930,7 +930,7 @@ void editor_update(EditorInterface* editor) {
 		draw_window_assets(editor);
 		//draw_window_scene_viewports(editor);
 		draw_window_renderer_stats(editor);
-		//draw_editor_command_undo_and_redo_stack(editor);
+		draw_editor_command_undo_and_redo_stack(editor);
 	} // END OF SHOW EDITOR
 
 
@@ -1446,8 +1446,16 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
 		AssetID assetid;
 		assetid.mesh = mesh_id;
-		String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
-		ImGui::Text(name.buffer);
+
+		if (mesh_id.id == 0) {
+			ImGui::Text("NONE");
+		}
+		else {
+			String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
+			ImGui::Text(name.buffer);
+		}
+
+
 		ImGui::SameLine();
 		if (ImGui::SmallButton("...")) {
 			ImGui::OpenPopup("Select Mesh");
@@ -1506,8 +1514,16 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 		MaterialID mat_id = get_render_material(entity_manager, e);
 		AssetID assetid;
 		assetid.material = mat_id;
-		String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
-		ImGui::Text(name.buffer);
+
+		if (mat_id.id == 0) {
+			ImGui::Text("NONE");
+		}
+		else {
+			String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
+			ImGui::Text(name.buffer);
+		}
+
+		
 
 		ImGui::SameLine();
 		if (ImGui::SmallButton("...")) {
@@ -1746,6 +1762,25 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 			cmd_editor_select_entity(editor, e.id, !entity_selected);
 			cmd_editor_group_end(editor);
 		}
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+		{
+			ImGui::SetDragDropPayload("ENTITY_ID", &e.id, sizeof(e.id));
+			ImGui::Text(name.buffer);
+			ImGui::EndDragDropSource();
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(e.id));
+				u64 payload_entity_id = *(u64*)payload->Data;
+				LOG_WARN("Scene", "%llu, parenting to %s", payload_entity_id, name.buffer);
+				Entity payload_entity(payload_entity_id);
+				Entity old_parent = parent(em, payload_entity);
+				cmd_editor_reparent_entity(editor, payload_entity, old_parent, e);
+			}
+			ImGui::EndDragDropTarget();
+		}
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip("EntityID %llu", e.id);
 		}
@@ -1764,6 +1799,28 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 		
 
 		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
+
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+		{
+			ImGui::SetDragDropPayload("ENTITY_ID", &e.id, sizeof(e.id));
+			ImGui::Text(name.buffer);
+			ImGui::EndDragDropSource();
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(e.id));
+				u64 payload_entity_id = *(u64*)payload->Data;
+				LOG_WARN("Scene", "%llu, parenting to %s", payload_entity_id, name.buffer);
+				Entity payload_entity(payload_entity_id);
+				Entity old_parent = parent(em, payload_entity);
+				cmd_editor_reparent_entity(editor, payload_entity, old_parent, e);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+
 		if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
 		{
 			// The item is clicked
@@ -1862,15 +1919,30 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 
 		
 		
-
-		ImGui::BeginChild("scene_internal");
-
 		
+		ImGui::BeginChild("scene_internal");
+		
+		// Allow dropping entitys on the root
+		ImGui::Dummy(ImGui::GetWindowSize());
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
+			{
+				
+				u64 payload_entity_id = *(u64*)payload->Data;
+				Entity payload_entity(payload_entity_id);
+				Entity old_parent = parent(entity_manager, payload_entity);
+				cmd_editor_reparent_entity(editor, payload_entity, old_parent, entity_manager->root);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		// Click in the scene hierarchy to deselect all the entities
 		if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
 			cmd_editor_deselect_all_entitys(editor);
 		}
 		
-
+		// Right click to  open the context menu
 		if (ImGui::BeginPopupContextWindow()) {
 			
 
@@ -3142,6 +3214,18 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 			break;
 		}
 
+		case EditorCommandType::REPARENT_ENTITY: {
+			EditorCommand_ReparentEntity reparent_entity_data = command.cmd.reparent_entity;
+			EntityManager* entity_manager = editor->api.entity_manager;
+			if (undo) {
+				attach_child_entity(entity_manager, reparent_entity_data.old_parent, reparent_entity_data.entity);
+			}
+			else {
+				attach_child_entity(entity_manager, reparent_entity_data.new_parent, reparent_entity_data.entity);
+			}
+			break;
+		}
+
 		default: {
 			// Unknown command was sent
 			assert(false && "Unknown Editor command. Did you forget to implement an editor command?");
@@ -3460,6 +3544,21 @@ static void cmd_editor_set_camera_component(EditorInterface* editor, Entity e, C
 			}
 		}
 	}
+
+	push_editor_command(editor, command);
+}
+
+
+static void cmd_editor_reparent_entity(EditorInterface* editor, Entity e, Entity old_parent, Entity new_parent) {
+	EditorCommand command;
+	command.type = EditorCommandType::REPARENT_ENTITY;
+
+
+
+	command.cmd.reparent_entity.entity = e;
+	command.cmd.reparent_entity.old_parent = old_parent;
+	command.cmd.reparent_entity.new_parent = new_parent;
+
 
 	push_editor_command(editor, command);
 }

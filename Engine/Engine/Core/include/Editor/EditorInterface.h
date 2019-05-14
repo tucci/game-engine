@@ -103,6 +103,12 @@ struct EditorCommand_SetCameraComponent {
 	Camera new_camera;
 };
 
+struct EditorCommand_ReparentEntity {
+	Entity entity;
+	Entity old_parent;
+	Entity new_parent;
+};
+
 
 struct EditorCommandGroup {
 	// stack_level indicates what the id/index/level the current group is in.
@@ -126,6 +132,7 @@ union EditorCommandData {
 	EditorCommand_SetMaterialComponent set_material;
 	EditorCommand_SetLightComponent set_light;
 	EditorCommand_SetCameraComponent set_camera;
+	EditorCommand_ReparentEntity reparent_entity;
 	EditorCommandGroup group;
 	EditorCommandData() {};
 };
