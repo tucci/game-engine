@@ -562,8 +562,9 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 	
 	init_asset_importer(&editor->importer, &editor->api.asset_manager->asset_tracker);
+
 	editor->asset_browser.root = editor->api.asset_manager->asset_tracker.dir_root;
-	editor->asset_browser.current_directory = editor->api.asset_manager->asset_tracker.dir_root->first_child;
+	editor->asset_browser.current_directory = editor->api.asset_manager->asset_tracker.dir_root;
 	
 
 	map_put(&editor->entity_selected, editor->api.entity_manager->root.id, false);
@@ -1438,6 +1439,40 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 	ImGui::PopID();
 }
 
+static void dragdrop_target_asset(EditorInterface* editor, Entity e, AssetType accept_type) {
+
+	if (ImGui::BeginDragDropTarget())
+	{
+		EntityManager* em = editor->api.entity_manager;
+		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ASSETID"))
+		{
+			AssetID asset = *(AssetID*)payload->Data;
+			// Only accept assets that we want to accept
+			if (asset.type == accept_type) {
+				
+				if (asset.type == AssetType::Material) {
+
+					if (has_component(em, e, ComponentType::Render)) {
+						MaterialID old_mat = get_render_material(em, e);
+						cmd_editor_set_material_component(editor, e, old_mat, asset.material);
+					}
+					
+				}
+				if (asset.type == AssetType::StaticMesh) {
+					if (has_component(em, e, ComponentType::StaticMesh)) {
+							StaticMeshID old_mesh = get_static_mesh(em, e);
+							cmd_editor_set_staticmesh_component(editor, e, old_mesh, asset.mesh);;
+					}
+					
+				}
+			}
+			
+
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
+
 static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	ImGui::PushID("mesh_component");
@@ -1448,12 +1483,16 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 		assetid.mesh = mesh_id;
 
 		if (mesh_id.id == 0) {
-			ImGui::Text("NONE");
+			char buffer[1];
+			ImGui::InputText("Mesh", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 		}
 		else {
 			String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
-			ImGui::Text(name.buffer);
+			//ImGuiInputTextFlags_ReadOnly
+			ImGui::InputText("Mesh", (char*)name.buffer, name.length, ImGuiInputTextFlags_ReadOnly);
+			//ImGui::Text(name.buffer);
 		}
+		dragdrop_target_asset(editor, e, AssetType::StaticMesh);
 
 
 		ImGui::SameLine();
@@ -1497,6 +1536,9 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	ImGui::PopID();
 }
 
+
+
+
 static void draw_component_render(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	ImGui::PushID("render_component");
@@ -1515,13 +1557,19 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 		AssetID assetid;
 		assetid.material = mat_id;
 
+
 		if (mat_id.id == 0) {
-			ImGui::Text("NONE");
+			char buffer[1];
+			ImGui::InputText("Material", buffer, sizeof(buffer), ImGuiInputTextFlags_ReadOnly);
 		}
 		else {
 			String name = name_of_asset(&editor->api.asset_manager->asset_tracker, assetid);
-			ImGui::Text(name.buffer);
+			//ImGuiInputTextFlags_ReadOnly
+			ImGui::InputText("Material", (char*)name.buffer, name.length, ImGuiInputTextFlags_ReadOnly);
+			//ImGui::Text(name.buffer);
 		}
+
+		dragdrop_target_asset(editor, e, AssetType::Material);
 
 		
 
@@ -1581,6 +1629,7 @@ static void draw_window_entity_components(EditorInterface* editor) {
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
 			MapResult<bool> result = map_get(&editor->entity_selected, e.id);
+			if (!result.found) continue;
 			if (!result.found) continue;
 			if (result.value) {
 				ImGui::PushID(e.id);
@@ -1729,10 +1778,9 @@ static void draw_entity_item_context_menu(EditorInterface* editor, Entity e) {
 	}
 }
 
-static void entity_tree_drop_source(EditorInterface* editor, Entity e) {
+static void dragdrop_source_entity_tree(EditorInterface* editor, Entity e) {
 		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 		{
-		
 			ImGui::SetDragDropPayload("ENTITY_DRAGDROP_REPARENT", &e.id, sizeof(e.id));
 			String name = get_name(&editor->api.entity_manager->meta_manager, e);
 			ImGui::Text(name.buffer);
@@ -1740,7 +1788,7 @@ static void entity_tree_drop_source(EditorInterface* editor, Entity e) {
 		}
 }
 
-static void entity_tree_drop_target(EditorInterface* editor, Entity e) {
+static void dragdrop_target_entity_tree(EditorInterface* editor, Entity e) {
 
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -1804,8 +1852,10 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 			cmd_editor_select_entity(editor, e.id, !entity_selected);
 			cmd_editor_group_end(editor);
 		}
-		entity_tree_drop_source(editor, e);
-		entity_tree_drop_target(editor, e);
+		dragdrop_source_entity_tree(editor, e);
+		dragdrop_target_entity_tree(editor, e);
+		dragdrop_target_asset(editor, e, AssetType::StaticMesh);
+		dragdrop_target_asset(editor, e, AssetType::Material);
 
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip("EntityID %llu", e.id);
@@ -1826,8 +1876,11 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
 
-		entity_tree_drop_source(editor, e);
-		entity_tree_drop_target(editor, e);
+		
+		dragdrop_source_entity_tree(editor, e);
+		dragdrop_target_entity_tree(editor, e);
+		dragdrop_target_asset(editor, e, AssetType::StaticMesh);
+		dragdrop_target_asset(editor, e, AssetType::Material);
 
 
 		if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
@@ -1933,7 +1986,7 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		
 		// Allow dropping entitys on the root
 		ImGui::Dummy(ImGui::GetWindowSize());
-		entity_tree_drop_target(editor, entity_manager->root);
+		dragdrop_target_entity_tree(editor, entity_manager->root);
 
 		// Click in the scene hierarchy to deselect all the entities
 		if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
@@ -2280,7 +2333,7 @@ static void push_asset_directory_change(AssetBrowserData* asset_browser, AssetBr
 
 static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* leaf_node) {
 	AssetBrowserData* asset_browser = &editor->asset_browser;
-	if (leaf_node->node_type == AssetBrowserFileNodeType::Root) {
+	if (leaf_node == NULL) {
 		return;
 	} 
 	draw_path_reverse(editor, tracker, leaf_node->parent);
@@ -2299,7 +2352,7 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 	ImGui::SameLine();
 	if (leaf_node->has_child_directorys) {
 		ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::ImColor(0.0f, 0.0f, 0.0f, 0.0f));
-		ImGui::PushID(leaf_node->parent->name.buffer == NULL ? "RootAsset" : leaf_node->parent->name.buffer);
+		ImGui::PushID(leaf_node->name.buffer);
 		if (ImGui::ArrowButton(leaf_node->name.buffer, ImGuiDir_Right)) {
 			// Show popups listing all child directories
 			ImGui::OpenPopup("asset_path_popup");
@@ -2354,7 +2407,7 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 	}
 
 	AssetBrowserData* asset_browser = &editor->asset_browser;
-	ImGui::BeginChild("Asset Tree View");
+	
 	
 
 	if (node->node_type == AssetBrowserFileNodeType::Directory ) {
@@ -2362,8 +2415,9 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 		if (node->has_child_directorys) {
 			bool selected = asset_browser->current_directory == node;
 			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((selected) ? ImGuiTreeNodeFlags_Selected : 0);
-
 			bool open = ImGui::TreeNodeEx(node->name.buffer, node_flags);
+			
+			
 			
 			if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
 			{
@@ -2382,22 +2436,23 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 				}
 
 				ImGui::TreePop();
-
 			}
 		}
 		else {
+			ImGui::Indent();
 			bool selected = asset_browser->current_directory == node;
 			bool open = ImGui::Selectable(node->name.buffer, &selected);
 			if (ImGui::IsItemClicked()) {
 				push_asset_directory_change(asset_browser, node);
 			}
+			ImGui::Unindent();
 		}
 		
 
 		
 	}
 	
-	ImGui::EndChild();
+	
 	
 	
 }
@@ -2435,6 +2490,17 @@ static void draw_asset_browser_context_menu(EditorInterface* editor, AssetTracke
 		ImGui::EndPopup();
 	}
 }
+
+static void dragdrop_source_asset(EditorInterface* editor, AssetID assetid, String name) {
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+	{
+		void* data = (void*)&assetid;
+		ImGui::SetDragDropPayload("ASSETID", data, sizeof(AssetID));
+		ImGui::Text(name.buffer);
+		ImGui::EndDragDropSource();
+	}
+}
+
 static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	AssetBrowserData* asset_browser = &editor->asset_browser;
 
@@ -2512,12 +2578,14 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 					ImGui::Columns(3);
 
+					
 					if (node->node_type == AssetBrowserFileNodeType::Directory) {
 						bool filter_pass = false;
 						if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 							filter_pass = true;
 						}
 						if (filter_pass) {
+							ImGui::BeginGroup();
 							bool selected = node->selected;
 
 
@@ -2541,6 +2609,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 
 							ImGui::Columns(1);
+							ImGui::EndGroup();
 
 						}
 
@@ -2558,6 +2627,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 						}
 
 						if (filter_pass) {
+							ImGui::BeginGroup();
 							bool selected = node->selected;
 							if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap | ImGuiSelectableFlags_AllowDoubleClick)) {
 								
@@ -2578,13 +2648,15 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 							ImGui::Text(asset_type_name);
 
 
-
+							ImGui::EndGroup();
 						}
 
 
 					}
-
-
+					
+					if (node->node_type == AssetBrowserFileNodeType::File) {
+						dragdrop_source_asset(editor, node->asset, node->name);
+					}
 					ImGui::Columns(1);
 					node = node->next_sibling;
 				}
@@ -2656,6 +2728,11 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 						}
 
 						ImGui::EndGroup();
+						// Drag and drop
+						if (node->node_type == AssetBrowserFileNodeType::File) {
+							dragdrop_source_asset(editor, node->asset, node->name);
+						}
+
 						if (ImGui::IsItemHovered()) {
 							if (ImGui::IsMouseDoubleClicked(0)) {
 								if (node->node_type == AssetBrowserFileNodeType::Directory) {
@@ -2742,8 +2819,9 @@ static void draw_window_assets(EditorInterface* editor) {
 		ImGui::Columns(2, "asset_tree_and_browser", true);
 		static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
 		asset_browser->asset_tree_filter.Draw("Search Folders");
-		
-		draw_asset_tree(editor, tracker, tracker->dir_root->first_child);
+		ImGui::BeginChild("Asset Tree View");
+		draw_asset_tree(editor, tracker, tracker->dir_root);
+		ImGui::EndChild();
 		ImGui::NextColumn();
 
 		draw_asset_browser(editor, tracker);

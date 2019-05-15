@@ -331,8 +331,18 @@ static void construct_asset_brower_tree(AssetTracker* tracker) {
 	size_t map_size = tracker->track_map.size;
 	tracker->dir_root = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
 
-	tracker->dir_root->node_type = AssetBrowserFileNodeType::Root;
+
+	const char* root_name_str = "Root";
+	size_t root_name_str_length = 4;
+	// Copy name
+	char* root_name = (char*)arena_alloc(&tracker->mem, root_name_str_length + 1); // +1 for '\0' terminator
+	memcpy(root_name, root_name_str, root_name_str_length);
+	root_name[root_name_str_length + 1] = '\0';
+	
+
+	tracker->dir_root->node_type = AssetBrowserFileNodeType::Directory;
 	tracker->dir_root->asset = AssetID();
+	tracker->dir_root->name = String(root_name, root_name_str_length);
 	tracker->dir_root->children_count = 0;
 	tracker->dir_root->parent = NULL;
 	tracker->dir_root->first_child = NULL;

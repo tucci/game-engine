@@ -34,17 +34,17 @@ enum class ComponentType : u64 {
 
 // Turn on a component
 inline ComponentType operator|(ComponentType a, ComponentType b) {
-	return static_cast<ComponentType>(static_cast<int>(a) | static_cast<int>(b));
+	return static_cast<ComponentType>(static_cast<u64>(a) | static_cast<u64>(b));
 }
 
 // Check if component is on
 inline ComponentType operator&(ComponentType a, ComponentType b) {
-	return static_cast<ComponentType>(static_cast<int>(a) & static_cast<int>(b));
+	return static_cast<ComponentType>(static_cast<u64>(a) & static_cast<u64>(b));
 }
 
 // Remove component
 inline ComponentType operator~(ComponentType a) {
-	return static_cast<ComponentType>(~static_cast<int>(a));
+	return static_cast<ComponentType>(~static_cast<u64>(a));
 }
 
 

@@ -21,7 +21,7 @@
 #define TRACKER_FILE_VERSION (u64)1
 
 
-enum class AssetType : u32{
+enum class AssetType : u32 {
 	None,
 	Scene,
 	StaticMesh,
@@ -31,6 +31,8 @@ enum class AssetType : u32{
 	Animation,
 	Texture,
 };
+
+
 
 enum class AssetStatus {
 	Unloaded,
@@ -185,7 +187,7 @@ struct AssetTrackData {
 
 enum class AssetBrowserFileNodeType {
 	None,
-	Root,
+	//Root,
 	File,
 	Directory,
 };
