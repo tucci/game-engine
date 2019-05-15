@@ -1729,6 +1729,48 @@ static void draw_entity_item_context_menu(EditorInterface* editor, Entity e) {
 	}
 }
 
+static void entity_tree_drop_source(EditorInterface* editor, Entity e) {
+		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+		{
+		
+			ImGui::SetDragDropPayload("ENTITY_DRAGDROP_REPARENT", &e.id, sizeof(e.id));
+			String name = get_name(&editor->api.entity_manager->meta_manager, e);
+			ImGui::Text(name.buffer);
+			ImGui::EndDragDropSource();
+		}
+}
+
+static void entity_tree_drop_target(EditorInterface* editor, Entity e) {
+
+	if (ImGui::BeginDragDropTarget())
+	{
+		EntityManager* em = editor->api.entity_manager;
+		if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_DRAGDROP_REPARENT"))
+		{
+			cmd_editor_group_begin(editor);
+			// First reparent the entity that was dragged
+			u64 payload_entity_id = *(u64*)payload->Data;
+			Entity payload_entity(payload_entity_id);
+			Entity old_parent_of_payload_entity = parent(em, payload_entity);
+			cmd_editor_reparent_entity(editor, payload_entity, old_parent_of_payload_entity, e);
+
+			// Then drag the remaining selected entities
+			if (editor->entity_selected_count > 0) {
+				for (int i = 0; i < em->entity_count; i++) {
+					Entity selected_entity = em->entity_list[i];
+					// Only deselect the ones that are selected
+					if (is_entity_selected(editor, selected_entity)) {
+						Entity old_parent = parent(em, selected_entity);
+						cmd_editor_reparent_entity(editor, selected_entity, old_parent, e);
+					}
+				}
+			}
+			cmd_editor_group_end(editor);
+
+		}
+		ImGui::EndDragDropTarget();
+	}
+}
 
 
 static void draw_entity_tree(EditorInterface* editor, Entity e) {
@@ -1762,25 +1804,9 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 			cmd_editor_select_entity(editor, e.id, !entity_selected);
 			cmd_editor_group_end(editor);
 		}
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-		{
-			ImGui::SetDragDropPayload("ENTITY_ID", &e.id, sizeof(e.id));
-			ImGui::Text(name.buffer);
-			ImGui::EndDragDropSource();
-		}
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
-			{
-				IM_ASSERT(payload->DataSize == sizeof(e.id));
-				u64 payload_entity_id = *(u64*)payload->Data;
-				LOG_WARN("Scene", "%llu, parenting to %s", payload_entity_id, name.buffer);
-				Entity payload_entity(payload_entity_id);
-				Entity old_parent = parent(em, payload_entity);
-				cmd_editor_reparent_entity(editor, payload_entity, old_parent, e);
-			}
-			ImGui::EndDragDropTarget();
-		}
+		entity_tree_drop_source(editor, e);
+		entity_tree_drop_target(editor, e);
+
 		if (ImGui::IsItemHovered()) {
 			ImGui::SetTooltip("EntityID %llu", e.id);
 		}
@@ -1800,25 +1826,8 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 		bool node_open = ImGui::TreeNodeEx(name.buffer, node_flags);
 
-		if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-		{
-			ImGui::SetDragDropPayload("ENTITY_ID", &e.id, sizeof(e.id));
-			ImGui::Text(name.buffer);
-			ImGui::EndDragDropSource();
-		}
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
-			{
-				IM_ASSERT(payload->DataSize == sizeof(e.id));
-				u64 payload_entity_id = *(u64*)payload->Data;
-				LOG_WARN("Scene", "%llu, parenting to %s", payload_entity_id, name.buffer);
-				Entity payload_entity(payload_entity_id);
-				Entity old_parent = parent(em, payload_entity);
-				cmd_editor_reparent_entity(editor, payload_entity, old_parent, e);
-			}
-			ImGui::EndDragDropTarget();
-		}
+		entity_tree_drop_source(editor, e);
+		entity_tree_drop_target(editor, e);
 
 
 		if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
@@ -1924,18 +1933,7 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		
 		// Allow dropping entitys on the root
 		ImGui::Dummy(ImGui::GetWindowSize());
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload * payload = ImGui::AcceptDragDropPayload("ENTITY_ID"))
-			{
-				
-				u64 payload_entity_id = *(u64*)payload->Data;
-				Entity payload_entity(payload_entity_id);
-				Entity old_parent = parent(entity_manager, payload_entity);
-				cmd_editor_reparent_entity(editor, payload_entity, old_parent, entity_manager->root);
-			}
-			ImGui::EndDragDropTarget();
-		}
+		entity_tree_drop_target(editor, entity_manager->root);
 
 		// Click in the scene hierarchy to deselect all the entities
 		if (ImGui::IsMouseHoveringWindow() && ImGui::IsMouseClicked(0, false)) {
