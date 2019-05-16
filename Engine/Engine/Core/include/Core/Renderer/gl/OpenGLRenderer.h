@@ -104,10 +104,19 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 RenderResource gl_create_vbo(OpenGLRenderer* opengl);
 RenderResource gl_create_ebo(OpenGLRenderer* opengl);
 RenderResource gl_create_vao(OpenGLRenderer* opengl);
+
+// Create an incomplete framebuffer object without any attachements
 RenderResource gl_create_fbo(OpenGLRenderer* opengl);
+// Create framebuffer and texture with width and size
+RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 width, u32 height);
+// Create framebuffer with texture handles
+RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 texture_count, FrameBufferAttachement* textures);
+
 RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height);
 
 void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_resource);
+
+
 
 
 

@@ -231,6 +231,9 @@ struct EditorInterface {
 	bool show_editor;
 	EditorControlsData editor_control_data;
 
+	RenderResource render_texture;
+	RenderResource render_framebuffer;
+
 	RenderResource res_folder_icon_texture;
 	RenderResource res_asset_icon_texture;
 

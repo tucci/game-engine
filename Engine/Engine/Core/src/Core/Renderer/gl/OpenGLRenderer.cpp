@@ -571,14 +571,28 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	glGenFramebuffers(1, &fbo_id);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
 
-	//glGenRenderbuffers(1, &rbo_id);
-	//glBindRenderbuffer(GL_RENDERBUFFER, rbo_id);
-	//glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-	//glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_id);
+	int next_fbo_index = opengl->fbo_count;
+	handle.handle = next_fbo_index;
+	opengl->fbos[opengl->fbo_count] = fbo_id;
+	opengl->fbo_count++;
 
 
+	return handle;
+}
+
+RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 width, u32 height) {
+	RenderResource handle;
+	handle.type = RenderResourceType::FRAME_BUFFER;
+	GLuint fbo_id;
+
+
+	glGenFramebuffers(1, &fbo_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+
+	assert_fail(); // Texture handle is not accounted for when returing back
+
+	RenderResource texture_handle = gl_create_texture(opengl, NULL, false);
 	
-
 
 	
 	int next_fbo_index = opengl->fbo_count;
@@ -587,6 +601,53 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	opengl->fbo_count++;
 
 	
+	return handle;
+}
+
+RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 texture_count, FrameBufferAttachement* attachments) {
+	
+	RenderResource handle;
+	handle.type = RenderResourceType::FRAME_BUFFER;
+	GLuint fbo_id;
+
+
+	glGenFramebuffers(1, &fbo_id);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+	int next_fbo_index = opengl->fbo_count;
+	handle.handle = next_fbo_index;
+	opengl->fbos[opengl->fbo_count] = fbo_id;
+	opengl->fbo_count++;
+
+
+
+	for (u32 i = 0; i < texture_count; i++) {
+		FrameBufferAttachement attachment = attachments[i];
+		RenderResource texture = attachment.texture_handle;
+		GLuint gl_attachement_handle = opengl->textures[texture.handle];
+		GLenum attach_type = GL_COLOR_ATTACHMENT0;
+		switch (attachment.type)
+		{
+		case FrameBufferAttachementType::COLOR: {
+			attach_type = GL_COLOR_ATTACHMENT0 + attachment.color_attachment_index;
+			break;
+		}
+		case FrameBufferAttachementType::DEPTH: {
+			attach_type = GL_DEPTH_ATTACHMENT;
+			break;
+		}
+		case FrameBufferAttachementType::STENCIL: {
+			attach_type = GL_STENCIL_ATTACHMENT;
+			break;
+		}
+		default:
+			break;
+		}
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attach_type, GL_TEXTURE_2D, gl_attachement_handle, 0);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	return handle;
 }
 
@@ -614,6 +675,8 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 
 	return handle;
 }
+
+
 
 void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_resource) {
 	switch (render_resource.type)

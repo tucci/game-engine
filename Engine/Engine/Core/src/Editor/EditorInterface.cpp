@@ -549,6 +549,23 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	editor->api = api;
 
+	u32 width = 500;
+	u32 height = 500;
+
+	Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+	
+	editor->render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+	
+	FrameBufferAttachement texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->render_texture, 0);
+	FrameBufferAttachement attachments[1] = { texture_attachement };
+
+	editor->render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)1, attachments);
+	
+	
+	
+
+	
+
 	
 	
 	
@@ -929,7 +946,7 @@ void editor_update(EditorInterface* editor) {
 		draw_window_engine_timer(editor);
 		draw_window_log(editor);
 		draw_window_assets(editor);
-		//draw_window_scene_viewports(editor);
+		draw_window_scene_viewports(editor);
 		draw_window_renderer_stats(editor);
 		draw_editor_command_undo_and_redo_stack(editor);
 	} // END OF SHOW EDITOR
@@ -2449,7 +2466,6 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 		}
 		
 
-		
 	}
 	
 	
@@ -2554,6 +2570,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	
 
 	ImGui::Separator();
+
 	
 	
 			
@@ -2898,16 +2915,18 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 
 
 	if (ImGui::Begin("Scene")) {
+		void* screen = render_resource_to_id(editor->api.renderer, editor->render_texture);
+		ImGui::GetWindowDrawList()->AddImage(screen, ImVec2(0, 0), ImVec2(500, 500));
 	}
 	ImGui::End();
 
-	if (ImGui::Begin("Game")) {
-	}
-	ImGui::End();
-
-	if (ImGui::Begin("Multi Windows")) {
-	}
-	ImGui::End();
+	//if (ImGui::Begin("Game")) {
+	//}
+	//ImGui::End();
+	//
+	//if (ImGui::Begin("Multi Windows")) {
+	//}
+	//ImGui::End();
 
 }
 

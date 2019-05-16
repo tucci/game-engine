@@ -72,12 +72,12 @@ void create_shadowmap(Renderer* renderer) {
 	gl_init_shadow_maps(&renderer->opengl);
 }
 
-RenderResource create_frame_buffer(Renderer* renderer) {
+RenderResource create_frame_buffer(Renderer* renderer, u32 width, u32 height) {
 	RenderResource handle;
-
+	
 	switch (renderer->type) {
 		case BackenedRendererType::OpenGL:
-			handle = gl_create_fbo(&renderer->opengl);
+			handle = gl_create_fbo(&renderer->opengl, width, height);
 			break;
 	}
 	renderer->render_world.resources_count++;
@@ -85,19 +85,32 @@ RenderResource create_frame_buffer(Renderer* renderer) {
 	return handle;
 }
 
-RenderResource create_render_target(Renderer* renderer, u32 width, u32 height) {
+RenderResource create_frame_buffer(Renderer* renderer, u32 attachment_count, FrameBufferAttachement* attacments) {
 	RenderResource handle;
 
 	switch (renderer->type) {
-		case BackenedRendererType::OpenGL:
-			handle = gl_create_rbo(&renderer->opengl, width, height);
-			break;
+	case BackenedRendererType::OpenGL:
+		handle = gl_create_fbo(&renderer->opengl, attachment_count, attacments);
+		break;
 	}
-
 	renderer->render_world.resources_count++;
-	handle.type = RenderResourceType::RENDER_TARGET;
+	handle.type = RenderResourceType::FRAME_BUFFER;
 	return handle;
 }
+
+//RenderResource create_render_buffer(Renderer* renderer, u32 width, u32 height) {
+//	RenderResource handle;
+//
+//	switch (renderer->type) {
+//		case BackenedRendererType::OpenGL:
+//			handle = gl_create_rbo(&renderer->opengl, width, height);
+//			break;
+//	}
+//
+//	renderer->render_world.resources_count++;
+//	handle.type = RenderResourceType::RENDER_TARGET;
+//	return handle;
+//}
 
 RenderResource create_vertex_decl(Renderer* renderer) {
 
@@ -139,6 +152,8 @@ RenderResource create_index_buffer(Renderer* renderer) {
 	handle.type = RenderResourceType::INDEX_BUFFER;
 	return handle;
 }
+
+
 
 
 bool is_material_loaded(Renderer* renderer, MaterialID id) {

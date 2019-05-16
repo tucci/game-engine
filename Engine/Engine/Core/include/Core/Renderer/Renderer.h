@@ -22,11 +22,13 @@ struct Renderer {
 		SoftwareRenderer software_renderer;
 		OpenGLRenderer opengl;
 	};	
+
 	
 	RenderWorld render_world;
 	Renderer() {};
 
 };
+
 
 
 void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window);
@@ -41,11 +43,13 @@ void push_camera(Renderer* renderer, Camera* camera, Vec3f pos);
 void push_light(Renderer* renderer, Light light);
 
 // NOTE: these create the resources on the gpu
-RenderResource create_frame_buffer(Renderer* renderer);
-RenderResource create_render_target(Renderer* renderer, u32 width, u32 height);
+RenderResource create_frame_buffer(Renderer* renderer, u32 width, u32 height);
+RenderResource create_frame_buffer(Renderer* renderer, u32 attachment_count, FrameBufferAttachement* attacments);
+//RenderResource create_render_buffer(Renderer* renderer, u32 width, u32 height);
 RenderResource create_vertex_decl(Renderer* renderer);
 RenderResource create_vertex_buffer(Renderer* renderer);
 RenderResource create_index_buffer(Renderer* renderer);
+
 
 
 bool is_material_loaded(Renderer* renderer, MaterialID id);

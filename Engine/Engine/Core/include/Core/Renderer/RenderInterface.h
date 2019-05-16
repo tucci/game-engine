@@ -54,6 +54,23 @@ struct RenderMesh {
 	
 };
 
+enum class FrameBufferAttachementType {
+	COLOR,
+	DEPTH,
+	STENCIL
+};
+
+struct FrameBufferAttachement {
+	FrameBufferAttachementType type;
+	u32 color_attachment_index;
+	RenderResource texture_handle;
+	FrameBufferAttachement(FrameBufferAttachementType type, RenderResource texture_handle, u32 color_attachment_index) {
+		this->type = type;
+		this->color_attachment_index = color_attachment_index;
+		this->texture_handle = texture_handle;
+	}
+};
+
 
 
 // the world of objects we need to render and states
