@@ -228,7 +228,6 @@ struct EditorInterface {
 	
 	HDR_SkyMap hdr_skymap;
 
-	bool show_editor;
 	EditorControlsData editor_control_data;
 
 	RenderResource render_texture;
@@ -242,7 +241,7 @@ struct EditorInterface {
 	Texture2D folder_icon_texture;
 	Texture2D asset_icon_texture;
 
-	bool was_last_frame_using_right_click;
+	
 
 	ImGuiID dockspace_id = NULL;
 	// Game clock vars
@@ -250,6 +249,9 @@ struct EditorInterface {
 	float fps_history[FPS_HISTORY_COUNT] = { 0 };
 
 	AssetBrowserData asset_browser;
+	
+	bool right_click_down;
+	bool scene_viewport_input_capture;
 	
 
 	// Log vars
@@ -319,7 +321,7 @@ static void draw_window_log(EditorInterface* editor);
 static void draw_window_assets(EditorInterface* editor);
 
 static void draw_window_renderer_stats(EditorInterface* editor);
-static void draw_window_scene_viewports(EditorInterface* editor);
+static void draw_viewports(EditorInterface* editor);
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor);
 
 

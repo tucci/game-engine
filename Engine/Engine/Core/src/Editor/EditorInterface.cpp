@@ -147,11 +147,13 @@ static void set_editor_layout(EditorInterface* editor) {
 		ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, NULL, &dock_main_id);
 		ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.35f, NULL, &dock_main_id);
 		ImGuiID dock_id_top = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.1f, NULL, &dock_main_id);
+		
 
 		ImGuiID dock_id_left_bottom = ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Down, 0.20f, NULL, &dock_id_left);
 
 
 
+		
 		ImGui::DockBuilderDockWindow("Toolbar", dock_id_top);
 
 		ImGui::DockBuilderDockWindow("Scene", dock_main_id);
@@ -167,6 +169,8 @@ static void set_editor_layout(EditorInterface* editor) {
 		ImGui::DockBuilderDockWindow("Render Stats", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Log", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Command History", dock_id_left_bottom);
+
+		
 		
 		
 
@@ -521,7 +525,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	set_editor_style(editor);
 
 	map_init(&editor->entity_selected);
-	editor->show_editor = true;
+	
 
 	editor->show_info = true;
 	editor->show_warning = true;
@@ -544,7 +548,10 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->window_entity_components_open = true;
 	editor->window_engine_timers_open = true;
 	editor->window_render_stats = true;
-	
+
+
+	editor->scene_viewport_input_capture = false;
+	editor->right_click_down = false;
 
 	editor->api = api;
 	
@@ -860,113 +867,136 @@ void editor_update(EditorInterface* editor) {
 		LOG_INFO("Editor", "perform duplicate command");
 	}
 
-	if (is_key_pressed(input, KEYCODE_BACKQUOTE)) {
-		editor->show_editor = !editor->show_editor;
-	}
-
 	
-	if (is_mouse_pressed(input, MouseButton::Left)) {
-		Vec2i mouse_pos = get_mouse_pos(input);
-
-		// Do a raycast to check which object is pressed
-		//LOG_INFO("MOUSE", "Mouse pos %d, %d\n", mouse_pos.x, mouse_pos.y);
-	}
+	//Entity e3 = Entity(3);
+	//Vec3f epos = get_position(entity_manager, e3);
+	//epos.y = sinf_(timer->seconds);
+	//epos.x = epos.x + (1 * timer->delta_time);
+	//set_position(entity_manager, e3, epos);
 	
-
-	Vec2i scroll = get_scroll_delta(input);
-	
-	// Capture scolling to move camera forward and back
-	if (scroll.y != 0) {
-		Vec3f new_cam_direction = (delta_time * -forward(entity_manager, editor->editor_camera));
-
-		// TODO: make this configurable
-		float scroll_scale = 10.0f;
-
-		float cam_move_scale = scroll_scale * scroll.y;
-		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
-		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
-	}
-
-	int x = input->mouse.pos.x;
-	int y = input->mouse.pos.y;
-
-	int gx = input->mouse.global_pos.x;
-	int gy = input->mouse.global_pos.y;
-
-	int sx = window->size.x;
-	int sy = window->size.y;
-
-	Vec2i delta_pos = input->mouse.delta_pos;
-
-	
+	if (editor->scene_viewport_input_capture) {
 
 
-	// Only apply editor movement if right mouse button is clicked
-	if (is_mouse_down(input, MouseButton::Right)) {
-		//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
-		//SDL_ShowCursor(SDL_DISABLE);
-		//
-		SDL_SetRelativeMouseMode(SDL_TRUE);
-		//SDL_CaptureMouse(SDL_TRUE);
+		if (is_mouse_pressed(input, MouseButton::Left)) {
+			Vec2i mouse_pos = get_mouse_pos(input);
 
-		Vec2i rel_pos = Vec2i(0, 0);
-
-
-		SDL_GetRelativeMouseState(&rel_pos.x, &rel_pos.y);
-
-
-		// TODO: remove need for sdl specific scan codes. convert to our own input api
-
-		Vec3f new_cam_direction;
-
-
-		// Since the camera always looks down -z
-		if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, editor->editor_camera)); }
-		if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, editor->editor_camera)); }
-
-		float cam_move_scale = 10;
-		Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
-		set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
-
-
-		// Prevent camera rotation jump, when the delta between the last time the right mouse was down and now
-		if (editor->was_last_frame_using_right_click) {
-			// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
-			float sensitivity = 0.25f;
-			Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
-			Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
-			new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
-
-			set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
+			// Do a raycast to check which object is pressed
+			//LOG_INFO("MOUSE", "Mouse pos %d, %d\n", mouse_pos.x, mouse_pos.y);
 		}
+
+
+		Vec2i scroll = get_scroll_delta(input);
+
+		// Capture scolling to move camera forward and back
+		if (scroll.y != 0) {
+			Vec3f new_cam_direction = (delta_time * -forward(entity_manager, editor->editor_camera));
+
+			// TODO: make this configurable
+			float scroll_scale = 10.0f;
+
+			float cam_move_scale = scroll_scale * scroll.y;
+			Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
+			set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
+		}
+
+		int x = input->mouse.pos.x;
+		int y = input->mouse.pos.y;
+
+		int gx = input->mouse.global_pos.x;
+		int gy = input->mouse.global_pos.y;
+
+		int sx = window->size.x;
+		int sy = window->size.y;
+
+		Vec2i delta_pos = input->mouse.delta_pos;
+
+
+
+
+		// Only apply editor movement if right mouse button is clicked
+		if (is_mouse_down(input, MouseButton::Right)) {
+			//SDL_SetWindowGrab(window->sdl_window, SDL_TRUE);
+			SDL_ShowCursor(SDL_DISABLE);
+
+
+			SDL_SetRelativeMouseMode(SDL_TRUE);
+
+			Vec2i rel_pos = Vec2i(0, 0);
+			// TODO: Move this to input
+			SDL_GetRelativeMouseState(&rel_pos.x, &rel_pos.y);
+			//SDL_SetRelativeMouseMode(SDL_FALSE);
+			
+			
+
+
+			
+			ImVec2 mp = ImGui::GetMousePos();
+			
+			if (ImGui::Begin("Mouse")) {
+				ImGui::Text("Mouse %f, %f", mp.x, mp.y);
+				ImGui::Text("Relat %d, %d", rel_pos.x, rel_pos.y);
+			}
+			ImGui::End();
+			
+
+			Vec3f new_cam_direction;
+
+
+			// Since the camera always looks down -z
+			if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, editor->editor_camera)); }
+			if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, editor->editor_camera)); }
+			if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, editor->editor_camera)); }
+			if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, editor->editor_camera)); }
+			if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, editor->editor_camera)); }
+			if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, editor->editor_camera)); }
+
+			float cam_move_scale = 10;
+			Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
+			set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
+
+
+			// Prevent camera rotation jump, when the delta between the last time the right mouse was down and now
+			if (editor->right_click_down) {
+				// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
+				float sensitivity = 0.25f;
+				Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
+				Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
+				new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
+
+				set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
+			}
+
+
+
+			editor->right_click_down = true;
+		}
+		else {
+			editor->right_click_down = false;
+			SDL_ShowCursor(SDL_ENABLE);
+			SDL_SetRelativeMouseMode(SDL_FALSE);
+
+		}
+
 		
-
-
-		editor->was_last_frame_using_right_click = true;
-	} else {
-		editor->was_last_frame_using_right_click = false;
-		SDL_SetRelativeMouseMode(SDL_FALSE);
+		
 	}
-		
+	
+	
 
-	if (editor->show_editor) {
+	
 
-		set_editor_layout(editor);
-		draw_main_menu_bar(editor);
-		draw_toolbar(editor);
-		draw_window_entity_components(editor);
-		draw_window_scene_hierarchy(editor);
-		draw_window_engine_timer(editor);
-		draw_window_log(editor);
-		draw_window_assets(editor);
-		draw_window_scene_viewports(editor);
-		draw_window_renderer_stats(editor);
-		draw_editor_command_undo_and_redo_stack(editor);
-	} // END OF SHOW EDITOR
+	set_editor_layout(editor);
+	draw_main_menu_bar(editor);
+	draw_toolbar(editor);
+	draw_window_entity_components(editor);
+	draw_window_scene_hierarchy(editor);
+	draw_window_engine_timer(editor);
+	draw_window_log(editor);
+	draw_window_assets(editor);
+	draw_viewports(editor);
+	draw_window_renderer_stats(editor);
+	draw_editor_command_undo_and_redo_stack(editor);
+	
 
 
 	process_editor_command_buffer(editor);
@@ -1046,8 +1076,8 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 static void draw_toolbar(EditorInterface* editor) {
 	bool open = true;
-	auto flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar;
-	if (ImGui::Begin("Toolbar", &open, flags)) {
+	auto flags = ImGuiWindowFlags_NoResize  | ImGuiWindowFlags_NoTitleBar;
+	if (ImGui::Begin("Toolbar", &open)) {
 		ImGui::Button("Save"); ImGui::SameLine();
 		if (ImGui::Button("Undo")) {
 			perform_undo_operation(editor);
@@ -1060,9 +1090,6 @@ static void draw_toolbar(EditorInterface* editor) {
 		ImGui::Button("Translate"); ImGui::SameLine();
 		ImGui::Button("Rotate"); ImGui::SameLine();
 		ImGui::Button("Scale"); ImGui::SameLine();
-
-		
-
 		ImGui::Button("Play"); ImGui::SameLine();
 	}
 	ImGui::End();
@@ -2850,7 +2877,7 @@ static void draw_window_assets(EditorInterface* editor) {
 		
 
 		ImGui::Columns(2, "asset_tree_and_browser", true);
-		static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
+		//static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
 		asset_browser->asset_tree_filter.Draw("Search Folders");
 		ImGui::BeginChild("Asset Tree View");
 		draw_asset_tree(editor, tracker, tracker->dir_root);
@@ -2927,7 +2954,9 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 	ImGui::End();
 }
 
-static void draw_window_scene_viewports(EditorInterface* editor) {
+
+
+static void draw_viewports(EditorInterface* editor) {
 
 
 	void* color = render_resource_to_id(editor->api.renderer, editor->render_texture);
@@ -2948,7 +2977,45 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_camera, aspect_ratio);
 
 		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+
+		ImGui::Text("Start pos %f, %f", start_group_pos.x, start_group_pos.y);
+		ImGui::Text("window_size %f, %f", window_size.x, window_size.y);
+		ImGui::Text("rect %f, %f", rect.x, rect.y);
+		
+		Vec2i mmp = get_mouse_pos(editor->api.input);
+		
+
+		
+		
+			if (ImGui::IsWindowHovered()) {
+				editor->scene_viewport_input_capture = true;
+			}
+			else {
+				// If we are still have right click to move down, then we just continue to capture the input
+				if (editor->right_click_down) {
+					editor->scene_viewport_input_capture = true;
+				}
+				else {
+					editor->scene_viewport_input_capture = false;
+				}
+			}
+		
+		
+
+		
+		
+		Vec2i gmmp = get_global_mouse_pos(editor->api.input);
+		ImVec2 mp = ImGui::GetMousePos();
+		
+		if (ImGui::Begin("Mouse2")) {
+			ImGui::Text("IMGUI Mouse %f, %f", mp.x, mp.y);
+			ImGui::Text("My Mouse %d, %d", mmp.x, mmp.y);
+			ImGui::Text("My GMouse %d, %d", gmmp.x, gmmp.y);
+			
+		}
+		ImGui::End();
 	}
+	
 	ImGui::End();
 
 	if (ImGui::Begin("Game")) {		
@@ -2956,9 +3023,9 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
 		ImVec2 viewport_size = ImGui::GetCurrentWindow()->Size;
 		ImVec2 rect = ImVec2(start_group_pos.x + viewport_size.x, start_group_pos.y + viewport_size.y);
-
+	
 		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
-
+	
 		
 	}
 	ImGui::End();

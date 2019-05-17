@@ -1033,10 +1033,9 @@ void game_loop(Engine* engine) {
 void editor_loop(Engine* engine) {
 	while (!engine->quit) {
 		// Start the Dear ImGui frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplSDL2_NewFrame(engine->window.sdl_window);
-		ImGui::NewFrame();
-
+		
+		
+		
 
 
 		GameTimer* timer = &engine->game_loop;
@@ -1056,9 +1055,20 @@ void editor_loop(Engine* engine) {
 
 
 
+		
+
 		// Process inputs once per frame
 		poll_inputs(engine);
 		process_event_queue(engine);
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplSDL2_NewFrame(engine->window.sdl_window);
+		ImGui::NewFrame();
+		
+		
+
+		
+
 
 		while (timer->accumulator >= timer->time_step) {
 			// fixed update zero or more times per frame
@@ -1104,7 +1114,5 @@ void editor_loop(Engine* engine) {
 				SDL_Delay((Uint32)(1000 * sleep_for));
 			}
 		}
-
-
 	}
 }
