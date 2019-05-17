@@ -232,6 +232,8 @@ struct EditorInterface {
 	EditorControlsData editor_control_data;
 
 	RenderResource render_texture;
+	Vec2i render_texture_size;
+	RenderResource depth_texture;
 	RenderResource render_framebuffer;
 
 	RenderResource res_folder_icon_texture;

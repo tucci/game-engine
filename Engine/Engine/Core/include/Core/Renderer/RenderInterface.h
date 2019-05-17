@@ -87,11 +87,15 @@ struct RenderWorld {
 
 
 	u32 resources_count;
+	
 	RenderResource* resources;
 	
 	u32 material_res_count;
 	RenderMaterialResource* material_res;
 	CompactMap<RenderMaterialResource*> material_res_map;
+
+	RenderResource render_framebuffer;
+	
 
 	// Shadow map
 	Mat4x4f light_space_mat;

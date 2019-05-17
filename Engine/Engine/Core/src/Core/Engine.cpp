@@ -1080,7 +1080,7 @@ void editor_loop(Engine* engine) {
 			case BackenedRendererType::OpenGL: {
 				ImGui::Render();
 				
-				opengl_render(&engine->renderer.opengl, engine->window.size, true);
+				opengl_render(&engine->renderer.opengl, engine->editor.render_texture_size, true);
 				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;

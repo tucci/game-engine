@@ -1249,7 +1249,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 
 		InternalMaterial* material = render_mesh.material;
 		
-		//render_mesh.material->
+		
 		
 		if (mesh->vertex_count == 0) { continue; }
 
@@ -1457,8 +1457,9 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debu
 	//glCullFace(GL_BACK); // don't forget to reset original culling face
 	
 
+	GLuint render_buffer = opengl->fbos[opengl->render_world->render_framebuffer.handle];
 	// Normal lighting pass
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, render_buffer);
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
@@ -1468,7 +1469,10 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debu
 		opengl_debug_render(opengl, viewport_size);
 	}
 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 	clear_render_world(opengl);
+	
 	
 	
 }

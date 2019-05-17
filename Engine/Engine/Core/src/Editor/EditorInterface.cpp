@@ -154,6 +154,9 @@ static void set_editor_layout(EditorInterface* editor) {
 
 		ImGui::DockBuilderDockWindow("Toolbar", dock_id_top);
 
+		ImGui::DockBuilderDockWindow("Scene", dock_main_id);
+		ImGui::DockBuilderDockWindow("Game", dock_main_id);
+
 		ImGui::DockBuilderDockWindow("Entity Scene Tree", dock_id_left);
 		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
 		
@@ -163,10 +166,6 @@ static void set_editor_layout(EditorInterface* editor) {
 		ImGui::DockBuilderDockWindow("Asset Browser", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Render Stats", dock_id_bottom);
 		ImGui::DockBuilderDockWindow("Log", dock_id_bottom);
-
-		
-
-
 		ImGui::DockBuilderDockWindow("Command History", dock_id_left_bottom);
 		
 		
@@ -548,18 +547,28 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 
 	editor->api = api;
+	
+	
 
-	u32 width = 500;
-	u32 height = 500;
+	editor->render_texture_size = Vec2i(1920, 1080);
+	u32 width = editor->render_texture_size.x;
+	u32 height = editor->render_texture_size.y;
+	
 
 	Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+	Texture2D depth_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
 	
+	
+
 	editor->render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+	//editor->depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false);
 	
-	FrameBufferAttachement texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->render_texture, 0);
-	FrameBufferAttachement attachments[1] = { texture_attachement };
+	FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->render_texture, 0);
+	//FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->depth_texture, 0);
+	FrameBufferAttachement attachments[1] = { color_texture_attachement};
 
 	editor->render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)1, attachments);
+	editor->api.renderer->render_world.render_framebuffer = editor->render_framebuffer;
 	
 	
 	
@@ -2574,6 +2583,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	
 	
 			
+			
 	if (scale_count == 0) {
 				// Detail View
 				ImGui::Columns(3);
@@ -2914,16 +2924,40 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 static void draw_window_scene_viewports(EditorInterface* editor) {
 
 
+	void* screen = render_resource_to_id(editor->api.renderer, editor->render_texture);
+	
+	
+	
+	
 	if (ImGui::Begin("Scene")) {
-		void* screen = render_resource_to_id(editor->api.renderer, editor->render_texture);
-		ImGui::GetWindowDrawList()->AddImage(screen, ImVec2(0, 0), ImVec2(500, 500));
+		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+		
+		ImVec2 viewport_size = ImGui::GetCurrentWindow()->Size;
+		
+		ImVec2 rect = ImVec2(start_group_pos.x + viewport_size.x, start_group_pos.y + viewport_size.y);
+
+		ImGui::GetWindowDrawList()->AddImage(screen, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+		
+
+		//ImGui::Text("Start %f, %f", start_group_pos.x, start_group_pos.y);
+		//ImGui::Text("Size %f, %f", viewport_size.x, viewport_size.y);
+		//ImGui::Text("Rect %f, %f", rect.x, rect.y);
+		//ImVec2 cursor = ImGui::GetMousePos();
+		//ImGui::Text("cursor %f, %f", cursor.x, cursor.y);
 	}
 	ImGui::End();
 
-	//if (ImGui::Begin("Game")) {
-	//}
-	//ImGui::End();
-	//
+	if (ImGui::Begin("Game")) {		
+		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+
+		ImVec2 viewport_size = ImGui::GetCurrentWindow()->Size;
+
+		ImVec2 rect = ImVec2(start_group_pos.x + viewport_size.x, start_group_pos.y + viewport_size.y);
+
+		ImGui::GetWindowDrawList()->AddImage(screen, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+	}
+	ImGui::End();
+	
 	//if (ImGui::Begin("Multi Windows")) {
 	//}
 	//ImGui::End();
