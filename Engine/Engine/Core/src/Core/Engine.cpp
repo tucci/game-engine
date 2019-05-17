@@ -873,8 +873,6 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	// You go through all the entites, and push them to the render state
 	for (int i = 0; i < entity_manager->camera_manager.enabled_count; i++) {
 		Camera* cam = &entity_manager->camera_manager.enabled_cameras[i];
-		// Update camera aspect ratios
-		cam->aspect_ratio = (float)window_size.x / (float)window_size.y;
 		Entity e = entity_manager->camera_manager.enabled_cameras[i].entity_ref;
 		Vec3f cam_pos = get_position(entity_manager, e);
 		push_camera(renderer, cam, cam_pos);

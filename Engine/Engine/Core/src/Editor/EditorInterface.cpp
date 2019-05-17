@@ -581,7 +581,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//add_component(api.entity_manager, editor->editor_camera , ComponentType::Transform);
 	add_component(api.entity_manager, editor->editor_camera , ComponentType::Camera);
 
-	set_camera_params(api.entity_manager, editor->editor_camera, 0.0001f, 100.0f, 90.0f, api.window->size.x / cast(float) api.window->size.y);
+	
+	set_camera_params(api.entity_manager, editor->editor_camera, 0.0001f, 100.0f, 90.0f, editor->render_texture_size.x / cast(float) editor->render_texture_size.y);
 	set_position(api.entity_manager, editor->editor_camera, Vec3f(0, 0, 0));
 
 	
@@ -1196,7 +1197,8 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 		
 		const Camera* const old_cam = get_camera(entity_manager, e);
 		Camera new_camera = *old_cam;
-		//ImGui::DragFloat("Aspect Ratio", &cam->aspect_ratio);
+
+		ImGui::Text("Aspect Ratio: %f", old_cam->aspect_ratio);
 
 		int projection = (int)old_cam->projection;
 		if (ImGui::Combo("Projection", &projection, "Perspective\0Orthographic\0\0")) {
@@ -2937,12 +2939,15 @@ static void draw_window_scene_viewports(EditorInterface* editor) {
 	if (ImGui::Begin("Scene")) {
 		
 		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
-		ImVec2 viewport_size = ImGui::GetCurrentWindow()->Size;
-		ImVec2 rect = ImVec2(start_group_pos.x + viewport_size.x, start_group_pos.y + viewport_size.y);
+		// The size of the current dock/viewport
+		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+
+		// Need to update camera aspect ratio based on the dock's window size
+		float aspect_ratio = (float)window_size.x / (float)window_size.y;
+		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_camera, aspect_ratio);
 
 		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
-		
-
 	}
 	ImGui::End();
 

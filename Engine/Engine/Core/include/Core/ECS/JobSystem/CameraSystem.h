@@ -17,4 +17,6 @@ void set_camera_orto_params(EntityManager* manager, Entity entity, float top, fl
 
 void set_camera_projection(EntityManager* manager, Entity entity, CameraProjection projection);
 
+void set_camera_aspect_ratio(EntityManager* manager, Entity entity, float aspect_ratio);
+
 void job_compute_camera_view_matrices(EntityManager* manager);

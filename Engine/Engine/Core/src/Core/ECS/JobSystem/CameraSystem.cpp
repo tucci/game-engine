@@ -54,6 +54,14 @@ void set_camera_projection(EntityManager* manager, Entity entity, CameraProjecti
 	cam->projection = projection;
 }
 
+void set_camera_aspect_ratio(EntityManager* manager, Entity entity, float aspect_ratio) {
+	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+
+	u64 index = result.value;
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
+	cam->aspect_ratio = aspect_ratio;
+}
+
 void job_compute_camera_view_matrices(EntityManager* manager) {
 	for (int i = 0; i < manager->camera_manager.enabled_count; i++) {
 		Camera* cam = &manager->camera_manager.enabled_cameras[i];
