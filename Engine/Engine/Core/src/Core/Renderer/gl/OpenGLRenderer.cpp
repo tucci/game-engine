@@ -343,14 +343,20 @@ void gl_init_shadow_maps(OpenGLRenderer* opengl) {
 
 
 
-RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap) {
+RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, bool mipmap, bool depth) {
 	RenderResource handle;
 	handle.type = RenderResourceType::TEXTURE;
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
 	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+	if (depth) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, texture->width, texture->height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, texture->data);
+	}
+	else {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture->width, texture->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture->data);
+	}
+	
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
@@ -591,7 +597,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 
 	assert_fail(); // Texture handle is not accounted for when returing back
 
-	RenderResource texture_handle = gl_create_texture(opengl, NULL, false);
+	RenderResource texture_handle = gl_create_texture(opengl, NULL, false, false);
 	
 
 	
@@ -684,7 +690,6 @@ void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_res
 
 	case RenderResourceType::TEXTURE: {
 		return (void*)opengl->textures[render_resource.handle];
-		
 	}
 	case RenderResourceType::SHADER: {
 		return (void*)opengl->shaders[render_resource.handle].program;
@@ -737,6 +742,7 @@ void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_res
 
 	}
 }
+
 static void init_gl_extensions(OpenGLRenderer* opengl) {
 	glewExperimental = true; // Needed in core profile
 	if (glewInit() != GLEW_OK) {
@@ -1461,8 +1467,9 @@ void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debu
 	// Normal lighting pass
 	glBindFramebuffer(GL_FRAMEBUFFER, render_buffer);
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	opengl_render_scene(opengl, viewport_size, false);
 	
 	if (render_debug) {

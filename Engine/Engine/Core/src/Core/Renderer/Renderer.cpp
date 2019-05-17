@@ -192,12 +192,12 @@ RenderMaterialResource create_material_resource(Renderer* renderer, InternalMate
 	return material_handle;
 }
 
-RenderResource create_texture_resource(Renderer* renderer, Texture2D* texture, bool mipmap) {
+RenderResource create_texture_resource(Renderer* renderer, Texture2D* texture, bool mipmap, bool depth) {
 	RenderResource handle;
 	
 	switch (renderer->type) {
 		case BackenedRendererType::OpenGL:
-			handle = gl_create_texture(&renderer->opengl, texture, mipmap);
+			handle = gl_create_texture(&renderer->opengl, texture, mipmap, depth);
 			break;
 	}
 	
