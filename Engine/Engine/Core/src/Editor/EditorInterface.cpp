@@ -925,19 +925,6 @@ void editor_update(EditorInterface* editor) {
 			// TODO: Move this to input
 			SDL_GetRelativeMouseState(&rel_pos.x, &rel_pos.y);
 			//SDL_SetRelativeMouseMode(SDL_FALSE);
-			
-			
-
-
-			
-			ImVec2 mp = ImGui::GetMousePos();
-			
-			if (ImGui::Begin("Mouse")) {
-				ImGui::Text("Mouse %f, %f", mp.x, mp.y);
-				ImGui::Text("Relat %d, %d", rel_pos.x, rel_pos.y);
-			}
-			ImGui::End();
-			
 
 			Vec3f new_cam_direction;
 
@@ -965,9 +952,6 @@ void editor_update(EditorInterface* editor) {
 
 				set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
 			}
-
-
-
 			editor->right_click_down = true;
 		}
 		else {
@@ -976,9 +960,6 @@ void editor_update(EditorInterface* editor) {
 			SDL_SetRelativeMouseMode(SDL_FALSE);
 
 		}
-
-		
-		
 	}
 	
 	
@@ -2981,39 +2962,24 @@ static void draw_viewports(EditorInterface* editor) {
 		ImGui::Text("Start pos %f, %f", start_group_pos.x, start_group_pos.y);
 		ImGui::Text("window_size %f, %f", window_size.x, window_size.y);
 		ImGui::Text("rect %f, %f", rect.x, rect.y);
-		
-		Vec2i mmp = get_mouse_pos(editor->api.input);
-		
 
-		
-		
-			if (ImGui::IsWindowHovered()) {
+		if (ImGui::IsWindowHovered()) {
+			editor->scene_viewport_input_capture = true;
+		} else {
+			// If we are still have right click to move down, then we just continue to capture the input
+			if (editor->right_click_down) {
 				editor->scene_viewport_input_capture = true;
 			}
 			else {
-				// If we are still have right click to move down, then we just continue to capture the input
-				if (editor->right_click_down) {
-					editor->scene_viewport_input_capture = true;
-				}
-				else {
-					editor->scene_viewport_input_capture = false;
-				}
+				editor->scene_viewport_input_capture = false;
 			}
+		}
 		
 		
 
 		
 		
-		Vec2i gmmp = get_global_mouse_pos(editor->api.input);
-		ImVec2 mp = ImGui::GetMousePos();
 		
-		if (ImGui::Begin("Mouse2")) {
-			ImGui::Text("IMGUI Mouse %f, %f", mp.x, mp.y);
-			ImGui::Text("My Mouse %d, %d", mmp.x, mmp.y);
-			ImGui::Text("My GMouse %d, %d", gmmp.x, gmmp.y);
-			
-		}
-		ImGui::End();
 	}
 	
 	ImGui::End();
