@@ -2996,10 +2996,6 @@ static void draw_viewports(EditorInterface* editor) {
 
 		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
 
-		ImGui::Text("Start pos %f, %f", start_group_pos.x, start_group_pos.y);
-		ImGui::Text("window_size %f, %f", window_size.x, window_size.y);
-		ImGui::Text("rect %f, %f", rect.x, rect.y);
-
 		if (ImGui::IsWindowHovered()) {
 			editor->scene_viewport_input_capture = true;
 		} else {
