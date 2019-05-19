@@ -10,7 +10,6 @@ A place for me to experiment/build an entire game engine from scratch
 - FBX importing
 - Logging
 - Editor Integration with IMGUI
-- Undo/Redo System
 - Early Experimental Multi Threaded Job System
 
 
@@ -24,6 +23,7 @@ A place for me to experiment/build an entire game engine from scratch
 - Log with filtering 
 - Render System Data
 - Game Loop/Engine timer Data
+- Undo/Redo System
 
 # Libs
 - zlib
@@ -59,6 +59,24 @@ A place for me to experiment/build an entire game engine from scratch
 - Try to read the outputted assembly and try to understand what it is trying to do
 - Understand that the compiler can't do everything
 
+
+# Future Goals
+- Make the renderer agnostic
+- Learn vulkan/dx12 for the renderer
+- Rendering
+	- Better lighting/shadows
+	- Layered Materials
+	- Particle System
+	- Fog/Volumentric Lighting
+	- Sub surface scattering
+	- Post Processing
+	- Ray tracing support
+- Make everything multi threaded
+- More hotloading
+- Write/Intergrate a phsyics engine 
+- Write/Intergrate an animation system
+- Better tooling/editor features
+- Actually build a game with it.
 
 # Screenshots
 ![Screenshot 1](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_8UYXxVbiNY.png)
