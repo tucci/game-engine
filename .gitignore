@@ -15,7 +15,22 @@
 # Intel VTune Amplifier XE Results 
 Engine/My Amplifier Results - Engine/
 
-Engine/Assets/textures
+# Internal engine files that are build every run
+
+
+Engine/Engine/Assets/
+
+*.trak
+*.easset
+
+*./Assets/textures
+
+*.fbx
+*.FBX
+*.tif
+*.trak
+
+*.easset
 
 # Build results
 [Dd]ebug/
@@ -332,3 +347,6 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder
 .mfractor/
+
+
+Engine/Engine/log.txt
