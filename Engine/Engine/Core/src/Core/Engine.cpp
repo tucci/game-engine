@@ -999,13 +999,15 @@ void game_loop(Engine* engine) {
 			}
             
 			case BackenedRendererType::OpenGL: {
-				opengl_render(&engine->renderer.opengl, engine->window.size, true);
+				opengl_render(&engine->renderer.opengl, true);
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;
 			}
 			default:
             break;
 		}
+
+		clear_render_world(&engine->renderer);
         
         
 	
@@ -1088,7 +1090,7 @@ void editor_loop(Engine* engine) {
 			case BackenedRendererType::OpenGL: {
 				ImGui::Render();
 				
-				opengl_render(&engine->renderer.opengl, engine->editor.render_texture_size, true);
+				opengl_render(&engine->renderer.opengl, true);
 				ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 				opengl_swap_buffer(&engine->renderer.opengl);
 				break;
@@ -1097,6 +1099,7 @@ void editor_loop(Engine* engine) {
 				break;
 		}
 
+		clear_render_world(&engine->renderer);
 
 
 

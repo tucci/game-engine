@@ -10,6 +10,7 @@
 #include "Core/ECS/Entity.h"
 
 struct EntityManager;
+struct RenderResource;
 
 struct CameraID {
 	u64 id;
@@ -30,13 +31,16 @@ struct Camera {
 	float aspect_ratio;
 
 	CameraProjection projection;
+	float size;
+	//float top;
+	//float bottom;
+	//float left;
+	//float right;
 
-	float top;
-	float bottom;
-	float left;
-	float right;
-
+	// Camera doens't own the framebuffer pointer
+	RenderResource* framebuffer;
 	Mat4x4f view_mat;
+	Camera() {}
 	Camera(Entity ref) {
 		projection = CameraProjection::Perspective;
 		entity_ref = ref;
@@ -45,10 +49,8 @@ struct Camera {
 		fov = 90.0f;
 		aspect_ratio = 1.0f;
 		view_mat = Mat4x4f();
-		left = 0;
-		right = 100;
-		top = 0;
-		bottom = 100;
+		size = 1.0f;
+		
 	}
 };
 

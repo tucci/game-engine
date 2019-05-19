@@ -22,6 +22,17 @@ void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window) {
 			renderer->render_world.material_res = NULL;
 			renderer->render_world.material_res_count = 0;
 
+			renderer->render_world.render_mesh_capacity = 10;
+			renderer->render_world.render_mesh_count = 0;
+			//renderer->render_world.render_mesh_list;
+
+			
+			renderer->render_world.camera_capacity = 10;
+			renderer->render_world.camera_count = 0;
+			//renderer->render_world.cameras;
+			//renderer->render_world.camera_position;
+
+
 			init_opengl_renderer(sdl_window, &renderer->opengl, &renderer->render_world);
 			break;
 		}
@@ -48,8 +59,13 @@ void destory_backend_renderer(Renderer* renderer) {
 	}
 }
 
-void push_render_object(Renderer* renderer, RenderMesh desc) {
-	renderer->render_world.render_mesh_list[renderer->render_world.render_mesh_count] = desc;
+void clear_render_world(Renderer* renderer) {
+	renderer->render_world.render_mesh_count = 0;
+	renderer->render_world.camera_count = 0;
+}
+
+void push_render_object(Renderer* renderer, RenderMesh mesh) {
+	renderer->render_world.render_mesh_list[renderer->render_world.render_mesh_count] = mesh;
 	renderer->render_world.render_mesh_count++;
 }
 
@@ -59,9 +75,9 @@ void create_skymap(Renderer* renderer, HDR_SkyMap* skymap) {
 }
 
 void push_camera(Renderer* renderer, Camera* camera, Vec3f pos) {
-	
-	renderer->render_world.camera = camera;
-	renderer->render_world.cam_pos = pos;
+	renderer->render_world.cameras[renderer->render_world.camera_count] = *camera;
+	renderer->render_world.camera_position[renderer->render_world.camera_count] = pos;
+	renderer->render_world.camera_count++;
 }
 
 void push_light(Renderer* renderer, Light light) {

@@ -221,7 +221,12 @@ struct EditorInterface {
 	EditorCommandBuffer cmd_buffer;
 	
 	AssetID test_mat;
+
 	Entity editor_camera;
+	Entity editor_top_camera;
+	Entity editor_front_camera;
+	Entity editor_side_camera;
+
 	Entity entity_test_light;
 	Entity test_mesh;
 	
@@ -230,10 +235,31 @@ struct EditorInterface {
 
 	EditorControlsData editor_control_data;
 
-	RenderResource render_texture;
-	Vec2i render_texture_size;
-	RenderResource depth_texture;
-	RenderResource render_framebuffer;
+
+	RenderResource camera_perspective_render_framebuffer;
+	RenderResource camera_perspective_render_texture;
+	RenderResource camera_perspective_depth_texture;
+	Vec2i camera_perspective_render_texture_size;
+
+
+	RenderResource camera_top_render_framebuffer;
+	RenderResource camera_top_render_texture;
+	RenderResource camera_top_depth_texture;
+	Vec2i camera_top_render_texture_size;
+
+
+	RenderResource camera_side_render_framebuffer;
+	RenderResource camera_side_render_texture;
+	RenderResource camera_side_depth_texture;
+	Vec2i camera_side_render_texture_size;
+
+
+	RenderResource camera_front_render_framebuffer;
+	RenderResource camera_front_render_texture;
+	RenderResource camera_front_depth_texture;
+	Vec2i camera_front_render_texture_size;
+
+
 
 	RenderResource res_folder_icon_texture;
 	RenderResource res_asset_icon_texture;

@@ -34,8 +34,8 @@ struct Renderer {
 void init_backend_renderer(Renderer* renderer, SDL_Window* sdl_window);
 void destory_backend_renderer(Renderer* renderer);
 
-
-void push_render_object(Renderer* renderer, RenderMesh desc);
+void clear_render_world(Renderer* renderer);
+void push_render_object(Renderer* renderer, RenderMesh mesh);
 // TODO: these are just tests, anc should be removed once we have a better api
 void create_shadowmap(Renderer* renderer);
 void create_skymap(Renderer* renderer, HDR_SkyMap* skymap);

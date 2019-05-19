@@ -23,7 +23,7 @@ void set_scale(EntityManager* manager, Entity entity, Vec3f scale);
 
 Quat get_rotation(EntityManager* manager, Entity entity);
 
-void set_rotation(EntityManager* manager, Entity entity, Quat get_rotation);
+void set_rotation(EntityManager* manager, Entity entity, Quat rotation);
 
 Vec3f forward(EntityManager* manager, Entity entity);
 

@@ -75,13 +75,18 @@ struct FrameBufferAttachement {
 
 // the world of objects we need to render and states
 struct RenderWorld {
-	// TODO: we probably want to hold the meshes by materials first for easier sorting?
-	int render_mesh_count;
-	int render_mesh_capacity;
-	RenderMesh* render_mesh_list;
 
-	Camera* camera;
-	Vec3f cam_pos;
+	// TODO: we probably want to hold the meshes by materials first for easier sorting?
+	u32 render_mesh_count;
+	u32 render_mesh_capacity;
+	RenderMesh render_mesh_list[10];
+
+	u32 camera_capacity;
+	u32 camera_count;
+	Camera cameras[10];
+	Vec3f camera_position[10];
+
+	
 	Light test_light;
 	HDR_SkyMap* skymap;
 
@@ -94,7 +99,7 @@ struct RenderWorld {
 	RenderMaterialResource* material_res;
 	CompactMap<RenderMaterialResource*> material_res_map;
 
-	RenderResource render_framebuffer;
+	
 	
 
 	// Shadow map

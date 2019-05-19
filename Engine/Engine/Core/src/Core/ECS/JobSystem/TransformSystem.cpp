@@ -167,9 +167,9 @@ Quat get_rotation(EntityManager* manager, Entity entity) {
 	return manager->transform_manager.rotations[index];
 }
 
-void set_rotation(EntityManager* manager, Entity entity, Quat get_rotation) {
+void set_rotation(EntityManager* manager, Entity entity, Quat rotation) {
 	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
-	manager->transform_manager.rotations[index] = get_rotation;
+	manager->transform_manager.rotations[index] = rotation;
 }
 
 Vec3f forward(EntityManager* manager, Entity entity) {

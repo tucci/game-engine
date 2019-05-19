@@ -14,7 +14,7 @@ Camera* get_camera(EntityManager* manager, Entity entity) {
 void set_camera(EntityManager* manager, Entity entity, Camera camera) {
 	set_camera_params(manager, entity, camera.near_clip, camera.far_clip, camera.fov, camera.aspect_ratio);
 	set_camera_projection(manager, entity, camera.projection);
-	set_camera_orto_params(manager, entity, camera.top, camera.bottom, camera.left, camera.right);
+	set_camera_ortho_params(manager, entity, camera.size);
 }
 
 
@@ -34,17 +34,25 @@ void set_camera_params(EntityManager* manager, Entity entity,
 	cam->aspect_ratio = aspect_ratio;
 }
 
-void set_camera_orto_params(EntityManager* manager, Entity entity, float top, float bottom, float left, float right) {
+void set_camera_ortho_params(EntityManager* manager, Entity entity, float size) {
 	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
 
 	u64 index = result.value;
 	Camera* cam = &manager->camera_manager.enabled_cameras[index];
-
-	cam->top = top;
-	cam->bottom = bottom;
-	cam->left = left;
-	cam->right = right;
+	cam->size = size;
 }
+
+//void set_camera_ortho_params(EntityManager* manager, Entity entity, float top, float bottom, float left, float right) {
+//	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+//
+//	u64 index = result.value;
+//	Camera* cam = &manager->camera_manager.enabled_cameras[index];
+//
+//	cam->top = top;
+//	cam->bottom = bottom;
+//	cam->left = left;
+//	cam->right = right;
+//}
 
 void set_camera_projection(EntityManager* manager, Entity entity, CameraProjection projection) {
 	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
@@ -60,6 +68,14 @@ void set_camera_aspect_ratio(EntityManager* manager, Entity entity, float aspect
 	u64 index = result.value;
 	Camera* cam = &manager->camera_manager.enabled_cameras[index];
 	cam->aspect_ratio = aspect_ratio;
+}
+
+void set_camera_framebuffer(EntityManager* manager, Entity entity, RenderResource* framebuffer) {
+	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+
+	u64 index = result.value;
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
+	cam->framebuffer = framebuffer;
 }
 
 void job_compute_camera_view_matrices(EntityManager* manager) {

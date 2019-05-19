@@ -752,10 +752,10 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 	}
 }
 
-void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right) {
+void gizmo_render_axis(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right) {
 
 
-	Camera* camera = opengl->render_world->camera;
+
 	Mat4x4f model_mat;
 	Mat4x4f view_mat = camera->view_mat;
 
@@ -767,7 +767,7 @@ void gizmo_render_axis(OpenGLRenderer* opengl, Vec3f pos, Vec3f forward, Vec3f u
 			break;
 		}
 		case CameraProjection::Orthographic: {
-			projection_mat = ortho(camera->near_clip, camera->far_clip, camera->top, camera->bottom, camera->right, camera->left);
+			projection_mat = ortho(camera->near_clip, camera->far_clip, 1 * camera->size, -1 * camera->size, camera->aspect_ratio * camera->size, -camera->aspect_ratio * camera->size);
 			break;
 		}
 	}
@@ -869,10 +869,9 @@ bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorl
 	opengl->render_world->texture_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/textured.vs", "InternalAssets/shaders/textured.fs", NULL);
 	opengl->render_world->normal_vis_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug/normal_vis.vs", "InternalAssets/shaders/debug/normal_vis.fs", "InternalAssets/shaders/debug/normal_vis.gs");
 	
-	opengl->render_world->render_mesh_capacity = 10;
-	opengl->render_world->render_mesh_count = 0;
-	opengl->render_world->render_mesh_list =  cast(RenderMesh*) stack_alloc(&opengl->stack_allocator, opengl->render_world->render_mesh_capacity * sizeof(RenderMesh), 1);
+	
 
+	
 
 	opengl->render_world->VAO = gl_create_vao(opengl);
 	opengl->render_world->EBO = gl_create_ebo(opengl);
@@ -1015,13 +1014,13 @@ bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
 	return true;
 }
 
-void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
+void opengl_debug_render(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec2i viewport_size) {
 
 	glViewport(0, 0, viewport_size.x, viewport_size.y);
 
 
 	
-	Camera* camera = opengl->render_world->camera;
+	
 	Mat4x4f model_mat;
 	Mat4x4f view_mat = camera->view_mat;
 	Mat4x4f projection_mat;
@@ -1034,7 +1033,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 			break;
 		}
 		case CameraProjection::Orthographic: {
-			projection_mat = ortho(camera->near_clip, camera->far_clip, camera->top, camera->bottom, camera->right, camera->left);
+			projection_mat = ortho(camera->near_clip, camera->far_clip, 1 * camera->size, -1 * camera->size, camera->aspect_ratio * camera->size, -camera->aspect_ratio * camera->size);
 			break;
 		}
 	}
@@ -1167,7 +1166,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 
 
-			gizmo_render_axis(opengl, pos, forward, up, right);
+			gizmo_render_axis(opengl, camera, pos, forward, up, right);
 
 		}
 	}
@@ -1177,9 +1176,7 @@ void opengl_debug_render(OpenGLRenderer* opengl, Vec2i viewport_size) {
 
 }
 
-static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, bool light_pass) {
-	Camera* camera = opengl->render_world->camera;
-	Vec3f cam_pos = opengl->render_world->cam_pos;
+static void opengl_render_scene_for_camera(OpenGLRenderer* opengl, Camera* camera, Vec3f cam_pos, Vec2i viewport_size, bool light_pass) {
 
 	DirectionalLight test_light = opengl->render_world->test_light.dir_light;
 
@@ -1202,7 +1199,7 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 			break;
 		}
 		case CameraProjection::Orthographic: {
-			projection_mat = ortho(camera->near_clip, camera->far_clip, camera->top, camera->bottom, camera->right, camera->left);
+			projection_mat = ortho(camera->near_clip, camera->far_clip, 1 * camera->size, -1 * camera->size, camera->aspect_ratio * camera->size, -camera->aspect_ratio * camera->size);
 			break;
 		}
 	}
@@ -1382,6 +1379,10 @@ static void opengl_render_scene(OpenGLRenderer* opengl, Vec2i viewport_size, boo
 	glBindVertexArray(opengl->vaos[opengl->render_world->skybox_vao_res.handle]);
 	glUseProgram(skybox_shader.program);
 	glUniformMatrix4fv(glGetUniformLocation(skybox_shader.program, "projection"), 1, GL_FALSE, projection_mat.mat1d);
+	if (camera->projection == CameraProjection::Orthographic) {
+		float scale_factor = camera->size * 5;// Magic number to scale the skybox by so that it takes over the entire screen
+		view_mat = scale(Vec3f(scale_factor, scale_factor, scale_factor)) * view_mat;
+	}
 	glUniformMatrix4fv(glGetUniformLocation(skybox_shader.program, "view"), 1, GL_FALSE, view_mat.mat1d);
 	
 
@@ -1449,44 +1450,49 @@ void init_gl_resource_arrays(OpenGLRenderer* opengl) {
 
 }
 
-void opengl_render(OpenGLRenderer* opengl, Vec2i viewport_size, bool render_debug) {
+void opengl_render(OpenGLRenderer* opengl, bool render_debug) {
 	
 	
 	// Shadow pass
 
-
-	//glCullFace(GL_FRONT);
-	glBindFramebuffer(GL_FRAMEBUFFER, opengl->fbos[opengl->render_world->shadow_fbo_res.handle]);
-	glViewport(0, 0, SHADOW_WIDTH_RES, SHADOW_HEIGHT_RES);
-	glClear(GL_DEPTH_BUFFER_BIT);
-	opengl_render_scene(opengl, viewport_size, true);
-	//glCullFace(GL_BACK); // don't forget to reset original culling face
 	
+	//opengl->render_world->cameras
+	for (u32 i = 0; i < opengl->render_world->camera_count; i++) {
+		Camera* camera = &opengl->render_world->cameras[i];
+		Vec3f pos = opengl->render_world->camera_position[i];
 
-	GLuint render_buffer = opengl->fbos[opengl->render_world->render_framebuffer.handle];
-	// Normal lighting pass
-	glBindFramebuffer(GL_FRAMEBUFFER, render_buffer);
-	glViewport(0, 0, viewport_size.x, viewport_size.y);
-	
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		Vec2i viewport_size = Vec2i(1920, 1080);
 
-	opengl_render_scene(opengl, viewport_size, false);
-	
-	if (render_debug) {
-		opengl_debug_render(opengl, viewport_size);
+		//glCullFace(GL_FRONT);
+		glBindFramebuffer(GL_FRAMEBUFFER, opengl->fbos[opengl->render_world->shadow_fbo_res.handle]);
+		glViewport(0, 0, SHADOW_WIDTH_RES, SHADOW_HEIGHT_RES);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		opengl_render_scene_for_camera(opengl, camera, pos, viewport_size, true);
+		//glCullFace(GL_BACK); // don't forget to reset original culling face
+
+
+		GLuint render_buffer = opengl->fbos[camera->framebuffer->handle];
+		// Normal lighting pass
+		glBindFramebuffer(GL_FRAMEBUFFER, render_buffer);
+		glViewport(0, 0, viewport_size.x, viewport_size.y);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		opengl_render_scene_for_camera(opengl, camera, pos, viewport_size, false);
+
+		if (render_debug) {
+			opengl_debug_render(opengl, camera, pos, viewport_size);
+		}
+
+		
+
 	}
-
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	clear_render_world(opengl);
-	
-	
 	
 }
 
-void clear_render_world(OpenGLRenderer* opengl) {
-	opengl->render_world->render_mesh_count = 0;
-}
+
 
 void opengl_swap_buffer(OpenGLRenderer* opengl) {
 	SDL_GL_SwapWindow(opengl->sdl_window);

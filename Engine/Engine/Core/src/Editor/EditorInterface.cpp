@@ -583,14 +583,133 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 
 	map_put(&editor->entity_selected, editor->api.entity_manager->root.id, false);
+	float initial_ortho_distance = 10.0f;
 
-	editor->editor_camera = create_entity(api.entity_manager, "Editor Camera");
-	//add_component(api.entity_manager, editor->editor_camera , ComponentType::Transform);
-	add_component(api.entity_manager, editor->editor_camera , ComponentType::Camera);
+	// Main editor camera
+	{
+		editor->editor_camera = create_entity(api.entity_manager, "Editor Camera");
+		add_component(api.entity_manager, editor->editor_camera, ComponentType::Transform);
+		add_component(api.entity_manager, editor->editor_camera, ComponentType::Camera);
+		set_camera_params(api.entity_manager, editor->editor_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
+		set_position(api.entity_manager, editor->editor_camera, Vec3f(0, 0, 0));
+		
+
+		editor->camera_perspective_render_texture_size = Vec2i(1920, 1080);
+		u32 width = editor->camera_perspective_render_texture_size.x;
+		u32 height = editor->camera_perspective_render_texture_size.y;
+
+		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
+
+
+
+		editor->camera_perspective_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+		editor->camera_perspective_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
+
+		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_perspective_render_texture, 0);
+		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_perspective_depth_texture, 0);
+		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
+
+		editor->camera_perspective_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
+		set_camera_framebuffer(api.entity_manager, editor->editor_camera, &editor->camera_perspective_render_framebuffer);
+
+	}
+	
 
 	
-	set_camera_params(api.entity_manager, editor->editor_camera, 0.0001f, 100.0f, 90.0f, editor->render_texture_size.x / cast(float) editor->render_texture_size.y);
-	set_position(api.entity_manager, editor->editor_camera, Vec3f(0, 0, 0));
+
+	
+	
+	{
+		editor->editor_top_camera = create_entity(api.entity_manager, "Top Camera");
+		add_component(api.entity_manager, editor->editor_top_camera, ComponentType::Transform);
+		add_component(api.entity_manager, editor->editor_top_camera, ComponentType::Camera);
+		set_position(api.entity_manager, editor->editor_top_camera, Vec3f(0, initial_ortho_distance, 0));
+		set_rotation(api.entity_manager, editor->editor_top_camera, euler_to_quat(Vec3f(-90.0f, 0.0f, 0.0f)));
+
+		set_camera_params(api.entity_manager, editor->editor_top_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
+		set_camera_projection(api.entity_manager, editor->editor_top_camera, CameraProjection::Orthographic);
+
+		editor->camera_top_render_texture_size = Vec2i(1920, 1080);
+		u32 width = editor->camera_top_render_texture_size.x;
+		u32 height = editor->camera_top_render_texture_size.y;
+
+		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
+
+
+		editor->camera_top_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+		editor->camera_top_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
+
+		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_top_render_texture, 0);
+		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_top_depth_texture, 0);
+		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
+
+		editor->camera_top_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
+		set_camera_framebuffer(api.entity_manager, editor->editor_top_camera, &editor->camera_top_render_framebuffer);
+
+
+	}
+	
+	{
+		editor->editor_front_camera = create_entity(api.entity_manager, "Front Camera");
+		add_component(api.entity_manager, editor->editor_front_camera, ComponentType::Transform);
+		add_component(api.entity_manager, editor->editor_front_camera, ComponentType::Camera);
+		set_position(api.entity_manager, editor->editor_front_camera, Vec3f(0, 0, initial_ortho_distance));
+		set_camera_params(api.entity_manager, editor->editor_front_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
+		set_camera_projection(api.entity_manager, editor->editor_front_camera, CameraProjection::Orthographic);
+
+		editor->camera_front_render_texture_size = Vec2i(1920, 1080);
+		u32 width = editor->camera_front_render_texture_size.x;
+		u32 height = editor->camera_front_render_texture_size.y;
+
+		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
+
+
+		editor->camera_front_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+		editor->camera_front_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
+
+		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_front_render_texture, 0);
+		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_front_depth_texture, 0);
+		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
+
+		editor->camera_front_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
+		set_camera_framebuffer(api.entity_manager, editor->editor_front_camera, &editor->camera_front_render_framebuffer);
+	}
+	
+	
+	{
+		editor->editor_side_camera = create_entity(api.entity_manager, "Side Camera");
+		add_component(api.entity_manager, editor->editor_side_camera, ComponentType::Transform);
+		add_component(api.entity_manager, editor->editor_side_camera, ComponentType::Camera);
+		set_position(api.entity_manager, editor->editor_side_camera, Vec3f(initial_ortho_distance, 0, 0));
+		set_rotation(api.entity_manager, editor->editor_side_camera, euler_to_quat(Vec3f(0.0f, 90.0f, 0.0f)));
+		set_camera_params(api.entity_manager, editor->editor_side_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
+		set_camera_projection(api.entity_manager, editor->editor_side_camera, CameraProjection::Orthographic);
+
+		editor->camera_side_render_texture_size = Vec2i(1920, 1080);
+		u32 width = editor->camera_side_render_texture_size.x;
+		u32 height = editor->camera_side_render_texture_size.y;
+
+		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
+
+
+		editor->camera_side_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+		editor->camera_side_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
+
+		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_side_render_texture, 0);
+		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_side_depth_texture, 0);
+		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
+
+		editor->camera_side_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
+		set_camera_framebuffer(api.entity_manager, editor->editor_side_camera, &editor->camera_side_render_framebuffer);
+
+	}
+
+
+
 
 	
 	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
@@ -610,32 +729,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	
 
-	editor->render_texture_size = Vec2i(1920, 1080);
-	u32 width = editor->render_texture_size.x;
-	u32 height = editor->render_texture_size.y;
 
-
-	Texture2D color_texture = Texture2D();
-	color_texture.data = NULL;
-	color_texture.width = width;
-	color_texture.height = height;
-
-	Texture2D depth_texture = Texture2D(); 
-	depth_texture.data = NULL;
-	depth_texture.width = width;
-	depth_texture.height = height;
-
-
-
-	editor->render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
-	editor->depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
-
-	FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->render_texture, 0);
-	FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->depth_texture, 0);
-	FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
-
-	editor->render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
-	editor->api.renderer->render_world.render_framebuffer = editor->render_framebuffer;
 	
 	//AssetID tcolor = import_texture(editor->api.asset_manager,		String("Assets/textures/plastic/scuffed-plastic-alb.png"), true);
 	//AssetID tnormal = import_texture(editor->api.asset_manager,		String("Assets/textures/plastic/scuffed-plastic-normal.png"), true);
@@ -1215,23 +1309,7 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 			cmd_editor_force_no_merge(editor);
 		}
 
-		ImGui::PushID("camera_fov_default");
-		if (ImGui::SmallButton("z")) {
-			new_camera.fov = 90.0f;
-			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 
-		}
-		ImGui::SameLine();
-		if (ImGui::SliderFloat("Field Of View", &new_camera.fov, 30.0f, 120.0f)) {
-			cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-		}
-		if (ImGui::IsItemDeactivatedAfterEdit()) {
-			// Send this command when we are finished dragging
-			// Once we are done dragging we want to a force a barrier between future drags,
-			// so that multiple drags dont merge into one command
-			cmd_editor_force_no_merge(editor);
-		}
-		ImGui::PopID();
 
 		ImGui::PushID("camera_near_default");
 		if (ImGui::SmallButton("z")) {
@@ -1272,36 +1350,33 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 
 		ImGui::PopID();
 
+		if (old_cam->projection == CameraProjection::Perspective) {
+			ImGui::PushID("camera_fov_default");
+			if (ImGui::SmallButton("z")) {
+				new_camera.fov = 90.0f;
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+
+			}
+			ImGui::SameLine();
+			if (ImGui::SliderFloat("Field Of View", &new_camera.fov, 30.0f, 120.0f)) {
+				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
+			}
+			if (ImGui::IsItemDeactivatedAfterEdit()) {
+				// Send this command when we are finished dragging
+				// Once we are done dragging we want to a force a barrier between future drags,
+				// so that multiple drags dont merge into one command
+				cmd_editor_force_no_merge(editor);
+			}
+			ImGui::PopID();
+		}
 
 		if (old_cam->projection == CameraProjection::Orthographic) {
 
 			//ImGui::Separator();
 			//ImGui::Text("Orthographic Settings");
 
-			ImGui::PushID("camera_left_default");
-			if (ImGui::SmallButton("z")) {
-				new_camera.left = 0.0f;
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			ImGui::SameLine();
-			if (ImGui::DragFloat("Left", &new_camera.left, 1.0f, 0.0f, FLT_MAX)) {
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			if (ImGui::IsItemDeactivatedAfterEdit()) {
-				// Send this command when we are finished dragging
-				// Once we are done dragging we want to a force a barrier between future drags,
-				// so that multiple drags dont merge into one command
-				cmd_editor_force_no_merge(editor);
-			}
-			ImGui::PopID();
-
-			ImGui::PushID("camera_right_default");
-			if (ImGui::SmallButton("z")) {
-				new_camera.right = 100.0f;
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			ImGui::SameLine();
-			if (ImGui::DragFloat("Right", &new_camera.right, 1.0f, 0.0f, FLT_MAX)) {
+			
+			if (ImGui::DragFloat("Size", &new_camera.size, 1.0f, 1.0f, FLT_MAX)) {
 				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
 			}
 
@@ -1311,42 +1386,6 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 				// so that multiple drags dont merge into one command
 				cmd_editor_force_no_merge(editor);
 			}
-			ImGui::PopID();
-
-			ImGui::PushID("camera_top_default");
-			if (ImGui::SmallButton("z")) {
-				new_camera.top = 0.0f;
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			ImGui::SameLine();
-			if (ImGui::DragFloat("Top", &new_camera.top, 1.0f, 0.0f, FLT_MAX)) {
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			if (ImGui::IsItemDeactivatedAfterEdit()) {
-				// Send this command when we are finished dragging
-				// Once we are done dragging we want to a force a barrier between future drags,
-				// so that multiple drags dont merge into one command
-				cmd_editor_force_no_merge(editor);
-			}
-			ImGui::PopID();
-
-			ImGui::PushID("camera_bottom_default");
-			if (ImGui::SmallButton("z")) {
-				new_camera.bottom = 100.0f;
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			ImGui::SameLine();
-
-			if (ImGui::DragFloat("Bottom", &new_camera.bottom, 1.0f, 0.0f, FLT_MAX)) {
-				cmd_editor_set_camera_component(editor, e, *old_cam, new_camera, true);
-			}
-			if (ImGui::IsItemDeactivatedAfterEdit()) {
-				// Send this command when we are finished dragging
-				// Once we are done dragging we want to a force a barrier between future drags,
-				// so that multiple drags dont merge into one command
-				cmd_editor_force_no_merge(editor);
-			}
-			ImGui::PopID();
 		}
 
 		set_camera(entity_manager, e, new_camera);
@@ -2940,14 +2979,12 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 static void draw_viewports(EditorInterface* editor) {
 
 
-	void* color = render_resource_to_id(editor->api.renderer, editor->render_texture);
-	void* depth = render_resource_to_id(editor->api.renderer, editor->depth_texture);
-	
-	
-	
-	
+
 	if (ImGui::Begin("Scene")) {
 		
+		void* color = render_resource_to_id(editor->api.renderer, editor->camera_perspective_render_texture);
+		void* depth = render_resource_to_id(editor->api.renderer, editor->camera_perspective_depth_texture);
+
 		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
 		// The size of the current dock/viewport
 		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
@@ -2974,25 +3011,62 @@ static void draw_viewports(EditorInterface* editor) {
 				editor->scene_viewport_input_capture = false;
 			}
 		}
-		
-		
-
-		
-		
-		
+	
 	}
 	
 	ImGui::End();
 
 	if (ImGui::Begin("Game")) {		
-		
+		void* color = render_resource_to_id(editor->api.renderer, editor->camera_perspective_render_texture);
+		void* depth = render_resource_to_id(editor->api.renderer, editor->camera_perspective_depth_texture);
+
 		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
 		ImVec2 viewport_size = ImGui::GetCurrentWindow()->Size;
 		ImVec2 rect = ImVec2(start_group_pos.x + viewport_size.x, start_group_pos.y + viewport_size.y);
+
+		
 	
 		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
-	
-		
+	}
+	ImGui::End();
+
+
+	if (ImGui::Begin("Top - Y Axis")) {
+		void* color = render_resource_to_id(editor->api.renderer, editor->camera_top_render_texture);
+		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+
+		float aspect_ratio = (float)window_size.x / (float)window_size.y;
+		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_top_camera, aspect_ratio);
+
+		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Front - Z Axis")) {
+		void* color = render_resource_to_id(editor->api.renderer, editor->camera_front_render_texture);
+		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+
+		float aspect_ratio = (float)window_size.x / (float)window_size.y;
+		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_front_camera, aspect_ratio);
+
+		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+
+	}
+	ImGui::End();
+
+	if (ImGui::Begin("Side - x Axis")) {
+		void* color = render_resource_to_id(editor->api.renderer, editor->camera_side_render_texture);
+		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+		float aspect_ratio = (float)window_size.x / (float)window_size.y;
+		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_side_camera, aspect_ratio);
+
+		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
 	}
 	ImGui::End();
 	
