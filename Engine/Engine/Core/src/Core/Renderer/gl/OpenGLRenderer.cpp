@@ -12,6 +12,8 @@
 
 #define uniform3f_pack(vec) vec.x, vec.y, vec.z
 
+#define MAX_GPU_RESOURCE_COUNT 50
+
 static void init_gl_extensions(OpenGLRenderer* opengl) {
 	glewExperimental = true; // Needed in core profile
 	if (glewInit() != GLEW_OK) {
@@ -23,7 +25,8 @@ static void init_gl_extensions(OpenGLRenderer* opengl) {
 
 static void init_gl_resource_arrays(OpenGLRenderer* opengl) {
 
-	opengl->obj_capacity = 50;
+	// TODO: instead of having fixed gpu arrays, we need growable arrays
+	opengl->obj_capacity = MAX_GPU_RESOURCE_COUNT;
 
 	opengl->texture_count = 0;
 	opengl->shader_count = 0;
@@ -575,6 +578,8 @@ RenderResource gl_create_texture(OpenGLRenderer* opengl, Texture2D* texture, boo
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
+	assert(opengl->texture_count < MAX_GPU_RESOURCE_COUNT && "GPU Texture Count reached capacity");
+
 	
 	return handle;
 }
@@ -601,6 +606,7 @@ RenderResource gl_create_shadow_map(OpenGLRenderer* opengl, unsigned int width, 
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
+	assert(opengl->texture_count < MAX_GPU_RESOURCE_COUNT && "GPU Texture Count reached capacity");
 	
 	return handle;
 }
@@ -631,6 +637,8 @@ RenderResource gl_create_hdr_texture(OpenGLRenderer* opengl, HDRTexture* hdr_tex
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
 
+
+	assert(opengl->texture_count < MAX_GPU_RESOURCE_COUNT && "GPU Texture Count reached capacity");
 	
 
 	return handle;
@@ -660,6 +668,8 @@ RenderResource gl_create_cubemap(OpenGLRenderer* opengl, unsigned int width, uns
 	handle.handle = next_texture_index;
 	opengl->textures[opengl->texture_count] = texture_id;
 	opengl->texture_count++;
+
+	assert(opengl->texture_count < MAX_GPU_RESOURCE_COUNT && "GPU Texture Count reached capacity");
 
 	
 	return handle;
@@ -696,7 +706,7 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 		opengl->shaders[opengl->shader_count] = shader;
 		opengl->shader_count++;
 
-		
+		assert(opengl->shader_count < MAX_GPU_RESOURCE_COUNT && "GPU Shader Count reached capacity");
 
 		return handle;
 	} else {
@@ -705,6 +715,8 @@ RenderResource gl_create_shader(OpenGLRenderer* opengl, const char* vertex_file,
 		handle.handle = 0;
 		return handle;
 	}
+
+	
 
 	
 }
@@ -726,8 +738,10 @@ RenderResource gl_create_vbo(OpenGLRenderer* opengl) {
 	opengl->vbos[opengl->vbo_count] = vbo_id;
 	opengl->vbo_count++;
 
+	assert(opengl->vbo_count < MAX_GPU_RESOURCE_COUNT && "GPU VBO Count reached capacity");
 	
 	return handle;
+
 
 }
 
@@ -748,6 +762,7 @@ RenderResource gl_create_ebo(OpenGLRenderer* opengl) {
 	opengl->ebos[opengl->ebo_count] = ebo_id;
 	opengl->ebo_count++;
 
+	assert(opengl->ebo_count < MAX_GPU_RESOURCE_COUNT && "GPU EBO Count reached capacity");
 	
 	return handle;
 
@@ -770,6 +785,7 @@ RenderResource gl_create_vao(OpenGLRenderer* opengl) {
 	opengl->vaos[opengl->vao_count] = vao_id;
 	opengl->vao_count++;
 
+	assert(opengl->vao_count < MAX_GPU_RESOURCE_COUNT && "GPU VAO Count reached capacity");
 	
 	return handle;
 
@@ -789,6 +805,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl) {
 	opengl->fbos[opengl->fbo_count] = fbo_id;
 	opengl->fbo_count++;
 
+	assert(opengl->fbo_count < MAX_GPU_RESOURCE_COUNT && "GPU FBO Count reached capacity");
 
 	return handle;
 }
@@ -813,6 +830,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 	opengl->fbos[opengl->fbo_count] = fbo_id;
 	opengl->fbo_count++;
 
+	assert(opengl->fbo_count < MAX_GPU_RESOURCE_COUNT && "GPU FBO Count reached capacity");
 	
 	return handle;
 }
@@ -831,7 +849,7 @@ RenderResource gl_create_fbo(OpenGLRenderer* opengl, u32 texture_count, FrameBuf
 	opengl->fbos[opengl->fbo_count] = fbo_id;
 	opengl->fbo_count++;
 
-
+	assert(opengl->fbo_count < MAX_GPU_RESOURCE_COUNT && "GPU FBO Count reached capacity");
 
 	for (u32 i = 0; i < texture_count; i++) {
 		FrameBufferAttachement attachment = attachments[i];
@@ -885,7 +903,7 @@ RenderResource gl_create_rbo(OpenGLRenderer* opengl, u32 width, u32 height) {
 	opengl->rbos[opengl->rbo_count] = rbo_id;
 	opengl->rbo_count++;
 
-
+	assert(opengl->rbo_count < MAX_GPU_RESOURCE_COUNT && "GPU RBO Count reached capacity");
 	return handle;
 }
 

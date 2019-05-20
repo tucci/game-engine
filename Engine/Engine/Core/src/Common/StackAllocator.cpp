@@ -16,6 +16,7 @@ void* stack_alloc(StackAllocator* sa, size_t size, size_t alignment) {
 	size_t aligned_size = ALIGN_UP(size + sizeof(StackHeader), alignment);
 	// TODO: only do this in debug mode
 	if (aligned_size > (size_t)(sa->end - sa->current)) {
+		assert(false && "Stack Allocate overrun");
 		debug_print("stack allocate overrun\n");
 		return NULL;
 	}
