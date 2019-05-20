@@ -90,6 +90,9 @@ struct OpenGLRenderer {
 	
 };
 
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world);
+bool destroy_opengl_renderer(OpenGLRenderer* opengl);
+
 
 void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap);
 void gl_init_shadow_maps(OpenGLRenderer* opengl);
@@ -122,10 +125,9 @@ void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_res
 
 void gizmo_render_axis(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right);
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world);
-bool destroy_opengl_renderer(OpenGLRenderer* opengl);
 
-void init_gl_resource_arrays(OpenGLRenderer* opengl);
+
+
 void opengl_render(OpenGLRenderer* opengl, bool render_debug);
 
 void opengl_debug_render(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec2i viewport_size);

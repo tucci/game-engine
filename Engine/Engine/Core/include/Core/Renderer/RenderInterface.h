@@ -97,7 +97,8 @@ struct RenderWorld {
 	
 	u32 material_res_count;
 	RenderMaterialResource* material_res;
-	CompactMap<RenderMaterialResource*> material_res_map;
+	// Index to the material res map
+	CompactMap<u32> material_res_map;
 
 	
 	

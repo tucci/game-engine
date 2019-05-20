@@ -13,6 +13,7 @@ void set_render_material(EntityManager* manager, Entity entity, MaterialID id) {
 MaterialID get_render_material(EntityManager* manager, Entity entity) {
 	MapResult<u64> result = map_get(&manager->render_manager.id_map, entity.id);
 	if (!result.found) {
+		assert_fail();
 		MaterialID id;
 		id.id = 0;
 		return id;

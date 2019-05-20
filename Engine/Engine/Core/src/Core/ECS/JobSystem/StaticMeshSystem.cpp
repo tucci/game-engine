@@ -20,6 +20,7 @@ bool set_static_mesh(EntityManager* manager, Entity entity, StaticMeshID id) {
 	
 	MapResult<u64> result = map_get(&manager->static_mesh_manger.id_map, entity.id);
 	if (!result.found) {
+		assert_fail();
 		return false;
 	}
 	

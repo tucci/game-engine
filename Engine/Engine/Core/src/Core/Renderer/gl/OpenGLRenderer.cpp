@@ -12,6 +12,213 @@
 
 #define uniform3f_pack(vec) vec.x, vec.y, vec.z
 
+static void init_gl_extensions(OpenGLRenderer* opengl) {
+	glewExperimental = true; // Needed in core profile
+	if (glewInit() != GLEW_OK) {
+		debug_print("Failed to init GLEW\n");
+	} else {
+		debug_print("Succeeded to init GLEW\n");
+	}
+}
+
+static void init_gl_resource_arrays(OpenGLRenderer* opengl) {
+
+	opengl->obj_capacity = 50;
+
+	opengl->texture_count = 0;
+	opengl->shader_count = 0;
+	opengl->vbo_count = 0;
+	opengl->ebo_count = 0;
+	opengl->vao_count = 0;
+	opengl->fbo_count = 0;
+	opengl->rbo_count = 0;
+
+	opengl->textures = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
+	opengl->shaders = cast(GLShader*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLShader), 4);
+	opengl->vbos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
+	opengl->ebos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
+	opengl->vaos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
+	opengl->fbos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
+	opengl->rbos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
+
+
+}
+
+bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world) {
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+
+	opengl->gl_context = SDL_GL_CreateContext(window);
+	opengl->sdl_window = window;
+	opengl->render_world = render_world;
+
+	arena_init(&opengl->arena);
+
+	size_t renderer_mem_size = RENDERER_MEMORY;
+	void* renderer_mem_block = arena_alloc(&opengl->arena, renderer_mem_size);
+	renderer_mem_size = opengl->arena.end - cast(char*) renderer_mem_block;
+
+
+	stack_alloc_init(&opengl->stack_allocator, renderer_mem_block, renderer_mem_size);
+
+	init_gl_extensions(opengl);
+	init_gl_resource_arrays(opengl);
+
+
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_DEPTH_TEST);
+
+	// TODO: remove these hardcoded shaders out of here, and instead into the scene loading
+	opengl->render_world->texture_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/textured.vs", "InternalAssets/shaders/textured.fs", NULL);
+	opengl->render_world->normal_vis_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug/normal_vis.vs", "InternalAssets/shaders/debug/normal_vis.fs", "InternalAssets/shaders/debug/normal_vis.gs");
+
+
+
+
+
+	opengl->render_world->VAO = gl_create_vao(opengl);
+	opengl->render_world->EBO = gl_create_ebo(opengl);
+	opengl->render_world->VBO = gl_create_vbo(opengl);
+
+	// Debug init
+	opengl->show_debug_grid = true;
+	opengl->show_debug_axes = true;
+	opengl->draw_lines = false;
+
+	opengl->render_world->debug_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug.vs", "InternalAssets/shaders/debug.fs", NULL);
+	opengl->render_world->debug_grid_vao_res = gl_create_vao(opengl);
+	opengl->render_world->debug_grid_vbo_res = gl_create_vbo(opengl);
+
+
+
+
+
+	int grid_size = DEBUG_GRID_SIZE;
+
+	int axis_vertex_count = 6;
+	opengl->grid_mesh.vertex_count = (grid_size + 1) * 4 + axis_vertex_count;
+	opengl->grid_mesh.pos = cast(Vec3f*)stack_alloc(&opengl->stack_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
+	opengl->grid_mesh.color = cast(Vec3f*)stack_alloc(&opengl->stack_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
+
+
+
+	Vec3f grid_color = { 0.75f, 0.75f, 0.75f };
+	int index = 0;
+	float half_unit_size = 0.5f;
+	for (int i = -grid_size; i <= grid_size; i += 2) {
+		float size_f = half_unit_size * grid_size;
+		float i_f = half_unit_size * i;
+
+		Vec3f pt = { -size_f, 0, i_f };
+		Vec3f pt2 = { size_f, 0, i_f };
+
+		opengl->grid_mesh.pos[index + 0] = pt;
+		opengl->grid_mesh.pos[index + 1] = pt2;
+
+
+		pt = Vec3f(i_f, 0, -size_f);
+		pt2 = Vec3f(i_f, 0, size_f);
+
+		opengl->grid_mesh.pos[index + 2] = pt;
+		opengl->grid_mesh.pos[index + 3] = pt2;
+
+		opengl->grid_mesh.color[index + 0] = grid_color;
+		opengl->grid_mesh.color[index + 1] = grid_color;
+		opengl->grid_mesh.color[index + 2] = grid_color;
+		opengl->grid_mesh.color[index + 3] = grid_color;
+
+
+
+		index += 4;
+
+	}
+
+	int axis_offset_pos = index;
+	opengl->axes_pos_offset = index;
+
+	float axis_scale = 100.0f;
+	Vec3f x_axis = { axis_scale, 0, 0 };
+	Vec3f y_axis = { 0, axis_scale, 0 };
+	Vec3f z_axis = { 0, 0, axis_scale };
+	Vec3f origin = { 0, 0, 0 };
+
+	// Pos
+	opengl->grid_mesh.pos[axis_offset_pos] = origin;
+	opengl->grid_mesh.pos[axis_offset_pos + 1] = x_axis;
+	// Color
+	opengl->grid_mesh.color[axis_offset_pos] = x_axis;
+	opengl->grid_mesh.color[axis_offset_pos + 1] = x_axis;
+
+
+	// Pos
+	opengl->grid_mesh.pos[axis_offset_pos + 2] = origin;
+	opengl->grid_mesh.pos[axis_offset_pos + 3] = y_axis;
+	// Color
+	opengl->grid_mesh.color[axis_offset_pos + 2] = y_axis;
+	opengl->grid_mesh.color[axis_offset_pos + 3] = y_axis;
+
+	// Pos
+	opengl->grid_mesh.pos[axis_offset_pos + 4] = origin;
+	opengl->grid_mesh.pos[axis_offset_pos + 5] = z_axis;
+	// Color
+	opengl->grid_mesh.color[axis_offset_pos + 4] = z_axis;
+	opengl->grid_mesh.color[axis_offset_pos + 5] = z_axis;
+
+	return true;
+}
+
+bool destroy_opengl_renderer(OpenGLRenderer * opengl) {
+	SDL_GL_DeleteContext(opengl->gl_context);
+
+
+
+
+
+
+
+	for (int i = 0; i < opengl->texture_count; i++) {
+		glDeleteTextures(1, &opengl->textures[i]);
+	}
+	opengl->texture_count = 0;
+
+
+	for (int i = 0; i < opengl->shader_count; i++) {
+		delete_gl_program(&opengl->shaders[i]);
+	}
+	opengl->shader_count = 0;
+
+	for (int i = 0; i < opengl->vbo_count; i++) {
+		glDeleteBuffers(1, &opengl->vbos[i]);
+	}
+	opengl->vbo_count = 0;
+
+	for (int i = 0; i < opengl->ebo_count; i++) {
+		glDeleteBuffers(1, &opengl->ebos[i]);
+	}
+	opengl->ebo_count = 0;
+
+	for (int i = 0; i < opengl->vao_count; i++) {
+		glDeleteVertexArrays(1, &opengl->vaos[i]);
+	}
+	opengl->vao_count = 0;
+	for (int i = 0; i < opengl->fbo_count; i++) {
+		glDeleteFramebuffers(1, &opengl->fbos[i]);
+	}
+	opengl->fbo_count = 0;
+	for (int i = 0; i < opengl->rbo_count; i++) {
+		glDeleteRenderbuffers(1, &opengl->rbos[i]);
+	}
+	opengl->rbo_count = 0;
+
+	arena_free(&opengl->arena);
+
+
+
+	return true;
+}
+
 void gl_init_hdr_map(OpenGLRenderer* opengl, HDR_SkyMap* skymap) {
 	
 	// IBL, and pbr code taken from https://learnopengl.com/PBR/IBL/Specular-IBL
@@ -743,14 +950,7 @@ void* gl_render_resource_to_id(OpenGLRenderer* opengl, RenderResource render_res
 	}
 }
 
-static void init_gl_extensions(OpenGLRenderer* opengl) {
-	glewExperimental = true; // Needed in core profile
-	if (glewInit() != GLEW_OK) {
-		debug_print("Failed to init GLEW\n");
-	} else {
-		debug_print("Succeeded to init GLEW\n");
-	}
-}
+
 
 void gizmo_render_axis(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec3f forward, Vec3f up, Vec3f right) {
 
@@ -839,180 +1039,6 @@ void gizmo_render_axis(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec3f 
 }
 
 
-bool init_opengl_renderer(SDL_Window* window, OpenGLRenderer* opengl, RenderWorld* render_world) {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-	opengl->gl_context = SDL_GL_CreateContext(window);
-	opengl->sdl_window = window;
-	opengl->render_world = render_world;
-	
-	arena_init(&opengl->arena);
-
-	size_t renderer_mem_size = RENDERER_MEMORY;
-	void* renderer_mem_block = arena_alloc(&opengl->arena, renderer_mem_size);
-	renderer_mem_size = opengl->arena.end - cast(char*) renderer_mem_block;
-
-	
-	stack_alloc_init(&opengl->stack_allocator, renderer_mem_block, renderer_mem_size);
-
-	init_gl_extensions(opengl);
-	init_gl_resource_arrays(opengl);
-
-	
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_DEPTH_TEST);
-
-	// TODO: remove these hardcoded shaders out of here, and instead into the scene loading
-	opengl->render_world->texture_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/textured.vs", "InternalAssets/shaders/textured.fs", NULL);
-	opengl->render_world->normal_vis_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug/normal_vis.vs", "InternalAssets/shaders/debug/normal_vis.fs", "InternalAssets/shaders/debug/normal_vis.gs");
-	
-	
-
-	
-
-	opengl->render_world->VAO = gl_create_vao(opengl);
-	opengl->render_world->EBO = gl_create_ebo(opengl);
-	opengl->render_world->VBO = gl_create_vbo(opengl);
-	
-	// Debug init
-	opengl->show_debug_grid = true;
-	opengl->show_debug_axes = true;
-	opengl->draw_lines = false;
-
-	opengl->render_world->debug_shader_res = gl_create_shader(opengl, "InternalAssets/shaders/debug.vs", "InternalAssets/shaders/debug.fs", NULL);
-	opengl->render_world->debug_grid_vao_res = gl_create_vao(opengl);
-	opengl->render_world->debug_grid_vbo_res = gl_create_vbo(opengl);
-
-
-	
-
-
-	int grid_size = DEBUG_GRID_SIZE;
-
-	int axis_vertex_count = 6;
-	opengl->grid_mesh.vertex_count = (grid_size + 1) * 4 + axis_vertex_count;
-	opengl->grid_mesh.pos = cast(Vec3f*)stack_alloc(&opengl->stack_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
-	opengl->grid_mesh.color = cast(Vec3f*)stack_alloc(&opengl->stack_allocator, opengl->grid_mesh.vertex_count * sizeof(Vec3f), 4);
-
-
-
-	Vec3f grid_color = { 0.75f, 0.75f, 0.75f };
-	int index = 0;
-	float half_unit_size = 0.5f;
-	for (int i = -grid_size; i <= grid_size; i += 2) {
-		float size_f = half_unit_size  * grid_size;
-		float i_f = half_unit_size * i;
-
-		Vec3f pt = { -size_f, 0, i_f };
-		Vec3f pt2 = { size_f, 0, i_f };
-
-		opengl->grid_mesh.pos[index + 0] = pt;
-		opengl->grid_mesh.pos[index + 1] = pt2;
-
-
-		pt = Vec3f(i_f, 0, -size_f);
-		pt2 = Vec3f(i_f, 0, size_f);
-
-		opengl->grid_mesh.pos[index + 2] = pt;
-		opengl->grid_mesh.pos[index + 3] = pt2;
-
-		opengl->grid_mesh.color[index + 0] = grid_color;
-		opengl->grid_mesh.color[index + 1] = grid_color;
-		opengl->grid_mesh.color[index + 2] = grid_color;
-		opengl->grid_mesh.color[index + 3] = grid_color;
-
-
-
-		index += 4;
-
-	}
-
-	int axis_offset_pos = index;
-	opengl->axes_pos_offset = index;
-
-	float axis_scale = 100.0f;
-	Vec3f x_axis = { axis_scale, 0, 0 };
-	Vec3f y_axis = { 0, axis_scale, 0 };
-	Vec3f z_axis = { 0, 0, axis_scale };
-	Vec3f origin = { 0, 0, 0 };
-
-	// Pos
-	opengl->grid_mesh.pos[axis_offset_pos] = origin;
-	opengl->grid_mesh.pos[axis_offset_pos + 1] = x_axis;
-	// Color
-	opengl->grid_mesh.color[axis_offset_pos] = x_axis;
-	opengl->grid_mesh.color[axis_offset_pos + 1] = x_axis;
-
-
-	// Pos
-	opengl->grid_mesh.pos[axis_offset_pos + 2] = origin;
-	opengl->grid_mesh.pos[axis_offset_pos + 3] = y_axis;
-	// Color
-	opengl->grid_mesh.color[axis_offset_pos + 2] = y_axis;
-	opengl->grid_mesh.color[axis_offset_pos + 3] = y_axis;
-
-	// Pos
-	opengl->grid_mesh.pos[axis_offset_pos + 4] = origin;
-	opengl->grid_mesh.pos[axis_offset_pos + 5] = z_axis;
-	// Color
-	opengl->grid_mesh.color[axis_offset_pos + 4] = z_axis;
-	opengl->grid_mesh.color[axis_offset_pos + 5] = z_axis;
-	
-	return true;
-}
-
-bool destroy_opengl_renderer(OpenGLRenderer* opengl) {
-	SDL_GL_DeleteContext(opengl->gl_context);
-
-	
-	
-	
-	
-
-	
-	for (int i = 0; i < opengl->texture_count; i++) {
-		glDeleteTextures(1, &opengl->textures[i]);
-	}
-	opengl->texture_count = 0;
-
-
-	for (int i = 0; i < opengl->shader_count; i++) {
-		delete_gl_program(&opengl->shaders[i]);
-	}
-	opengl->shader_count = 0;
-
-	for (int i = 0; i < opengl->vbo_count; i++) {
-		glDeleteBuffers(1, &opengl->vbos[i]);
-	}
-	opengl->vbo_count = 0;
-
-	for (int i = 0; i < opengl->ebo_count; i++) {
-		glDeleteBuffers(1, &opengl->ebos[i]);
-	}
-	opengl->ebo_count = 0;
-
-	for (int i = 0; i < opengl->vao_count; i++) {
-		glDeleteVertexArrays(1, &opengl->vaos[i]);
-	}
-	opengl->vao_count = 0;
-	for (int i = 0; i < opengl->fbo_count; i++) {
-		glDeleteFramebuffers(1, &opengl->fbos[i]);
-	}
-	opengl->fbo_count = 0;
-	for (int i = 0; i < opengl->rbo_count; i++) {
-		glDeleteRenderbuffers(1, &opengl->rbos[i]);
-	}
-	opengl->rbo_count = 0;
-
-	arena_free(&opengl->arena);
-
-	
- 
-	return true;
-}
 
 void opengl_debug_render(OpenGLRenderer* opengl, Camera* camera, Vec3f pos, Vec2i viewport_size) {
 
@@ -1215,13 +1241,13 @@ static void opengl_render_scene_for_camera(OpenGLRenderer* opengl, Camera* camer
 		pv_mat = projection_mat * view_mat;
 		opengl->render_world->light_space_mat = pv_mat;
 	} else {
-		glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
+		//glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
 		pv_mat = projection_mat * view_mat;
 	}
 
 	
 
-	//somehow need to render debug normal vis shader here in a nice way
+	
 
 	GLint current_shader = light_pass ?
 		opengl->shaders[opengl->render_world->shadow_shader_res.handle].program
@@ -1229,9 +1255,8 @@ static void opengl_render_scene_for_camera(OpenGLRenderer* opengl, Camera* camer
 
 
 	
-	// Texture Shader
+	
 	glBindVertexArray(opengl->vaos[opengl->render_world->VAO.handle]);
-
 	glUseProgram(current_shader);
 		
 	// TODO: glGetUniformLocation is slow, we should cache shader params. Need to create a shader compiler/cacher
@@ -1244,7 +1269,7 @@ static void opengl_render_scene_for_camera(OpenGLRenderer* opengl, Camera* camer
 
 		
 
-	for (int i = 0; i < opengl->render_world->render_mesh_count; i++) {
+	for (u32 i = 0; i < opengl->render_world->render_mesh_count; i++) {
 		RenderMesh render_mesh = opengl->render_world->render_mesh_list[i];
 		
 		StaticMesh* mesh = render_mesh.mesh;
@@ -1257,56 +1282,65 @@ static void opengl_render_scene_for_camera(OpenGLRenderer* opengl, Camera* camer
 		if (mesh->vertex_count == 0) { continue; }
 
 		if (!light_pass) {
+
 			glUniformMatrix4fv(glGetUniformLocation(current_shader, "light_space_mat"), 1, GL_FALSE, opengl->render_world->light_space_mat.mat1d);
 
-			MapResult<RenderMaterialResource*> result_handle = map_get(&opengl->render_world->material_res_map, material->material.id.id);
-			RenderMaterialResource* material_handle = result_handle.value;
+			MapResult<u32> result_handle = map_get(&opengl->render_world->material_res_map, material->material.id.id);
+			RenderMaterialResource* material_handle = &opengl->render_world->material_res[result_handle.value];
 
 
-			GLuint uniform_index = glGetUniformLocation(current_shader, "shadowMap");
-
+			GLint uniform_index = glGetUniformLocation(current_shader, "shadowMap");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->shadow_map_res.handle]);
 			glUniform1i(uniform_index, 0);
 
 
 			uniform_index = glGetUniformLocation(current_shader, "albedo_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->albedo.handle]);
 			glUniform1i(uniform_index, 1);
 
 			uniform_index = glGetUniformLocation(current_shader, "normal_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE2);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->normal.handle]);
 			glUniform1i(uniform_index, 2);
 
 
 			uniform_index = glGetUniformLocation(current_shader, "metallic_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE3);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->metallic.handle]);
 			glUniform1i(uniform_index, 3);
 
 			uniform_index = glGetUniformLocation(current_shader, "roughness_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE4);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->roughness.handle]);
 			glUniform1i(uniform_index, 4);
 
 			uniform_index = glGetUniformLocation(current_shader, "ao_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE5);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[material_handle->ao.handle]);
 			glUniform1i(uniform_index, 5);
 
 			uniform_index = glGetUniformLocation(current_shader, "irradiance_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE6);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->irradiance_map_res.handle]);
 			glUniform1i(uniform_index, 6);
 
 			uniform_index = glGetUniformLocation(current_shader, "prefilter_map");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE7);
 			glBindTexture(GL_TEXTURE_CUBE_MAP, opengl->textures[opengl->render_world->prefiler_map_res.handle]);
 			glUniform1i(uniform_index, 7);
 
 			uniform_index = glGetUniformLocation(current_shader, "brdf_lut");
+			assert(uniform_index != -1);
 			glActiveTexture(GL_TEXTURE8);
 			glBindTexture(GL_TEXTURE_2D, opengl->textures[opengl->render_world->brdf_lut_res.handle]);
 			glUniform1i(uniform_index, 8);
@@ -1427,28 +1461,6 @@ static void opengl_render_scene_for_camera(OpenGLRenderer* opengl, Camera* camer
 
 }
 
-void init_gl_resource_arrays(OpenGLRenderer* opengl) {
-	
-	opengl->obj_capacity = 20;
-
-	opengl->texture_count = 0;
-	opengl->shader_count = 0;
-	opengl->vbo_count = 0;
-	opengl->ebo_count = 0;
-	opengl->vao_count = 0;
-	opengl->fbo_count = 0;
-	opengl->rbo_count = 0;
-
-	opengl->textures = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
-	opengl->shaders = cast(GLShader*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLShader), 4);
-	opengl->vbos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
-	opengl->ebos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
-	opengl->vaos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
-	opengl->fbos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
-	opengl->rbos = cast(GLuint*) stack_alloc(&opengl->stack_allocator, opengl->obj_capacity * sizeof(GLuint), 4);
-
-
-}
 
 void opengl_render(OpenGLRenderer* opengl, bool render_debug) {
 	
@@ -1456,7 +1468,7 @@ void opengl_render(OpenGLRenderer* opengl, bool render_debug) {
 	// Shadow pass
 
 	
-	//opengl->render_world->cameras
+	
 	for (u32 i = 0; i < opengl->render_world->camera_count; i++) {
 		Camera* camera = &opengl->render_world->cameras[i];
 		Vec3f pos = opengl->render_world->camera_position[i];
@@ -1470,6 +1482,7 @@ void opengl_render(OpenGLRenderer* opengl, bool render_debug) {
 		opengl_render_scene_for_camera(opengl, camera, pos, viewport_size, true);
 		//glCullFace(GL_BACK); // don't forget to reset original culling face
 
+		
 
 		GLuint render_buffer = opengl->fbos[camera->framebuffer->handle];
 		// Normal lighting pass
@@ -1491,8 +1504,6 @@ void opengl_render(OpenGLRenderer* opengl, bool render_debug) {
 
 	
 }
-
-
 
 void opengl_swap_buffer(OpenGLRenderer* opengl) {
 	SDL_GL_SwapWindow(opengl->sdl_window);

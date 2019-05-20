@@ -173,7 +173,7 @@ RenderResource create_index_buffer(Renderer* renderer) {
 
 
 bool is_material_loaded(Renderer* renderer, MaterialID id) {
-	MapResult<RenderMaterialResource*> result = map_get(&renderer->render_world.material_res_map, id.id);
+	MapResult<u32> result = map_get(&renderer->render_world.material_res_map, id.id);
 	return result.found;
 }
 
@@ -201,7 +201,8 @@ RenderMaterialResource create_material_resource(Renderer* renderer, InternalMate
 	
 	sb_push(renderer->render_world.material_res, material_handle);
 	
-	RenderMaterialResource* handle = &sb_last(renderer->render_world.material_res);
+	//RenderMaterialResource* handle = &sb_last(renderer->render_world.material_res);
+	u32 handle = renderer->render_world.material_res_count;
 	map_put(&renderer->render_world.material_res_map, material->material.id.id, handle);
 	renderer->render_world.material_res_count++;
 

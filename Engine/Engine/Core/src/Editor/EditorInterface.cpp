@@ -1134,6 +1134,12 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 			
 			
+			if (ImGui::BeginMenu("Layout")) {
+				ImGui::MenuItem("Default");
+				ImGui::MenuItem("4 Panel");
+
+				ImGui::EndMenu();
+			}
 			ImGui::MenuItem("Scene Tree", NULL, &editor->window_scene_tree_open);
 			ImGui::MenuItem("Entity Components", NULL, &editor->window_entity_components_open);
 			ImGui::MenuItem("Game Loop", NULL, &editor->window_engine_timers_open);
@@ -2966,7 +2972,6 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 		
 		ImGui::Text("Render Resoure Count: %d", renderer->render_world.resources_count);
 		ImGui::Text("Material Count: %d", renderer->render_world.material_res_count);
-		//ImGui::Text("Mesh Capacity: %d", renderer->render_world.render_mesh_capacity);
 		
 		
 			
