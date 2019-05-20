@@ -79,7 +79,13 @@ A place for me to experiment/build an entire game engine from scratch
 - Actually build a game with it.
 
 # Screenshots
-![Screenshot 1](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_8UYXxVbiNY.png)
-![Screenshot 2](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_FDoARnnZ1M.png)
-![Screenshot 3](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_YPesTn9LkU.png)
-![Screenshot 4](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_w2hFGXEGDH.png)
+![Glossy Marble](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/glossy_marble_material.png)
+![Gold](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/gold_material.png)
+![Wood](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/wood_material.png)
+![Painted Cement](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/painted_cement_material.png)
+![Rusted Iron](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/rust_material.png)
+
+![Editor Screenshot 1](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_8UYXxVbiNY.png)
+![Editor Screenshot 2](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_FDoARnnZ1M.png)
+![Editor Screenshot 3](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_YPesTn9LkU.png)
+![Editor Screenshot 4](https://raw.githubusercontent.com/tucci/game-engine/master/Screenshots/Engine_w2hFGXEGDH.png)
