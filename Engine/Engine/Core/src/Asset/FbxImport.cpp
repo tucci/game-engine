@@ -34,13 +34,13 @@ void destroy_asset_importer(AssetImporter* importer) {
 
 static TextureType fbx_string_texture_type(const char* string) {
 	if (strcmp(string, "DiffuseColor") == 0) {
-		return TextureType::Albedo;
+		return TextureType::TextureType_Albedo;
 	} if (strcmp(string, "NormalMap") == 0) {
-		return TextureType::Normal;
+		return TextureType::TextureType_Normal;
 	} else {
 		// TODO: implement rest of texture types
 		DEBUG_BREAK;
-		return TextureType::None;
+		return TextureType::TextureType_None;
 	}
 }
 static AssetID fbx_convert_geo2static_mesh_and_export(AssetImporter* importer, FBX_Geometry* geo, Vec3f pos, Vec3f scale, Vec3f get_rotation, String path, String filename){

@@ -22,12 +22,12 @@ enum class MaterialShadingModel {
 };
 
 enum TextureType {
-	None,
-	Albedo,
-	Normal,
-	Metal,
-	Roughness,
-	AO
+	TextureType_None,
+	TextureType_Albedo,
+	TextureType_Normal,
+	TextureType_Metal,
+	TextureType_Roughness,
+	TextureType_AO
 };
 
 struct Material {

@@ -208,6 +208,8 @@ struct AssetBrowserData {
 
 
 #define FPS_HISTORY_COUNT 240
+
+
 struct EditorInterface {
 
 	EngineAPI api;
@@ -220,7 +222,7 @@ struct EditorInterface {
 	AssetImporter importer;
 	EditorCommandBuffer cmd_buffer;
 	
-	AssetID test_mat;
+	AssetID default_mat;
 
 	Entity editor_camera;
 	Entity editor_top_camera;
@@ -277,7 +279,14 @@ struct EditorInterface {
 	AssetBrowserData asset_browser;
 	
 	bool right_click_down;
-	bool scene_viewport_input_capture;
+	enum EditorViewport {
+		None,
+		Scene,
+		Top,
+		Front,
+		Side
+	};
+	EditorViewport current_viewport_capture;
 	
 
 	// Log vars

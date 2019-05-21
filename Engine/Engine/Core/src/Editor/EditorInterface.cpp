@@ -549,8 +549,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->window_engine_timers_open = true;
 	editor->window_render_stats = true;
 
-
-	editor->scene_viewport_input_capture = false;
+	editor->current_viewport_capture = EditorInterface::EditorViewport::None;
 	editor->right_click_down = false;
 
 	editor->api = api;
@@ -778,11 +777,11 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 
 	//AssetID mat_id = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat_mat.easset");
-	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
-	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat.easset");
-	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_green_mat.easset");
-	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/wet_stone/slipperystonework_mat.easset");
-	editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold_mat.easset");
+	//editor->default_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/bamboo-wood/bamboo-wood_mat.easset");
+	//editor->default_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_mat.easset");
+	//editor->default_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/plastic/plastic_green_mat.easset");
+	//editor->default_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/wet_stone/slipperystonework_mat.easset");
+	editor->default_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/gold/gold_mat.easset");
 
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_iron_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
@@ -833,14 +832,14 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
 	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
-	set_render_material(entity_manager, editor->test_mesh, editor->test_mat.material);
+	set_render_material(entity_manager, editor->test_mesh, editor->default_mat.material);
 	
 	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->monkey_mesh.mesh);
 
 
 	add_component(entity_manager, e3, ComponentType::StaticMesh);
 	add_component(entity_manager, e3, ComponentType::Render);
-	set_render_material(entity_manager, e3, editor->test_mat.material);
+	set_render_material(entity_manager, e3, editor->default_mat.material);
 	set_static_mesh(entity_manager, e3, editor->api.asset_manager->sphere_mesh.mesh);
 
 	set_position(entity_manager, editor->test_mesh, Vec3f(5, 0, 0));
@@ -967,8 +966,15 @@ void editor_update(EditorInterface* editor) {
 	//epos.y = sinf_(timer->seconds);
 	//epos.x = epos.x + (1 * timer->delta_time);
 	//set_position(entity_manager, e3, epos);
+
+	enum class OrthoPlaneMovement {
+		XZ,
+		YZ,
+		XY,
+	};
 	
-	if (editor->scene_viewport_input_capture) {
+	OrthoPlaneMovement plane;
+	if (editor->current_viewport_capture == EditorInterface::EditorViewport::Scene) {
 
 
 		if (is_mouse_pressed(input, MouseButton::Left)) {
@@ -1055,7 +1061,90 @@ void editor_update(EditorInterface* editor) {
 
 		}
 	}
+	else {
+		Entity ortho_cam;
+		bool ortho_capture = false;
+		if (editor->current_viewport_capture == EditorInterface::EditorViewport::Top) {
+			ortho_cam = editor->editor_top_camera;
+			ortho_capture = true;
+			plane = OrthoPlaneMovement::XZ;
+		}
+
+		else if (editor->current_viewport_capture == EditorInterface::EditorViewport::Side) {
+			ortho_cam = editor->editor_side_camera;
+			ortho_capture = true;
+			plane = OrthoPlaneMovement::YZ;
+		}
+
+		else if (editor->current_viewport_capture == EditorInterface::EditorViewport::Front) {
+			ortho_cam = editor->editor_front_camera;
+			ortho_capture = true;
+			plane = OrthoPlaneMovement::XY;
+		}
+
+
+		if (ortho_capture) {
+			Vec2i scroll = get_scroll_delta(input);
+
+			float size = get_camera_ortho_size(entity_manager, ortho_cam);
+			// Capture scolling to move camera forward and back
+			if (scroll.y != 0) {
+
+				// TODO: make this configurable
+				float scroll_scale = 1.0f;
+
+				float cam_move_scale = scroll_scale * -scroll.y;
+
+				size = size + cam_move_scale;
+				if (size < 1) {
+					size = 1;
+				}
+				set_camera_ortho_size(entity_manager, ortho_cam, size);
+			}
+
+			// Only apply editor movement if right mouse button is clicked
+			if (is_mouse_down(input, MouseButton::Right)) {
+
+				Vec2f mouse_pos = Vec2f(0, 0);
+				mouse_pos = Vec2f(input->mouse.delta_pos.x, input->mouse.delta_pos.y);
+				// For now until we can do exact mouse movement, we'll just scale down the movement for the ortho viewports
+				mouse_pos.x *= (0.01f * size);
+				mouse_pos.y *= (0.01f * size);
+				Vec3f cam_pos = get_position(entity_manager, ortho_cam);
+				
+				Vec3f new_cam_pos;
+				switch (plane) {
+					case OrthoPlaneMovement::XZ: {
+						new_cam_pos = Vec3f(cam_pos.x - mouse_pos.x, cam_pos.y, cam_pos.z - mouse_pos.y);
+						break;
+					}
+					case OrthoPlaneMovement::YZ:  {
+						new_cam_pos = Vec3f(cam_pos.x, cam_pos.y + mouse_pos.y, cam_pos.z + mouse_pos.x);
+						break;
+					}
+					case OrthoPlaneMovement::XY: {
+						new_cam_pos = Vec3f(cam_pos.x - mouse_pos.x, cam_pos.y + mouse_pos.y, cam_pos.z);
+						break;
+					}
+
+				}
+				
+				set_position(entity_manager, ortho_cam, new_cam_pos);
+
+				editor->right_click_down = true;
+			} else {
+				editor->right_click_down = false;
+			}
+
+		}
+	}
 	
+	
+
+
+
+
+
 	
 
 	
@@ -2980,41 +3069,76 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 }
 
 
+static void do_viewport_rendering_and_logic(EditorInterface* editor, EditorInterface::EditorViewport viewport) {
+	RenderResource render_texture;
+	RenderResource depth_texture;
+	Entity camera;
+
+	switch (viewport) {
+		case EditorInterface::EditorViewport::Scene: {
+			render_texture = editor->camera_perspective_render_texture;
+			depth_texture = editor->camera_perspective_depth_texture;
+			camera = editor->editor_camera;
+			break;
+		}
+
+		case EditorInterface::EditorViewport::Top: {
+			render_texture = editor->camera_top_render_texture;
+			depth_texture = editor->camera_top_depth_texture;
+			camera = editor->editor_top_camera;
+			break;
+		}
+
+		case EditorInterface::EditorViewport::Front: {
+			render_texture = editor->camera_front_render_texture;
+			depth_texture = editor->camera_front_depth_texture;
+			camera = editor->editor_front_camera;
+			break;
+		}
+
+		case EditorInterface::EditorViewport::Side: {
+			render_texture = editor->camera_side_render_texture;
+			depth_texture = editor->camera_side_depth_texture;
+			camera = editor->editor_side_camera;
+			break;
+		}
+	}
+
+	void* color = render_resource_to_id(editor->api.renderer, render_texture);
+	void* depth = render_resource_to_id(editor->api.renderer, depth_texture);
+
+	ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+	// The size of the current dock/viewport
+	ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+	ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+
+	// Need to update camera aspect ratio based on the dock's window size
+	float aspect_ratio = (float)window_size.x / (float)window_size.y;
+	set_camera_aspect_ratio(editor->api.entity_manager, camera, aspect_ratio);
+
+	ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+
+	if (editor->right_click_down) {
+		// If right click is down then we should not try to capture anything
+	} else {
+		if (ImGui::IsWindowHovered()) {
+			editor->current_viewport_capture = viewport;
+		}
+	}
+}
+
 
 static void draw_viewports(EditorInterface* editor) {
 
-
-
-	if (ImGui::Begin("Scene")) {
-		
-		void* color = render_resource_to_id(editor->api.renderer, editor->camera_perspective_render_texture);
-		void* depth = render_resource_to_id(editor->api.renderer, editor->camera_perspective_depth_texture);
-
-		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
-		// The size of the current dock/viewport
-		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
-		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
-
-		// Need to update camera aspect ratio based on the dock's window size
-		float aspect_ratio = (float)window_size.x / (float)window_size.y;
-		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_camera, aspect_ratio);
-
-		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
-
-		if (ImGui::IsWindowHovered()) {
-			editor->scene_viewport_input_capture = true;
-		} else {
-			// If we are still have right click to move down, then we just continue to capture the input
-			if (editor->right_click_down) {
-				editor->scene_viewport_input_capture = true;
-			}
-			else {
-				editor->scene_viewport_input_capture = false;
-			}
-		}
-	
+	// Reset capture to none if there is no right click down
+	// the capture_viewport_if_possible calls will recapture the viewports for this frame
+	if (!editor->right_click_down) {
+		editor->current_viewport_capture = EditorInterface::EditorViewport::None;
 	}
 	
+	if (ImGui::Begin("Scene")) {
+		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Scene);
+	}
 	ImGui::End();
 
 	if (ImGui::Begin("Game")) {		
@@ -3031,50 +3155,22 @@ static void draw_viewports(EditorInterface* editor) {
 	}
 	ImGui::End();
 
-
 	if (ImGui::Begin("Top - Y Axis")) {
-		void* color = render_resource_to_id(editor->api.renderer, editor->camera_top_render_texture);
-		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
-		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
-		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
-
-		float aspect_ratio = (float)window_size.x / (float)window_size.y;
-		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_top_camera, aspect_ratio);
-
-		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Top);
 	}
 	ImGui::End();
+
 
 	if (ImGui::Begin("Front - Z Axis")) {
-		void* color = render_resource_to_id(editor->api.renderer, editor->camera_front_render_texture);
-		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
-		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
-		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
-
-		float aspect_ratio = (float)window_size.x / (float)window_size.y;
-		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_front_camera, aspect_ratio);
-
-		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
-
+		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Front);
 	}
 	ImGui::End();
+
 
 	if (ImGui::Begin("Side - x Axis")) {
-		void* color = render_resource_to_id(editor->api.renderer, editor->camera_side_render_texture);
-		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
-		ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
-		ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
-		float aspect_ratio = (float)window_size.x / (float)window_size.y;
-		set_camera_aspect_ratio(editor->api.entity_manager, editor->editor_side_camera, aspect_ratio);
-
-		ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
+		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Side);
 	}
 	ImGui::End();
-	
-	//if (ImGui::Begin("Multi Windows")) {
-	//}
-	//ImGui::End();
-
 }
 
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
@@ -3574,7 +3670,7 @@ static void cmd_editor_create_plane(EditorInterface* editor) {
 
 	command.cmd.new_entity.component_flags = comp_flags;
 	command.cmd.new_entity.staticmesh_id = editor->api.asset_manager->plane_mesh.mesh;
-	command.cmd.new_entity.material_id = editor->test_mat.material;
+	command.cmd.new_entity.material_id = editor->default_mat.material;
 
 	push_editor_command(editor, command);
 
@@ -3594,7 +3690,7 @@ static void cmd_editor_create_sphere(EditorInterface* editor) {
 
 	command.cmd.new_entity.component_flags = comp_flags;
 	command.cmd.new_entity.staticmesh_id = editor->api.asset_manager->sphere_mesh.mesh;
-	command.cmd.new_entity.material_id = editor->test_mat.material;
+	command.cmd.new_entity.material_id = editor->default_mat.material;
 
 
 	push_editor_command(editor, command);
@@ -3614,7 +3710,7 @@ static void cmd_editor_create_cube(EditorInterface* editor) {
 
 	command.cmd.new_entity.component_flags = comp_flags;
 	command.cmd.new_entity.staticmesh_id = editor->api.asset_manager->cube_mesh.mesh;
-	command.cmd.new_entity.material_id = editor->test_mat.material;
+	command.cmd.new_entity.material_id = editor->default_mat.material;
 
 
 	push_editor_command(editor, command);

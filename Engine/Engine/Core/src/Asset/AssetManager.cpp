@@ -602,31 +602,31 @@ AssetID load_asset_by_name(AssetManager* manager, String filepath) {
 				
 				// NEED TO FIGURE OUT HOW TO USE TEXTURE LAYERS
 				switch (texture_type) {
-					case TextureType::Albedo: {
+					case TextureType::TextureType_Albedo: {
 						//material->albedo = id;
 						material->tx_albedo = asset.texture;
 						material->material.albedo = texture_id;
 						break;
 					}
-					case TextureType::Normal: {
+					case TextureType::TextureType_Normal: {
 						//material->normal = id;
 						material->tx_normal = asset.texture;
 						material->material.normal = texture_id;
 						break;
 					}
-					case TextureType::Metal: {
+					case TextureType::TextureType_Metal: {
 						//material->metal = id;
 						material->tx_metal = asset.texture;
 						material->material.metal = texture_id;
 						break;
 					}
-					case TextureType::Roughness: {
+					case TextureType::TextureType_Roughness: {
 						//material->roughness = id;
 						material->tx_roughness = asset.texture;
 						material->material.roughness = texture_id;
 						break;
 					}
-					case TextureType::AO: {
+					case TextureType::TextureType_AO: {
 						//material->ao = id;
 						material->tx_ao = asset.texture;
 						material->material.ao = texture_id;
@@ -854,28 +854,28 @@ AssetID create_material_asset(AssetManager* manager, String path, String name, M
 	TextureID no_texture_id;
 	no_texture_id.id = 0;
 
-	TextureType texture_type = TextureType::Albedo;
+	TextureType texture_type = TextureType::TextureType_Albedo;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
 	fwrite(cast(const void*) &mat->albedo, sizeof(TextureID), 1, file);
 	//fwrite(cast(const void*) mat->albedo == NULL ? &no_texture_id : &mat->albedo->id, sizeof(TextureID), 1, file);
 	
 	
-	texture_type = TextureType::Normal;
+	texture_type = TextureType::TextureType_Normal;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
 	fwrite(cast(const void*) &mat->normal, sizeof(TextureID), 1, file);
 	//fwrite(cast(const void*) mat->normal == NULL ? &no_texture_id : &mat->normal->id, sizeof(TextureID), 1, file);
 
-	texture_type = TextureType::Metal;
+	texture_type = TextureType::TextureType_Metal;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
 	fwrite(cast(const void*) &mat->metal, sizeof(TextureID), 1, file);
 	//fwrite(cast(const void*) mat->metal == NULL ? &no_texture_id : &mat->metal->id, sizeof(TextureID), 1, file);
 
-	texture_type = TextureType::Roughness;
+	texture_type = TextureType::TextureType_Roughness;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
 	fwrite(cast(const void*) &mat->roughness, sizeof(TextureID), 1, file);
 	//fwrite(cast(const void*) mat->roughness == NULL ? &no_texture_id : &mat->roughness->id, sizeof(TextureID), 1, file);
 
-	texture_type = TextureType::AO;
+	texture_type = TextureType::TextureType_AO;
 	fwrite(cast(const void*) &texture_type, sizeof(texture_type), 1, file);
 	fwrite(cast(const void*) &mat->ao, sizeof(TextureID), 1, file);
 	//fwrite(cast(const void*) mat->ao == NULL ? &no_texture_id : &mat->ao->id, sizeof(TextureID), 1, file);
