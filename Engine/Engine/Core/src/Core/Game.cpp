@@ -469,7 +469,7 @@ Entity import_asset_scene_into_scene(Game* game, SceneID id) {
 	AssetID scene_id;
 	scene_id.id = id.id;
 	scene_id.type = AssetType::Scene;
-	InternalAsset asset = get_asset_by_id(game->engineAPI.asset_manager, scene_id);
+	InternalAsset asset = get_internal_asset_by_id(game->engineAPI.asset_manager, scene_id);
 	
 	AssetImport_Scene* scene = asset.scene;
 	EntityManager* manager = game->engineAPI.entity_manager;

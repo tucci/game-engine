@@ -106,7 +106,7 @@ void destroy_asset_manager(AssetManager* manager) {
 }
 
 
-InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
+InternalAsset get_internal_asset_by_id(AssetManager* manager, AssetID id) {
 	MapResult<u64> result = map_get(&manager->asset_id_map, id.id);
 	u64 index_to_asset_type_array;
 	if (!result.found) {
@@ -117,7 +117,7 @@ InternalAsset get_asset_by_id(AssetManager* manager, AssetID id) {
 			// This id is currently not being tracked and is probably an error
 			assert_fail();
 		} else {
-			load_asset_by_name(manager, track_result.value.file.buffer);
+			load_asset_by_id(manager, id);
 			result = map_get(&manager->asset_id_map, id.id);
 			index_to_asset_type_array = result.value;
 		}
@@ -153,7 +153,7 @@ StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id) {
 	AssetID asset_id;
 	asset_id.type = AssetType::StaticMesh;
 	asset_id.mesh = id;
-	InternalAsset mesh = get_asset_by_id(manager, asset_id);
+	InternalAsset mesh = get_internal_asset_by_id(manager, asset_id);
 	return mesh.mesh;
 }
 
@@ -161,7 +161,7 @@ Material* get_material_by_id(AssetManager* manager, MaterialID id) {
 	AssetID asset_id;
 	asset_id.type = AssetType::Material;
 	asset_id.material = id;
-	InternalAsset mat = get_asset_by_id(manager, asset_id);
+	InternalAsset mat = get_internal_asset_by_id(manager, asset_id);
 	return &mat.material->material;
 }
 
@@ -169,7 +169,7 @@ InternalMaterial* get_material_internal_by_id(AssetManager* manager, MaterialID 
 	AssetID asset_id;
 	asset_id.type = AssetType::Material;
 	asset_id.material = id;
-	InternalAsset mat = get_asset_by_id(manager, asset_id);
+	InternalAsset mat = get_internal_asset_by_id(manager, asset_id);
 	return mat.material;
 }
 
@@ -274,7 +274,6 @@ static AssetImport_SceneNode parse_scene_node(AssetManager* manager, FILE* file,
 AssetID load_asset_by_name(AssetManager* manager, String filepath) {
 	AssetID asset;
 	asset.id = 0;
-	asset.status = AssetStatus::Unloaded;
 	asset.type = AssetType::None;
 	
 	FILE* file;
@@ -596,7 +595,7 @@ AssetID load_asset_by_name(AssetManager* manager, String filepath) {
 				load_asset_by_id(manager, asset_id);
 
 				// Once the dependant texture is loaded, we need update the internal pointer to the texture inside the material
-				InternalAsset asset = get_asset_by_id(manager, asset_id);
+				InternalAsset asset = get_internal_asset_by_id(manager, asset_id);
 
 				//update_material_with_texture_data(material, texture_type, texture_id.texture, asset.texture, 0);
 				

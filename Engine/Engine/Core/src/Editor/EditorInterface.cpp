@@ -75,7 +75,7 @@ Entity import_scene(EditorInterface* editor, SceneID id) {
 	scene_id.id = id.id;
 	scene_id.type = AssetType::Scene;
 	
-	InternalAsset asset = get_asset_by_id(editor->api.asset_manager, scene_id);
+	InternalAsset asset = get_internal_asset_by_id(editor->api.asset_manager, scene_id);
 
 	AssetImport_Scene* scene = asset.scene;
 	EntityManager* manager = editor->api.entity_manager;
@@ -525,6 +525,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	set_editor_style(editor);
 
 	map_init(&editor->entity_selected);
+	map_init(&editor->asset_browser.asset_thumbnail_cache);
 	
 
 	editor->show_info = true;
@@ -552,6 +553,9 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->current_viewport_capture = EditorInterface::EditorViewport::None;
 	editor->right_click_down = false;
 
+	editor->asset_browser.asset_details_current_asset = NULL;
+	editor->window_asset_details_open = false;
+
 	editor->api = api;
 	
 	
@@ -577,8 +581,10 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 	init_asset_importer(&editor->importer, &editor->api.asset_manager->asset_tracker);
 
-	editor->asset_browser.root = editor->api.asset_manager->asset_tracker.dir_root;
-	editor->asset_browser.current_directory = editor->api.asset_manager->asset_tracker.dir_root;
+	construct_asset_brower_tree(editor);
+
+	
+	
 	
 
 	map_put(&editor->entity_selected, editor->api.entity_manager->root.id, false);
@@ -719,11 +725,9 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	create_shadowmap(api.renderer);
 
 	
-	load_texture("editor_resources/thumbnails/Folder-Icon.png", &editor->folder_icon_texture, &editor->arena, false);
-	load_texture("editor_resources/thumbnails/Asset-Icon.png", &editor->asset_icon_texture, &editor->arena, false);
+	
 
-	editor->res_folder_icon_texture = create_texture_resource(editor->api.renderer, &editor->folder_icon_texture, false);
-	editor->res_asset_icon_texture = create_texture_resource(editor->api.renderer, &editor->asset_icon_texture, false);
+	
 	
 
 	
@@ -883,6 +887,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 void destroy_editor_interface(EditorInterface* editor) {
 	map_destroy(&editor->entity_selected);
+	map_destroy(&editor->asset_browser.asset_thumbnail_cache);
 	destroy_asset_importer(&editor->importer);
 	arena_free(&editor->arena);
 }
@@ -1160,6 +1165,7 @@ void editor_update(EditorInterface* editor) {
 	draw_viewports(editor);
 	draw_window_renderer_stats(editor);
 	draw_editor_command_undo_and_redo_stack(editor);
+	draw_window_asset_details(editor);
 	
 
 
@@ -1263,6 +1269,189 @@ static void draw_toolbar(EditorInterface* editor) {
 		ImGui::Button("Play"); ImGui::SameLine();
 	}
 	ImGui::End();
+}
+
+static AssetBrowserFileNode* try_find_child_node_already_created_in_parent_node(AssetBrowserFileNode* parent, String token) {
+
+	// If the parent has no children then there are no nodes to find
+	if (parent->first_child != NULL) {
+		AssetBrowserFileNode* child_node = parent->first_child;
+		while (child_node != NULL) {
+			if (strncmp(token.buffer, child_node->name.buffer, token.length) == 0) {
+				return child_node;
+			}
+			child_node = child_node->next_sibling;
+		}
+	}
+	return NULL;
+}
+
+static RenderResource get_asset_browser_thumbnail_for_asset(EditorInterface* editor, AssetID id) {
+	if (id.id == 0) {
+		// No thumnbail for non assets
+		return editor->asset_browser.res_asset_icon_texture;
+	}
+	MapResult<RenderResource> result = map_get(&editor->asset_browser.asset_thumbnail_cache, id.id);
+	if (result.found) {
+		return result.value;
+	}
+
+	InternalAsset internal_asset = get_internal_asset_by_id(editor->api.asset_manager, id);
+	switch (id.type) {
+		case AssetType::Texture: {
+			Texture2D* txt = internal_asset.texture;
+			RenderResource tex_resource = create_texture_resource(editor->api.renderer, txt, false, false);
+			map_put(&editor->asset_browser.asset_thumbnail_cache, id.id, tex_resource);
+			return tex_resource;
+		}
+		default: {
+			return editor->asset_browser.res_asset_icon_texture;
+		}
+								 
+	}
+	
+}
+
+static void construct_asset_brower_tree(EditorInterface* editor) {
+	
+	Texture2D folder_texture;
+	load_texture("editor_resources/thumbnails/Folder-Icon.png", &folder_texture, &editor->stack, false);
+	editor->asset_browser.res_folder_icon_texture = create_texture_resource(editor->api.renderer, &folder_texture, false);
+	stack_pop(&editor->stack);
+
+	Texture2D default_asset_icon;
+	load_texture("editor_resources/thumbnails/Asset-Icon.png", &default_asset_icon, &editor->stack, false);
+	editor->asset_browser.res_asset_icon_texture = create_texture_resource(editor->api.renderer, &default_asset_icon, false);
+	stack_pop(&editor->stack);
+
+
+	AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
+	size_t map_size = tracker->track_map.size;
+	editor->asset_browser.root = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+
+	
+	const char* root_name_str = "Root";
+	size_t root_name_str_length = 4;
+	// Copy name
+	char* root_name = (char*)arena_alloc(&tracker->mem, root_name_str_length + 1); // +1 for '\0' terminator
+	memcpy(root_name, root_name_str, root_name_str_length);
+	root_name[root_name_str_length + 1] = '\0';
+
+
+	editor->asset_browser.root->node_type = AssetBrowserFileNodeType::Directory;
+	editor->asset_browser.root->asset = AssetID();
+	editor->asset_browser.root->name = String(root_name, root_name_str_length);
+	editor->asset_browser.root->children_count = 0;
+	editor->asset_browser.root->parent = NULL;
+	editor->asset_browser.root->first_child = NULL;
+	editor->asset_browser.root->next_sibling = NULL;
+	editor->asset_browser.root->has_child_directorys = false;
+
+	for (size_t i = 0; i < map_size; i++) {
+		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
+
+		if (track_item.key != 0 && track_item.key != TOMBSTONE) {
+			String fullpath = track_item.value.file;
+
+
+			AssetBrowserFileNode* parent_node = editor->asset_browser.root;
+
+			char* data = (char*)fullpath.buffer;
+			char* next;
+			char* curr = data;
+
+
+			while ((next = strchr(curr, '\\')) != NULL) {
+
+
+				size_t len = next - curr;
+				String token(curr, len);
+				AssetBrowserFileNode* dir_node;
+
+				AssetBrowserFileNode* tryfind_dir_node = try_find_child_node_already_created_in_parent_node(parent_node, token);
+				if (tryfind_dir_node != NULL) {
+					dir_node = tryfind_dir_node;
+				} else {
+					dir_node = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+
+					if (*next == '\\') {
+						dir_node->node_type = AssetBrowserFileNodeType::Directory;
+						dir_node->asset = AssetID();
+					} else {
+						assert(false && "This is not a directory, but shouldnt get here");
+					}
+
+					// Copy name
+					char* name = (char*)arena_alloc(&tracker->mem, token.length + 1); // +1 for '\0' terminator
+					memcpy(name, token.buffer, token.length);
+					name[token.length] = '\0';
+					dir_node->name = String(name, token.length);
+
+					dir_node->parent = parent_node;
+					dir_node->children_count = 0;
+					dir_node->has_child_directorys = false;
+					parent_node->children_count++;
+
+					parent_node->has_child_directorys = true;
+					// Attach this child node to the parent
+					// If there is no parent first child, then we assign this node to the first_child
+					if (parent_node->first_child == NULL) {
+						parent_node->first_child = dir_node;
+
+					} else {
+						// If the parent does have a first child, then we need to assign this node to the right most next sibling
+						AssetBrowserFileNode* child_node = parent_node->first_child;
+						while (child_node->next_sibling != NULL) {
+							child_node = child_node->next_sibling;
+						}
+						child_node->next_sibling = dir_node;
+					}
+				}
+
+
+
+
+				parent_node = dir_node;
+
+				curr = next + 1;
+			}
+			AssetBrowserFileNode* file_node = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+			file_node->node_type = AssetBrowserFileNodeType::File;
+
+			// Copy name
+			String token = String(curr, strlen(curr));
+			char* name = (char*)arena_alloc(&tracker->mem, token.length + 1);
+			memcpy(name, token.buffer, token.length);
+			name[token.length] = '\0';
+			file_node->name = String(name, token.length);
+			file_node->asset = track_item.value.assetid;
+			file_node->children_count = 0;
+			file_node->parent = parent_node;
+			file_node->first_child = NULL;
+			file_node->next_sibling = NULL;
+			parent_node->children_count++;
+
+			if (parent_node->first_child == NULL) {
+				parent_node->first_child = file_node;
+			} else {
+				// If the parent does have a first child, then we need to assign this node to the right most next sibling
+				AssetBrowserFileNode* child_node = parent_node->first_child;
+				while (child_node->next_sibling != NULL) {
+					child_node = child_node->next_sibling;
+				}
+				child_node->next_sibling = file_node;
+			}
+
+
+
+
+
+
+		}
+	}
+
+	editor->asset_browser.current_directory = editor->asset_browser.root;
+
 }
 
 static void draw_component_transform(EditorInterface* editor, Entity e) {
@@ -2577,7 +2766,7 @@ static bool should_draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode
 	return should_draw;
 }
 
-static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* node) {
+static void draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node) {
 	
 	if (!should_draw_asset_tree(editor, node)) {
 		return;
@@ -2608,7 +2797,7 @@ static void draw_asset_tree(EditorInterface* editor, AssetTracker* tracker, Asse
 			if (open) {
 				AssetBrowserFileNode* child = node->first_child;
 				while (child != NULL) {
-					draw_asset_tree(editor, tracker, child);
+					draw_asset_tree(editor, child);
 					child = child->next_sibling;
 				}
 
@@ -2811,6 +3000,9 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 						
 						if (ImGui::IsMouseDoubleClicked(0)) {
 							// open asset viewer for that specific asset type
+							editor->asset_browser.asset_details_current_asset = node;
+							editor->window_asset_details_open = true;
+							
 						}
 						else {
 							bool multi_select = ImGui::GetIO().KeyCtrl;
@@ -2856,7 +3048,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 			if (node->node_type == AssetBrowserFileNodeType::Directory) {
 				if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 					filter_pass = true;
-					icon_id = render_resource_to_id(editor->api.renderer, editor->res_folder_icon_texture);
+					icon_id = render_resource_to_id(editor->api.renderer, editor->asset_browser.res_folder_icon_texture);
 				}
 
 			}
@@ -2867,8 +3059,8 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 					else if (asset_browser->asset_mesh_filter && node->asset.type == AssetType::StaticMesh) { filter_pass = true; }
 					else if (asset_browser->asset_material_filter && node->asset.type == AssetType::Material) { filter_pass = true; }
 					else if (asset_browser->asset_texture_filter && node->asset.type == AssetType::Texture) { filter_pass = true; }
-
-					icon_id = render_resource_to_id(editor->api.renderer, editor->res_asset_icon_texture);
+					
+					icon_id = render_resource_to_id(editor->api.renderer, get_asset_browser_thumbnail_for_asset(editor, node->asset));
 				}
 			}
 
@@ -2918,8 +3110,10 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 						}
 						else if (node->node_type == AssetBrowserFileNodeType::File) {
 							// If this node is a file, we want to open the file with a viewer
-							
-							
+
+							// open asset viewer for that specific asset type
+							editor->asset_browser.asset_details_current_asset = node;
+							editor->window_asset_details_open = true;
 						}
 					}
 					else if (ImGui::IsItemClicked()) {
@@ -2951,6 +3145,8 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 	
 }
+
+
 
 static void draw_window_assets(EditorInterface* editor) {
 	AssetBrowserData* asset_browser = &editor->asset_browser;
@@ -2995,7 +3191,7 @@ static void draw_window_assets(EditorInterface* editor) {
 		//static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
 		asset_browser->asset_tree_filter.Draw("Search Folders");
 		ImGui::BeginChild("Asset Tree View");
-		draw_asset_tree(editor, tracker, tracker->dir_root);
+		draw_asset_tree(editor, editor->asset_browser.root);
 		ImGui::EndChild();
 		ImGui::NextColumn();
 
@@ -3238,6 +3434,107 @@ static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 	}
 	ImGui::End();
 
+
+}
+
+static void draw_window_asset_details(EditorInterface* editor) {
+	if (!editor->window_asset_details_open) { return; }
+	AssetBrowserFileNode* node = editor->asset_browser.asset_details_current_asset;
+	AssetID id = node->asset;
+	
+	if (ImGui::Begin("Asset Detail", &editor->window_asset_details_open)) {
+		switch (id.type) {
+			case AssetType::Texture: {
+				InternalAsset internal_asset = get_internal_asset_by_id(editor->api.asset_manager, id);
+				Texture2D* texture = internal_asset.texture;
+
+				ImGui::Text("Width: %d", texture->width);
+				ImGui::Text("Height : %d", texture->height);
+				ImGui::Text("Channels: %d", texture->channels);
+
+				ImGui::Text("Depth: %d", texture->depth);
+
+				ImGui::Text("UV translation: %f,%f", texture->uv_translation.u, texture->uv_translation.v);
+				ImGui::Text("UV rotation: %f", texture->uv_rotation);
+				ImGui::Text("UV scaling: %f,%f", texture->uv_scaling.u, texture->uv_scaling.v);
+
+				ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+				// The size of the current dock/viewport
+				ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+				ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+
+				RenderResource tex_resource = get_asset_browser_thumbnail_for_asset(editor, texture->id);
+				void* tex_id = render_resource_to_id(editor->api.renderer, tex_resource);
+				ImGui::Image(tex_id, ImVec2(100, 100));
+				
+				break;
+			}
+
+			case AssetType::Material: {
+				InternalAsset internal_asset = get_internal_asset_by_id(editor->api.asset_manager, id);
+				InternalMaterial* internal_mat = internal_asset.material;
+				Material mat = internal_mat->material;
+
+				ImGui::Text("Texture Maps");
+				
+				ImVec2 texture_thumbnail_size = ImVec2(50, 50);
+				
+				RenderResource tex_id;
+
+				
+				tex_id = get_asset_browser_thumbnail_for_asset(editor, AssetID(mat.albedo));
+				ImGui::Image(render_resource_to_id(editor->api.renderer, tex_id), texture_thumbnail_size);
+				ImGui::SameLine();
+				
+				
+				ImGui::Text("Albedo");
+
+				if (ImGui::ColorEdit3("Albedo Color", mat.albedo_color.data, ImGuiColorEditFlags_NoInputs)) {
+				}
+
+				tex_id = get_asset_browser_thumbnail_for_asset(editor, AssetID(mat.normal));
+				ImGui::Image(render_resource_to_id(editor->api.renderer, tex_id), texture_thumbnail_size);
+				ImGui::SameLine();
+				ImGui::Text("Normal");
+
+
+				tex_id = get_asset_browser_thumbnail_for_asset(editor, AssetID(mat.metal));
+				ImGui::Image(render_resource_to_id(editor->api.renderer, tex_id), texture_thumbnail_size);
+				ImGui::SameLine();
+				ImGui::Text("Metal");
+
+				if (ImGui::SliderFloat("Metallic factor", &mat.metallic_factor, 0, 1)) {
+
+				}
+				tex_id = get_asset_browser_thumbnail_for_asset(editor, AssetID(mat.roughness));
+				ImGui::Image(render_resource_to_id(editor->api.renderer, tex_id), texture_thumbnail_size);
+				ImGui::SameLine();
+				ImGui::Text("Roughness");
+
+				if (ImGui::SliderFloat("Roughness factor", &mat.roughness_factor, 0, 1)) {
+
+				}
+
+				tex_id = get_asset_browser_thumbnail_for_asset(editor, AssetID(mat.ao));
+				ImGui::Image(render_resource_to_id(editor->api.renderer, tex_id), texture_thumbnail_size);
+				ImGui::SameLine();
+				ImGui::Text("AO");
+
+				break;
+			}
+
+			case AssetType::StaticMesh: {
+				ImGui::Text("StaticMesh Id %llu", id.mesh.id);
+				break;
+			}
+			case AssetType::Scene: {
+				ImGui::Text("Scene Id %llu", id.scene.id);
+				break;
+			}
+		}
+	}
+	ImGui::End();
+	
 
 }
 

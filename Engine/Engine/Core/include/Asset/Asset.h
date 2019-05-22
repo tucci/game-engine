@@ -62,7 +62,6 @@ struct AnimationID {
 
 struct AssetID {
 	AssetType type;
-	AssetStatus status;
 	union {
 		u64 id;
 		SceneID scene;
@@ -76,8 +75,37 @@ struct AssetID {
 
 	AssetID() {
 		type = AssetType::None;
-		status = AssetStatus::Unloaded;
 		id = 0;
+	}
+
+	AssetID(SceneID id) {
+		type = AssetType::Scene;
+		scene = id;
+	}
+
+	AssetID(StaticMeshID id) {
+		type = AssetType::StaticMesh;
+		mesh = id;
+	}
+	AssetID(MaterialID id) {
+		type = AssetType::Material;
+		material = id;
+	}
+	AssetID(LightID id) {
+		type = AssetType::Light;
+		light = id;
+	}
+	AssetID(CameraID id) {
+		type = AssetType::Camera;
+		camera = id;
+	}
+	AssetID(AnimationID id) {
+		type = AssetType::Animation;
+		animation = id;
+	}
+	AssetID(TextureID id) {
+		type = AssetType::Texture;
+		texture = id;
 	}
 };
 
@@ -185,26 +213,8 @@ struct AssetTrackData {
 };
 
 
-enum class AssetBrowserFileNodeType {
-	None,
-	//Root,
-	File,
-	Directory,
-};
 
-struct AssetBrowserFileNode {
-	AssetBrowserFileNodeType node_type;
-	AssetID asset;
-	String name;
 
-	s32 children_count;
-	struct AssetBrowserFileNode* parent;
-	struct AssetBrowserFileNode* first_child;
-	struct AssetBrowserFileNode* next_sibling;
-	bool has_child_directorys;
-	bool selected = false;
-	
-};
 
 
 #define ASSET_TRACKER_FILE "Assets.trak"
@@ -219,9 +229,6 @@ struct AssetTracker {
 	CompactMap<AssetTrackData> track_map;
 
 	
-	AssetBrowserFileNode* dir_root;
-	
-
 	
 };
 
@@ -248,7 +255,6 @@ static u64 next_asset_id(AssetTracker* tracker);
 void write_tracker_file(AssetTracker* tracker);
 static void read_tracker_file(AssetTracker* tracker);
 
-static void construct_asset_brower_tree(AssetTracker* tracker);
 
 
 void init_scene_node(AssetImport_SceneNode* node, u64 id, char* name, u32 name_length);

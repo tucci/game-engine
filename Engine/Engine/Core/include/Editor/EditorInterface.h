@@ -188,13 +188,38 @@ struct EditorControlsData {
 	u64 redo_repeat_count = 0;
 };
 
+enum class AssetBrowserFileNodeType {
+	None,
+	//Root,
+	File,
+	Directory,
+};
+
+
+struct AssetBrowserFileNode {
+	AssetBrowserFileNodeType node_type;
+	AssetID asset;
+	String name;
+
+	s32 children_count;
+	struct AssetBrowserFileNode* parent;
+	struct AssetBrowserFileNode* first_child;
+	struct AssetBrowserFileNode* next_sibling;
+	bool has_child_directorys;
+	bool selected = false;
+
+};
+
 // Ideally We want to be able to have multiple browsers open
 struct AssetBrowserData {
 	// Asset Browser Data
 	AssetBrowserFileNode* root;
 	AssetBrowserFileNode* current_directory;
-	
+	AssetBrowserFileNode* asset_details_current_asset;
 
+	CompactMap<RenderResource> asset_thumbnail_cache;
+	RenderResource res_folder_icon_texture;
+	RenderResource res_asset_icon_texture;
 
 	ImGuiTextFilter asset_browser_filter;
 	ImGuiTextFilter asset_tree_filter;
@@ -202,6 +227,9 @@ struct AssetBrowserData {
 	bool asset_material_filter = true;
 	bool asset_texture_filter = true;
 	bool asset_scene_filter = true;
+
+	
+	
 };
 
 
@@ -237,6 +265,7 @@ struct EditorInterface {
 
 	EditorControlsData editor_control_data;
 
+	
 
 	RenderResource camera_perspective_render_framebuffer;
 	RenderResource camera_perspective_render_texture;
@@ -262,12 +291,11 @@ struct EditorInterface {
 	Vec2i camera_front_render_texture_size;
 
 
+	
 
-	RenderResource res_folder_icon_texture;
-	RenderResource res_asset_icon_texture;
+	
 
-	Texture2D folder_icon_texture;
-	Texture2D asset_icon_texture;
+	
 
 	
 
@@ -316,7 +344,7 @@ struct EditorInterface {
 	bool window_entity_components_open;
 	bool window_engine_timers_open;
 	bool window_render_stats;
-	
+	bool window_asset_details_open;
 };
 
 
@@ -339,11 +367,15 @@ void destroy_editor_interface(EditorInterface* editor);
 void editor_update(EditorInterface* editor);
 static bool is_entity_selected(EditorInterface* editor, Entity entity);
 
+static RenderResource get_asset_browser_thumbnail_for_asset(EditorInterface* editor, AssetID id);
+static void construct_asset_brower_tree(EditorInterface* editor);
+
 static void draw_component_transform(EditorInterface* editor, Entity e);
 static void draw_component_camera(EditorInterface* editor, Entity e);
 static void draw_component_light(EditorInterface* editor, Entity e);
 static void draw_component_static_mesh(EditorInterface* editor, Entity e);
 static void draw_component_render(EditorInterface* editor, Entity e);
+
 
 
 
@@ -354,10 +386,11 @@ static void draw_window_scene_hierarchy(EditorInterface* editor);
 static void draw_window_engine_timer(EditorInterface* editor);
 static void draw_window_log(EditorInterface* editor);
 static void draw_window_assets(EditorInterface* editor);
-
 static void draw_window_renderer_stats(EditorInterface* editor);
 static void draw_viewports(EditorInterface* editor);
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor);
+
+static void draw_window_asset_details(EditorInterface* editor);
 
 
 

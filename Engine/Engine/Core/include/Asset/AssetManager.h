@@ -67,7 +67,7 @@ struct AssetManager {
 void init_asset_manager(AssetManager* manager);
 void destroy_asset_manager(AssetManager* manager);
 
-InternalAsset get_asset_by_id(AssetManager* manager, AssetID id);
+InternalAsset get_internal_asset_by_id(AssetManager* manager, AssetID id);
 StaticMesh* get_static_mesh_by_id(AssetManager* manager, StaticMeshID id);
 Material* get_material_by_id(AssetManager* manager, MaterialID id);
 InternalMaterial* get_material_internal_by_id(AssetManager* manager, MaterialID id);
