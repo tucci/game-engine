@@ -626,9 +626,9 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	init_viewport(editor, &editor->viewports.side, "Side Camera", Vec3f(initial_ortho_distance, 0, 0), Vec3f(0, 90.0f, 0), CameraProjection::Orthographic);
 	
 	
-	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
 	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 
 	create_skymap(api.renderer, &editor->hdr_skymap);
 	create_shadowmap(api.renderer);
@@ -690,6 +690,9 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_iron_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
 	
+	AssetID import_scene_fbx = import_fbx(&editor->importer, "Assets/test_fbx/mill.fbx", false);
+	Entity e = import_scene(editor, import_scene_fbx.scene);
+
 	
 
 
