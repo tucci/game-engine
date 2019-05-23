@@ -314,18 +314,14 @@ struct EditorInterface {
 	AssetImporter importer;
 	EditorCommandBuffer cmd_buffer;
 	EditorControlsData editor_control_data;
+
+	ImFont* editor_font;
 	
+
 	AssetID default_mat;
-
-	
-
 	Entity entity_test_light;
 	Entity test_mesh;
-	
-	
 	HDR_SkyMap hdr_skymap;
-
-
 
 	ImGuiID dockspace_id = NULL;
 	
@@ -337,9 +333,6 @@ struct EditorInterface {
 	PanelAssetBrowser panel_asset_browser;
 	PanelAssetDetails panel_asset_details;
 	PanelViewports viewports;
-	
-
-	
 	
 
 };
