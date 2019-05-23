@@ -94,7 +94,6 @@ Entity import_scene(EditorInterface* editor, SceneID id) {
 	return root;
 }
 
-
 static void set_editor_layout(EditorInterface* editor) {
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -181,8 +180,6 @@ static void set_editor_layout(EditorInterface* editor) {
 
 	ImGui::End();
 }
-
-
 
 static void set_editor_style(EditorInterface* editor) {
 
@@ -275,300 +272,318 @@ static void set_editor_style(EditorInterface* editor) {
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.59f);
 
 
-	
-
-
-
 }
 
-static void ShowStyleEditor(ImGuiStyle* ref)
-{
-	// You can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it compares to an internally stored reference)
-	ImGuiStyle& style = ImGui::GetStyle();
-	static ImGuiStyle ref_saved_style;
+//static void ShowStyleEditor(ImGuiStyle* ref)
+//{
+//	// You can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it compares to an internally stored reference)
+//	ImGuiStyle& style = ImGui::GetStyle();
+//	static ImGuiStyle ref_saved_style;
+//
+//	// Default to using internal storage as reference
+//	static bool init = true;
+//	if (init && ref == NULL)
+//		ref_saved_style = style;
+//	init = false;
+//	if (ref == NULL)
+//		ref = &ref_saved_style;
+//
+//	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
+//
+//	if (ImGui::ShowStyleSelector("Colors##Selector"))
+//		ref_saved_style = style;
+//	ImGui::ShowFontSelector("Fonts##Selector");
+//
+//	// Simplified Settings
+//	if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
+//		style.GrabRounding = style.FrameRounding; // Make GrabRounding always the same value as FrameRounding
+//	{ bool window_border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &window_border)) style.WindowBorderSize = window_border ? 1.0f : 0.0f; }
+//	ImGui::SameLine();
+//	{ bool frame_border = (style.FrameBorderSize > 0.0f); if (ImGui::Checkbox("FrameBorder", &frame_border)) style.FrameBorderSize = frame_border ? 1.0f : 0.0f; }
+//	ImGui::SameLine();
+//	{ bool popup_border = (style.PopupBorderSize > 0.0f); if (ImGui::Checkbox("PopupBorder", &popup_border)) style.PopupBorderSize = popup_border ? 1.0f : 0.0f; }
+//
+//	// Save/Revert button
+//	if (ImGui::Button("Save Ref"))
+//		* ref = ref_saved_style = style;
+//	ImGui::SameLine();
+//	if (ImGui::Button("Revert Ref"))
+//		style = *ref;
+//	ImGui::SameLine();
+//	
+//
+//	ImGui::Separator();
+//
+//	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None))
+//	{
+//		if (ImGui::BeginTabItem("Sizes"))
+//		{
+//			ImGui::Text("Main");
+//			ImGui::SliderFloat2("WindowPadding", (float*)& style.WindowPadding, 0.0f, 20.0f, "%.0f");
+//			ImGui::SliderFloat2("FramePadding", (float*)& style.FramePadding, 0.0f, 20.0f, "%.0f");
+//			ImGui::SliderFloat2("ItemSpacing", (float*)& style.ItemSpacing, 0.0f, 20.0f, "%.0f");
+//			ImGui::SliderFloat2("ItemInnerSpacing", (float*)& style.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
+//			ImGui::SliderFloat2("TouchExtraPadding", (float*)& style.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
+//			ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 30.0f, "%.0f");
+//			ImGui::SliderFloat("ScrollbarSize", &style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
+//			ImGui::SliderFloat("GrabMinSize", &style.GrabMinSize, 1.0f, 20.0f, "%.0f");
+//			ImGui::Text("Borders");
+//			ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
+//			ImGui::SliderFloat("ChildBorderSize", &style.ChildBorderSize, 0.0f, 1.0f, "%.0f");
+//			ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 1.0f, "%.0f");
+//			ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 1.0f, "%.0f");
+//			ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 1.0f, "%.0f");
+//			ImGui::Text("Rounding");
+//			ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::SliderFloat("ChildRounding", &style.ChildRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::SliderFloat("ScrollbarRounding", &style.ScrollbarRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::SliderFloat("TabRounding", &style.TabRounding, 0.0f, 12.0f, "%.0f");
+//			ImGui::Text("Alignment");
+//			ImGui::SliderFloat2("WindowTitleAlign", (float*)& style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
+//			ImGui::SliderFloat2("ButtonTextAlign", (float*)& style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine();
+//			ImGui::SliderFloat2("SelectableTextAlign", (float*)& style.SelectableTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine();
+//			ImGui::Text("Safe Area Padding"); ImGui::SameLine();
+//			ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)& style.DisplaySafeAreaPadding, 0.0f, 30.0f, "%.0f");
+//			ImGui::EndTabItem();
+//		}
+//
+//		if (ImGui::BeginTabItem("Colors"))
+//		{
+//			static int output_dest = 0;
+//			static bool output_only_modified = true;
+//			if (ImGui::Button("Export Unsaved"))
+//			{
+//				if (output_dest == 0)
+//					ImGui::LogToClipboard();
+//				else
+//					ImGui::LogToTTY();
+//				ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;");
+//				for (int i = 0; i < ImGuiCol_COUNT; i++)
+//				{
+//					const ImVec4& col = style.Colors[i];
+//					const char* name = ImGui::GetStyleColorName(i);
+//					if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
+//						ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);", name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
+//				}
+//				ImGui::LogFinish();
+//			}
+//			ImGui::SameLine(); ImGui::PushItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0"); ImGui::PopItemWidth();
+//			ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
+//
+//			static ImGuiTextFilter filter;
+//			filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+//
+//			static ImGuiColorEditFlags alpha_flags = 0;
+//			ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
+//			ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
+//			ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf); ImGui::SameLine();
+//			
+//
+//			ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+//			ImGui::PushItemWidth(-160);
+//			for (int i = 0; i < ImGuiCol_COUNT; i++)
+//			{
+//				const char* name = ImGui::GetStyleColorName(i);
+//				if (!filter.PassFilter(name))
+//					continue;
+//				ImGui::PushID(i);
+//				ImGui::ColorEdit4("##color", (float*)& style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
+//				if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
+//				{
+//					// Tips: in a real user application, you may want to merge and use an icon font into the main font, so instead of "Save"/"Revert" you'd use icons.
+//					// Read the FAQ and misc/fonts/README.txt about using icon fonts. It's really easy and super convenient!
+//					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
+//					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
+//				}
+//				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
+//				ImGui::TextUnformatted(name);
+//				ImGui::PopID();
+//			}
+//			ImGui::PopItemWidth();
+//			ImGui::EndChild();
+//
+//			ImGui::EndTabItem();
+//		}
+//
+//		if (ImGui::BeginTabItem("Fonts"))
+//		{
+//			ImGuiIO& io = ImGui::GetIO();
+//			ImFontAtlas* atlas = io.Fonts;
+//			
+//			ImGui::PushItemWidth(120);
+//			for (int i = 0; i < atlas->Fonts.Size; i++)
+//			{
+//				ImFont* font = atlas->Fonts[i];
+//				ImGui::PushID(font);
+//				bool font_details_opened = ImGui::TreeNode(font, "Font %d: \"%s\"\n%.2f px, %d glyphs, %d file(s)", i, font->ConfigData ? font->ConfigData[0].Name : "", font->FontSize, font->Glyphs.Size, font->ConfigDataCount);
+//				ImGui::SameLine(); if (ImGui::SmallButton("Set as default")) { io.FontDefault = font; }
+//				if (font_details_opened)
+//				{
+//					ImGui::PushFont(font);
+//					ImGui::Text("The quick brown fox jumps over the lazy dog");
+//					ImGui::PopFont();
+//					ImGui::DragFloat("Font scale", &font->Scale, 0.005f, 0.3f, 2.0f, "%.1f");   // Scale only this font
+//					ImGui::SameLine();
+//					ImGui::InputFloat("Font offset", &font->DisplayOffset.y, 1, 1, "%.0f");
+//					ImGui::Text("Ascent: %f, Descent: %f, Height: %f", font->Ascent, font->Descent, font->Ascent - font->Descent);
+//					ImGui::Text("Fallback character: '%c' (%d)", font->FallbackChar, font->FallbackChar);
+//					const float surface_sqrt = sqrtf((float)font->MetricsTotalSurface);
+//					ImGui::Text("Texture surface: %d pixels (approx) ~ %dx%d", font->MetricsTotalSurface, (int)surface_sqrt, (int)surface_sqrt);
+//					for (int config_i = 0; config_i < font->ConfigDataCount; config_i++)
+//						if (const ImFontConfig * cfg = &font->ConfigData[config_i])
+//							ImGui::BulletText("Input %d: \'%s\', Oversample: (%d,%d), PixelSnapH: %d", config_i, cfg->Name, cfg->OversampleH, cfg->OversampleV, cfg->PixelSnapH);
+//					if (ImGui::TreeNode("Glyphs", "Glyphs (%d)", font->Glyphs.Size))
+//					{
+//						// Display all glyphs of the fonts in separate pages of 256 characters
+//						for (int base = 0; base < 0x10000; base += 256)
+//						{
+//							int count = 0;
+//							for (int n = 0; n < 256; n++)
+//								count += font->FindGlyphNoFallback((ImWchar)(base + n)) ? 1 : 0;
+//							if (count > 0 && ImGui::TreeNode((void*)(intptr_t)base, "U+%04X..U+%04X (%d %s)", base, base + 255, count, count > 1 ? "glyphs" : "glyph"))
+//							{
+//								float cell_size = font->FontSize * 1;
+//								float cell_spacing = style.ItemSpacing.y;
+//								ImVec2 base_pos = ImGui::GetCursorScreenPos();
+//								ImDrawList* draw_list = ImGui::GetWindowDrawList();
+//								for (int n = 0; n < 256; n++)
+//								{
+//									ImVec2 cell_p1(base_pos.x + (n % 16) * (cell_size + cell_spacing), base_pos.y + (n / 16) * (cell_size + cell_spacing));
+//									ImVec2 cell_p2(cell_p1.x + cell_size, cell_p1.y + cell_size);
+//									const ImFontGlyph * glyph = font->FindGlyphNoFallback((ImWchar)(base + n));
+//									draw_list->AddRect(cell_p1, cell_p2, glyph ? IM_COL32(255, 255, 255, 100) : IM_COL32(255, 255, 255, 50));
+//									if (glyph)
+//										font->RenderChar(draw_list, cell_size, cell_p1, ImGui::GetColorU32(ImGuiCol_Text), (ImWchar)(base + n)); // We use ImFont::RenderChar as a shortcut because we don't have UTF-8 conversion functions available to generate a string.
+//									if (glyph && ImGui::IsMouseHoveringRect(cell_p1, cell_p2))
+//									{
+//										ImGui::BeginTooltip();
+//										ImGui::Text("Codepoint: U+%04X", base + n);
+//										ImGui::Separator();
+//										ImGui::Text("AdvanceX: %.1f", glyph->AdvanceX);
+//										ImGui::Text("Pos: (%.2f,%.2f)->(%.2f,%.2f)", glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
+//										ImGui::Text("UV: (%.3f,%.3f)->(%.3f,%.3f)", glyph->U0, glyph->V0, glyph->U1, glyph->V1);
+//										ImGui::EndTooltip();
+//									}
+//								}
+//								ImGui::Dummy(ImVec2((cell_size + cell_spacing) * 16, (cell_size + cell_spacing) * 16));
+//								ImGui::TreePop();
+//							}
+//						}
+//						ImGui::TreePop();
+//					}
+//					ImGui::TreePop();
+//				}
+//				ImGui::PopID();
+//			}
+//			if (ImGui::TreeNode("Atlas texture", "Atlas texture (%dx%d pixels)", atlas->TexWidth, atlas->TexHeight))
+//			{
+//				ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexWidth, (float)atlas->TexHeight), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
+//				ImGui::TreePop();
+//			}
+//
+//			static float window_scale = 1.0f;
+//			if (ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.2f"))   // scale only this window
+//				ImGui::SetWindowFontScale(window_scale);
+//			ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, 0.3f, 2.0f, "%.2f");      // scale everything
+//			ImGui::PopItemWidth();
+//
+//			ImGui::EndTabItem();
+//		}
+//
+//		if (ImGui::BeginTabItem("Rendering"))
+//		{
+//			ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines); ImGui::SameLine();
+//			ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
+//			ImGui::PushItemWidth(100);
+//			ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, FLT_MAX, "%.2f", 2.0f);
+//			if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+//			ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
+//			ImGui::PopItemWidth();
+//
+//			ImGui::EndTabItem();
+//		}
+//
+//		ImGui::EndTabBar();
+//	}
+//
+//	ImGui::PopItemWidth();
+//}
 
-	// Default to using internal storage as reference
-	static bool init = true;
-	if (init && ref == NULL)
-		ref_saved_style = style;
-	init = false;
-	if (ref == NULL)
-		ref = &ref_saved_style;
 
-	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
+// Helper function to setup all the editor cameras
+static void init_viewport(EditorInterface* editor, PanelViewports::Viewport* viewport, const char* camera_name, Vec3f pos, Vec3f rotation, CameraProjection projection_type) {
+	
+	viewport->size = Vec2i(1920, 1080);
+	u32 width = viewport->size.x;
+	u32 height = viewport->size.y;
 
-	if (ImGui::ShowStyleSelector("Colors##Selector"))
-		ref_saved_style = style;
-	ImGui::ShowFontSelector("Fonts##Selector");
+	viewport->camera = create_entity(editor->api.entity_manager, camera_name);
+	add_component(editor->api.entity_manager, viewport->camera, ComponentType::Transform);
+	add_component(editor->api.entity_manager, viewport->camera, ComponentType::Camera);
+	set_camera_params(editor->api.entity_manager, viewport->camera, 0.0001f, 100.0f, 90.0f, viewport->size.x / cast(float) viewport->size.y);
+	set_camera_projection(editor->api.entity_manager, viewport->camera, projection_type);
+	set_position(editor->api.entity_manager, viewport->camera, pos);
+	set_rotation(editor->api.entity_manager, viewport->camera, euler_to_quat(rotation));
 
-	// Simplified Settings
-	if (ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f"))
-		style.GrabRounding = style.FrameRounding; // Make GrabRounding always the same value as FrameRounding
-	{ bool window_border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &window_border)) style.WindowBorderSize = window_border ? 1.0f : 0.0f; }
-	ImGui::SameLine();
-	{ bool frame_border = (style.FrameBorderSize > 0.0f); if (ImGui::Checkbox("FrameBorder", &frame_border)) style.FrameBorderSize = frame_border ? 1.0f : 0.0f; }
-	ImGui::SameLine();
-	{ bool popup_border = (style.PopupBorderSize > 0.0f); if (ImGui::Checkbox("PopupBorder", &popup_border)) style.PopupBorderSize = popup_border ? 1.0f : 0.0f; }
 
-	// Save/Revert button
-	if (ImGui::Button("Save Ref"))
-		* ref = ref_saved_style = style;
-	ImGui::SameLine();
-	if (ImGui::Button("Revert Ref"))
-		style = *ref;
-	ImGui::SameLine();
 	
 
-	ImGui::Separator();
+	Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
+	Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
 
-	if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None))
-	{
-		if (ImGui::BeginTabItem("Sizes"))
-		{
-			ImGui::Text("Main");
-			ImGui::SliderFloat2("WindowPadding", (float*)& style.WindowPadding, 0.0f, 20.0f, "%.0f");
-			ImGui::SliderFloat2("FramePadding", (float*)& style.FramePadding, 0.0f, 20.0f, "%.0f");
-			ImGui::SliderFloat2("ItemSpacing", (float*)& style.ItemSpacing, 0.0f, 20.0f, "%.0f");
-			ImGui::SliderFloat2("ItemInnerSpacing", (float*)& style.ItemInnerSpacing, 0.0f, 20.0f, "%.0f");
-			ImGui::SliderFloat2("TouchExtraPadding", (float*)& style.TouchExtraPadding, 0.0f, 10.0f, "%.0f");
-			ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 30.0f, "%.0f");
-			ImGui::SliderFloat("ScrollbarSize", &style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
-			ImGui::SliderFloat("GrabMinSize", &style.GrabMinSize, 1.0f, 20.0f, "%.0f");
-			ImGui::Text("Borders");
-			ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
-			ImGui::SliderFloat("ChildBorderSize", &style.ChildBorderSize, 0.0f, 1.0f, "%.0f");
-			ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 1.0f, "%.0f");
-			ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 1.0f, "%.0f");
-			ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 1.0f, "%.0f");
-			ImGui::Text("Rounding");
-			ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::SliderFloat("ChildRounding", &style.ChildRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::SliderFloat("PopupRounding", &style.PopupRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::SliderFloat("ScrollbarRounding", &style.ScrollbarRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::SliderFloat("TabRounding", &style.TabRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::Text("Alignment");
-			ImGui::SliderFloat2("WindowTitleAlign", (float*)& style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
-			ImGui::SliderFloat2("ButtonTextAlign", (float*)& style.ButtonTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine();
-			ImGui::SliderFloat2("SelectableTextAlign", (float*)& style.SelectableTextAlign, 0.0f, 1.0f, "%.2f"); ImGui::SameLine();
-			ImGui::Text("Safe Area Padding"); ImGui::SameLine();
-			ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)& style.DisplaySafeAreaPadding, 0.0f, 30.0f, "%.0f");
-			ImGui::EndTabItem();
-		}
 
-		if (ImGui::BeginTabItem("Colors"))
-		{
-			static int output_dest = 0;
-			static bool output_only_modified = true;
-			if (ImGui::Button("Export Unsaved"))
-			{
-				if (output_dest == 0)
-					ImGui::LogToClipboard();
-				else
-					ImGui::LogToTTY();
-				ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;");
-				for (int i = 0; i < ImGuiCol_COUNT; i++)
-				{
-					const ImVec4& col = style.Colors[i];
-					const char* name = ImGui::GetStyleColorName(i);
-					if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
-						ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);", name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
-				}
-				ImGui::LogFinish();
-			}
-			ImGui::SameLine(); ImGui::PushItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0"); ImGui::PopItemWidth();
-			ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
 
-			static ImGuiTextFilter filter;
-			filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+	viewport->render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
+	viewport->depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
 
-			static ImGuiColorEditFlags alpha_flags = 0;
-			ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
-			ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
-			ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf); ImGui::SameLine();
-			
+	FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, viewport->render_texture, 0);
+	FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, viewport->depth_texture, 0);
+	FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
 
-			ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
-			ImGui::PushItemWidth(-160);
-			for (int i = 0; i < ImGuiCol_COUNT; i++)
-			{
-				const char* name = ImGui::GetStyleColorName(i);
-				if (!filter.PassFilter(name))
-					continue;
-				ImGui::PushID(i);
-				ImGui::ColorEdit4("##color", (float*)& style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
-				if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
-				{
-					// Tips: in a real user application, you may want to merge and use an icon font into the main font, so instead of "Save"/"Revert" you'd use icons.
-					// Read the FAQ and misc/fonts/README.txt about using icon fonts. It's really easy and super convenient!
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) ref->Colors[i] = style.Colors[i];
-					ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) style.Colors[i] = ref->Colors[i];
-				}
-				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
-				ImGui::TextUnformatted(name);
-				ImGui::PopID();
-			}
-			ImGui::PopItemWidth();
-			ImGui::EndChild();
-
-			ImGui::EndTabItem();
-		}
-
-		if (ImGui::BeginTabItem("Fonts"))
-		{
-			ImGuiIO& io = ImGui::GetIO();
-			ImFontAtlas* atlas = io.Fonts;
-			
-			ImGui::PushItemWidth(120);
-			for (int i = 0; i < atlas->Fonts.Size; i++)
-			{
-				ImFont* font = atlas->Fonts[i];
-				ImGui::PushID(font);
-				bool font_details_opened = ImGui::TreeNode(font, "Font %d: \"%s\"\n%.2f px, %d glyphs, %d file(s)", i, font->ConfigData ? font->ConfigData[0].Name : "", font->FontSize, font->Glyphs.Size, font->ConfigDataCount);
-				ImGui::SameLine(); if (ImGui::SmallButton("Set as default")) { io.FontDefault = font; }
-				if (font_details_opened)
-				{
-					ImGui::PushFont(font);
-					ImGui::Text("The quick brown fox jumps over the lazy dog");
-					ImGui::PopFont();
-					ImGui::DragFloat("Font scale", &font->Scale, 0.005f, 0.3f, 2.0f, "%.1f");   // Scale only this font
-					ImGui::SameLine();
-					ImGui::InputFloat("Font offset", &font->DisplayOffset.y, 1, 1, "%.0f");
-					ImGui::Text("Ascent: %f, Descent: %f, Height: %f", font->Ascent, font->Descent, font->Ascent - font->Descent);
-					ImGui::Text("Fallback character: '%c' (%d)", font->FallbackChar, font->FallbackChar);
-					const float surface_sqrt = sqrtf((float)font->MetricsTotalSurface);
-					ImGui::Text("Texture surface: %d pixels (approx) ~ %dx%d", font->MetricsTotalSurface, (int)surface_sqrt, (int)surface_sqrt);
-					for (int config_i = 0; config_i < font->ConfigDataCount; config_i++)
-						if (const ImFontConfig * cfg = &font->ConfigData[config_i])
-							ImGui::BulletText("Input %d: \'%s\', Oversample: (%d,%d), PixelSnapH: %d", config_i, cfg->Name, cfg->OversampleH, cfg->OversampleV, cfg->PixelSnapH);
-					if (ImGui::TreeNode("Glyphs", "Glyphs (%d)", font->Glyphs.Size))
-					{
-						// Display all glyphs of the fonts in separate pages of 256 characters
-						for (int base = 0; base < 0x10000; base += 256)
-						{
-							int count = 0;
-							for (int n = 0; n < 256; n++)
-								count += font->FindGlyphNoFallback((ImWchar)(base + n)) ? 1 : 0;
-							if (count > 0 && ImGui::TreeNode((void*)(intptr_t)base, "U+%04X..U+%04X (%d %s)", base, base + 255, count, count > 1 ? "glyphs" : "glyph"))
-							{
-								float cell_size = font->FontSize * 1;
-								float cell_spacing = style.ItemSpacing.y;
-								ImVec2 base_pos = ImGui::GetCursorScreenPos();
-								ImDrawList* draw_list = ImGui::GetWindowDrawList();
-								for (int n = 0; n < 256; n++)
-								{
-									ImVec2 cell_p1(base_pos.x + (n % 16) * (cell_size + cell_spacing), base_pos.y + (n / 16) * (cell_size + cell_spacing));
-									ImVec2 cell_p2(cell_p1.x + cell_size, cell_p1.y + cell_size);
-									const ImFontGlyph * glyph = font->FindGlyphNoFallback((ImWchar)(base + n));
-									draw_list->AddRect(cell_p1, cell_p2, glyph ? IM_COL32(255, 255, 255, 100) : IM_COL32(255, 255, 255, 50));
-									if (glyph)
-										font->RenderChar(draw_list, cell_size, cell_p1, ImGui::GetColorU32(ImGuiCol_Text), (ImWchar)(base + n)); // We use ImFont::RenderChar as a shortcut because we don't have UTF-8 conversion functions available to generate a string.
-									if (glyph && ImGui::IsMouseHoveringRect(cell_p1, cell_p2))
-									{
-										ImGui::BeginTooltip();
-										ImGui::Text("Codepoint: U+%04X", base + n);
-										ImGui::Separator();
-										ImGui::Text("AdvanceX: %.1f", glyph->AdvanceX);
-										ImGui::Text("Pos: (%.2f,%.2f)->(%.2f,%.2f)", glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
-										ImGui::Text("UV: (%.3f,%.3f)->(%.3f,%.3f)", glyph->U0, glyph->V0, glyph->U1, glyph->V1);
-										ImGui::EndTooltip();
-									}
-								}
-								ImGui::Dummy(ImVec2((cell_size + cell_spacing) * 16, (cell_size + cell_spacing) * 16));
-								ImGui::TreePop();
-							}
-						}
-						ImGui::TreePop();
-					}
-					ImGui::TreePop();
-				}
-				ImGui::PopID();
-			}
-			if (ImGui::TreeNode("Atlas texture", "Atlas texture (%dx%d pixels)", atlas->TexWidth, atlas->TexHeight))
-			{
-				ImGui::Image(atlas->TexID, ImVec2((float)atlas->TexWidth, (float)atlas->TexHeight), ImVec2(0, 0), ImVec2(1, 1), ImColor(255, 255, 255, 255), ImColor(255, 255, 255, 128));
-				ImGui::TreePop();
-			}
-
-			static float window_scale = 1.0f;
-			if (ImGui::DragFloat("this window scale", &window_scale, 0.005f, 0.3f, 2.0f, "%.2f"))   // scale only this window
-				ImGui::SetWindowFontScale(window_scale);
-			ImGui::DragFloat("global scale", &io.FontGlobalScale, 0.005f, 0.3f, 2.0f, "%.2f");      // scale everything
-			ImGui::PopItemWidth();
-
-			ImGui::EndTabItem();
-		}
-
-		if (ImGui::BeginTabItem("Rendering"))
-		{
-			ImGui::Checkbox("Anti-aliased lines", &style.AntiAliasedLines); ImGui::SameLine();
-			ImGui::Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
-			ImGui::PushItemWidth(100);
-			ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, FLT_MAX, "%.2f", 2.0f);
-			if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
-			ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
-			ImGui::PopItemWidth();
-
-			ImGui::EndTabItem();
-		}
-
-		ImGui::EndTabBar();
-	}
-
-	ImGui::PopItemWidth();
+	viewport->framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
+	set_camera_framebuffer(editor->api.entity_manager, viewport->camera, &viewport->framebuffer);
 }
-
 
 bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	set_editor_style(editor);
 
 	map_init(&editor->entity_selected);
-	map_init(&editor->asset_browser.asset_thumbnail_cache);
+	map_init(&editor->panel_asset_browser.asset_thumbnail_cache);
 	
 
-	editor->show_info = true;
-	editor->show_warning = true;
-	editor->show_fatal = true;
+	editor->panel_log.show_info = true;
+	editor->panel_log.show_warning = true;
+	editor->panel_log.show_fatal = true;
+	editor->panel_log.log_start_offset = 0;
+	editor->panel_log.show_time = true;
+	editor->panel_log.show_tag = true;
+	editor->panel_log.show_thread_id = true;
+	editor->panel_log.show_filename = true;
+	editor->panel_log.show_function = true;
+	editor->panel_log.show_line = true;
+	editor->panel_log.show_message = true;
+	editor->panel_log.panel_open = true;
 
-	editor->log_start_offset = 0;
 
-	editor->show_time = true;
-	editor->show_tag = true;
-	editor->show_thread_id = true;
-	editor->show_filename = true;
-	editor->show_function = true;
-	editor->show_line = true;
-	editor->show_message = true;
+	
+	
+	editor->panel_asset_browser.panel_open = true;
+	editor->panel_asset_details.panel_open = false;
+	editor->panel_asset_details.current_asset = NULL;
 
+	editor->panel_scenetree.panel_open = true;
+	editor->panel_components.panel_open= true;
+	editor->panel_timers.panel_open = true;
+	editor->panel_render_stats.panel_open = true;
 
-	editor->window_scene_tree_open = true;
-	editor->window_log_open = true;
-	editor->window_asset_browser_open = true;
-	editor->window_entity_components_open = true;
-	editor->window_engine_timers_open = true;
-	editor->window_render_stats = true;
-
-	editor->current_viewport_capture = EditorInterface::EditorViewport::None;
-	editor->right_click_down = false;
-
-	editor->asset_browser.asset_details_current_asset = NULL;
-	editor->window_asset_details_open = false;
+	editor->viewports.current_viewport_capture = PanelViewports::ViewportType::None;
+	editor->viewports.right_click_down = false;
 
 	editor->api = api;
-	
-	
-
-	
-	
-	
-	
-
-	
-
-	
-	
 	
 
 	arena_init(&editor->arena);
@@ -580,158 +595,23 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	
 	
 	init_asset_importer(&editor->importer, &editor->api.asset_manager->asset_tracker);
-
 	construct_asset_brower_tree(editor);
 
 	
-	
-	
-
-	map_put(&editor->entity_selected, editor->api.entity_manager->root.id, false);
+	// Setup the scene, top,front, and side viewports
 	float initial_ortho_distance = 10.0f;
-
-	// Main editor camera
-	{
-		editor->editor_camera = create_entity(api.entity_manager, "Editor Camera");
-		add_component(api.entity_manager, editor->editor_camera, ComponentType::Transform);
-		add_component(api.entity_manager, editor->editor_camera, ComponentType::Camera);
-		set_camera_params(api.entity_manager, editor->editor_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
-		set_position(api.entity_manager, editor->editor_camera, Vec3f(0, 0, 0));
-		
-
-		editor->camera_perspective_render_texture_size = Vec2i(1920, 1080);
-		u32 width = editor->camera_perspective_render_texture_size.x;
-		u32 height = editor->camera_perspective_render_texture_size.y;
-
-		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
-		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
-
-
-
-		editor->camera_perspective_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
-		editor->camera_perspective_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
-
-		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_perspective_render_texture, 0);
-		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_perspective_depth_texture, 0);
-		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
-
-		editor->camera_perspective_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
-		set_camera_framebuffer(api.entity_manager, editor->editor_camera, &editor->camera_perspective_render_framebuffer);
-
-	}
+	init_viewport(editor, &editor->viewports.scene, "Editor Camera", Vec3f(0, 0, 0), Vec3f(0, 0, 0), CameraProjection::Perspective);
+	init_viewport(editor, &editor->viewports.top, "Top Camera", Vec3f(0, initial_ortho_distance, 0), Vec3f(-90.0f, 0, 0), CameraProjection::Orthographic);
+	init_viewport(editor, &editor->viewports.front, "Front Camera", Vec3f(0, 0, initial_ortho_distance), Vec3f(0, 0, 0), CameraProjection::Orthographic);
+	init_viewport(editor, &editor->viewports.side, "Side Camera", Vec3f(initial_ortho_distance, 0, 0), Vec3f(0, 90.0f, 0), CameraProjection::Orthographic);
 	
-
-	
-
-	
-	
-	{
-		editor->editor_top_camera = create_entity(api.entity_manager, "Top Camera");
-		add_component(api.entity_manager, editor->editor_top_camera, ComponentType::Transform);
-		add_component(api.entity_manager, editor->editor_top_camera, ComponentType::Camera);
-		set_position(api.entity_manager, editor->editor_top_camera, Vec3f(0, initial_ortho_distance, 0));
-		set_rotation(api.entity_manager, editor->editor_top_camera, euler_to_quat(Vec3f(-90.0f, 0.0f, 0.0f)));
-
-		set_camera_params(api.entity_manager, editor->editor_top_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
-		set_camera_projection(api.entity_manager, editor->editor_top_camera, CameraProjection::Orthographic);
-
-		editor->camera_top_render_texture_size = Vec2i(1920, 1080);
-		u32 width = editor->camera_top_render_texture_size.x;
-		u32 height = editor->camera_top_render_texture_size.y;
-
-		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
-		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
-
-
-		editor->camera_top_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
-		editor->camera_top_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
-
-		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_top_render_texture, 0);
-		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_top_depth_texture, 0);
-		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
-
-		editor->camera_top_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
-		set_camera_framebuffer(api.entity_manager, editor->editor_top_camera, &editor->camera_top_render_framebuffer);
-
-
-	}
-	
-	{
-		editor->editor_front_camera = create_entity(api.entity_manager, "Front Camera");
-		add_component(api.entity_manager, editor->editor_front_camera, ComponentType::Transform);
-		add_component(api.entity_manager, editor->editor_front_camera, ComponentType::Camera);
-		set_position(api.entity_manager, editor->editor_front_camera, Vec3f(0, 0, initial_ortho_distance));
-		set_camera_params(api.entity_manager, editor->editor_front_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
-		set_camera_projection(api.entity_manager, editor->editor_front_camera, CameraProjection::Orthographic);
-
-		editor->camera_front_render_texture_size = Vec2i(1920, 1080);
-		u32 width = editor->camera_front_render_texture_size.x;
-		u32 height = editor->camera_front_render_texture_size.y;
-
-		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
-		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
-
-
-		editor->camera_front_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
-		editor->camera_front_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
-
-		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_front_render_texture, 0);
-		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_front_depth_texture, 0);
-		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
-
-		editor->camera_front_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
-		set_camera_framebuffer(api.entity_manager, editor->editor_front_camera, &editor->camera_front_render_framebuffer);
-	}
-	
-	
-	{
-		editor->editor_side_camera = create_entity(api.entity_manager, "Side Camera");
-		add_component(api.entity_manager, editor->editor_side_camera, ComponentType::Transform);
-		add_component(api.entity_manager, editor->editor_side_camera, ComponentType::Camera);
-		set_position(api.entity_manager, editor->editor_side_camera, Vec3f(initial_ortho_distance, 0, 0));
-		set_rotation(api.entity_manager, editor->editor_side_camera, euler_to_quat(Vec3f(0.0f, 90.0f, 0.0f)));
-		set_camera_params(api.entity_manager, editor->editor_side_camera, 0.0001f, 100.0f, 90.0f, editor->camera_perspective_render_texture_size.x / cast(float) editor->camera_perspective_render_texture_size.y);
-		set_camera_projection(api.entity_manager, editor->editor_side_camera, CameraProjection::Orthographic);
-
-		editor->camera_side_render_texture_size = Vec2i(1920, 1080);
-		u32 width = editor->camera_side_render_texture_size.x;
-		u32 height = editor->camera_side_render_texture_size.y;
-
-		Texture2D color_texture = Texture2D(); color_texture.data = NULL; color_texture.width = width; color_texture.height = height;
-		Texture2D depth_texture = Texture2D(); depth_texture.data = NULL; depth_texture.width = width; depth_texture.height = height;
-
-
-		editor->camera_side_render_texture = create_texture_resource(editor->api.renderer, &color_texture, false);
-		editor->camera_side_depth_texture = create_texture_resource(editor->api.renderer, &depth_texture, false, true);
-
-		FrameBufferAttachement color_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::COLOR, editor->camera_side_render_texture, 0);
-		FrameBufferAttachement depth_texture_attachement = FrameBufferAttachement(FrameBufferAttachementType::DEPTH, editor->camera_side_depth_texture, 0);
-		FrameBufferAttachement attachments[2] = { color_texture_attachement, depth_texture_attachement };
-
-		editor->camera_side_render_framebuffer = create_frame_buffer(editor->api.renderer, (u32)2, attachments);
-		set_camera_framebuffer(api.entity_manager, editor->editor_side_camera, &editor->camera_side_render_framebuffer);
-
-	}
-
-
-
-
 	
 	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
-	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
-	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
+	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
+	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 
 	create_skymap(api.renderer, &editor->hdr_skymap);
 	create_shadowmap(api.renderer);
-
-	
-	
-
-	
-	
-
-	
-
 
 	
 	//AssetID tcolor = import_texture(editor->api.asset_manager,		String("Assets/textures/plastic/scuffed-plastic-alb.png"), true);
@@ -815,17 +695,7 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	attach_child_entity(entity_manager, e3, editor->test_mesh);
 
 
-	
 
-	map_put(&editor->entity_selected, editor->editor_camera.id, false);
-	map_put(&editor->entity_selected, e3.id, false);
-	map_put(&editor->entity_selected, e4.id, false);
-	map_put(&editor->entity_selected, e5.id, false);
-	map_put(&editor->entity_selected, e6.id, false);
-	map_put(&editor->entity_selected, e7.id, false);
-	map_put(&editor->entity_selected, e8.id, false);
-	map_put(&editor->entity_selected, editor->test_mesh.id, false);
-	map_put(&editor->entity_selected, editor->entity_test_light.id, false);
 
 	
 
@@ -887,13 +757,10 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 void destroy_editor_interface(EditorInterface* editor) {
 	map_destroy(&editor->entity_selected);
-	map_destroy(&editor->asset_browser.asset_thumbnail_cache);
+	map_destroy(&editor->panel_asset_browser.asset_thumbnail_cache);
 	destroy_asset_importer(&editor->importer);
 	arena_free(&editor->arena);
 }
-
-
-
 
 void editor_update(EditorInterface* editor) {
 
@@ -905,13 +772,13 @@ void editor_update(EditorInterface* editor) {
 	Renderer* renderer = editor->api.renderer;
 	Window* window = editor->api.window;
 
-	Camera* camera = get_camera(entity_manager, editor->editor_camera);
+	Camera* camera = get_camera(entity_manager, editor->viewports.scene.camera);
 	EditorControlsData* editor_control_data = &editor->editor_control_data;
 	
 	
 	//  Used to style the editor
 	ImGuiStyle* style = &ImGui::GetStyle();
-	ShowStyleEditor(style);
+	//ShowStyleEditor(style);
 	
 	float delta_time = get_delta_time(timer);
 	
@@ -979,7 +846,7 @@ void editor_update(EditorInterface* editor) {
 	};
 	
 	OrthoPlaneMovement plane;
-	if (editor->current_viewport_capture == EditorInterface::EditorViewport::Scene) {
+	if (editor->viewports.current_viewport_capture == PanelViewports::ViewportType::Scene) {
 
 
 		if (is_mouse_pressed(input, MouseButton::Left)) {
@@ -994,14 +861,14 @@ void editor_update(EditorInterface* editor) {
 
 		// Capture scolling to move camera forward and back
 		if (scroll.y != 0) {
-			Vec3f new_cam_direction = (delta_time * -forward(entity_manager, editor->editor_camera));
+			Vec3f new_cam_direction = (delta_time * -forward(entity_manager, editor->viewports.scene.camera));
 
 			// TODO: make this configurable
 			float scroll_scale = 10.0f;
 
 			float cam_move_scale = scroll_scale * scroll.y;
-			Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
-			set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
+			Vec3f cam_pos = get_position(entity_manager, editor->viewports.scene.camera);
+			set_position(entity_manager, editor->viewports.scene.camera, cam_pos + (cam_move_scale * new_cam_direction));
 		}
 
 		int x = input->mouse.pos.x;
@@ -1035,32 +902,32 @@ void editor_update(EditorInterface* editor) {
 
 
 			// Since the camera always looks down -z
-			if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, editor->editor_camera)); }
-			if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, editor->editor_camera)); }
-			if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, editor->editor_camera)); }
-			if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, editor->editor_camera)); }
-			if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, editor->editor_camera)); }
-			if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, editor->editor_camera)); }
+			if (is_key_down(input, KEYCODE_W)) { new_cam_direction += (delta_time * -forward(entity_manager, editor->viewports.scene.camera)); }
+			if (is_key_down(input, KEYCODE_S)) { new_cam_direction += (delta_time * forward(entity_manager, editor->viewports.scene.camera)); }
+			if (is_key_down(input, KEYCODE_D)) { new_cam_direction += (delta_time * right(entity_manager, editor->viewports.scene.camera)); }
+			if (is_key_down(input, KEYCODE_A)) { new_cam_direction += (delta_time * -right(entity_manager, editor->viewports.scene.camera)); }
+			if (is_key_down(input, KEYCODE_LSHIFT)) { new_cam_direction += (delta_time * up(entity_manager, editor->viewports.scene.camera)); }
+			if (is_key_down(input, KEYCODE_LCTRL)) { new_cam_direction += (delta_time * -up(entity_manager, editor->viewports.scene.camera)); }
 
 			float cam_move_scale = 10;
-			Vec3f cam_pos = get_position(entity_manager, editor->editor_camera);
-			set_position(entity_manager, editor->editor_camera, cam_pos + (cam_move_scale * new_cam_direction));
+			Vec3f cam_pos = get_position(entity_manager, editor->viewports.scene.camera);
+			set_position(entity_manager, editor->viewports.scene.camera, cam_pos + (cam_move_scale * new_cam_direction));
 
 
 			// Prevent camera rotation jump, when the delta between the last time the right mouse was down and now
-			if (editor->right_click_down) {
+			if (editor->viewports.right_click_down) {
 				// TODO: this will be exposed to the user, we still need to implement proper control handling in engine
 				float sensitivity = 0.25f;
-				Quat old_cam_rot = get_rotation(entity_manager, editor->editor_camera);
+				Quat old_cam_rot = get_rotation(entity_manager, editor->viewports.scene.camera);
 				Quat new_cam_rot = quat_from_axis_angle(Vec3f_Up, -rel_pos.x * sensitivity) * old_cam_rot;
 				new_cam_rot = new_cam_rot * quat_from_axis_angle(Vec3f_Right, -rel_pos.y * sensitivity);
 
-				set_rotation(entity_manager, editor->editor_camera, new_cam_rot);
+				set_rotation(entity_manager, editor->viewports.scene.camera, new_cam_rot);
 			}
-			editor->right_click_down = true;
+			editor->viewports.right_click_down = true;
 		}
 		else {
-			editor->right_click_down = false;
+			editor->viewports.right_click_down = false;
 			SDL_ShowCursor(SDL_ENABLE);
 			SDL_SetRelativeMouseMode(SDL_FALSE);
 
@@ -1069,20 +936,20 @@ void editor_update(EditorInterface* editor) {
 	else {
 		Entity ortho_cam;
 		bool ortho_capture = false;
-		if (editor->current_viewport_capture == EditorInterface::EditorViewport::Top) {
-			ortho_cam = editor->editor_top_camera;
+		if (editor->viewports.current_viewport_capture == PanelViewports::ViewportType::Top) {
+			ortho_cam = editor->viewports.top.camera;
 			ortho_capture = true;
 			plane = OrthoPlaneMovement::XZ;
 		}
 
-		else if (editor->current_viewport_capture == EditorInterface::EditorViewport::Side) {
-			ortho_cam = editor->editor_side_camera;
+		else if (editor->viewports.current_viewport_capture == PanelViewports::ViewportType::Side) {
+			ortho_cam = editor->viewports.side.camera;
 			ortho_capture = true;
 			plane = OrthoPlaneMovement::YZ;
 		}
 
-		else if (editor->current_viewport_capture == EditorInterface::EditorViewport::Front) {
-			ortho_cam = editor->editor_front_camera;
+		else if (editor->viewports.current_viewport_capture == PanelViewports::ViewportType::Front) {
+			ortho_cam = editor->viewports.front.camera;
 			ortho_capture = true;
 			plane = OrthoPlaneMovement::XY;
 		}
@@ -1136,9 +1003,9 @@ void editor_update(EditorInterface* editor) {
 				
 				set_position(entity_manager, ortho_cam, new_cam_pos);
 
-				editor->right_click_down = true;
+				editor->viewports.right_click_down = true;
 			} else {
-				editor->right_click_down = false;
+				editor->viewports.right_click_down = false;
 			}
 
 		}
@@ -1157,29 +1024,25 @@ void editor_update(EditorInterface* editor) {
 	set_editor_layout(editor);
 	draw_main_menu_bar(editor);
 	draw_toolbar(editor);
-	draw_window_entity_components(editor);
-	draw_window_scene_hierarchy(editor);
-	draw_window_engine_timer(editor);
-	draw_window_log(editor);
-	draw_window_assets(editor);
-	draw_viewports(editor);
-	draw_window_renderer_stats(editor);
+	draw_panel_components(editor);
+	draw_panel_scene_tree(editor);
+	draw_panel_timer(editor);
+	draw_panel_log(editor);
+	draw_panel_asset_browser(editor);
+	draw_panel_viewports(editor);
+	draw_panel_render_stats(editor);
 	draw_editor_command_undo_and_redo_stack(editor);
-	draw_window_asset_details(editor);
+	draw_panel_asset_details(editor);
 	
 
 
 	process_editor_command_buffer(editor);
 }
 
-
-
-
 static bool is_entity_selected(EditorInterface* editor, Entity entity) {
 	bool selected = map_get(&editor->entity_selected, entity.id, false);
 	return selected;
 }
-
 
 static void draw_main_menu_bar(EditorInterface* editor) {
 	// Menu bar
@@ -1235,12 +1098,12 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 
 				ImGui::EndMenu();
 			}
-			ImGui::MenuItem("Scene Tree", NULL, &editor->window_scene_tree_open);
-			ImGui::MenuItem("Entity Components", NULL, &editor->window_entity_components_open);
-			ImGui::MenuItem("Game Loop", NULL, &editor->window_engine_timers_open);
-			ImGui::MenuItem("Log", NULL, &editor->window_log_open);
-			ImGui::MenuItem("Asset Browser", NULL, &editor->window_asset_browser_open);
-			ImGui::MenuItem("Render Stats", NULL, &editor->window_render_stats);
+			ImGui::MenuItem("Scene Tree", NULL, &editor->panel_scenetree.panel_open);
+			ImGui::MenuItem("Entity Components", NULL, &editor->panel_components.panel_open);
+			ImGui::MenuItem("Game Loop", NULL, &editor->panel_timers.panel_open);
+			ImGui::MenuItem("Log", NULL, &editor->panel_log.panel_open);
+			ImGui::MenuItem("Asset Browser", NULL, &editor->panel_asset_browser.panel_open);
+			ImGui::MenuItem("Render Stats", NULL, &editor->panel_render_stats.panel_open);
 			
 			
 			ImGui::EndMenu();
@@ -1289,9 +1152,9 @@ static AssetBrowserFileNode* try_find_child_node_already_created_in_parent_node(
 static RenderResource get_asset_browser_thumbnail_for_asset(EditorInterface* editor, AssetID id) {
 	if (id.id == 0) {
 		// No thumnbail for non assets
-		return editor->asset_browser.res_asset_icon_texture;
+		return editor->panel_asset_browser.res_asset_icon_texture;
 	}
-	MapResult<RenderResource> result = map_get(&editor->asset_browser.asset_thumbnail_cache, id.id);
+	MapResult<RenderResource> result = map_get(&editor->panel_asset_browser.asset_thumbnail_cache, id.id);
 	if (result.found) {
 		return result.value;
 	}
@@ -1301,11 +1164,11 @@ static RenderResource get_asset_browser_thumbnail_for_asset(EditorInterface* edi
 		case AssetType::Texture: {
 			Texture2D* txt = internal_asset.texture;
 			RenderResource tex_resource = create_texture_resource(editor->api.renderer, txt, false, false);
-			map_put(&editor->asset_browser.asset_thumbnail_cache, id.id, tex_resource);
+			map_put(&editor->panel_asset_browser.asset_thumbnail_cache, id.id, tex_resource);
 			return tex_resource;
 		}
 		default: {
-			return editor->asset_browser.res_asset_icon_texture;
+			return editor->panel_asset_browser.res_asset_icon_texture;
 		}
 								 
 	}
@@ -1316,18 +1179,18 @@ static void construct_asset_brower_tree(EditorInterface* editor) {
 	
 	Texture2D folder_texture;
 	load_texture("editor_resources/thumbnails/Folder-Icon.png", &folder_texture, &editor->stack, false);
-	editor->asset_browser.res_folder_icon_texture = create_texture_resource(editor->api.renderer, &folder_texture, false);
+	editor->panel_asset_browser.res_folder_icon_texture = create_texture_resource(editor->api.renderer, &folder_texture, false);
 	stack_pop(&editor->stack);
 
 	Texture2D default_asset_icon;
 	load_texture("editor_resources/thumbnails/Asset-Icon.png", &default_asset_icon, &editor->stack, false);
-	editor->asset_browser.res_asset_icon_texture = create_texture_resource(editor->api.renderer, &default_asset_icon, false);
+	editor->panel_asset_browser.res_asset_icon_texture = create_texture_resource(editor->api.renderer, &default_asset_icon, false);
 	stack_pop(&editor->stack);
 
 
 	AssetTracker* tracker = &editor->api.asset_manager->asset_tracker;
 	size_t map_size = tracker->track_map.size;
-	editor->asset_browser.root = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
+	editor->panel_asset_browser.root = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
 
 	
 	const char* root_name_str = "Root";
@@ -1337,15 +1200,15 @@ static void construct_asset_brower_tree(EditorInterface* editor) {
 	memcpy(root_name, root_name_str, root_name_str_length);
 	root_name[root_name_str_length + 1] = '\0';
 
-
-	editor->asset_browser.root->node_type = AssetBrowserFileNodeType::Directory;
-	editor->asset_browser.root->asset = AssetID();
-	editor->asset_browser.root->name = String(root_name, root_name_str_length);
-	editor->asset_browser.root->children_count = 0;
-	editor->asset_browser.root->parent = NULL;
-	editor->asset_browser.root->first_child = NULL;
-	editor->asset_browser.root->next_sibling = NULL;
-	editor->asset_browser.root->has_child_directorys = false;
+	
+	editor->panel_asset_browser.root->node_type = AssetBrowserFileNode::Type::Directory;
+	editor->panel_asset_browser.root->asset = AssetID();
+	editor->panel_asset_browser.root->name = String(root_name, root_name_str_length);
+	editor->panel_asset_browser.root->children_count = 0;
+	editor->panel_asset_browser.root->parent = NULL;
+	editor->panel_asset_browser.root->first_child = NULL;
+	editor->panel_asset_browser.root->next_sibling = NULL;
+	editor->panel_asset_browser.root->has_child_directorys = false;
 
 	for (size_t i = 0; i < map_size; i++) {
 		CompactMapItem<AssetTrackData> track_item = tracker->track_map.map[i];
@@ -1354,7 +1217,7 @@ static void construct_asset_brower_tree(EditorInterface* editor) {
 			String fullpath = track_item.value.file;
 
 
-			AssetBrowserFileNode* parent_node = editor->asset_browser.root;
+			AssetBrowserFileNode* parent_node = editor->panel_asset_browser.root;
 
 			char* data = (char*)fullpath.buffer;
 			char* next;
@@ -1375,7 +1238,7 @@ static void construct_asset_brower_tree(EditorInterface* editor) {
 					dir_node = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
 
 					if (*next == '\\') {
-						dir_node->node_type = AssetBrowserFileNodeType::Directory;
+						dir_node->node_type = AssetBrowserFileNode::Type::Directory;
 						dir_node->asset = AssetID();
 					} else {
 						assert(false && "This is not a directory, but shouldnt get here");
@@ -1416,7 +1279,7 @@ static void construct_asset_brower_tree(EditorInterface* editor) {
 				curr = next + 1;
 			}
 			AssetBrowserFileNode* file_node = (AssetBrowserFileNode*)arena_alloc(&tracker->mem, sizeof(AssetBrowserFileNode));
-			file_node->node_type = AssetBrowserFileNodeType::File;
+			file_node->node_type = AssetBrowserFileNode::Type::File;
 
 			// Copy name
 			String token = String(curr, strlen(curr));
@@ -1450,15 +1313,12 @@ static void construct_asset_brower_tree(EditorInterface* editor) {
 		}
 	}
 
-	editor->asset_browser.current_directory = editor->asset_browser.root;
+	editor->panel_asset_browser.current_directory = editor->panel_asset_browser.root;
 
 }
 
 static void draw_component_transform(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
-	
-	
-	
 	
 	ImGui::PushID("transform_component");
 	if (ImGui::CollapsingHeader("Transform", 0, ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -1569,7 +1429,6 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 	ImGui::PopID();
 }
 
-
 static void draw_component_camera(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
@@ -1679,7 +1538,6 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 	}
 	ImGui::PopID();
 }
-
 
 static void draw_component_light(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
@@ -1902,9 +1760,6 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	ImGui::PopID();
 }
 
-
-
-
 static void draw_component_render(EditorInterface* editor, Entity e) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	ImGui::PushID("render_component");
@@ -1978,17 +1833,14 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 	ImGui::PopID();
 }
 
-
-
-
-static void draw_window_entity_components(EditorInterface* editor) {
+static void draw_panel_components(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 
-	if (!editor->window_entity_components_open) {
+	if (!editor->panel_components.panel_open) {
 		return;
 	}
 
-	if (ImGui::Begin("Entity Components", &editor->window_entity_components_open)) {
+	if (ImGui::Begin("Entity Components", &editor->panel_components.panel_open)) {
 		
 		
 
@@ -2186,7 +2038,6 @@ static void dragdrop_target_entity_tree(EditorInterface* editor, Entity e) {
 	}
 }
 
-
 static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 	//if (editor->editor_camera == e) {
@@ -2286,12 +2137,12 @@ static void draw_entity_tree(EditorInterface* editor, Entity e) {
 
 }
 
-static void draw_window_scene_hierarchy(EditorInterface* editor) {
-	if (!editor->window_scene_tree_open) {
+static void draw_panel_scene_tree(EditorInterface* editor) {
+	if (!editor->panel_scenetree.panel_open) {
 		return;
 	}
 	EntityManager* entity_manager = editor->api.entity_manager;
-	if (ImGui::Begin("Entity Scene Tree", &editor->window_scene_tree_open)) {
+	if (ImGui::Begin("Entity Scene Tree", &editor->panel_scenetree.panel_open)) {
 		
 		
 		
@@ -2306,18 +2157,18 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 		//ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
 		
 
-		editor->scene_tree_entity_filter.Draw("Filter");
+		editor->panel_scenetree.scene_tree_entity_filter.Draw("Filter");
 
 		ImGui::Separator();
 
-		if (editor->scene_tree_entity_filter.IsActive()) {
+		if (editor->panel_scenetree.scene_tree_entity_filter.IsActive()) {
 			// Draw as linear list when filtered
 			u64 count = entity_manager->entity_count;
 			for (int i = 0; i < count; i++) {
 				Entity e = entity_manager->entity_list[i];
 				String name = get_name(&editor->api.entity_manager->meta_manager, e);
 
-				if (editor->scene_tree_entity_filter.PassFilter(name.buffer, name.buffer + name.length)) {
+				if (editor->panel_scenetree.scene_tree_entity_filter.PassFilter(name.buffer, name.buffer + name.length)) {
 					bool entity_selected = is_entity_selected(editor, e);
 
 					if (ImGui::Selectable(name.buffer, entity_selected)) {
@@ -2408,24 +2259,23 @@ static void draw_window_scene_hierarchy(EditorInterface* editor) {
 	
 }
 
-
-static void draw_window_engine_timer(EditorInterface* editor) {
+static void draw_panel_timer(EditorInterface* editor) {
 	GameTimer* timer = editor->api.game_loop;
-	if (!editor->window_engine_timers_open) {
+	if (!editor->panel_timers.panel_open) {
 		return;
 	}
 	
-	if (ImGui::Begin("Game Loop", &editor->window_engine_timers_open)) {
+	if (ImGui::Begin("Game Loop", &editor->panel_timers.panel_open)) {
 
 		ImGui::Checkbox("Cap framerate", &timer->cap_framerate);
 		if (timer->cap_framerate) {
 			ImGui::SliderInt("Target Framerate", &timer->target_fps, 0, 240);
 		}
-		editor->fps_history[editor->fps_history_index] = timer->fps;
-		editor->fps_history_index = ((editor->fps_history_index + 1) % FPS_HISTORY_COUNT);
+		editor->panel_timers.fps_history[editor->panel_timers.fps_history_index] = timer->fps;
+		editor->panel_timers.fps_history_index = ((editor->panel_timers.fps_history_index + 1) % FPS_HISTORY_COUNT);
 		static char fps_text[32];
 		snprintf(fps_text, 32, "FPS %d - dt %f", timer->fps, timer->delta_time);
-		ImGui::PlotLines("Frame Times", editor->fps_history, IM_ARRAYSIZE(editor->fps_history), 0, fps_text, 0.0f, 120.0f, ImVec2(0, 140));
+		ImGui::PlotLines("Frame Times", editor->panel_timers.fps_history, IM_ARRAYSIZE(editor->panel_timers.fps_history), 0, fps_text, 0.0f, 120.0f, ImVec2(0, 140));
 
 
 		ImGui::Text("Time %f", timer->seconds);
@@ -2442,17 +2292,18 @@ static void draw_window_engine_timer(EditorInterface* editor) {
 
 }
 
-static void draw_window_log(EditorInterface* editor) {
+static void draw_panel_log(EditorInterface* editor) {
 
-	if (!editor->window_log_open) {
+	PanelLog* panel_log = &editor->panel_log;
+	if (!panel_log->panel_open) {
 		return;
 	}
 
-	if (ImGui::Begin("Log", &editor->window_log_open)) {
+	if (ImGui::Begin("Log", &panel_log->panel_open)) {
 
 		LogList logs = g_get_loglist();
 
-		editor->log_filter.Draw("Filter");
+		panel_log->log_filter.Draw("Filter");
 		ImGui::SameLine();
 		
 
@@ -2463,18 +2314,18 @@ static void draw_window_log(EditorInterface* editor) {
 		ImGui::SameLine(ImGui::GetWindowWidth() - pos);
 
 		if (ImGui::Button("Clear")) {
-			editor->log_start_offset = logs.log_count;
+			panel_log->log_start_offset = logs.log_count;
 		}
 		HostButtonWidth = ImGui::GetItemRectSize().x; //Get the actual width for next frame.
 
 		ImGui::Separator();
 
 
-		ImGui::Checkbox("Info", &editor->show_info);
+		ImGui::Checkbox("Info", &panel_log->show_info);
 		ImGui::SameLine();
-		ImGui::Checkbox("Warning", &editor->show_warning);
+		ImGui::Checkbox("Warning", &panel_log->show_warning);
 		ImGui::SameLine();
-		ImGui::Checkbox("Fatal", &editor->show_fatal);
+		ImGui::Checkbox("Fatal", &panel_log->show_fatal);
 		ImGui::SameLine();
 		
 
@@ -2509,54 +2360,54 @@ static void draw_window_log(EditorInterface* editor) {
 
 		if (ImGui::BeginPopup("log_options_popup"))
 		{
-			ImGui::Checkbox("Auto Scroll", &editor->auto_scroll);
+			ImGui::Checkbox("Auto Scroll", &panel_log->auto_scroll);
 			ImGui::Separator();
 			ImGui::Text("Column Filters");
-			ImGui::Checkbox(str_time, &editor->show_time); ImGui::SameLine();
-			ImGui::Checkbox(str_tag, &editor->show_tag); ImGui::SameLine();
-			ImGui::Checkbox(str_thread_id, &editor->show_thread_id); ImGui::SameLine();
-			ImGui::Checkbox(str_filename, &editor->show_filename); ImGui::SameLine();
-			ImGui::Checkbox(str_function, &editor->show_function); ImGui::SameLine();
-			ImGui::Checkbox(str_line, &editor->show_line); ImGui::SameLine();
-			//ImGui::Checkbox(str_msg, &editor->show_message); ImGui::SameLine();
+			ImGui::Checkbox(str_time, &panel_log->show_time); ImGui::SameLine();
+			ImGui::Checkbox(str_tag, &panel_log->show_tag); ImGui::SameLine();
+			ImGui::Checkbox(str_thread_id, &panel_log->show_thread_id); ImGui::SameLine();
+			ImGui::Checkbox(str_filename, &panel_log->show_filename); ImGui::SameLine();
+			ImGui::Checkbox(str_function, &panel_log->show_function); ImGui::SameLine();
+			ImGui::Checkbox(str_line, &panel_log->show_line); ImGui::SameLine();
+			//ImGui::Checkbox(str_msg, &panel_log->show_message); ImGui::SameLine();
 			ImGui::EndPopup();
 		}
 
 		ImGui::Spacing();
 		ImGui::Separator();
 		int col_count =
-			editor->show_time
-			+ editor->show_tag
-			+ editor->show_thread_id
-			+ editor->show_filename
-			+ editor->show_function
-			+ editor->show_line
-			+ editor->show_message;
+			panel_log->show_time
+			+ panel_log->show_tag
+			+ panel_log->show_thread_id
+			+ panel_log->show_filename
+			+ panel_log->show_function
+			+ panel_log->show_line
+			+ panel_log->show_message;
 
 		ImGui::BeginGroup();
 		ImGui::BeginChild(1);
 		if (col_count != 0) {
 			ImGui::Columns(col_count, "log_columns");
-			if (editor->show_time) {
+			if (panel_log->show_time) {
 				ImGui::Text(str_time); ImGui::NextColumn();
 			}
-			if (editor->show_tag) {
+			if (panel_log->show_tag) {
 				ImGui::Text(str_tag); ImGui::NextColumn();
 			}
-			if (editor->show_thread_id) {
+			if (panel_log->show_thread_id) {
 				ImGui::Text(str_thread_id); ImGui::NextColumn();
 			}
-			if (editor->show_filename) {
+			if (panel_log->show_filename) {
 				ImGui::Text(str_filename); ImGui::NextColumn();
 			}
-			if (editor->show_function) {
+			if (panel_log->show_function) {
 				ImGui::Text(str_function); ImGui::NextColumn();
 			}
-			if (editor->show_line) {
+			if (panel_log->show_line) {
 				ImGui::Text(str_line); ImGui::NextColumn();
 			}
 
-			if (editor->show_message) {
+			if (panel_log->show_message) {
 				ImGui::Text(str_msg); ImGui::NextColumn();
 			}
 			ImGui::Separator();
@@ -2564,24 +2415,24 @@ static void draw_window_log(EditorInterface* editor) {
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 5));
 
 			
-				for (int i = editor->log_start_offset; i < logs.log_count; i++) {
+				for (int i = panel_log->log_start_offset; i < logs.log_count; i++) {
 					LogItem* log_item = &logs.logs[i];
 					
 					bool found = false;
 
-					if (editor->log_filter.PassFilter(log_item->msg, log_item->msg + log_item->msg_length)) {
+					if (panel_log->log_filter.PassFilter(log_item->msg, log_item->msg + log_item->msg_length)) {
 						found = true;
 					}
 
-					if (editor->log_filter.PassFilter(log_item->tag, log_item->tag + log_item->tag_length)) {
+					if (panel_log->log_filter.PassFilter(log_item->tag, log_item->tag + log_item->tag_length)) {
 						found = true;
 					}
 
-					if (editor->log_filter.PassFilter(log_item->function, log_item->function + log_item->function_length)) {
+					if (panel_log->log_filter.PassFilter(log_item->function, log_item->function + log_item->function_length)) {
 						found = true;
 					}
 
-					if (editor->log_filter.PassFilter(log_item->filename, log_item->filename + log_item->filename_length)) {
+					if (panel_log->log_filter.PassFilter(log_item->filename, log_item->filename + log_item->filename_length)) {
 						found = true;
 					}
 					if (!found) {
@@ -2594,17 +2445,17 @@ static void draw_window_log(EditorInterface* editor) {
 					const char* log_type_str;
 					switch (log_item->verbosity) {
 						case LoggerVerbosity::INFO: {
-							if (!editor->show_info) { continue; }
+							if (!panel_log->show_info) { continue; }
 							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f, 1.0f)); pop_color = true;
 							log_type_str = "[INFO]"; break;
 						}
 						case LoggerVerbosity::WARN: {
-							if (!editor->show_warning) { continue; }
+							if (!panel_log->show_warning) { continue; }
 							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.90f, 0.25f, 1.0f)); pop_color = true;
 							log_type_str = "[WARN]"; break;
 						}
 						case LoggerVerbosity::FATAL: {
-							if (!editor->show_fatal) { continue; }
+							if (!panel_log->show_fatal) { continue; }
 							ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.4f, 0.4f, 1.0f)); pop_color = true;
 							log_type_str = "[FATAL]"; break;
 						}
@@ -2617,32 +2468,32 @@ static void draw_window_log(EditorInterface* editor) {
 						}
 					}
 
-					if (editor->show_time) {
+					if (panel_log->show_time) {
 						ImGui::Text("%llu", log_item->time);
 						ImGui::NextColumn();
 					}
-					if (editor->show_tag) {
+					if (panel_log->show_tag) {
 						ImGui::Text(log_item->tag);
 						ImGui::NextColumn();
 					}
-					if (editor->show_thread_id) {
+					if (panel_log->show_thread_id) {
 						ImGui::Text("%d", log_item->thread_id);
 						ImGui::NextColumn();
 					}
-					if (editor->show_filename) {
+					if (panel_log->show_filename) {
 						ImGui::TextUnformatted(log_item->filename, log_item->filename + log_item->filename_length - 1);
 						ImGui::NextColumn();
 					}
-					if (editor->show_function) {
+					if (panel_log->show_function) {
 						ImGui::TextUnformatted(log_item->function, log_item->function + log_item->function_length - 1);
 						ImGui::NextColumn();
 					}
-					if (editor->show_line) {
+					if (panel_log->show_line) {
 						ImGui::Text("%d", log_item->line);
 						ImGui::NextColumn();
 					}
 
-					if (editor->show_message) {
+					if (panel_log->show_message) {
 						const char* end = (log_item->msg + log_item->msg_length - 1);
 						ImGui::TextUnformatted(log_item->msg, end);
 						ImGui::NextColumn();
@@ -2661,7 +2512,7 @@ static void draw_window_log(EditorInterface* editor) {
 
 			ImGui::PopStyleVar();
 
-			if (editor->auto_scroll) {
+			if (panel_log->auto_scroll) {
 				ImGui::SetScrollHereY(1.0f);
 			}
 
@@ -2673,10 +2524,6 @@ static void draw_window_log(EditorInterface* editor) {
 	ImGui::End();
 }
 
-
-
-
-
 static void recursive_deselect(AssetBrowserFileNode* root) {
 	root->selected = false;
 	AssetBrowserFileNode* child = root->first_child;
@@ -2685,7 +2532,8 @@ static void recursive_deselect(AssetBrowserFileNode* root) {
 		child = child->next_sibling;
 	}
 }
-static void push_assetbrowserfilenode_selected(AssetBrowserData* asset_browser, AssetBrowserFileNode* node, bool additive_select, bool selected) {
+
+static void push_assetbrowserfilenode_selected(PanelAssetBrowser* asset_browser, AssetBrowserFileNode* node, bool additive_select, bool selected) {
 	if (!additive_select) {
 		// if we are not a additive/multi selection, then we need to clear all the previously selected nodes
 		recursive_deselect(asset_browser->root);
@@ -2693,12 +2541,12 @@ static void push_assetbrowserfilenode_selected(AssetBrowserData* asset_browser, 
 	node->selected = selected;
 }
 
-static void push_asset_directory_change(AssetBrowserData* asset_browser, AssetBrowserFileNode* node) {
+static void push_asset_directory_change(PanelAssetBrowser* asset_browser, AssetBrowserFileNode* node) {
 	asset_browser->current_directory = node;
 }
 
 static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, AssetBrowserFileNode* leaf_node) {
-	AssetBrowserData* asset_browser = &editor->asset_browser;
+	PanelAssetBrowser* asset_browser = &editor->panel_asset_browser;
 	if (leaf_node == NULL) {
 		return;
 	} 
@@ -2726,7 +2574,7 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 		if (ImGui::BeginPopup("asset_path_popup")) {
 			AssetBrowserFileNode* children_directories = leaf_node->first_child;
 			while (children_directories != NULL) {
-				if (children_directories->node_type == AssetBrowserFileNodeType::Directory) {
+				if (children_directories->node_type == AssetBrowserFileNode::Type::Directory) {
 					if (ImGui::Selectable(children_directories->name.buffer)) {
 						push_asset_directory_change(asset_browser, children_directories);
 					}
@@ -2750,7 +2598,7 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 // We want to know if we should draw a tree based on the filter text. If a node is deep in the tree hierarchy
 // we want to draw that node and all the parent nodes
 static bool should_draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node) {
-	AssetBrowserData* asset_browser = &editor->asset_browser;
+	PanelAssetBrowser* asset_browser = &editor->panel_asset_browser;
 
 	if (asset_browser->asset_tree_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 		return true;
@@ -2772,11 +2620,11 @@ static void draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node)
 		return;
 	}
 
-	AssetBrowserData* asset_browser = &editor->asset_browser;
+	PanelAssetBrowser* asset_browser = &editor->panel_asset_browser;
 	
 	
 
-	if (node->node_type == AssetBrowserFileNodeType::Directory ) {
+	if (node->node_type == AssetBrowserFileNode::Type::Directory ) {
 
 		if (node->has_child_directorys) {
 			bool selected = asset_browser->current_directory == node;
@@ -2822,8 +2670,6 @@ static void draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node)
 	
 }
 
-
-
 static void draw_asset_browser_context_menu(EditorInterface* editor, AssetTracker* tracker) {
 	if (ImGui::BeginPopupContextWindow()) {
 
@@ -2867,7 +2713,7 @@ static void dragdrop_source_asset(EditorInterface* editor, AssetID assetid, Stri
 }
 
 static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
-	AssetBrowserData* asset_browser = &editor->asset_browser;
+	PanelAssetBrowser* asset_browser = &editor->panel_asset_browser;
 
 	AssetBrowserFileNode* node = asset_browser->current_directory->first_child;
 
@@ -2946,7 +2792,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 			ImGui::Columns(3);
 
 			
-			if (node->node_type == AssetBrowserFileNodeType::Directory) {
+			if (node->node_type == AssetBrowserFileNode::Type::Directory) {
 				bool filter_pass = false;
 				if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 					filter_pass = true;
@@ -2982,7 +2828,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 
 			}
-			else if (node->node_type == AssetBrowserFileNodeType::File) {
+			else if (node->node_type == AssetBrowserFileNode::Type::File) {
 
 
 				bool filter_pass = false;
@@ -3000,8 +2846,8 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 						
 						if (ImGui::IsMouseDoubleClicked(0)) {
 							// open asset viewer for that specific asset type
-							editor->asset_browser.asset_details_current_asset = node;
-							editor->window_asset_details_open = true;
+							editor->panel_asset_details.current_asset = node;
+							editor->panel_asset_details.panel_open = true;
 							
 						}
 						else {
@@ -3024,7 +2870,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 			}
 			
-			if (node->node_type == AssetBrowserFileNodeType::File) {
+			if (node->node_type == AssetBrowserFileNode::Type::File) {
 				dragdrop_source_asset(editor, node->asset, node->name);
 			}
 			ImGui::Columns(1);
@@ -3045,14 +2891,14 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 			bool filter_pass = false;
 			void* icon_id = NULL;
 
-			if (node->node_type == AssetBrowserFileNodeType::Directory) {
+			if (node->node_type == AssetBrowserFileNode::Type::Directory) {
 				if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 					filter_pass = true;
-					icon_id = render_resource_to_id(editor->api.renderer, editor->asset_browser.res_folder_icon_texture);
+					icon_id = render_resource_to_id(editor->api.renderer, editor->panel_asset_browser.res_folder_icon_texture);
 				}
 
 			}
-			else if (node->node_type == AssetBrowserFileNodeType::File) {
+			else if (node->node_type == AssetBrowserFileNode::Type::File) {
 
 				if (asset_browser->asset_browser_filter.PassFilter(node->name.buffer, node->name.buffer + node->name.length)) {
 					if (asset_browser->asset_scene_filter && node->asset.type == AssetType::Scene) { filter_pass = true; }
@@ -3098,22 +2944,22 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 				ImGui::EndGroup();
 				// Drag and drop
-				if (node->node_type == AssetBrowserFileNodeType::File) {
+				if (node->node_type == AssetBrowserFileNode::Type::File) {
 					dragdrop_source_asset(editor, node->asset, node->name);
 				}
 
 				if (ImGui::IsItemHovered()) {
 					if (ImGui::IsMouseDoubleClicked(0)) {
-						if (node->node_type == AssetBrowserFileNodeType::Directory) {
+						if (node->node_type == AssetBrowserFileNode::Type::Directory) {
 							// If this node is a directory, we want to go inside that directory
 							push_asset_directory_change(asset_browser, node);
 						}
-						else if (node->node_type == AssetBrowserFileNodeType::File) {
+						else if (node->node_type == AssetBrowserFileNode::Type::File) {
 							// If this node is a file, we want to open the file with a viewer
 
 							// open asset viewer for that specific asset type
-							editor->asset_browser.asset_details_current_asset = node;
-							editor->window_asset_details_open = true;
+							editor->panel_asset_details.current_asset = node;
+							editor->panel_asset_details.panel_open = true;
 						}
 					}
 					else if (ImGui::IsItemClicked()) {
@@ -3146,16 +2992,14 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	
 }
 
+static void draw_panel_asset_browser(EditorInterface* editor) {
+	PanelAssetBrowser* asset_browser = &editor->panel_asset_browser;
 
-
-static void draw_window_assets(EditorInterface* editor) {
-	AssetBrowserData* asset_browser = &editor->asset_browser;
-
-	if (!editor->window_asset_browser_open) {
+	if (!asset_browser->panel_open) {
 		return;
 	}
 
-	if (ImGui::Begin("Asset Browser", &editor->window_asset_browser_open)) {
+	if (ImGui::Begin("Asset Browser", &asset_browser->panel_open)) {
 		
 		
 
@@ -3191,39 +3035,25 @@ static void draw_window_assets(EditorInterface* editor) {
 		//static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
 		asset_browser->asset_tree_filter.Draw("Search Folders");
 		ImGui::BeginChild("Asset Tree View");
-		draw_asset_tree(editor, editor->asset_browser.root);
+		draw_asset_tree(editor, editor->panel_asset_browser.root);
 		ImGui::EndChild();
 		ImGui::NextColumn();
 
 		draw_asset_browser(editor, tracker);
 		ImGui::Columns(1);
 
-
-		
-
-
-		
-		
-
-
-
-
-
-
-		
-	
 	}
 	ImGui::End();
 }
 
-static void draw_window_renderer_stats(EditorInterface* editor) {
+static void draw_panel_render_stats(EditorInterface* editor) {
 
 	
-	if (!editor->window_render_stats) {
+	if (!editor->panel_render_stats.panel_open) {
 		return;
 	}
 
-	if (ImGui::Begin("Render Stats", &editor->window_render_stats)) {
+	if (ImGui::Begin("Render Stats", &editor->panel_render_stats.panel_open)) {
 		Renderer* renderer = editor->api.renderer;
 
 		char renderer_type_str[16];
@@ -3264,38 +3094,37 @@ static void draw_window_renderer_stats(EditorInterface* editor) {
 	ImGui::End();
 }
 
-
-static void do_viewport_rendering_and_logic(EditorInterface* editor, EditorInterface::EditorViewport viewport) {
+static void do_viewport_rendering_and_logic(EditorInterface* editor, PanelViewports::ViewportType viewport) {
 	RenderResource render_texture;
 	RenderResource depth_texture;
 	Entity camera;
 
 	switch (viewport) {
-		case EditorInterface::EditorViewport::Scene: {
-			render_texture = editor->camera_perspective_render_texture;
-			depth_texture = editor->camera_perspective_depth_texture;
-			camera = editor->editor_camera;
+		case PanelViewports::ViewportType::Scene: {
+			render_texture = editor->viewports.scene.render_texture;
+			depth_texture = editor->viewports.scene.depth_texture;
+			camera = editor->viewports.scene.camera;
 			break;
 		}
 
-		case EditorInterface::EditorViewport::Top: {
-			render_texture = editor->camera_top_render_texture;
-			depth_texture = editor->camera_top_depth_texture;
-			camera = editor->editor_top_camera;
+		case PanelViewports::ViewportType::Top: {
+			render_texture = editor->viewports.top.render_texture;
+			depth_texture = editor->viewports.top.depth_texture;
+			camera = editor->viewports.top.camera;
 			break;
 		}
 
-		case EditorInterface::EditorViewport::Front: {
-			render_texture = editor->camera_front_render_texture;
-			depth_texture = editor->camera_front_depth_texture;
-			camera = editor->editor_front_camera;
+		case PanelViewports::ViewportType::Front: {
+			render_texture = editor->viewports.front.render_texture;
+			depth_texture = editor->viewports.front.depth_texture;
+			camera = editor->viewports.front.camera;
 			break;
 		}
 
-		case EditorInterface::EditorViewport::Side: {
-			render_texture = editor->camera_side_render_texture;
-			depth_texture = editor->camera_side_depth_texture;
-			camera = editor->editor_side_camera;
+		case PanelViewports::ViewportType::Side: {
+			render_texture = editor->viewports.side.render_texture;
+			depth_texture = editor->viewports.side.depth_texture;
+			camera = editor->viewports.side.camera;
 			break;
 		}
 	}
@@ -3314,32 +3143,31 @@ static void do_viewport_rendering_and_logic(EditorInterface* editor, EditorInter
 
 	ImGui::GetWindowDrawList()->AddImage(color, start_group_pos, rect, ImVec2(0, 1), ImVec2(1, 0));
 
-	if (editor->right_click_down) {
+	if (editor->viewports.right_click_down) {
 		// If right click is down then we should not try to capture anything
 	} else {
 		if (ImGui::IsWindowHovered()) {
-			editor->current_viewport_capture = viewport;
+			editor->viewports.current_viewport_capture = viewport;
 		}
 	}
 }
 
-
-static void draw_viewports(EditorInterface* editor) {
+static void draw_panel_viewports(EditorInterface* editor) {
 
 	// Reset capture to none if there is no right click down
 	// the capture_viewport_if_possible calls will recapture the viewports for this frame
-	if (!editor->right_click_down) {
-		editor->current_viewport_capture = EditorInterface::EditorViewport::None;
+	if (!editor->viewports.right_click_down) {
+		editor->viewports.current_viewport_capture = PanelViewports::ViewportType::None;
 	}
 	
 	if (ImGui::Begin("Scene")) {
-		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Scene);
+		do_viewport_rendering_and_logic(editor, PanelViewports::ViewportType::Scene);
 	}
 	ImGui::End();
 
 	if (ImGui::Begin("Game")) {		
-		void* color = render_resource_to_id(editor->api.renderer, editor->camera_perspective_render_texture);
-		void* depth = render_resource_to_id(editor->api.renderer, editor->camera_perspective_depth_texture);
+		void* color = render_resource_to_id(editor->api.renderer, editor->viewports.scene.render_texture);
+		void* depth = render_resource_to_id(editor->api.renderer, editor->viewports.scene.depth_texture);
 
 		ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
 		ImVec2 viewport_size = ImGui::GetCurrentWindow()->Size;
@@ -3352,19 +3180,19 @@ static void draw_viewports(EditorInterface* editor) {
 	ImGui::End();
 
 	if (ImGui::Begin("Top - Y Axis")) {
-		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Top);
+		do_viewport_rendering_and_logic(editor, PanelViewports::ViewportType::Top);
 	}
 	ImGui::End();
 
 
 	if (ImGui::Begin("Front - Z Axis")) {
-		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Front);
+		do_viewport_rendering_and_logic(editor, PanelViewports::ViewportType::Front);
 	}
 	ImGui::End();
 
 
 	if (ImGui::Begin("Side - x Axis")) {
-		do_viewport_rendering_and_logic(editor, EditorInterface::EditorViewport::Side);
+		do_viewport_rendering_and_logic(editor, PanelViewports::ViewportType::Side);
 	}
 	ImGui::End();
 }
@@ -3437,12 +3265,12 @@ static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
 
 }
 
-static void draw_window_asset_details(EditorInterface* editor) {
-	if (!editor->window_asset_details_open) { return; }
-	AssetBrowserFileNode* node = editor->asset_browser.asset_details_current_asset;
+static void draw_panel_asset_details(EditorInterface* editor) {
+	if (!editor->panel_asset_details.panel_open) { return; }
+	AssetBrowserFileNode* node = editor->panel_asset_details.current_asset;
 	AssetID id = node->asset;
 	
-	if (ImGui::Begin("Asset Detail", &editor->window_asset_details_open)) {
+	if (ImGui::Begin("Asset Detail", &editor->panel_asset_details.panel_open)) {
 		switch (id.type) {
 			case AssetType::Texture: {
 				InternalAsset internal_asset = get_internal_asset_by_id(editor->api.asset_manager, id);
@@ -3538,7 +3366,6 @@ static void draw_window_asset_details(EditorInterface* editor) {
 
 }
 
-
 static void push_editor_undo_command(EditorInterface* editor, const EditorCommand& command) {
 
 	
@@ -3565,17 +3392,12 @@ static void push_editor_command(EditorInterface* editor, const EditorCommand& co
 
 }
 
-
-
 static void push_editor_redo_command(EditorInterface* editor, const EditorCommand& command) {
 	editor->cmd_buffer.command_redo_stack[editor->cmd_buffer.command_redo_stack_count] = command;
 	editor->cmd_buffer.command_redo_stack_count++;
 	// Too many commands were sent this frame
 	assert(editor->cmd_buffer.command_redo_stack_count < EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY);
 }
-
-
-
 
 static void perform_undo_operation(EditorInterface* editor) {
 	if (editor->cmd_buffer.command_undo_stack_count > 0) {
@@ -3692,7 +3514,6 @@ static void perform_redo_operation(EditorInterface* editor) {
 	}
 
 }
-
 
 static void perform_command(EditorInterface* editor, EditorCommand command, bool undo) {
 	
@@ -3871,8 +3692,6 @@ static void perform_command(EditorInterface* editor, EditorCommand command, bool
 
 }
 
-
-
 static void process_editor_command_buffer(EditorInterface* editor) {
 	EditorCommandBuffer* cmd_buffer = &editor->cmd_buffer;
 	const size_t command_count = cmd_buffer->command_count;
@@ -3884,7 +3703,6 @@ static void process_editor_command_buffer(EditorInterface* editor) {
 	
 	cmd_buffer->command_count = 0;
 }
-
 
 static void cmd_editor_group_begin(EditorInterface* editor) {
 	size_t group_count = editor->cmd_buffer.command_group_stack_count;
@@ -3906,6 +3724,7 @@ static void cmd_editor_group_begin(EditorInterface* editor) {
 	//editor->cmd_buffer.current_group.command_count = 0;
 
 }
+
 static void cmd_editor_group_end(EditorInterface* editor) {
 	
 	size_t group_count = editor->cmd_buffer.command_group_stack_count;
@@ -3994,7 +3813,6 @@ static void cmd_editor_create_sphere(EditorInterface* editor) {
 
 }
 
-
 static void cmd_editor_create_cube(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	EditorCommand command;
@@ -4031,7 +3849,6 @@ static void cmd_editor_create_light(EditorInterface* editor) {
 
 }
 
-
 static void cmd_editor_create_camera(EditorInterface* editor) {
 	EntityManager* entity_manager = editor->api.entity_manager;
 	EditorCommand command;
@@ -4047,7 +3864,6 @@ static void cmd_editor_create_camera(EditorInterface* editor) {
 
 	push_editor_command(editor, command);
 }
-
 
 static void cmd_editor_select_entity(EditorInterface* editor, Entity entity, bool selected) {
 	EditorCommand command;
@@ -4078,7 +3894,6 @@ static void cmd_editor_deselect_all_entitys(EditorInterface* editor) {
 	
 	
 }
-
 
 static void cmd_edtior_set_transform_component(EditorInterface* editor, Entity e, Vec3f old_pos, Quat old_rot, Vec3f old_scale, Vec3f pos, Quat rot, Vec3f scale, bool merge_if_top) {
 	EditorCommand command;
@@ -4115,7 +3930,6 @@ static void cmd_edtior_set_transform_component(EditorInterface* editor, Entity e
 	
 }
 
-
 static void cmd_editor_set_staticmesh_component(EditorInterface* editor, Entity e, StaticMeshID old_id, StaticMeshID new_id) {
 	EditorCommand command;
 	command.type = EditorCommandType::SET_STATICMESH_COMPONENT;
@@ -4126,7 +3940,6 @@ static void cmd_editor_set_staticmesh_component(EditorInterface* editor, Entity 
 	push_editor_command(editor, command);
 	
 }
-
 
 static void cmd_editor_set_material_component(EditorInterface* editor, Entity e, MaterialID old_id, MaterialID new_id) {
 	EditorCommand command;
@@ -4182,7 +3995,6 @@ static void cmd_editor_set_camera_component(EditorInterface* editor, Entity e, C
 
 	push_editor_command(editor, command);
 }
-
 
 static void cmd_editor_reparent_entity(EditorInterface* editor, Entity e, Entity old_parent, Entity new_parent) {
 	EditorCommand command;

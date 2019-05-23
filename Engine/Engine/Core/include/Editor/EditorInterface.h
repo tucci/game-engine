@@ -29,7 +29,7 @@
 #include "../../imgui/imgui_internal.h"
 #endif
 
-
+#define FPS_HISTORY_COUNT 240
 #define EDITOR_MEMORY MEGABYTES(100)
 
 
@@ -153,6 +153,117 @@ struct EditorCommand {
 #define EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY 128
 #define EDITOR_COMMAND_GROUP_STACK_COUNT 32
 
+struct PanelLog {
+	bool panel_open;
+	
+	bool show_info;
+	bool show_warning;
+	bool show_fatal;
+
+	int log_start_offset;
+
+	bool show_time;
+	bool show_tag;
+	bool show_thread_id;
+	bool show_filename;
+	bool show_function;
+	bool show_line;
+	bool show_message;
+
+
+	bool auto_scroll;
+	ImGuiTextFilter log_filter;
+
+};
+
+
+struct PanelEntityComponents {
+	bool panel_open;
+};
+
+struct PanelSceneTree {
+	bool panel_open;
+	ImGuiTextFilter scene_tree_entity_filter;
+};
+
+struct PanelEngineTimers {
+	bool panel_open;
+	// Game clock vars
+	int fps_history_index = 0;
+	float fps_history[FPS_HISTORY_COUNT] = { 0 };
+};
+
+struct PanelRenderStats {
+	bool panel_open;
+};
+
+
+struct AssetBrowserFileNode {
+
+	enum class Type {
+		None,
+		File,
+		Directory,
+	};
+
+	Type node_type;
+	AssetID asset;
+	String name;
+
+	s32 children_count;
+	struct AssetBrowserFileNode* parent;
+	struct AssetBrowserFileNode* first_child;
+	struct AssetBrowserFileNode* next_sibling;
+	bool has_child_directorys;
+	bool selected = false;
+
+};
+
+
+struct PanelAssetBrowser {
+	bool panel_open;
+
+	// Asset Browser Data
+	AssetBrowserFileNode* root;
+	AssetBrowserFileNode* current_directory;
+	
+
+	CompactMap<RenderResource> asset_thumbnail_cache;
+	RenderResource res_folder_icon_texture;
+	RenderResource res_asset_icon_texture;
+
+	ImGuiTextFilter asset_browser_filter;
+	ImGuiTextFilter asset_tree_filter;
+	bool asset_mesh_filter = true;
+	bool asset_material_filter = true;
+	bool asset_texture_filter = true;
+	bool asset_scene_filter = true;
+};
+
+struct PanelAssetDetails {
+	bool panel_open;
+	AssetBrowserFileNode* current_asset;
+};
+
+struct PanelViewports {
+	enum class ViewportType { None, Scene, Top, Front, Side };
+
+	struct Viewport {
+		Entity camera;
+		Vec2i size;
+		RenderResource framebuffer;
+		RenderResource render_texture;
+		RenderResource depth_texture;
+	};
+	Viewport scene;
+	Viewport top;
+	Viewport front;
+	Viewport side;
+
+	bool right_click_down;
+
+	ViewportType current_viewport_capture;
+};
 
 
 struct EditorCommandBuffer {
@@ -188,54 +299,7 @@ struct EditorControlsData {
 	u64 redo_repeat_count = 0;
 };
 
-enum class AssetBrowserFileNodeType {
-	None,
-	//Root,
-	File,
-	Directory,
-};
 
-
-struct AssetBrowserFileNode {
-	AssetBrowserFileNodeType node_type;
-	AssetID asset;
-	String name;
-
-	s32 children_count;
-	struct AssetBrowserFileNode* parent;
-	struct AssetBrowserFileNode* first_child;
-	struct AssetBrowserFileNode* next_sibling;
-	bool has_child_directorys;
-	bool selected = false;
-
-};
-
-// Ideally We want to be able to have multiple browsers open
-struct AssetBrowserData {
-	// Asset Browser Data
-	AssetBrowserFileNode* root;
-	AssetBrowserFileNode* current_directory;
-	AssetBrowserFileNode* asset_details_current_asset;
-
-	CompactMap<RenderResource> asset_thumbnail_cache;
-	RenderResource res_folder_icon_texture;
-	RenderResource res_asset_icon_texture;
-
-	ImGuiTextFilter asset_browser_filter;
-	ImGuiTextFilter asset_tree_filter;
-	bool asset_mesh_filter = true;
-	bool asset_material_filter = true;
-	bool asset_texture_filter = true;
-	bool asset_scene_filter = true;
-
-	
-	
-};
-
-
-
-
-#define FPS_HISTORY_COUNT 240
 
 
 struct EditorInterface {
@@ -249,13 +313,11 @@ struct EditorInterface {
 
 	AssetImporter importer;
 	EditorCommandBuffer cmd_buffer;
+	EditorControlsData editor_control_data;
 	
 	AssetID default_mat;
 
-	Entity editor_camera;
-	Entity editor_top_camera;
-	Entity editor_front_camera;
-	Entity editor_side_camera;
+	
 
 	Entity entity_test_light;
 	Entity test_mesh;
@@ -263,88 +325,23 @@ struct EditorInterface {
 	
 	HDR_SkyMap hdr_skymap;
 
-	EditorControlsData editor_control_data;
 
-	
-
-	RenderResource camera_perspective_render_framebuffer;
-	RenderResource camera_perspective_render_texture;
-	RenderResource camera_perspective_depth_texture;
-	Vec2i camera_perspective_render_texture_size;
-
-
-	RenderResource camera_top_render_framebuffer;
-	RenderResource camera_top_render_texture;
-	RenderResource camera_top_depth_texture;
-	Vec2i camera_top_render_texture_size;
-
-
-	RenderResource camera_side_render_framebuffer;
-	RenderResource camera_side_render_texture;
-	RenderResource camera_side_depth_texture;
-	Vec2i camera_side_render_texture_size;
-
-
-	RenderResource camera_front_render_framebuffer;
-	RenderResource camera_front_render_texture;
-	RenderResource camera_front_depth_texture;
-	Vec2i camera_front_render_texture_size;
-
-
-	
-
-	
-
-	
-
-	
 
 	ImGuiID dockspace_id = NULL;
-	// Game clock vars
-	int fps_history_index = 0;
-	float fps_history[FPS_HISTORY_COUNT] = { 0 };
-
-	AssetBrowserData asset_browser;
 	
-	bool right_click_down;
-	enum EditorViewport {
-		None,
-		Scene,
-		Top,
-		Front,
-		Side
-	};
-	EditorViewport current_viewport_capture;
+	PanelSceneTree panel_scenetree;
+	PanelLog panel_log;
+	PanelEntityComponents panel_components;
+	PanelEngineTimers panel_timers;
+	PanelRenderStats panel_render_stats;
+	PanelAssetBrowser panel_asset_browser;
+	PanelAssetDetails panel_asset_details;
+	PanelViewports viewports;
 	
 
-	// Log vars
-	bool show_info;
-	bool show_warning;
-	bool show_fatal;
-
-	int log_start_offset;
-
-	bool show_time;
-	bool show_tag;
-	bool show_thread_id;
-	bool show_filename;
-	bool show_function;
-	bool show_line;
-	bool show_message;
-
 	
-	bool auto_scroll;
+	
 
-	ImGuiTextFilter scene_tree_entity_filter;
-	ImGuiTextFilter log_filter;
-
-	bool window_scene_tree_open;
-	bool window_log_open;
-	bool window_asset_browser_open;
-	bool window_entity_components_open;
-	bool window_engine_timers_open;
-	bool window_render_stats;
-	bool window_asset_details_open;
 };
 
 
@@ -370,27 +367,20 @@ static bool is_entity_selected(EditorInterface* editor, Entity entity);
 static RenderResource get_asset_browser_thumbnail_for_asset(EditorInterface* editor, AssetID id);
 static void construct_asset_brower_tree(EditorInterface* editor);
 
-static void draw_component_transform(EditorInterface* editor, Entity e);
-static void draw_component_camera(EditorInterface* editor, Entity e);
-static void draw_component_light(EditorInterface* editor, Entity e);
-static void draw_component_static_mesh(EditorInterface* editor, Entity e);
-static void draw_component_render(EditorInterface* editor, Entity e);
-
-
-
 
 static void draw_main_menu_bar(EditorInterface* editor);
 static void draw_toolbar(EditorInterface* editor);
-static void draw_window_entity_components(EditorInterface* editor);
-static void draw_window_scene_hierarchy(EditorInterface* editor);
-static void draw_window_engine_timer(EditorInterface* editor);
-static void draw_window_log(EditorInterface* editor);
-static void draw_window_assets(EditorInterface* editor);
-static void draw_window_renderer_stats(EditorInterface* editor);
-static void draw_viewports(EditorInterface* editor);
+static void draw_panel_components(EditorInterface* editor);
+static void draw_panel_scene_tree(EditorInterface* editor);
+static void draw_panel_timer(EditorInterface* editor);
+static void draw_panel_log(EditorInterface* editor);
+static void draw_panel_asset_browser(EditorInterface* editor);
+static void draw_panel_render_stats(EditorInterface* editor);
+static void draw_panel_viewports(EditorInterface* editor);
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor);
+static void draw_panel_asset_details(EditorInterface* editor);
 
-static void draw_window_asset_details(EditorInterface* editor);
+
 
 
 
