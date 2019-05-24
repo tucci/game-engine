@@ -23,6 +23,7 @@
 
 
 #include "../../imgui/imgui.h"
+#include "../../editor_resources/fonts/IconsFontAwesome5.h"
 
 #ifndef IMGUI_PROTO_API_USE
 #define IMGUI_INTERNAL_API_USE

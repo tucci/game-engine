@@ -6,6 +6,7 @@
 
 
 
+
 #include "SDL_syswm.h"
 
 
@@ -155,19 +156,23 @@ static void set_editor_layout(EditorInterface* editor) {
 		
 		ImGui::DockBuilderDockWindow("Toolbar", dock_id_top);
 
-		ImGui::DockBuilderDockWindow("Scene", dock_main_id);
-		ImGui::DockBuilderDockWindow("Game", dock_main_id);
+		ImGui::DockBuilderDockWindow(ICON_FA_VIDEO " Scene", dock_main_id);
+		ImGui::DockBuilderDockWindow(ICON_FA_GAMEPAD " Game", dock_main_id);
 
-		ImGui::DockBuilderDockWindow("Entity Scene Tree", dock_id_left);
-		ImGui::DockBuilderDockWindow("Entity Components", dock_id_right);
+		ImGui::DockBuilderDockWindow("Top - Y Axis", dock_main_id);
+		ImGui::DockBuilderDockWindow("Front - Z Axis", dock_main_id);
+		ImGui::DockBuilderDockWindow("Side - x Axis", dock_main_id);
+
+		ImGui::DockBuilderDockWindow(ICON_FA_SITEMAP " Entity Scene Tree", dock_id_left);
+		ImGui::DockBuilderDockWindow(ICON_FA_LIST " Entity Components", dock_id_right);
 		
 		
 
-		ImGui::DockBuilderDockWindow("Game Loop", dock_id_bottom);
-		ImGui::DockBuilderDockWindow("Asset Browser", dock_id_bottom);
-		ImGui::DockBuilderDockWindow("Render Stats", dock_id_bottom);
-		ImGui::DockBuilderDockWindow("Log", dock_id_bottom);
-		ImGui::DockBuilderDockWindow("Command History", dock_id_left_bottom);
+		ImGui::DockBuilderDockWindow(ICON_FA_CLOCK " Game Loop", dock_id_bottom);
+		ImGui::DockBuilderDockWindow(ICON_FA_FOLDER  " Asset Browser", dock_id_bottom);
+		ImGui::DockBuilderDockWindow(ICON_FA_CHART_LINE " Render Stats", dock_id_bottom);
+		ImGui::DockBuilderDockWindow(ICON_FA_TERMINAL " Log", dock_id_bottom);
+		ImGui::DockBuilderDockWindow(ICON_FA_HISTORY " Command History", dock_id_left_bottom);
 
 		
 		
@@ -187,14 +192,22 @@ static void set_editor_style(EditorInterface* editor) {
 	io.Fonts->AddFontDefault();
 	
 	ImFontConfig config;
+	
 	config.OversampleH = 4;
 	config.OversampleV = 1;
 
-	//config.MergeMode = true;
-	//config.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
-	//static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+	
 
-	ImFont* font = io.Fonts->AddFontFromFileTTF("editor_resources/fonts/Lato-Regular.ttf", 14.0f, &config);
+	
+	
+	static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+
+	ImFont* font = io.Fonts->AddFontFromFileTTF("editor_resources/fonts/Lato-Bold.ttf", 14.0f, &config);
+	config.MergeMode = true;
+	config.GlyphMinAdvanceX = 13.0f;
+	font = io.Fonts->AddFontFromFileTTF("editor_resources/fonts/fa-regular-400.ttf", 14.0f, &config, icon_ranges);
+	font = io.Fonts->AddFontFromFileTTF("editor_resources/fonts/fa-solid-900.ttf", 14.0f, &config, icon_ranges);
+	
 	// If the font cant be loaded, load the default font
 	if (font == NULL) {
 		font = io.Fonts->AddFontDefault();
@@ -267,7 +280,7 @@ static void set_editor_style(EditorInterface* editor) {
 	colors[ImGuiCol_Header] = ImVec4(0.12f, 0.29f, 0.62f, 1.00f);
 	colors[ImGuiCol_HeaderHovered] = ImVec4(0.29f, 0.53f, 1.00f, 1.00f);
 	colors[ImGuiCol_HeaderActive] = ImVec4(0.43f, 0.43f, 0.43f, 1.00f);
-	colors[ImGuiCol_Separator] = ImVec4(0.01f, 0.00f, 0.00f, 1.00f);
+	colors[ImGuiCol_Separator] = ImVec4(0.203f, 0.203f, 0.203f, 1.00f);
 	colors[ImGuiCol_SeparatorHovered] = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
 	colors[ImGuiCol_SeparatorActive] = ImVec4(0.29f, 0.53f, 1.00f, 1.00f);
 	colors[ImGuiCol_ResizeGrip] = ImVec4(1.00f, 1.00f, 1.00f, 0.25f);
@@ -690,32 +703,28 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/rust_iron/rust_iron_mat.easset");
 	//editor->test_mat = load_asset_by_name(editor->api.asset_manager, "Assets/textures/paint_cement/paint_cement_mat_mat.easset");
 	
-	AssetID import_scene_fbx = import_fbx(&editor->importer, "Assets/test_fbx/mill.fbx", false);
-	Entity e = import_scene(editor, import_scene_fbx.scene);
+	//AssetID import_scene_fbx = import_fbx(&editor->importer, "Assets/test_fbx/mill.fbx", false);
+	//Entity e = import_scene(editor, import_scene_fbx.scene);
 
+	
 	
 
 
 	EntityManager* entity_manager = editor->api.entity_manager;
 	AssetManager* asset_manager = editor->api.asset_manager;
 
-	Entity e3 = create_entity(entity_manager, "Entity 3");
-	Entity e4 = create_entity(entity_manager, "Entity 4");
-	Entity e5 = create_entity(entity_manager, "Entity 5");
-	Entity e6 = create_entity(entity_manager, "Entity 6");
-	Entity e7 = create_entity(entity_manager, "Entity 7");
-	Entity e8 = create_entity(entity_manager, "Entity 8");
+	
 	editor->test_mesh = create_entity(entity_manager, "Test mesh");
 	editor->entity_test_light = create_entity(entity_manager, "Test Light");
 
 	add_component(entity_manager, editor->entity_test_light, ComponentType::Light);
 
 
-	attach_child_entity(entity_manager, e3, e4);
-	attach_child_entity(entity_manager, e3, e8);
-	attach_child_entity(entity_manager, e4, e5);
-	attach_child_entity(entity_manager, e3, e6);
-	attach_child_entity(entity_manager, e3, editor->test_mesh);
+	//attach_child_entity(entity_manager, e3, e4);
+	//attach_child_entity(entity_manager, e3, e8);
+	//attach_child_entity(entity_manager, e4, e5);
+	//attach_child_entity(entity_manager, e3, e6);
+	//attach_child_entity(entity_manager, e3, editor->test_mesh);
 
 
 
@@ -725,21 +734,21 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 
 	
+	for (int i = 0; i < 10; i++) {
+		Entity new_entity = create_entity(entity_manager, "Entity");
+
+		add_component(entity_manager, new_entity, ComponentType::StaticMesh);
+		add_component(entity_manager, new_entity, ComponentType::Render);
+		set_render_material(entity_manager, new_entity, editor->default_mat.material);
+		set_static_mesh(entity_manager, new_entity, editor->api.asset_manager->sphere_mesh.mesh);
+		set_position(entity_manager, new_entity, Vec3f(i * 2, i, 0));
+	}
+
 	
 
-	add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
-	add_component(entity_manager, editor->test_mesh, ComponentType::Render);
-	set_render_material(entity_manager, editor->test_mesh, editor->default_mat.material);
+
 	
-	set_static_mesh(entity_manager, editor->test_mesh, editor->api.asset_manager->monkey_mesh.mesh);
-
-
-	add_component(entity_manager, e3, ComponentType::StaticMesh);
-	add_component(entity_manager, e3, ComponentType::Render);
-	set_render_material(entity_manager, e3, editor->default_mat.material);
-	set_static_mesh(entity_manager, e3, editor->api.asset_manager->sphere_mesh.mesh);
-
-	set_position(entity_manager, editor->test_mesh, Vec3f(5, 0, 0));
+	
 
 	//add_component(entity_manager, editor->test_mesh, ComponentType::StaticMesh);
 	//add_component(entity_manager, editor->test_mesh, ComponentType::Render);
@@ -862,11 +871,15 @@ void editor_update(EditorInterface* editor) {
 	}
 
 	
-	//Entity e3 = Entity(3);
-	//Vec3f epos = get_position(entity_manager, e3);
-	//epos.y = sinf_(timer->seconds);
-	//epos.x = epos.x + (1 * timer->delta_time);
-	//set_position(entity_manager, e3, epos);
+	
+
+	for (int i = 8; i < 18; i++) {
+		Entity e3 = Entity(i);
+		Vec3f epos = get_position(entity_manager, e3);
+		epos.y =  epos.y + 5 * sinf_(timer->seconds * i) * timer->delta_time;
+		//epos.x = epos.x + (1 * timer->delta_time);
+		set_position(entity_manager, e3, epos);
+	}
 
 	enum class OrthoPlaneMovement {
 		XZ,
@@ -1147,20 +1160,64 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 static void draw_toolbar(EditorInterface* editor) {
 	bool open = true;
 	auto flags = ImGuiWindowFlags_NoResize  | ImGuiWindowFlags_NoTitleBar;
+	
 	if (ImGui::Begin("Toolbar", &open)) {
-		ImGui::Button("Save"); ImGui::SameLine();
-		if (ImGui::Button("Undo")) {
-			perform_undo_operation(editor);
-		}
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 7.0f));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+
+		// Save button
+		ImGui::Button(ICON_FA_SAVE); ImGui::SameLine();
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Save Project");}
+
+		// Undo button
+		if (ImGui::Button(ICON_FA_UNDO)) { perform_undo_operation(editor);}
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Undo"); }
 		ImGui::SameLine();
-		if (ImGui::Button("Redo")) {
-			perform_redo_operation(editor);
-		}
+
+		// Redo button
+		if (ImGui::Button(ICON_FA_REDO)) { perform_redo_operation(editor);}
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Redo"); }
+
 		ImGui::SameLine();
-		ImGui::Button("Translate"); ImGui::SameLine();
-		ImGui::Button("Rotate"); ImGui::SameLine();
-		ImGui::Button("Scale"); ImGui::SameLine();
-		ImGui::Button("Play"); ImGui::SameLine();
+		ImGui::Spacing();
+		ImGui::SameLine();
+		ImGui::VerticalSeparator();
+		ImGui::SameLine();
+		ImGui::Spacing();
+		ImGui::SameLine();
+
+		
+		// Translate button
+		ImGui::Button(ICON_FA_ARROWS_ALT); ImGui::SameLine();
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Translate"); }
+
+		// Rotate button
+		ImGui::Button(ICON_FA_SYNC_ALT); ImGui::SameLine();
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Rotate"); }
+
+		// Scale button
+		ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT); ImGui::SameLine();
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Scale"); }
+
+		ImGui::SameLine();
+		ImGui::Spacing();
+		ImGui::SameLine();
+		ImGui::VerticalSeparator();
+		ImGui::SameLine();
+		ImGui::Spacing();
+		ImGui::SameLine();
+
+		// Play button
+		ImGui::Button(ICON_FA_PLAY); ImGui::SameLine();
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Play Game"); }
+		// Pause button
+		ImGui::Button(ICON_FA_PAUSE); ImGui::SameLine();
+		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Pause Game"); }
+
+
+		ImGui::PopStyleColor(1);
+		ImGui::PopStyleVar(2);
 	}
 	ImGui::End();
 }
@@ -1354,7 +1411,7 @@ static void draw_component_transform(EditorInterface* editor, Entity e) {
 	ImGui::PushID("transform_component");
 	
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
-	if (ImGui::CollapsingHeader("Transform", 0, ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_ASTERISK " Transform", 0, ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1);
 		Vec3f old_pos = get_position(entity_manager, e);
 		Vec3f new_pos = old_pos;
@@ -1463,7 +1520,7 @@ static void draw_component_camera(EditorInterface* editor, Entity e) {
 	ImGui::PushID("camera_component");
 	bool open = true;
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
-	if (ImGui::CollapsingHeader("Camera", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_VIDEO " Camera", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1);
 		bool comp_enabled = true;
 		ImGui::Checkbox("Enabled", &comp_enabled);
@@ -1576,7 +1633,7 @@ static void draw_component_light(EditorInterface* editor, Entity e) {
 	ImGui::PushID("light_component");
 	bool open = true;
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
-	if (ImGui::CollapsingHeader("Light", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_LIGHTBULB " Light", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1);
 		bool comp_enabled = is_component_enabled(entity_manager, e, ComponentType::Light);
 		ImGui::PushID("light_enabled");
@@ -1736,7 +1793,7 @@ static void draw_component_static_mesh(EditorInterface* editor, Entity e) {
 	ImGui::PushID("mesh_component");
 	bool open = true;
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
-	if (ImGui::CollapsingHeader("Static Mesh", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_TH_LARGE " Static Mesh", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1);
 		StaticMeshID mesh_id = get_static_mesh(entity_manager, e);
 		AssetID assetid;
@@ -1803,7 +1860,7 @@ static void draw_component_render(EditorInterface* editor, Entity e) {
 	ImGui::PushID("render_component");
 	bool open = true;
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0);
-	if (ImGui::CollapsingHeader("Render", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
+	if (ImGui::CollapsingHeader(ICON_FA_TH_LARGE " Render", &open, ImGuiTreeNodeFlags_DefaultOpen)) {
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1);
 		bool comp_enabled = is_component_enabled(entity_manager, e, ComponentType::Render);
 		ImGui::PushID("render_enabled");
@@ -1882,7 +1939,7 @@ static void draw_panel_components(EditorInterface* editor) {
 		return;
 	}
 
-	if (ImGui::Begin("Entity Components", &editor->panel_components.panel_open)) {
+	if (ImGui::Begin(ICON_FA_LIST " Entity Components", &editor->panel_components.panel_open)) {
 		
 	//colors[ImGuiCol_Header] = dark_accent;
 	//colors[ImGuiCol_HeaderHovered] = light_accent;
@@ -2198,7 +2255,7 @@ static void draw_panel_scene_tree(EditorInterface* editor) {
 		return;
 	}
 	EntityManager* entity_manager = editor->api.entity_manager;
-	if (ImGui::Begin("Entity Scene Tree", &editor->panel_scenetree.panel_open)) {
+	if (ImGui::Begin(ICON_FA_SITEMAP " Entity Scene Tree", &editor->panel_scenetree.panel_open)) {
 		
 		
 		
@@ -2213,7 +2270,7 @@ static void draw_panel_scene_tree(EditorInterface* editor) {
 		//ImGui::InputText("", str0, IM_ARRAYSIZE(str0));
 		
 
-		editor->panel_scenetree.scene_tree_entity_filter.Draw("Filter");
+		editor->panel_scenetree.scene_tree_entity_filter.Draw(ICON_FA_SEARCH);
 
 		ImGui::Separator();
 
@@ -2321,7 +2378,7 @@ static void draw_panel_timer(EditorInterface* editor) {
 		return;
 	}
 	
-	if (ImGui::Begin("Game Loop", &editor->panel_timers.panel_open)) {
+	if (ImGui::Begin(ICON_FA_CLOCK " Game Loop", &editor->panel_timers.panel_open)) {
 
 		ImGui::Checkbox("Cap framerate", &timer->cap_framerate);
 		if (timer->cap_framerate) {
@@ -2355,11 +2412,11 @@ static void draw_panel_log(EditorInterface* editor) {
 		return;
 	}
 
-	if (ImGui::Begin("Log", &panel_log->panel_open)) {
+	if (ImGui::Begin(ICON_FA_TERMINAL " Log", &panel_log->panel_open)) {
 
 		LogList logs = g_get_loglist();
 
-		panel_log->log_filter.Draw("Filter");
+		panel_log->log_filter.Draw(ICON_FA_SEARCH " Filter");
 		ImGui::SameLine();
 		
 
@@ -2403,7 +2460,7 @@ static void draw_panel_log(EditorInterface* editor) {
 
 		ImGui::SameLine(ImGui::GetWindowWidth() - pos2);
 
-		if (ImGui::Button("Options")) {
+		if (ImGui::Button(ICON_FA_COG " Options")) {
 			ImGui::OpenPopup("log_options_popup");
 		}
 		HostButtonWidth2 = ImGui::GetItemRectSize().x; //Get the actual width for next frame.
@@ -2629,7 +2686,7 @@ static void draw_path_reverse(EditorInterface* editor, AssetTracker* tracker, As
 			// Show popups listing all child directories
 			ImGui::OpenPopup("asset_path_popup");
 		}
-		if (ImGui::BeginPopup("asset_path_popup")) {
+		if (ImGui::BeginPopup( "asset_path_popup")) {
 			AssetBrowserFileNode* children_directories = leaf_node->first_child;
 			while (children_directories != NULL) {
 				if (children_directories->node_type == AssetBrowserFileNode::Type::Directory) {
@@ -2687,8 +2744,7 @@ static void draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node)
 		if (node->has_child_directorys) {
 			bool selected = asset_browser->current_directory == node;
 			ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ((selected) ? ImGuiTreeNodeFlags_Selected : 0);
-			bool open = ImGui::TreeNodeEx(node->name.buffer, node_flags);
-			
+			bool open = ImGui::TreeNodeEx(node->name.buffer, node_flags, "%s %s", ICON_FA_FOLDER, node->name.buffer);
 			
 			
 			if (ImGui::IsItemClicked() && (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) > ImGui::GetTreeNodeToLabelSpacing())
@@ -2713,11 +2769,13 @@ static void draw_asset_tree(EditorInterface* editor, AssetBrowserFileNode* node)
 		else {
 			ImGui::Indent();
 			bool selected = asset_browser->current_directory == node;
+			ImGui::Text(ICON_FA_FOLDER); ImGui::SameLine();
 			bool open = ImGui::Selectable(node->name.buffer, &selected);
 			if (ImGui::IsItemClicked()) {
 				push_asset_directory_change(asset_browser, node);
 			}
 			ImGui::Unindent();
+			
 		}
 		
 
@@ -2777,7 +2835,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 
 	
 	
-	asset_browser->asset_browser_filter.Draw("Search");
+	asset_browser->asset_browser_filter.Draw(ICON_FA_SEARCH " Search");
 
 	ImGui::Checkbox("Scene", &asset_browser->asset_scene_filter); ImGui::SameLine();
 	ImGui::Checkbox("Static Mesh", &asset_browser->asset_mesh_filter); ImGui::SameLine();
@@ -2796,7 +2854,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	ImGui::SameLine(ImGui::GetColumnWidth() - pos3);
 	
 
-	if (ImGui::Button("Options")) {
+	if (ImGui::Button(ICON_FA_COG " Options")) {
 		ImGui::OpenPopup("asset_options_popup");
 	}
 	HostButtonWidth3 = ImGui::GetItemRectSize().x; //Get the actual width for next frame.
@@ -2859,8 +2917,9 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 					ImGui::BeginGroup();
 					bool selected = node->selected;
 
-
 					
+						
+					ImGui::Text(ICON_FA_FOLDER); ImGui::SameLine();
 					if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap | ImGuiSelectableFlags_AllowDoubleClick)) {
 						if (ImGui::IsMouseDoubleClicked(0)) {
 							push_asset_directory_change(asset_browser, node);
@@ -2900,6 +2959,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 				if (filter_pass) {
 					ImGui::BeginGroup();
 					bool selected = node->selected;
+					ImGui::Text(ICON_FA_FILE); ImGui::SameLine();
 					if (ImGui::Selectable(node->name.buffer, &selected, ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowItemOverlap | ImGuiSelectableFlags_AllowDoubleClick)) {
 						
 						if (ImGui::IsMouseDoubleClicked(0)) {
@@ -2937,7 +2997,7 @@ static void draw_asset_browser(EditorInterface* editor, AssetTracker* tracker) {
 	} else {
 		
 		// Tile View
-		int buttons_count = 10;
+		int buttons_count = asset_browser->current_directory->children_count;
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImVec2 button_sz(scale_count * 40, scale_count * 40);
 		int n = 0;
@@ -3057,7 +3117,7 @@ static void draw_panel_asset_browser(EditorInterface* editor) {
 		return;
 	}
 
-	if (ImGui::Begin("Asset Browser", &asset_browser->panel_open)) {
+	if (ImGui::Begin(ICON_FA_FOLDER  " Asset Browser", &asset_browser->panel_open)) {
 		
 		
 
@@ -3093,7 +3153,7 @@ static void draw_panel_asset_browser(EditorInterface* editor) {
 
 		ImGui::Columns(2, "asset_tree_and_browser", true);
 		//static float initial_spacing = 350.f; if (initial_spacing) ImGui::SetColumnWidth(0, initial_spacing), initial_spacing = 0;
-		asset_browser->asset_tree_filter.Draw("Search Folders");
+		asset_browser->asset_tree_filter.Draw(ICON_FA_SEARCH " Search Folders");
 		ImGui::BeginChild("Asset Tree View");
 		draw_asset_tree(editor, editor->panel_asset_browser.root);
 		ImGui::EndChild();
@@ -3113,7 +3173,7 @@ static void draw_panel_render_stats(EditorInterface* editor) {
 		return;
 	}
 
-	if (ImGui::Begin("Render Stats", &editor->panel_render_stats.panel_open)) {
+	if (ImGui::Begin(ICON_FA_CHART_LINE " Render Stats", &editor->panel_render_stats.panel_open)) {
 		Renderer* renderer = editor->api.renderer;
 
 		char renderer_type_str[16];
@@ -3221,12 +3281,12 @@ static void draw_panel_viewports(EditorInterface* editor) {
 		editor->viewports.current_viewport_capture = PanelViewports::ViewportType::None;
 	}
 	
-	if (ImGui::Begin("Scene")) {
+	if (ImGui::Begin(ICON_FA_VIDEO " Scene")) {
 		do_viewport_rendering_and_logic(editor, PanelViewports::ViewportType::Scene);
 	}
 	ImGui::End();
 
-	if (ImGui::Begin("Game")) {		
+	if (ImGui::Begin(ICON_FA_GAMEPAD " Game")) {
 		void* color = render_resource_to_id(editor->api.renderer, editor->viewports.scene.render_texture);
 		void* depth = render_resource_to_id(editor->api.renderer, editor->viewports.scene.depth_texture);
 
@@ -3260,7 +3320,7 @@ static void draw_panel_viewports(EditorInterface* editor) {
 }
 
 static void draw_editor_command_undo_and_redo_stack(EditorInterface* editor) {
-	if (ImGui::Begin("Command History")) {
+	if (ImGui::Begin(ICON_FA_HISTORY " Command History")) {
 		
 		float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
 		if (ImGui::ArrowButton("##left", ImGuiDir_Left)) {
