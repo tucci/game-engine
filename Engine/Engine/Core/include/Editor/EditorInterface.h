@@ -187,15 +187,13 @@ struct PanelSceneTree {
 	ImGuiTextFilter scene_tree_entity_filter;
 };
 
-struct PanelEngineTimers {
+
+
+struct PanelRenderStats {
 	bool panel_open;
 	// Game clock vars
 	int fps_history_index = 0;
 	float fps_history[FPS_HISTORY_COUNT] = { 0 };
-};
-
-struct PanelRenderStats {
-	bool panel_open;
 };
 
 
@@ -329,7 +327,6 @@ struct EditorInterface {
 	PanelSceneTree panel_scenetree;
 	PanelLog panel_log;
 	PanelEntityComponents panel_components;
-	PanelEngineTimers panel_timers;
 	PanelRenderStats panel_render_stats;
 	PanelAssetBrowser panel_asset_browser;
 	PanelAssetDetails panel_asset_details;
@@ -366,7 +363,6 @@ static void draw_main_menu_bar(EditorInterface* editor);
 static void draw_toolbar(EditorInterface* editor);
 static void draw_panel_components(EditorInterface* editor);
 static void draw_panel_scene_tree(EditorInterface* editor);
-static void draw_panel_timer(EditorInterface* editor);
 static void draw_panel_log(EditorInterface* editor);
 static void draw_panel_asset_browser(EditorInterface* editor);
 static void draw_panel_render_stats(EditorInterface* editor);

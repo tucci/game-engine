@@ -168,7 +168,6 @@ static void set_editor_layout(EditorInterface* editor) {
 		
 		
 
-		ImGui::DockBuilderDockWindow(ICON_FA_CLOCK " Game Loop", dock_id_bottom);
 		ImGui::DockBuilderDockWindow(ICON_FA_FOLDER  " Asset Browser", dock_id_bottom);
 		ImGui::DockBuilderDockWindow(ICON_FA_CHART_LINE " Render Stats", dock_id_bottom);
 		ImGui::DockBuilderDockWindow(ICON_FA_TERMINAL " Log", dock_id_bottom);
@@ -610,7 +609,6 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 
 	editor->panel_scenetree.panel_open = true;
 	editor->panel_components.panel_open= true;
-	editor->panel_timers.panel_open = true;
 	editor->panel_render_stats.panel_open = true;
 
 	editor->viewports.current_viewport_capture = PanelViewports::ViewportType::None;
@@ -639,8 +637,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	init_viewport(editor, &editor->viewports.side, "Side Camera", Vec3f(initial_ortho_distance, 0, 0), Vec3f(0, 90.0f, 0), CameraProjection::Orthographic);
 	
 	
-	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
-	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
+	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Alexs_Apartment/Alexs_Apt_2k.hdr");
+	load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Mono_Lake_B/Mono_Lake_B_Ref.hdr");
 	//load_hdr_skymap(&editor->hdr_skymap, &editor->stack, "InternalAssets/skyboxes/hdr/Newport_Loft/Newport_Loft_Ref.hdr");
 
 	create_skymap(api.renderer, &editor->hdr_skymap);
@@ -1068,7 +1066,6 @@ void editor_update(EditorInterface* editor) {
 	draw_toolbar(editor);
 	draw_panel_components(editor);
 	draw_panel_scene_tree(editor);
-	draw_panel_timer(editor);
 	draw_panel_log(editor);
 	draw_panel_asset_browser(editor);
 	draw_panel_viewports(editor);
@@ -1144,7 +1141,6 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 			}
 			ImGui::MenuItem("Scene Tree", NULL, &editor->panel_scenetree.panel_open);
 			ImGui::MenuItem("Entity Components", NULL, &editor->panel_components.panel_open);
-			ImGui::MenuItem("Game Loop", NULL, &editor->panel_timers.panel_open);
 			ImGui::MenuItem("Log", NULL, &editor->panel_log.panel_open);
 			ImGui::MenuItem("Asset Browser", NULL, &editor->panel_asset_browser.panel_open);
 			ImGui::MenuItem("Render Stats", NULL, &editor->panel_render_stats.panel_open);
@@ -2372,38 +2368,6 @@ static void draw_panel_scene_tree(EditorInterface* editor) {
 	
 }
 
-static void draw_panel_timer(EditorInterface* editor) {
-	GameTimer* timer = editor->api.game_loop;
-	if (!editor->panel_timers.panel_open) {
-		return;
-	}
-	
-	if (ImGui::Begin(ICON_FA_CLOCK " Game Loop", &editor->panel_timers.panel_open)) {
-
-		ImGui::Checkbox("Cap framerate", &timer->cap_framerate);
-		if (timer->cap_framerate) {
-			ImGui::SliderInt("Target Framerate", &timer->target_fps, 0, 240);
-		}
-		editor->panel_timers.fps_history[editor->panel_timers.fps_history_index] = timer->fps;
-		editor->panel_timers.fps_history_index = ((editor->panel_timers.fps_history_index + 1) % FPS_HISTORY_COUNT);
-		static char fps_text[32];
-		snprintf(fps_text, 32, "FPS %d - dt %f", timer->fps, timer->delta_time);
-		ImGui::PlotLines("Frame Times", editor->panel_timers.fps_history, IM_ARRAYSIZE(editor->panel_timers.fps_history), 0, fps_text, 0.0f, 120.0f, ImVec2(0, 140));
-
-
-		ImGui::Text("Time %f", timer->seconds);
-		ImGui::Text("Physics Time %f", timer->physics_time);
-		ImGui::Text("Physics Time Step %f", timer->time_step);
-
-		ImGui::Text("Frame Count %d", timer->frame_count);
-		ImGui::Text("Ticks %llu", timer->ticks);
-		ImGui::Text("Delta Ticks %llu", timer->delta_ticks);
-		ImGui::Text("Ticks per sec %llu", timer->ticks_per_sec);
-
-	}
-	ImGui::End();
-
-}
 
 static void draw_panel_log(EditorInterface* editor) {
 
@@ -3189,6 +3153,30 @@ static void draw_panel_render_stats(EditorInterface* editor) {
 			}
 
 		}
+		GameTimer* timer = editor->api.game_loop;
+
+		ImGui::Checkbox("Cap framerate", &timer->cap_framerate);
+		if (timer->cap_framerate) {
+			ImGui::SliderInt("Target Framerate", &timer->target_fps, 0, 240);
+		}
+		editor->panel_render_stats.fps_history[editor->panel_render_stats.fps_history_index] = timer->fps;
+		editor->panel_render_stats.fps_history_index = ((editor->panel_render_stats.fps_history_index + 1) % FPS_HISTORY_COUNT);
+		static char fps_text[32];
+		snprintf(fps_text, 32, "FPS %d - dt %f", timer->fps, timer->delta_time);
+		ImGui::PlotLines("Frame Times", editor->panel_render_stats.fps_history, IM_ARRAYSIZE(editor->panel_render_stats.fps_history), 0, fps_text, 0.0f, 120.0f, ImVec2(0, 100));
+
+
+		ImGui::Text("Time %f", timer->seconds);
+		ImGui::Text("Physics Time %f", timer->physics_time);
+		ImGui::Text("Physics Time Step %f", timer->time_step);
+
+		ImGui::Text("Frame Count %d", timer->frame_count);
+		ImGui::Text("Ticks %llu", timer->ticks);
+		ImGui::Text("Delta Ticks %llu", timer->delta_ticks);
+		ImGui::Text("Ticks per sec %llu", timer->ticks_per_sec);
+
+		ImGui::Separator();
+
 		ImGui::Text("Renderer Backend: %s", renderer_type_str);
 		ImGui::Text("Shader Count: %d", renderer->opengl.shader_count);
 		ImGui::Text("Texture Count: %d", renderer->opengl.texture_count);
