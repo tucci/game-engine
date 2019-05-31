@@ -106,12 +106,14 @@ struct TransformManager {
 
 	Entity* entitys;
 
+	// Global
 	Vec3f* positions;
 	Vec3f* scales;
+	Quat* rotations;
+
 	Vec3f* ups;
 	Vec3f* forwards;
-	Vec3f* rights;
-	Quat* rotations;
+	Vec3f* rights;	
 
 	Mat4x4f* local;
 	Mat4x4f* world;

@@ -86,6 +86,23 @@ void set_camera_framebuffer(EntityManager* manager, Entity entity, RenderResourc
 	cam->framebuffer = framebuffer;
 }
 
+Mat4x4f* get_camera_view_matrix(EntityManager* manager, Entity entity) {
+	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+
+	u64 index = result.value;
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
+	return &cam->view_mat;
+}
+
+Mat4x4f get_camera_projection_matrix(EntityManager* manager, Entity entity) {
+	MapResult<u64> result = map_get(&manager->camera_manager.id_map, entity.id);
+
+	u64 index = result.value;
+	Camera* cam = &manager->camera_manager.enabled_cameras[index];
+
+	return perspective(cam->near_clip, cam->far_clip, cam->fov, cam->aspect_ratio);
+}
+
 void job_compute_camera_view_matrices(EntityManager* manager) {
 	for (int i = 0; i < manager->camera_manager.enabled_count; i++) {
 		Camera* cam = &manager->camera_manager.enabled_cameras[i];

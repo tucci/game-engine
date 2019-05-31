@@ -600,6 +600,8 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api) {
 	editor->panel_log.show_message = true;
 	editor->panel_log.panel_open = true;
 
+	editor->editor_control_data.gizmo_operation = ImGuizmo::TRANSLATE;
+
 
 	
 	
@@ -793,6 +795,107 @@ void destroy_editor_interface(EditorInterface* editor) {
 	arena_free(&editor->arena);
 }
 
+static void draw_gizmo_for_entity_with_camera(EditorInterface* editor, PanelViewports::Viewport viewport, Entity entity) {
+
+	
+	EntityManager* entity_manager = editor->api.entity_manager;
+	
+	Mat4x4f* view_mat = get_camera_view_matrix(entity_manager, viewport.camera);
+	Mat4x4f proj_mat = get_camera_projection_matrix(entity_manager, viewport.camera);
+	Mat4x4f* object_mat = get_world_mat(entity_manager, entity);
+	
+	
+	bool world = editor->editor_control_data.gizmo_mode == ImGuizmo::WORLD;
+	
+	
+	Vec3f old_pos = get_position(entity_manager, entity);
+	Vec3f old_scale = get_scale(entity_manager, entity);
+	Quat old_rot = get_rotation(entity_manager, entity);
+		
+	
+	float default_snap = 0;
+	float* snap = &default_snap;
+	
+	switch (editor->editor_control_data.gizmo_operation) {
+		case ImGuizmo::TRANSLATE:
+			snap = editor->editor_control_data.snap_translate.data;
+			break;
+		case ImGuizmo::ROTATE:
+			snap = &editor->editor_control_data.snap_rotate;
+			break;
+		case ImGuizmo::SCALE:
+			snap = editor->editor_control_data.snap_scale.data;
+			break;
+	}
+	
+	
+	
+	
+	Mat4x4f object_mat_copy;
+	memcpy(object_mat_copy.mat1d, object_mat->mat1d, sizeof(object_mat->mat1d));
+	
+
+	ImGuizmo::Enable(true);
+	ImGuizmo::SetRect(editor->viewports.scene.pos.x, editor->viewports.scene.pos.y, editor->viewports.scene.size.x, editor->viewports.scene.size.y);
+	ImGuizmo::Manipulate(view_mat->mat1d,
+		proj_mat.mat1d,
+		editor->editor_control_data.gizmo_operation,
+		editor->editor_control_data.gizmo_mode,
+		object_mat_copy.mat1d,
+		NULL,
+		editor->editor_control_data.use_gizmo_snapping ? snap : NULL
+		//editor->editor_control_data.gizmo_operation == ImGuizmo::SCALE ? bounds_snap.data : NULL,
+		//editor->editor_control_data.gizmo_operation == ImGuizmo::SCALE ? snap : NULL
+		);
+	
+	
+	if (ImGuizmo::IsUsing()) {
+		editor->editor_control_data.was_using_gizmo_last_frame = true;
+
+		// Get parent world transform
+		Entity par = parent(entity_manager, entity);
+		Mat4x4f* par_mat = get_world_mat(entity_manager, par);
+
+		// Invert the parent world transform
+		Mat4x4f inv_mat;
+		mat4x4f_invert(*par_mat, &inv_mat);
+
+		// Transform the new world transform of the object we just transformed back into world space
+		// local = inverse (world parent) * world of object
+		object_mat_copy = inv_mat * object_mat_copy;
+
+		Vec3f local_new_pos;
+		Vec3f local_new_rot;
+		Vec3f local_new_scale;
+		ImGuizmo::DecomposeMatrixToComponents(object_mat_copy.mat1d, local_new_pos.data, local_new_rot.data, local_new_scale.data);
+
+		
+
+		if (magnitude(old_pos - local_new_pos) > 0.0f) {
+			set_position(entity_manager, entity, local_new_pos);
+			cmd_edtior_set_transform_component(editor, entity, old_pos, old_rot, old_scale, local_new_pos, old_rot, old_scale, true);
+		}
+
+		Quat local_new_rot_quat = euler_to_quat(local_new_rot);
+		Vec4f rot_diff = quat_to_vec(old_rot) - quat_to_vec(local_new_rot_quat);
+		if (magnitude(rot_diff) > 0.0f) {
+			set_rotation(entity_manager, entity, local_new_rot_quat);
+			cmd_edtior_set_transform_component(editor, entity, old_pos, old_rot, old_scale, old_pos, local_new_rot_quat, old_scale, true);
+		}
+
+		if (magnitude(old_scale - local_new_scale) > 0.0f) {
+			set_scale(entity_manager, entity, local_new_scale);
+			cmd_edtior_set_transform_component(editor, entity, old_pos, old_rot, old_scale, old_pos, old_rot, local_new_scale, true);
+		}
+	
+	
+	} else if (editor->editor_control_data.was_using_gizmo_last_frame) {
+		editor->editor_control_data.was_using_gizmo_last_frame = false;
+		cmd_editor_force_no_merge(editor);
+	} 
+	
+}
+
 void editor_update(EditorInterface* editor) {
 
 	ImGui::PushFont(editor->editor_font);
@@ -868,16 +971,18 @@ void editor_update(EditorInterface* editor) {
 		LOG_INFO("Editor", "perform duplicate command");
 	}
 
+
+
 	
 	
 
-	for (int i = 8; i < 18; i++) {
-		Entity e3 = Entity(i);
-		Vec3f epos = get_position(entity_manager, e3);
-		epos.y =  epos.y + 5 * sinf_(timer->seconds * i) * timer->delta_time;
-		//epos.x = epos.x + (1 * timer->delta_time);
-		set_position(entity_manager, e3, epos);
-	}
+	//for (int i = 8; i < 18; i++) {
+	//	Entity e3 = Entity(i);
+	//	Vec3f epos = get_position(entity_manager, e3);
+	//	epos.y =  epos.y + 5 * sinf_(timer->seconds * i) * timer->delta_time;
+	//	//epos.x = epos.x + (1 * timer->delta_time);
+	//	set_position(entity_manager, e3, epos);
+	//}
 
 	enum class OrthoPlaneMovement {
 		XZ,
@@ -886,17 +991,21 @@ void editor_update(EditorInterface* editor) {
 	};
 	
 	OrthoPlaneMovement plane;
+
+
+
+
+	
+
 	if (editor->viewports.current_viewport_capture == PanelViewports::ViewportType::Scene) {
-
-
 		if (is_mouse_pressed(input, MouseButton::Left)) {
 			Vec2i mouse_pos = get_mouse_pos(input);
-
+			
 			// Do a raycast to check which object is pressed
 			//LOG_INFO("MOUSE", "Mouse pos %d, %d\n", mouse_pos.x, mouse_pos.y);
 		}
 
-
+		
 		Vec2i scroll = get_scroll_delta(input);
 
 		// Capture scolling to move camera forward and back
@@ -967,6 +1076,17 @@ void editor_update(EditorInterface* editor) {
 			editor->viewports.right_click_down = true;
 		}
 		else {
+
+			if (is_key_pressed(input, KEYCODE_W)) {
+				editor->editor_control_data.gizmo_operation = ImGuizmo::TRANSLATE;
+			}
+			if (is_key_pressed(input, KEYCODE_E)) {
+				editor->editor_control_data.gizmo_operation = ImGuizmo::ROTATE;
+			}
+			if (is_key_pressed(input, KEYCODE_R)) {
+				editor->editor_control_data.gizmo_operation = ImGuizmo::SCALE;
+			}
+
 			editor->viewports.right_click_down = false;
 			SDL_ShowCursor(SDL_ENABLE);
 			SDL_SetRelativeMouseMode(SDL_FALSE);
@@ -1078,6 +1198,22 @@ void editor_update(EditorInterface* editor) {
 	process_editor_command_buffer(editor);
 
 	ImGui::PopFont();
+
+}
+
+void editor_post_update(EditorInterface* editor) {
+	EntityManager* entity_manager = editor->api.entity_manager;
+
+	for (int i = 0; i < entity_manager->entity_count; i++) {
+		Entity e = entity_manager->entity_list[i];
+		MapResult<bool> result = map_get(&editor->entity_selected, e.id);
+		if (!result.found) continue;
+		if (result.value) {
+			draw_gizmo_for_entity_with_camera(editor, editor->viewports.scene, e);
+		}
+	}
+
+	
 }
 
 static bool is_entity_selected(EditorInterface* editor, Entity entity) {
@@ -1094,7 +1230,6 @@ static void draw_main_menu_bar(EditorInterface* editor) {
 			if (ImGui::MenuItem("Build", "Ctrl+B")) { /* Do stuff */ }
 			if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
 			if (ImGui::MenuItem("Exit")) {
-				
 			}
 			ImGui::EndMenu();
 		}
@@ -1185,16 +1320,61 @@ static void draw_toolbar(EditorInterface* editor) {
 
 		
 		// Translate button
-		ImGui::Button(ICON_FA_ARROWS_ALT); ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_ARROWS_ALT)) {
+			editor->editor_control_data.gizmo_operation = ImGuizmo::TRANSLATE;
+		}
+		ImGui::SameLine();
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Translate"); }
 
 		// Rotate button
-		ImGui::Button(ICON_FA_SYNC_ALT); ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_SYNC_ALT)) {
+			editor->editor_control_data.gizmo_operation = ImGuizmo::ROTATE;
+		}
+		ImGui::SameLine();
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Rotate"); }
 
 		// Scale button
-		ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT); ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_EXPAND_ARROWS_ALT)) {
+			editor->editor_control_data.gizmo_operation = ImGuizmo::SCALE;
+		}
+		ImGui::SameLine();
 		if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Scale"); }
+
+
+		if (editor->editor_control_data.gizmo_mode == ImGuizmo::LOCAL) {
+			if (ImGui::Button("Set to World")) {
+				editor->editor_control_data.gizmo_mode = ImGuizmo::WORLD;
+			}
+			if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Set the transform to world space"); }
+		} else {
+			if (ImGui::Button("Set to Local")) {
+				editor->editor_control_data.gizmo_mode = ImGuizmo::LOCAL;
+			}
+			if (ImGui::IsItemHovered()) { ImGui::SetTooltip("Set the transform to local space"); }
+		}
+
+		ImGui::SameLine();
+		
+		if (ImGui::Button("Snap Settings")) {
+			ImGui::OpenPopup("Snap Settings Popup");
+
+			
+		}
+
+		if (ImGui::BeginPopup("Snap Settings Popup", NULL)) {
+			ImGui::Checkbox("Snap", &editor->editor_control_data.use_gizmo_snapping);
+			ImGui::InputFloat3("Translate Snap", editor->editor_control_data.snap_translate.data, 1);
+			ImGui::InputFloat("Rotate Snap", &editor->editor_control_data.snap_rotate, 1);
+			ImGui::InputFloat3("Scale Snap", editor->editor_control_data.snap_scale.data, 1);
+			ImGui::EndPopup();
+		}
+
+
+		ImGui::SameLine();
+		
+
+		
+		
 
 		ImGui::SameLine();
 		ImGui::Spacing();
@@ -1948,7 +2128,6 @@ static void draw_panel_components(EditorInterface* editor) {
 		for (int i = 0; i < entity_manager->entity_count; i++) {
 			Entity e = entity_manager->entity_list[i];
 			MapResult<bool> result = map_get(&editor->entity_selected, e.id);
-			if (!result.found) continue;
 			if (!result.found) continue;
 			if (result.value) {
 				ImGui::PushID(e.id);
@@ -3202,48 +3381,53 @@ static void draw_panel_render_stats(EditorInterface* editor) {
 	ImGui::End();
 }
 
-static void do_viewport_rendering_and_logic(EditorInterface* editor, PanelViewports::ViewportType viewport) {
+static void do_viewport_rendering_and_logic(EditorInterface* editor, PanelViewports::ViewportType viewport_type) {
 	RenderResource render_texture;
 	RenderResource depth_texture;
 	Entity camera;
 
-	switch (viewport) {
+	PanelViewports::Viewport* viewport = &editor->viewports.scene;
+
+	switch (viewport_type) {
 		case PanelViewports::ViewportType::Scene: {
-			render_texture = editor->viewports.scene.render_texture;
-			depth_texture = editor->viewports.scene.depth_texture;
-			camera = editor->viewports.scene.camera;
+			viewport = &editor->viewports.scene;
 			break;
 		}
 
 		case PanelViewports::ViewportType::Top: {
-			render_texture = editor->viewports.top.render_texture;
-			depth_texture = editor->viewports.top.depth_texture;
-			camera = editor->viewports.top.camera;
+			viewport = &editor->viewports.top;
 			break;
 		}
 
 		case PanelViewports::ViewportType::Front: {
-			render_texture = editor->viewports.front.render_texture;
-			depth_texture = editor->viewports.front.depth_texture;
-			camera = editor->viewports.front.camera;
+			viewport= &editor->viewports.front;
 			break;
 		}
 
 		case PanelViewports::ViewportType::Side: {
-			render_texture = editor->viewports.side.render_texture;
-			depth_texture = editor->viewports.side.depth_texture;
-			camera = editor->viewports.side.camera;
+			viewport = &editor->viewports.side;
 			break;
 		}
 	}
 
+	// The pos and size of the current dock/viewport
+	ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
+	ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
+	ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+
+
+	render_texture = viewport->render_texture;
+	depth_texture = viewport->depth_texture;
+	camera = viewport->camera;
+	
+
+	viewport->pos = Vec2i(start_group_pos.x, start_group_pos.y);
+	viewport->size = Vec2i(window_size.x, window_size.y);
+
 	void* color = render_resource_to_id(editor->api.renderer, render_texture);
 	void* depth = render_resource_to_id(editor->api.renderer, depth_texture);
 
-	ImVec2 start_group_pos = ImGui::GetCursorScreenPos();
-	// The size of the current dock/viewport
-	ImVec2 window_size = ImGui::GetCurrentWindow()->Size;
-	ImVec2 rect = ImVec2(start_group_pos.x + window_size.x, start_group_pos.y + window_size.y);
+	
 
 	// Need to update camera aspect ratio based on the dock's window size
 	float aspect_ratio = (float)window_size.x / (float)window_size.y;
@@ -3255,7 +3439,7 @@ static void do_viewport_rendering_and_logic(EditorInterface* editor, PanelViewpo
 		// If right click is down then we should not try to capture anything
 	} else {
 		if (ImGui::IsWindowHovered()) {
-			editor->viewports.current_viewport_capture = viewport;
+			editor->viewports.current_viewport_capture = viewport_type;
 		}
 	}
 }
@@ -3483,7 +3667,7 @@ static void push_editor_undo_command(EditorInterface* editor, const EditorComman
 	editor->cmd_buffer.command_undo_stack_count++;
 	//editor->cmd_buffer.command_undo_stack_count = (editor->cmd_buffer.command_undo_stack_count + 1) % EDITOR_COMMAND_UNDO_BUFFER_CAPACITY;
 	// Too many commands were sent this frame
-	assert(editor->cmd_buffer.command_undo_stack_count < EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY);
+	assert(editor->cmd_buffer.command_undo_stack_count < EDITOR_COMMAND_UNDO_REDO_BUFFER_CAPACITY && "UNDO STACK OVER FLOW");
 }
 
 static void push_editor_command(EditorInterface* editor, const EditorCommand& command) {

@@ -21,5 +21,7 @@ void set_camera_ortho_size(EntityManager* manager, Entity entity, float size);
 void set_camera_projection(EntityManager* manager, Entity entity, CameraProjection projection);
 void set_camera_aspect_ratio(EntityManager* manager, Entity entity, float aspect_ratio);
 void set_camera_framebuffer(EntityManager* manager, Entity entity, RenderResource* framebuffer);
+Mat4x4f* get_camera_view_matrix(EntityManager* manager, Entity entity);
+Mat4x4f get_camera_projection_matrix(EntityManager* manager, Entity entity);
 
 void job_compute_camera_view_matrices(EntityManager* manager);

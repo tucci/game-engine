@@ -836,7 +836,7 @@ static void update_engine_state(Engine* engine, float delta_time) {
 
 
 	// Editor upate
-	editor_update(&engine->editor);
+	//editor_update(&engine->editor);
 	if (is_key_pressed(&engine->input, KEYCODE_ESCAPE)) {
 		engine->quit = true;
 	}
@@ -865,9 +865,15 @@ static void update_engine_state(Engine* engine, float delta_time) {
 	
     
     
+	editor_update(&engine->editor);
+
 	job_update_basis_vectors(entity_manager);
-	job_compute_camera_view_matrices(entity_manager);
 	job_compute_world_matrices(entity_manager);
+	job_compute_camera_view_matrices(entity_manager);
+
+	editor_post_update(&engine->editor);
+
+	
     
     
 	// You go through all the entites, and push them to the render state
@@ -1066,6 +1072,7 @@ void editor_loop(Engine* engine) {
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplSDL2_NewFrame(engine->window.sdl_window);
 		ImGui::NewFrame();
+		ImGuizmo::BeginFrame();
 		
 		
 

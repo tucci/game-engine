@@ -54,6 +54,38 @@ Quat quat_normalize(const Quat& q) {
 	result.w /= length;
 	return result;
 }
+
+static Quat quat_scale(const Quat& q, float scale) {
+	Quat result;
+
+	result.x = q.x * scale;
+	result.y = q.y * scale;
+	result.z = q.z * scale;
+	result.w = q.w * scale;
+
+	return result;
+}
+
+static float quat_norm(const Quat& q) {
+	float result;
+	result = (q.x * q.x) + (q.y * q.y) + (q.z * q.z) + (q.w * q.w);
+	return result;
+}
+
+Quat quat_invert(const Quat& q) {
+	Quat result;
+	result = quat_scale(quat_conj(q), 1 / quat_norm(q));
+	return result;
+}
+
+Vec4f quat_to_vec(const Quat& q) {
+	return Vec4f(q.x, q.y, q.z, q.w);
+}
+
+
+
+
+
 Vec3f operator*(const Quat& q, const Vec3f& p) {
 	Vec3f result;
 	//Quat pt_quat;

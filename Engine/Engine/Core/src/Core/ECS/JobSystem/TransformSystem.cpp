@@ -95,6 +95,9 @@ void job_compute_world_matrices(EntityManager* manager) {
 		// http://bitsquid.blogspot.com/2014/10/building-data-oriented-entity-system.html
 		tm->world[i] = get_world_transform(manager, entity);
 
+		Mat4x4f* world = &tm->world[i];
+		
+
 		//// Get the parent of the current entity
 		//Entity parent_id = tm->parent[index];
 		//// If this entity has no parent, then we'll just use the current local matrix
@@ -152,6 +155,8 @@ void set_position(EntityManager* manager, Entity entity, Vec3f pos) {
 	manager->transform_manager.positions[index] = pos;
 }
 
+
+
 Vec3f get_scale(EntityManager* manager, Entity entity) {
 	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
 	return manager->transform_manager.scales[index];
@@ -162,14 +167,24 @@ void set_scale(EntityManager* manager, Entity entity, Vec3f scale) {
 	manager->transform_manager.scales[index] = scale;
 }
 
+
 Quat get_rotation(EntityManager* manager, Entity entity) {
 	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
 	return manager->transform_manager.rotations[index];
 }
 
+
+
 void set_rotation(EntityManager* manager, Entity entity, Quat rotation) {
 	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
 	manager->transform_manager.rotations[index] = rotation;
+}
+
+Vec3f get_rotation_euler(EntityManager* manager, Entity entity) {
+	int index = get_index_for_entity(manager, entity, &manager->transform_manager.id_map);
+	Quat q = manager->transform_manager.rotations[index];
+	return quat_to_euler(q);
+
 }
 
 Vec3f forward(EntityManager* manager, Entity entity) {

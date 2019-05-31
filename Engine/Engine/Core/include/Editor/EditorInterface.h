@@ -22,6 +22,7 @@
 #include "Core/ECS/JobSystem/RenderSystem.h"
 
 
+#include "ImGuizmo.h"
 #include "../../imgui/imgui.h"
 #include "../../editor_resources/fonts/IconsFontAwesome5.h"
 
@@ -249,6 +250,7 @@ struct PanelViewports {
 
 	struct Viewport {
 		Entity camera;
+		Vec2i pos;
 		Vec2i size;
 		RenderResource framebuffer;
 		RenderResource render_texture;
@@ -290,6 +292,18 @@ struct EditorCommandBuffer {
 
 
 struct EditorControlsData {
+
+	ImGuizmo::OPERATION gizmo_operation;
+	ImGuizmo::MODE gizmo_mode;
+	bool was_using_gizmo_last_frame = false;
+
+	bool use_gizmo_snapping = false;
+
+	Vec3f snap_translate;
+	Vec3f snap_scale;
+	float snap_rotate;
+
+	// UNDO/REDO time for when holding down ctrl + z/y
 	enum {REPEAT_DELAY_TIME = 200, INCREMENT_REPEAT_TIME = 10, MAX_INCREMENT = (REPEAT_DELAY_TIME - INCREMENT_REPEAT_TIME)/ INCREMENT_REPEAT_TIME
 	};
 	u64 last_undo_time = 0;
@@ -353,6 +367,9 @@ bool init_editor_interface(EditorInterface* editor, EngineAPI api);
 void destroy_editor_interface(EditorInterface* editor);
 
 void editor_update(EditorInterface* editor);
+
+void editor_post_update(EditorInterface* editor);
+
 static bool is_entity_selected(EditorInterface* editor, Entity entity);
 
 static RenderResource get_asset_browser_thumbnail_for_asset(EditorInterface* editor, AssetID id);

@@ -196,6 +196,7 @@
     <ClCompile Include="Core\src\Asset\AssetManager.cpp" />
     <ClCompile Include="Core\src\Asset\FbxImport.cpp" />
     <ClCompile Include="Core\src\Editor\EditorInterface.cpp" />
+    <ClCompile Include="Core\src\Editor\ImGuizmo.cpp" />
     <ClCompile Include="Core\src\linux_engine_platform.cpp" />
     <ClCompile Include="Core\src\Logger.cpp" />
     <ClCompile Include="Core\src\Main.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="Core\include\Editor\EditorCommandList.h" />
     <ClInclude Include="Core\include\Editor\EditorCommands.h" />
     <ClInclude Include="Core\include\Editor\EditorInterface.h" />
+    <ClInclude Include="Core\include\Editor\ImGuizmo.h" />
     <ClInclude Include="Core\include\engine_platform.h" />
     <ClInclude Include="Core\include\Logger.h" />
     <ClInclude Include="Core\include\types.h" />

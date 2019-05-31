@@ -19,10 +19,13 @@ void init_transform_manager(TransformManager* manager) {
 	
 	manager->positions = NULL;
 	manager->scales = NULL;
+	manager->rotations = NULL;
+
 	manager->ups = NULL;
 	manager->forwards = NULL;
 	manager->rights = NULL;
-	manager->rotations = NULL;
+
+	
 	manager->local = NULL;
 	manager->world = NULL;
 	manager->parent = NULL;
@@ -40,9 +43,14 @@ void destroy_transform_manager(TransformManager* manager) {
 	stb_sb_free(manager->positions);
 	stb_sb_free(manager->scales);
 	stb_sb_free(manager->rotations);
+
 	stb_sb_free(manager->ups);
 	stb_sb_free(manager->forwards);
 	stb_sb_free(manager->rights);
+
+
+	
+
 	stb_sb_free(manager->local);
 	stb_sb_free(manager->world);
 	stb_sb_free(manager->parent);
@@ -76,10 +84,14 @@ bool entity_add_transform_component(TransformManager* manager, Entity entity) {
 	
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->positions, Vec3f(0,0,0), index);
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->scales, Vec3f(1, 1, 1), index);
+	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->rotations, Quat(), index);
+
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->ups, Vec3f(0, 1, 0), index);
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->forwards, Vec3f(0, 0, 1), index);
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->rights, Vec3f(1, 0, 0), index);
-	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->rotations, Quat(), index);
+
+	
+	
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->local, Mat4x4f(), index);
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->world, Mat4x4f(), index);
 	comphelper_add_component_data(&manager->total_count, &manager->enabled_count, entity, &manager->parent, Entity(), index);
@@ -134,10 +146,14 @@ bool entity_remove_transform_component(TransformManager* manager, Entity entity)
 
 	comphelper_remove_component_data(entity, manager->positions, index, index_to_swap);
 	comphelper_remove_component_data(entity, manager->scales, index, index_to_swap);
+	comphelper_remove_component_data(entity, manager->rotations, index, index_to_swap);
+
 	comphelper_remove_component_data(entity, manager->ups, index, index_to_swap);
 	comphelper_remove_component_data(entity, manager->forwards, index, index_to_swap);
 	comphelper_remove_component_data(entity, manager->rights, index, index_to_swap);
-	comphelper_remove_component_data(entity, manager->rotations, index, index_to_swap);
+
+	
+	
 	comphelper_remove_component_data(entity, manager->local, index, index_to_swap);
 	comphelper_remove_component_data(entity, manager->world, index, index_to_swap);
 	comphelper_remove_component_data(entity, manager->parent, index, index_to_swap);
